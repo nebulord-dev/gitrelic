@@ -34,7 +34,7 @@ export async function getAllCommits(
   return parseGitLog(stdout);
 }
 
-function parseGitLog(raw: string): RawCommit[] {
+export function parseGitLog(raw: string): RawCommit[] {
   const commits: RawCommit[] = [];
   let current: RawCommit | null = null;
 
@@ -80,7 +80,7 @@ const IGNORED_PATTERNS = {
   prefixes: ['.next/', 'dist/', 'coverage/'],
 };
 
-function isIgnored(file: string): boolean {
+export function isIgnored(file: string): boolean {
   const basename = file.split('/').pop() ?? file;
 
   if (IGNORED_PATTERNS.exact.has(basename)) return true;
