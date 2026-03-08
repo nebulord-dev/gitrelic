@@ -7,17 +7,17 @@
 
 ## Backlog
 
-### Ignore list for lock files and auto-generated files
-Filter out files that add noise to analysis: `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `*.ico`, default Next.js public assets, and similar auto-generated files. These inflate churn counts and cursed file scores without providing actionable insight.
+### Testing & Infrastructure
 
-### Tighten cursed file scoring
-63 cursed files on a 115-file repo is too many. Raise the minimum threshold and recalibrate score contributions so only genuinely problematic files surface.
-
-### Make active window relative to repo age
-Hardcoded thresholds (90 days for "active", 180 days for "ghost", 30/180/365 for age status) don't make sense for young repos. A 0.3-year-old repo shouldn't have any ghosts. Scale windows proportionally to repo age.
-
-### Default `--since` to last 12 months
-Young repos get penalized by irrelevant distant history. Default to `--since="12 months ago"` when the user doesn't provide one, with an opt-out for full history analysis.
+#### Add full test suite
+Set up Vitest across the monorepo. Priority test targets:
+- **Core analyzers**: Unit tests for `churn.ts`, `bus-factor.ts`, `age-map.ts`, `contributors.ts`, `cursed-files.ts` using mock commit data (no real git repos needed)
+- **Ignore list**: Verify `isIgnored()` correctly filters lock files, assets, generated files
+- **Relative thresholds**: Test percentage-based scaling at different repo ages (young, mid, mature)
+- **Git primitives**: Test `parseGitLog()` parsing with known input strings
+- **`--since` handling**: Test `all` keyword produces `undefined`, default is `12 months ago`
+- Colocate tests with source files (e.g. `churn.test.ts` next to `churn.ts`)
+- **Note**: `parseGitLog()` in `git.ts` is currently private. Export it so it can be unit tested directly with known input strings rather than requiring a real git repo via `getAllCommits()`.
 
 ---
 
@@ -99,3 +99,15 @@ _(nothing right now)_
 
 ### Adapt skills from Vitals to Lore
 Ported `/plan-feature`, `/prime`, `/review-project`, and `/sync-docs` skills. Replaced all Vitals-specific references with Lore equivalents (analyzers instead of runners, updated file paths, removed fixtures/scoring references).
+
+### Ignore list for lock files and auto-generated files
+Built-in `IGNORED_PATTERNS` in `git.ts` filters lock files, assets (`.ico`, `.png`, `.svg`, etc.), and generated output (`.next/`, `dist/`, `coverage/`) from `getTrackedFiles()`.
+
+### Tighten cursed file scoring
+Raised minimum threshold from 30→50 and reduced score contributions. Files now need multiple strong signals to qualify as cursed.
+
+### Make active window relative to repo age
+Age map thresholds (fresh/aging/stale/ancient) and contributor windows (active/ghost) are now percentage-based, scaling proportionally to repo age.
+
+### Default `--since` to last 12 months
+CLI defaults to `--since="12 months ago"`. Use `--since all` for full history. Young repos naturally return all commits.
