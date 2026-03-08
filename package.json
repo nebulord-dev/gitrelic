@@ -7,7 +7,8 @@
     "clean": "turbo run clean",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "lore": "node apps/cli/dist/index.js"
+    "lore": "node apps/cli/dist/index.js",
+    "test": "turbo run test"
   },
   "devDependencies": {
     "turbo": "^2.3.3",
