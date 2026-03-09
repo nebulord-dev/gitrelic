@@ -8,6 +8,7 @@ function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
     authorEmail: 'alice@example.com',
     authorName: 'Alice',
     date: '2025-06-01T00:00:00Z',
+    message: '',
     files: [],
     insertions: 0,
     deletions: 0,

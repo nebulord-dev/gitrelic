@@ -7,6 +7,7 @@ export interface RawCommit {
   authorEmail: string;
   authorName: string;
   date: string;          // ISO
+  message: string;
   files: string[];
   insertions: number;
   deletions: number;
@@ -22,7 +23,7 @@ export async function getAllCommits(
 ): Promise<RawCommit[]> {
   const args = [
     'log',
-    '--format=COMMIT|%H|%ae|%an|%aI',
+    '--format=COMMIT|%H|%ae|%an|%aI%nMSG|%s',
     '--numstat',
     '--no-merges',
   ];
@@ -42,7 +43,9 @@ export function parseGitLog(raw: string): RawCommit[] {
     if (line.startsWith('COMMIT|')) {
       if (current) commits.push(current);
       const [, hash, authorEmail, authorName, date] = line.split('|');
-      current = { hash, authorEmail, authorName, date, files: [], insertions: 0, deletions: 0 };
+      current = { hash, authorEmail, authorName, date, message: '', files: [], insertions: 0, deletions: 0 };
+    } else if (current && line.startsWith('MSG|')) {
+      current.message = line.slice(4);   // everything after "MSG|"
     } else if (current && line.trim()) {
       // numstat lines: "insertions\tdeletions\tfilepath"
       const parts = line.split('\t');
