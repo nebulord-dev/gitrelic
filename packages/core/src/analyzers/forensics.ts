@@ -7,7 +7,7 @@
  *
  * | Weight | Keywords                                                    |
  * |--------|-------------------------------------------------------------|
- * | 3 — Critical | revert, hotfix, oops, fixup, broke, breaking        |
+ * | 3 — Critical | revert, hotfix, oops, fixup, broke                  |
  * | 2 — Moderate | hack, workaround, temporary, temp, kludge, band-aid |
  * | 1 — Mild     | fix, bug, wrong, mistake, typo, cleanup             |
  *
@@ -24,10 +24,25 @@
 import type { RawCommit } from '../utils/git.js';
 import type { FileForensics, ForensicsReport, ShamefulCommit } from '../types.js';
 
-const SHAME_KEYWORDS: Array<{ weight: number; words: string[] }> = [
-  { weight: 3, words: ['revert', 'hotfix', 'oops', 'fixup', 'broke', 'breaking'] },
-  { weight: 2, words: ['hack', 'workaround', 'temporary', 'temp', 'kludge', 'band-aid'] },
-  { weight: 1, words: ['fix', 'bug', 'wrong', 'mistake', 'typo', 'cleanup'] },
+const SHAME_KEYWORDS: Array<{ weight: number; entries: Array<{ word: string; re: RegExp }> }> = [
+  {
+    weight: 3,
+    entries: ['revert', 'hotfix', 'oops', 'fixup', 'broke'].map(word => ({
+      word, re: new RegExp(`\\b${word}\\b`),
+    })),
+  },
+  {
+    weight: 2,
+    entries: ['hack', 'workaround', 'temporary', 'temp', 'kludge', 'band-aid'].map(word => ({
+      word, re: new RegExp(`\\b${word}\\b`),
+    })),
+  },
+  {
+    weight: 1,
+    entries: ['fix', 'bug', 'wrong', 'mistake', 'typo', 'cleanup'].map(word => ({
+      word, re: new RegExp(`\\b${word}\\b`),
+    })),
+  },
 ];
 
 function scoreMessage(message: string): { points: number; keywords: string[] } {
@@ -35,9 +50,9 @@ function scoreMessage(message: string): { points: number; keywords: string[] } {
   let points = 0;
   const keywords: string[] = [];
 
-  for (const { weight, words } of SHAME_KEYWORDS) {
-    for (const word of words) {
-      if (new RegExp(`\\b${word}\\b`).test(lower)) {
+  for (const { weight, entries } of SHAME_KEYWORDS) {
+    for (const { word, re } of entries) {
+      if (re.test(lower)) {
         points += weight;
         keywords.push(word);
       }
@@ -67,7 +82,7 @@ export function analyzeForensics(
   }
 
   const files: FileForensics[] = [];
-  let totalShameCommits = 0;
+  const allShameHashes = new Set<string>();
 
   for (const [file, fileCommitList] of fileCommits) {
     if (fileCommitList.length === 0) continue;
@@ -83,6 +98,7 @@ export function analyzeForensics(
 
       shameCommitCount++;
       rawShamePoints += points;
+      allShameHashes.add(commit.hash);
       shamefulCommits.push({
         hash: commit.hash,
         message: commit.message,
@@ -103,7 +119,7 @@ export function analyzeForensics(
       100
     );
 
-    const topShameCommits = shamefulCommits
+    const topShameCommits = [...shamefulCommits]
       .sort((a, b) => b.shamePoints - a.shamePoints)
       .slice(0, 3);
 
@@ -111,8 +127,6 @@ export function analyzeForensics(
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
       .map(([kw]) => kw);
-
-    totalShameCommits += shameCommitCount;
 
     files.push({
       file,
@@ -131,5 +145,5 @@ export function analyzeForensics(
     ? 'No commit message red flags detected.'
     : `${shameLeaderboard[0].file} has the highest shame score (${shameLeaderboard[0].shameScore}/100) with ${shameLeaderboard[0].shameCommitCount} flagged commits.`;
 
-  return { files, shameLeaderboard, totalShameCommits, summary };
+  return { files, shameLeaderboard, totalShameCommits: allShameHashes.size, summary };
 }
