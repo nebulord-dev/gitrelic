@@ -7,9 +7,10 @@ interface Props {
   report: LoreReport | null;
   progress: string;
   error: string | null;
+  showShame: boolean;
 }
 
-export function App({ report, progress, error }: Props) {
+export function App({ report, progress, error, showShame }: Props) {
   if (error) {
     return (
       <Box flexDirection="column" padding={1}>
@@ -42,6 +43,12 @@ export function App({ report, progress, error }: Props) {
       <ContributorPanel report={report} />
       <Newline />
       <BusFactorPanel report={report} />
+      {showShame && (
+        <>
+          <Newline />
+          <ShamePanel report={report} />
+        </>
+      )}
     </Box>
   );
 }
@@ -179,6 +186,40 @@ function BusFactorPanel({ report }: { report: LoreReport }) {
             <Text color="red">⚠</Text>
             <Text color="white">{truncatePath(f.file, 50)}</Text>
             <Text color="gray" dimColor>{f.dominantAuthorPercent}% one author</Text>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+function ShamePanel({ report }: { report: LoreReport }) {
+  const { forensics } = report;
+  if (forensics.shameLeaderboard.length === 0) {
+    return (
+      <Box>
+        <Text color="green">✓ No commit message red flags detected</Text>
+      </Box>
+    );
+  }
+  return (
+    <Box flexDirection="column">
+      <Text color="magenta" bold>
+        {`── Shame Leaderboard (${forensics.totalShameCommits} flagged commits) ───────────────────`}
+      </Text>
+      <Text color="gray" dimColor>{forensics.summary}</Text>
+      <Box flexDirection="column" marginTop={1}>
+        {forensics.shameLeaderboard.slice(0, 8).map(f => (
+          <Box key={f.file} flexDirection="column" marginBottom={1}>
+            <Box gap={2}>
+              <Text color="magenta">☠</Text>
+              <Text color="white">{truncatePath(f.file, 50)}</Text>
+              <Text color="magenta">[{f.shameScore}/100]</Text>
+              <Text color="gray" dimColor>{f.shameCommitCount} shame commits</Text>
+            </Box>
+            {f.topShameCommits.slice(0, 1).map(c => (
+              <Text key={c.hash} color="gray" dimColor>  "{c.message}"</Text>
+            ))}
           </Box>
         ))}
       </Box>

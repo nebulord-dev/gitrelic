@@ -15,4 +15,7 @@ export type {
   Contributor,
   CursedFile,
   RepoMeta,
+  ForensicsReport,
+  FileForensics,
+  ShamefulCommit,
 } from './types.js';

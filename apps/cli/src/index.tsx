@@ -18,6 +18,7 @@ program
   .option('-s, --since <date>', 'Only analyze commits since this date (default: "12 months ago", use "all" for full history)', '12 months ago')
   .option('--web', 'Open web dashboard after analysis')
   .option('--json', 'Output raw JSON report to stdout')
+  .option('--shame', 'Show commit message forensics / shame leaderboard panel')
   .parse();
 
 const opts = program.opts<{
@@ -26,6 +27,7 @@ const opts = program.opts<{
   since?: string;
   web?: boolean;
   json?: boolean;
+  shame?: boolean;
 }>();
 
 const repoPath = path.resolve(opts.path);
@@ -70,7 +72,7 @@ function LoreApp() {
       .catch((err: Error) => setError(err.message));
   }, []);
 
-  return <App report={report} progress={progress} error={error} />;
+  return <App report={report} progress={progress} error={error} showShame={opts.shame ?? false} />;
 }
 
 render(<LoreApp />);
