@@ -32,6 +32,31 @@ lore --path ~/projects/my-app --since "6 months ago"
 lore --path ~/projects/my-app --json > lore-report.json
 ```
 
+## How Lore scores files
+
+Lore uses three scoring systems, each 0–100:
+
+### Churn score
+How often a file has been modified relative to the most-committed file in the repo.
+A score of 100 means this file has been touched in the highest proportion of all commits.
+
+### Shame score (`--shame`)
+Based on commit message sentiment. Each commit touching a file is scanned for keywords:
+
+| Weight | Keywords |
+|--------|----------|
+| 3 — Critical | `revert`, `hotfix`, `oops`, `fixup`, `broke` |
+| 2 — Moderate | `hack`, `workaround`, `temporary`, `temp`, `kludge`, `band-aid` |
+| 1 — Mild | `fix`, `bug`, `wrong`, `mistake`, `typo`, `cleanup` |
+
+**Shame score** = `min((total weighted points / total commits for file) × 100, 100)`
+
+Ratio-based: a file with 1 revert in 2 commits scores higher than 1 revert in 100 commits.
+
+### Curse score
+A composite of churn, bus factor risk, age anomalies, and shame. Files scoring ≥ 50 appear
+in the Cursed Files panel. Shame contributes up to +20 points to the curse score.
+
 ## Setup
 
 ```bash
