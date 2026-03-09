@@ -28,6 +28,8 @@ export function findCursedFiles(
     const a = ageByFile.get(file);
     const f = forensicsByFile.get(file);
 
+    // Churn data is required to produce a CursedFile (needed for score, narrative, and churn field).
+    // Shame-only files (no churn data) are evaluated but dropped here intentionally.
     if (!c) continue;
 
     const reasons: string[] = [];

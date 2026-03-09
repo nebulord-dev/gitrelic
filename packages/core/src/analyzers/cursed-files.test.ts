@@ -132,6 +132,37 @@ describe('findCursedFiles', () => {
     expect(result.length).toBe(0);
   });
 
+  it('drops shame-only files with no churn data', () => {
+    const forensics: ForensicsReport = {
+      files: [{
+        file: 'shame-only.ts',
+        shameScore: 90,
+        rawShamePoints: 9,
+        shameCommitCount: 3,
+        topShameCommits: [],
+        dominantKeywords: ['revert'],
+      }],
+      shameLeaderboard: [{
+        file: 'shame-only.ts',
+        shameScore: 90,
+        rawShamePoints: 9,
+        shameCommitCount: 3,
+        topShameCommits: [],
+        dominantKeywords: ['revert'],
+      }],
+      totalShameCommits: 3,
+      summary: '',
+    };
+
+    // No churn data for shame-only.ts
+    const churn = makeChurnReport([]);
+    const busFactor = makeBusFactorReport([]);
+    const ageMap = makeAgeMapReport([]);
+
+    const result = findCursedFiles(churn, busFactor, ageMap, forensics, 100);
+    expect(result.find(f => f.file === 'shame-only.ts')).toBeUndefined();
+  });
+
   it('adds shame reason for files with shameScore >= 75', () => {
     // Build a file that scores shame-qualifying (shameScore = 80)
     const forensics: ForensicsReport = {

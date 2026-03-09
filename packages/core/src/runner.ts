@@ -80,5 +80,6 @@ export async function runLore(options: RunLoreOptions): Promise<LoreReport> {
     ageMap,
     contributors,
     cursedFiles,
+    forensics: emptyForensics,
   };
 }
