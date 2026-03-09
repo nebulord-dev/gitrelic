@@ -212,7 +212,7 @@ function ShamePanel({ report }: { report: LoreReport }) {
         {forensics.shameLeaderboard.slice(0, 8).map(f => (
           <Box key={f.file} flexDirection="column" marginBottom={1}>
             <Box gap={2}>
-              <Text color="magenta">☠</Text>
+              <Text color="magenta">⚑</Text>
               <Text color="white">{truncatePath(f.file, 50)}</Text>
               <Text color="magenta">[{f.shameScore}/100]</Text>
               <Text color="gray" dimColor>{f.shameCommitCount} shame commits</Text>
