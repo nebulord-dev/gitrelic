@@ -1,6 +1,15 @@
 import type { ChurnReport, BusFactorReport, AgeMapReport, ForensicsReport } from '../types.js';
 import type { CursedFile } from '../types.js';
 
+/** 
+ * Analyzes the repository to identify "cursed" files that exhibit high churn, low bus factor, and/or age paradox characteristics.
+ * @param churn - The churn report for the repository.
+ * @param busFactor - The bus factor report for the repository.
+ * @param ageMap - The age map report for the repository.
+ * @param forensics - The forensics report for the repository.
+ * @param totalCommits - The total number of commits in the repository.
+ * @returns An array of cursed files with their associated metrics and narrative.
+ */
 export function findCursedFiles(
   churn: ChurnReport,
   busFactor: BusFactorReport,

@@ -16,6 +16,10 @@ export interface RawCommit {
 /**
  * Fetches all commits with their changed files using git log.
  * Format: COMMIT|hash|email|name|date, then MSG|subject, then numstat lines.
+ * @see https://git-scm.com/docs/git-log
+ * @param repoPath - The path to the git repository.
+ * @param options - Optional parameters for filtering commits.
+ * @returns An array of RawCommit objects representing the commits in the repository.
  */
 export async function getAllCommits(
   repoPath: string,

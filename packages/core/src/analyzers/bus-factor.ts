@@ -1,6 +1,12 @@
 import type { RawCommit } from '../utils/git.js';
 import type { BusFactorReport, FileBusFactor, BusFactorRisk } from '../types.js';
 
+/**
+ * Analyzes the bus factor of files based on the provided commits and tracked files.
+ * @param commits - The raw commits from the repository.
+ * @param trackedFiles - The list of currently tracked files in the repository.
+ * @Returns a report with the top 20 files by bus factor, the number of critical files, and a summary.
+ */
 export function analyzeBusFactor(commits: RawCommit[], trackedFiles: string[]): BusFactorReport {
   // Map: file → Map<author, commitCount>
   const fileAuthors: Map<string, Map<string, number>> = new Map();

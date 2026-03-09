@@ -1,6 +1,13 @@
 import type { RawCommit } from '../utils/git.js';
 import type { AgeMapReport, FileAge, AgeStatus } from '../types.js';
 
+/**
+ * Analyzes the age of files based on the provided commits, tracked files, and repository age in days.
+ * @param commits - The raw commits from the repository.
+ * @param trackedFiles - The list of currently tracked files in the repository.
+ * @param repoAgeDays - The age of the repository in days.
+ * @Returns a report with the top 20 files by age, the number of stale files, and a summary.
+ */
 export function analyzeAgeMap(commits: RawCommit[], trackedFiles: string[], repoAgeDays: number): AgeMapReport {
   // Map: file → most recent commit date
   const fileLastCommit: Map<string, string> = new Map();

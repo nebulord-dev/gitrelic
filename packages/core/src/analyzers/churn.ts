@@ -1,6 +1,12 @@
 import type { RawCommit } from '../utils/git.js';
 import type { ChurnReport, FileChurn, ChurnCategory } from '../types.js';
 
+/**
+ * Analyzes the churn of files based on the provided commits and tracked files.
+ * @param commits - The raw commits from the repository.
+ * @param trackedFiles - The list of currently tracked files in the repository.
+ * @Returns a report with the top 20 files by commit count, the number of hot files, and a summary.
+ */
 export function analyzeChurn(commits: RawCommit[], trackedFiles: string[]): ChurnReport {
   const fileCounts: Record<string, number> = {};
 

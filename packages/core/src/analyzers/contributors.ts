@@ -1,6 +1,12 @@
 import type { RawCommit } from '../utils/git.js';
 import type { ContributorReport, Contributor } from '../types.js';
 
+/**
+ * Analyzes the contributors of the repository based on the provided commits and repository age in days.
+ * @param commits - The raw commits from the repository.
+ * @param repoAgeDays - The age of the repository in days.
+ * @Returns a report with the top 20 contributors by commit count, the number of active contributors, and a summary.
+ */
 export function analyzeContributors(commits: RawCommit[], repoAgeDays: number): ContributorReport {
   const authorMap: Map<string, {
     name: string;

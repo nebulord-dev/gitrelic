@@ -14,6 +14,12 @@ import { findCursedFiles } from './analyzers/cursed-files.js';
 import { analyzeForensics } from './analyzers/forensics.js';
 import type { LoreReport, RunLoreOptions } from './types.js';
 
+/**
+ * Runs the Lore analysis on a given git repository and returns a comprehensive report.
+ * @param options - The options for running the analysis, including repository path, branch, and since date.
+ * @Returns a LoreReport containing churn, bus factor, age map, contributors, cursed files, and forensics data. 
+ */
+
 export async function runLore(options: RunLoreOptions): Promise<LoreReport> {
   const { repoPath, branch, since, onProgress } = options;
   const repoName = path.basename(repoPath);
