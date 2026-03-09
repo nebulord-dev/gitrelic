@@ -75,6 +75,9 @@ Deep dive on a single file: full commit timeline, author breakdown, message fore
 
 ### Web Dashboard
 
+#### Shame tab in web dashboard
+Add a sixth tab to the web dashboard for commit message forensics. The `forensics` data is already in every `LoreReport` — this is purely a UI addition. Show the shame leaderboard (file, shame score, dominant keywords, top offending commit messages) and a summary stat for total shame commits. Mirrors the `--shame` CLI panel but with more room to show details.
+
 #### Treemap visualization
 Directory tree colored by churn score. Instantly see which *parts* of the codebase are on fire. Visually stunning and immediately useful.
 
