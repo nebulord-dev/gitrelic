@@ -11,7 +11,7 @@ import { analyzeBusFactor } from './analyzers/bus-factor.js';
 import { analyzeAgeMap } from './analyzers/age-map.js';
 import { analyzeContributors } from './analyzers/contributors.js';
 import { findCursedFiles } from './analyzers/cursed-files.js';
-import type { LoreReport, RunLoreOptions } from './types.js';
+import type { LoreReport, RunLoreOptions, ForensicsReport } from './types.js';
 
 export async function runLore(options: RunLoreOptions): Promise<LoreReport> {
   const { repoPath, branch, since, onProgress } = options;
@@ -57,7 +57,9 @@ export async function runLore(options: RunLoreOptions): Promise<LoreReport> {
   }
 
   onProgress?.('Finding cursed files...');
-  const cursedFiles = findCursedFiles(churn, busFactors, ageMap, commits.length);
+  // TODO(Task 5): replace with analyzeForensics(commits, trackedFiles)
+  const emptyForensics: ForensicsReport = { files: [], shameLeaderboard: [], totalShameCommits: 0, summary: '' };
+  const cursedFiles = findCursedFiles(churn, busFactors, ageMap, emptyForensics, commits.length);
 
   return {
     timestamp: new Date().toISOString(),

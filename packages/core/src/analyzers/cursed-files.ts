@@ -1,20 +1,23 @@
-import type { ChurnReport, BusFactorReport, AgeMapReport } from '../types.js';
+import type { ChurnReport, BusFactorReport, AgeMapReport, ForensicsReport } from '../types.js';
 import type { CursedFile } from '../types.js';
 
 export function findCursedFiles(
   churn: ChurnReport,
   busFactor: BusFactorReport,
   ageMap: AgeMapReport,
+  forensics: ForensicsReport,
   totalCommits: number
 ): CursedFile[] {
   // Index the other reports by file for O(1) lookups
   const churnByFile = new Map(churn.files.map(f => [f.file, f]));
   const busFactorByFile = new Map(busFactor.files.map(f => [f.file, f]));
   const ageByFile = new Map(ageMap.files.map(f => [f.file, f]));
+  const forensicsByFile = new Map(forensics.files.map(f => [f.file, f]));
 
   const candidates = new Set([
     ...churn.topFiles.map(f => f.file),
     ...busFactor.criticalFiles.map(f => f.file),
+    ...forensics.shameLeaderboard.map(f => f.file),
   ]);
 
   const cursed: CursedFile[] = [];
@@ -23,6 +26,7 @@ export function findCursedFiles(
     const c = churnByFile.get(file);
     const b = busFactorByFile.get(file);
     const a = ageByFile.get(file);
+    const f = forensicsByFile.get(file);
 
     if (!c) continue;
 
@@ -56,6 +60,23 @@ export function findCursedFiles(
     if (a && a.ageInDays < 30 && c.churnScore > 60) {
       reasons.push('Still actively changing despite being a core file');
       curseScore += 10;
+    }
+
+    // Shame bonus
+    if (f) {
+      const topKw = f.dominantKeywords[0];
+      if (f.shameScore >= 75) {
+        reasons.push(
+          `${f.shameCommitCount} shame commits detected${topKw ? ` ("${topKw}" appears repeatedly)` : ''} — this file keeps breaking`
+        );
+        curseScore += 20;
+      } else if (f.shameScore >= 50) {
+        reasons.push(`High rate of fix/revert commits (shame score: ${f.shameScore}/100)`);
+        curseScore += 12;
+      } else if (f.shameScore >= 25) {
+        reasons.push('Notable pattern of shame commits');
+        curseScore += 6;
+      }
     }
 
     if (curseScore < 50 || reasons.length === 0) continue;

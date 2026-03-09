@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { ChurnReport, BusFactorReport, AgeMapReport } from '../types.js';
+import type { ChurnReport, BusFactorReport, AgeMapReport, ForensicsReport } from '../types.js';
 import { findCursedFiles } from './cursed-files.js';
 
 function makeChurnReport(files: { file: string; commitCount: number; churnScore: number }[]): ChurnReport {
@@ -30,6 +30,10 @@ function makeAgeMapReport(files: { file: string; ageInDays: number }[]): AgeMapR
   };
 }
 
+function makeEmptyForensics(): ForensicsReport {
+  return { files: [], shameLeaderboard: [], totalShameCommits: 0, summary: '' };
+}
+
 describe('findCursedFiles', () => {
   it('requires score >= 50 to qualify', () => {
     // high churn (>75 → 35) + high bus factor (15) = 50 → qualifies
@@ -37,7 +41,7 @@ describe('findCursedFiles', () => {
     const bus = makeBusFactorReport([{ file: 'a.ts', risk: 'high', dominantAuthorPercent: 80, uniqueAuthors: 2 }]);
     const age = makeAgeMapReport([{ file: 'a.ts', ageInDays: 50 }]);
 
-    const result = findCursedFiles(churn, bus, age, 20);
+    const result = findCursedFiles(churn, bus, age, makeEmptyForensics(), 20);
     expect(result.length).toBe(1);
     expect(result[0].curseScore).toBe(50);
   });
@@ -48,7 +52,7 @@ describe('findCursedFiles', () => {
     const bus = makeBusFactorReport([{ file: 'a.ts', risk: 'high', dominantAuthorPercent: 80, uniqueAuthors: 2 }]);
     const age = makeAgeMapReport([{ file: 'a.ts', ageInDays: 50 }]);
 
-    const result = findCursedFiles(churn, bus, age, 20);
+    const result = findCursedFiles(churn, bus, age, makeEmptyForensics(), 20);
     expect(result.length).toBe(0);
   });
 
@@ -58,7 +62,7 @@ describe('findCursedFiles', () => {
     const bus = makeBusFactorReport([{ file: 'a.ts', risk: 'critical', dominantAuthorPercent: 100, uniqueAuthors: 1 }]);
     const age = makeAgeMapReport([{ file: 'a.ts', ageInDays: 50 }]);
 
-    const result = findCursedFiles(churn, bus, age, 20);
+    const result = findCursedFiles(churn, bus, age, makeEmptyForensics(), 20);
     expect(result.length).toBe(0);
   });
 
@@ -67,7 +71,7 @@ describe('findCursedFiles', () => {
     const bus = makeBusFactorReport([{ file: 'a.ts', risk: 'critical', dominantAuthorPercent: 100, uniqueAuthors: 1 }]);
     const age = makeAgeMapReport([{ file: 'a.ts', ageInDays: 50 }]);
 
-    const result = findCursedFiles(churn, bus, age, 20);
+    const result = findCursedFiles(churn, bus, age, makeEmptyForensics(), 20);
     expect(result[0].curseScore).toBe(65);
   });
 
@@ -78,7 +82,7 @@ describe('findCursedFiles', () => {
     const bus = makeBusFactorReport([{ file: 'a.ts', risk: 'critical', dominantAuthorPercent: 100, uniqueAuthors: 1 }]);
     const age = makeAgeMapReport([{ file: 'a.ts', ageInDays: 5 }]);
 
-    const result = findCursedFiles(churn, bus, age, 50);
+    const result = findCursedFiles(churn, bus, age, makeEmptyForensics(), 50);
     // 35 + 30 + 10 = 75, capped at 100 (doesn't exceed here, but test the cap mechanism)
     expect(result[0].curseScore).toBeLessThanOrEqual(100);
   });
@@ -97,7 +101,7 @@ describe('findCursedFiles', () => {
       { file: 'high.ts', ageInDays: 50 },
     ]);
 
-    const result = findCursedFiles(churn, bus, age, 30);
+    const result = findCursedFiles(churn, bus, age, makeEmptyForensics(), 30);
     expect(result[0].file).toBe('high.ts');
     expect(result[0].curseScore).toBeGreaterThan(result[1].curseScore);
   });
@@ -107,7 +111,7 @@ describe('findCursedFiles', () => {
     const bus = makeBusFactorReport([{ file: 'a.ts', risk: 'critical', dominantAuthorPercent: 100, uniqueAuthors: 1 }]);
     const age = makeAgeMapReport([{ file: 'a.ts', ageInDays: 50 }]);
 
-    const result = findCursedFiles(churn, bus, age, 20);
+    const result = findCursedFiles(churn, bus, age, makeEmptyForensics(), 20);
     expect(result[0].reasons.length).toBeGreaterThanOrEqual(2);
     expect(result[0].reasons.some(r => r.toLowerCase().includes('commit'))).toBe(true);
     expect(result[0].reasons.some(r => r.toLowerCase().includes('author'))).toBe(true);
@@ -124,7 +128,46 @@ describe('findCursedFiles', () => {
     const bus = makeBusFactorReport([{ file: 'hidden.ts', risk: 'high', dominantAuthorPercent: 80, uniqueAuthors: 2 }]);
     const age = makeAgeMapReport([{ file: 'hidden.ts', ageInDays: 50 }]);
 
-    const result = findCursedFiles(churn, bus, age, 20);
+    const result = findCursedFiles(churn, bus, age, makeEmptyForensics(), 20);
     expect(result.length).toBe(0);
+  });
+
+  it('adds shame reason for files with shameScore >= 75', () => {
+    // Build a file that scores shame-qualifying (shameScore = 80)
+    const forensics: ForensicsReport = {
+      files: [{
+        file: 'src/auth.ts',
+        shameScore: 80,
+        rawShamePoints: 24,
+        shameCommitCount: 5,
+        topShameCommits: [],
+        dominantKeywords: ['revert'],
+      }],
+      shameLeaderboard: [{
+        file: 'src/auth.ts',
+        shameScore: 80,
+        rawShamePoints: 24,
+        shameCommitCount: 5,
+        topShameCommits: [],
+        dominantKeywords: ['revert'],
+      }],
+      totalShameCommits: 5,
+      summary: '',
+    };
+
+    // Give it enough churn to be a candidate and cross 50 with shame bonus
+    // churnScore > 75 = +35, shameScore >= 75 = +20 → total 55 (enough)
+    const churn = makeChurnReport([{
+      file: 'src/auth.ts',
+      commitCount: 20,
+      churnScore: 80,
+    }]);
+    const busFactor = makeBusFactorReport([]);
+    const ageMap = makeAgeMapReport([]);
+
+    const result = findCursedFiles(churn, busFactor, ageMap, forensics, 100);
+    const auth = result.find(f => f.file === 'src/auth.ts');
+    expect(auth).toBeDefined();
+    expect(auth!.reasons.some(r => r.includes('revert'))).toBe(true);
   });
 });
