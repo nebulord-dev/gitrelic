@@ -10,7 +10,7 @@ export interface LoreReport {
   ageMap: AgeMapReport;
   contributors: ContributorReport;
   cursedFiles: CursedFile[];
-  forensics: ForensicsReport;   // add this line
+  forensics: ForensicsReport;
 }
 
 // ─── Repo metadata ─────────────────────────────────────────────────────────────
@@ -118,7 +118,7 @@ export interface CursedFile {
   narrative: string;         // e.g. "This file has been touched by 7 authors in 89 commits — it's either the heart of the codebase or a ticking time bomb."
 }
 
-// ─── Forensics (commit message shame scoring) ──────────────────────────────
+// ─── Forensics (commit message shame scoring) ──────────────────────────────────
 
 export interface ShamefulCommit {
   hash: string;
