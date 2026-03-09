@@ -10,6 +10,7 @@ export interface LoreReport {
   ageMap: AgeMapReport;
   contributors: ContributorReport;
   cursedFiles: CursedFile[];
+  forensics: ForensicsReport;   // add this line
 }
 
 // ─── Repo metadata ─────────────────────────────────────────────────────────────
@@ -115,6 +116,32 @@ export interface CursedFile {
   authors: number;
   ageDays: number;
   narrative: string;         // e.g. "This file has been touched by 7 authors in 89 commits — it's either the heart of the codebase or a ticking time bomb."
+}
+
+// ─── Forensics (commit message shame scoring) ──────────────────────────────
+
+export interface ShamefulCommit {
+  hash: string;
+  message: string;
+  date: string;
+  shamePoints: number;   // weighted score from this commit's keywords
+  keywords: string[];    // which keywords fired
+}
+
+export interface FileForensics {
+  file: string;
+  shameScore: number;          // 0–100 normalized ratio
+  rawShamePoints: number;      // absolute weighted sum across all commits
+  shameCommitCount: number;    // how many commits had shame keywords
+  topShameCommits: ShamefulCommit[];   // top 3 by shamePoints
+  dominantKeywords: string[];          // most frequent shame keywords for this file
+}
+
+export interface ForensicsReport {
+  files: FileForensics[];
+  shameLeaderboard: FileForensics[];  // top 10 most shameful files
+  totalShameCommits: number;
+  summary: string;
 }
 
 // ─── Runner options ────────────────────────────────────────────────────────────
