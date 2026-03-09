@@ -19,7 +19,6 @@ import type { LoreReport, RunLoreOptions } from './types.js';
  * @param options - The options for running the analysis, including repository path, branch, and since date.
  * @Returns a LoreReport containing churn, bus factor, age map, contributors, cursed files, and forensics data. 
  */
-
 export async function runLore(options: RunLoreOptions): Promise<LoreReport> {
   const { repoPath, branch, since, onProgress } = options;
   const repoName = path.basename(repoPath);
