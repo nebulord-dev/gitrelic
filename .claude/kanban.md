@@ -9,6 +9,15 @@
 
 ### Testing & Infrastructure
 
+#### Configure oxc for linting
+Set up `oxlint` as the linter for the Lore monorepo:
+- Install `oxlint` in the workspace root
+- Add `lint` scripts to root and per-package `package.json`
+- Configure `.oxlintrc` with appropriate rules
+- Integrate with Turbo pipeline (`lint` task in `turbo.json`)
+- Fix or suppress any initial violations so lint passes clean
+- Document lint command in CLAUDE.md
+
 #### Add full test suite
 Set up Vitest across the monorepo. Priority test targets:
 - **Core analyzers**: Unit tests for `churn.ts`, `bus-factor.ts`, `age-map.ts`, `contributors.ts`, `cursed-files.ts` using mock commit data (no real git repos needed)
@@ -23,8 +32,9 @@ Set up Vitest across the monorepo. Priority test targets:
 
 ### Smarts & Analysis
 
-#### Commit message forensics
-Files with a high ratio of "fix", "hotfix", "revert", "oops" commits are cursed in a different way than high churn. Surface a "shame score" per file based on commit message sentiment.
+~~#### Commit message forensics~~
+~~Files with a high ratio of "fix", "hotfix", "revert", "oops" commits are cursed in a different way than high churn. Surface a "shame score" per file based on commit message sentiment.~~
+_(Done — see Done column)_
 
 #### Churn velocity
 Is churn accelerating or decelerating? A file with 40 commits but 30 in the last month is more alarming than one spread over 3 years. Track churn rate over time, not just total count.
@@ -96,6 +106,9 @@ _(nothing right now)_
 ---
 
 ## Done
+
+### Commit message forensics ("shame score")
+Three-tier weighted keyword scoring (`revert`/`hotfix`/`oops` = critical, `hack`/`workaround` = moderate, `fix`/`typo` = mild). Ratio-based per-file shame score (0–100). Feeds into cursed file scoring (+20 max bonus). `--shame` flag surfaces a dedicated leaderboard panel in the CLI. Full history recommended: `lore --since all --shame`.
 
 ### Adapt skills from Vitals to Lore
 Ported `/plan-feature`, `/prime`, `/review-project`, and `/sync-docs` skills. Replaced all Vitals-specific references with Lore equivalents (analyzers instead of runners, updated file paths, removed fixtures/scoring references).
