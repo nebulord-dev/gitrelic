@@ -48,6 +48,33 @@ Track lines-of-code per file across commits to show whether files are growing or
 #### "Dead code" candidates
 Files that are tracked, never churned, AND old. Not stale — *deliberately* untouched. Either solid infrastructure or forgotten debt.
 
+#### Coupling map ⭐ PRIORITIZE
+Files that always change together in the same commit are secretly coupled even if they don't import each other. If `auth.ts` and `session.ts` appear in the same commit 80% of the time, that's a hidden architectural dependency. Surface per-file "coupling partners" and an overall coupling score. Shows real architecture vs. intended architecture. Unique insight that no other git tool surfaces.
+
+#### Commit timing forensics
+When does this team actually write code? Surface late-night commits, weekend commits, and timezone clustering per file and per contributor. A file with 40% of its commits between 11pm–2am is a different kind of red flag than high churn. Could feed into curse scoring as a stress signal.
+
+#### Ownership drift
+Track *who* the dominant author is over time, not just cumulatively. A file owned by Alice for 2 years but now owned by Bob for the last 3 months tells a story about knowledge transfer (or lack of it). Especially powerful combined with bus factor data.
+
+#### Onboarding difficulty score
+Files that new contributors (first 90 days) never touch vs. files gated to veterans only. The veteran-only files are either the most critical or the most intimidating — useful for onboarding planning and identifying knowledge silos.
+
+#### Blast radius
+Which files, when they change, tend to cause changes in the most other files in the same commit? High blast-radius files are the real architectural load-bearers regardless of what the dependency graph says.
+
+#### Rewrite ratio
+Track insertions vs. deletions over time per file. High insertions *and* high deletions = lots of rewriting, not just growth. Different from churn — it's "this code never sticks" vs. "this code changes a lot." Good additional signal for curse scoring.
+
+#### "The Ghost Problem"
+Dedicated view for files owned >70% by someone whose last commit was >6 months ago. Not just bus factor — specifically "this person left and took the knowledge with them." More actionable than generic bus factor because it identifies the specific risk person.
+
+#### Test coverage proxy
+No actual coverage tooling needed — count `*.test.*` files relative to source files per directory. Directories with zero test files alongside high-churn source files are the highest-risk areas. Fast heuristic that pairs well with curse scoring.
+
+#### Release archaeology
+If the repo uses git tags for releases, show which files changed most between each release. Some files appear in every release; some only appear when things go wrong. Reveals which files are on the "hot path" of every deployment.
+
 ---
 
 ### Narrative & AI
@@ -57,6 +84,12 @@ Pass the full `LoreReport` to Claude API and get a 3-paragraph "story of this co
 
 #### "What happened here?"
 Click any file in the web dashboard and get an AI-generated explanation of its commit history narrative. Per-file deep dive powered by Claude.
+
+#### Refactor brief
+For the top cursed file, Claude generates a short brief: why it's cursed, what the likely root cause is based on commit patterns, and what a refactor approach might look like. Actionable output, not just a score.
+
+#### PR risk assessment (`lore-action`)  ⭐ PRIORITIZE
+GitHub Action that runs on every PR, looks up the touched files in a cached LoreReport, and posts a comment: "This PR touches 2 cursed files and one file owned 90% by someone who hasn't committed in 4 months." Brings Lore into the daily review workflow without anyone having to remember to run it. Highest practical value for teams.
 
 ---
 
@@ -78,8 +111,14 @@ Deep dive on a single file: full commit timeline, author breakdown, message fore
 #### Shame tab in web dashboard
 Add a sixth tab to the web dashboard for commit message forensics. The `forensics` data is already in every `LoreReport` — this is purely a UI addition. Show the shame leaderboard (file, shame score, dominant keywords, top offending commit messages) and a summary stat for total shame commits. Mirrors the `--shame` CLI panel but with more room to show details.
 
-#### Treemap visualization
-Directory tree colored by churn score. Instantly see which *parts* of the codebase are on fire. Visually stunning and immediately useful.
+#### Treemap visualization  ⭐ PRIORITIZE
+Directory tree colored by churn/curse score. Instantly see which *parts* of the codebase are on fire. Visually stunning and immediately useful — the single best "wow factor" feature for demos and team presentations.
+
+#### File coupling graph
+Force-directed graph where nodes are files and edges represent "changed together" frequency. Shows the real architecture vs. the intended architecture. Pairs with the coupling map analyzer.
+
+#### Contributor timeline
+Horizontal timeline showing when each contributor joined, their peak activity period, and when they went quiet. Makes team turnover and knowledge loss viscerally visible. Great for engineering manager conversations.
 
 #### Timeline chart
 Commits over time, stacked by contributor. See when people joined, left, went quiet.
@@ -94,11 +133,14 @@ Click any file anywhere in the dashboard to see its full commit history inline.
 #### Ignore list config (`lore.config.ts`)
 Make the ignore list configurable via a `lore.config.ts` file (extends the built-in defaults). Pairs with the existing "ignore list" backlog item.
 
+#### Pre-commit hook warning
+When committing to an already-cursed file, warn the developer: "⚠ auth.ts is a cursed file (score: 78/100). Proceed?" Tiny integration surface, high signal value. Installable via `lore install-hook`.
+
 #### `lore badge`
 Generate a health badge for your README (like coverage badges). Quick visual indicator of repo health.
 
 #### Export as HTML (`lore --format html`)
-Dump a standalone self-contained report HTML file you can share — no server needed.
+Dump a standalone self-contained report HTML file you can share — no server needed. No dashboard, no server — just a file you can email or drop in Slack.
 
 ---
 
