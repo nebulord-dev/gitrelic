@@ -13,6 +13,8 @@ describe('parseGitLog', () => {
     const commits = parseGitLog(raw);
     expect(commits).toHaveLength(1);
     expect(commits[0].hash).toBe('abc123');
+    expect(commits[0].authorEmail).toBe('alice@example.com');
+    expect(commits[0].authorName).toBe('Alice');
     expect(commits[0].message).toBe('fix: handle edge case');
     expect(commits[0].files).toEqual(['src/index.ts', 'src/utils.ts']);
     expect(commits[0].insertions).toBe(15);

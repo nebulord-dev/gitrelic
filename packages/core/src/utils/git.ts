@@ -15,7 +15,7 @@ export interface RawCommit {
 
 /**
  * Fetches all commits with their changed files using git log.
- * Format: hash|email|name|date then numstat lines then separator.
+ * Format: COMMIT|hash|email|name|date, then MSG|subject, then numstat lines.
  */
 export async function getAllCommits(
   repoPath: string,
