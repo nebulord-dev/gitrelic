@@ -12,6 +12,7 @@ Run `lore` in any git repository and get a narrative health report on the codeba
 - **Age map** — what's fresh, what's stale, what nobody dares touch
 - **Contributor stories** — who built what, who's still active, who's a ghost
 - **Cursed files** — the intersection of all of the above: high churn + concentrated ownership + age paradoxes
+- **Shame score** — commit message forensics: files with repeated reverts, hotfixes, and hacks
 
 ## Usage
 
@@ -30,6 +31,9 @@ lore --path ~/projects/my-app --since "6 months ago"
 
 # Output JSON for piping
 lore --path ~/projects/my-app --json > lore-report.json
+
+# Show commit message shame leaderboard
+lore --path ~/projects/my-app --shame
 ```
 
 ## How Lore scores files
@@ -38,7 +42,7 @@ Lore uses three scoring systems, each 0–100:
 
 ### Churn score
 How often a file has been modified relative to the most-committed file in the repo.
-A score of 100 means this file has been touched in the highest proportion of all commits.
+A score of 100 means this file is the most-modified file in the repo. Lower scores are proportional — a score of 50 means this file was modified half as often as the top file.
 
 ### Shame score (`--shame`)
 Based on commit message sentiment. Each commit touching a file is scanned for keywords:
