@@ -162,4 +162,20 @@ describe('analyzeParallelDev', () => {
     const result = analyzeParallelDev(commits, ['a.ts']);
     expect(result.files[0].narrative.length).toBeGreaterThan(0);
   });
+
+  it('uses high-severity narrative for score >= 70', () => {
+    // All 4 weeks have 4 authors → score should be very high (>=70)
+    const commits = Array.from({ length: 4 }, (_, week) =>
+      ['alice', 'bob', 'charlie', 'dave'].map((name, i) =>
+        makeCommit({
+          hash: `w${week}a${i}`,
+          authorEmail: `${name}@x.com`,
+          date: weekDate(week),
+          files: ['hot.ts'],
+        })
+      )
+    ).flat();
+    const result = analyzeParallelDev(commits, ['hot.ts']);
+    expect(result.files[0].narrative).toContain('correlates with increased defect risk');
+  });
 });
