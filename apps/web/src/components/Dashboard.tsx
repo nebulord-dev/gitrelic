@@ -194,7 +194,7 @@ function CursedTab({ report }: { report: LoreReport }) {
           <p className="text-gray-400 text-sm mb-3 italic">"{f.narrative}"</p>
           <div className="flex flex-wrap gap-2">
             {f.reasons.map((r, i) => (
-              <span key={i} className="bg-red-950 text-red-300 text-xs px-2 py-1 rounded">{r}</span>
+              <span key={i} className={`text-xs px-2 py-1 rounded ${reasonBadge(r)}`}>{r}</span>
             ))}
           </div>
           <div className="mt-3 flex gap-4 text-xs text-gray-500">
@@ -280,6 +280,17 @@ function ageColor(status: string) {
     case 'ancient': return 'text-red-400';
     default: return 'text-gray-400';
   }
+}
+
+function reasonBadge(reason: string): string {
+  const r = reason.toLowerCase();
+  if (r.includes('parallel development')) return 'bg-purple-950 text-purple-300';
+  if (r.includes('shame') || r.includes('revert') || r.includes('keeps breaking')) return 'bg-pink-950 text-pink-300';
+  if (r.includes('author') || r.includes('ownership')) return 'bg-amber-950 text-amber-300';
+  if (r.includes('modified') || r.includes('commit')) return 'bg-orange-950 text-orange-300';
+  if (r.includes('changing') || r.includes('core file')) return 'bg-cyan-950 text-cyan-300';
+  if (r.includes('coordination')) return 'bg-blue-950 text-blue-300';
+  return 'bg-red-950 text-red-300';
 }
 
 function ageBorder(status: string) {
