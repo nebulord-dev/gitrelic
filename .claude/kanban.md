@@ -7,6 +7,21 @@
 
 ## Backlog
 
+### Rename to Fossick
+
+Rename the project from Lore to Fossick across the entire monorepo. The npm package name `fossick` has already been claimed. This is a mechanical find-and-replace — no architectural changes needed.
+
+- Package names: `@lore/core` → `@fossick/core`, `@lore/cli` → `@fossick/cli`, `@lore/web` → `@fossick/web`
+- CLI binary name in `apps/cli/package.json` (`bin` field): `lore` → `fossick`
+- All internal imports referencing `@lore/*`
+- `runLore()` → `runFossick()` in `runner.ts`, `types.ts`, and all call sites
+- `LoreReport` → `FossickReport` and all other `Lore*` type names
+- `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/USAGE.md` — all prose references
+- `.claude/kanban.md` and `.claude/skills/` — update skill descriptions and file paths
+- npm publish under the new package name once renamed
+
+---
+
 ### Testing & Infrastructure
 
 #### Configure oxc for linting
@@ -114,6 +129,30 @@ Parse `Co-authored-by:` trailer lines from commit messages (standard GitHub/GitL
 
 #### `--since` comparison mode
 `lore --since 30d vs 90d` — compare two time windows to show what's getting better vs. worse. A file that was hot 90 days ago but calm recently is recovering. A file that was fine 90 days ago but hot recently is deteriorating. Directional health, not just snapshot health.
+
+---
+
+### Solo Developer Insights
+
+A suite of features for single-author repos where multi-author signals (bus factor, parallel dev) are meaningless. Instead, surfaces self-knowledge: your habits, your trajectory, your relationship with your own code over time. All built on existing `RawCommit` data — no new git primitives needed. Full ISO timestamps (`%aI`) are already captured per commit.
+
+#### Personal coding rhythm
+Parse commit timestamps to surface when you actually write code: hour-of-day distribution, most productive weekday, night-owl vs. early-bird classification. "73% of your commits happen after 8pm. Wednesday is your most productive day." Genuinely personal data you can't get anywhere else — high "wow factor," great for screenshots.
+
+#### Velocity shape
+Commits-per-week over the project's lifetime, charted as a curve. The shape tells the story of the project: initial burst, steady feature building, maintenance plateau, dead period, revival. Solo projects have very recognizable lifecycle shapes. Seeing your own project's trajectory is oddly motivating (or humbling).
+
+#### Project phase detection
+Detect what phase the project is currently in based on recent commit patterns: **Building** (new files, feat commits, growing LOC), **Polishing** (high fix/refactor ratio, LOC stabilizing), **Maintenance** (low velocity, mostly fixes), **Revival** (dead period followed by sudden activity). A simple current-phase label is surprisingly useful self-knowledge.
+
+#### Session analytics
+Cluster commits within a configurable time window (default: 2 hours) into "sessions." Surface average session length, longest sessions, time-of-day session patterns, and which files tend to be worked on in long vs. short sessions. Gives a feel for how you actually work — sprint-and-commit vs. slow-and-steady.
+
+#### "Files you keep second-guessing"
+For a solo dev, high churn means *you* kept changing your mind — no coordination overhead, no other authors. These files are where your design instincts struggled, where the problem was harder than expected, or where requirements kept shifting. Worth surfacing with solo-specific framing separate from the multi-author churn interpretation.
+
+#### Commit message trend over time
+Plot the ratio of `fix:`/`hotfix:`/`revert:` vs. `feat:` commits on a per-week sliding window. Are you in a creative/building phase or a firefighting phase right now? A rising fix-ratio trend is a signal the project is under strain. The trend over time is more interesting than the static shame score.
 
 ---
 
