@@ -11,7 +11,8 @@
 
 Rename the project from Lore to Fossick across the entire monorepo. The npm package name `fossick` has already been claimed. This is a mechanical find-and-replace — no architectural changes needed.
 
-- Package names: `@lore/core` → `@fossick/core`, `@lore/cli` → `@fossick/cli`, `@lore/web` → `@fossick/web`
+- Internal workspace packages: `@lore/core` → `@fossick/core`, `@lore/web` → `@fossick/web` (scoped, never published directly)
+- CLI package: `@lore/cli` → `fossick` (unscoped — enables `npx fossick --web`)
 - CLI binary name in `apps/cli/package.json` (`bin` field): `lore` → `fossick`
 - All internal imports referencing `@lore/*`
 - `runLore()` → `runFossick()` in `runner.ts`, `types.ts`, and all call sites
