@@ -1,12 +1,13 @@
-import type { ChurnReport, BusFactorReport, AgeMapReport, ForensicsReport } from '../types.js';
+import type { ChurnReport, BusFactorReport, AgeMapReport, ForensicsReport, ParallelDevReport } from '../types.js';
 import type { CursedFile } from '../types.js';
 
-/** 
+/**
  * Analyzes the repository to identify "cursed" files that exhibit high churn, low bus factor, and/or age paradox characteristics.
  * @param churn - The churn report for the repository.
  * @param busFactor - The bus factor report for the repository.
  * @param ageMap - The age map report for the repository.
  * @param forensics - The forensics report for the repository.
+ * @param parallelDev - The parallel development report for the repository.
  * @param totalCommits - The total number of commits in the repository.
  * @returns An array of cursed files with their associated metrics and narrative.
  */
@@ -15,6 +16,7 @@ export function findCursedFiles(
   busFactor: BusFactorReport,
   ageMap: AgeMapReport,
   forensics: ForensicsReport,
+  parallelDev: ParallelDevReport,
   totalCommits: number
 ): CursedFile[] {
   // Index the other reports by file for O(1) lookups
@@ -22,11 +24,13 @@ export function findCursedFiles(
   const busFactorByFile = new Map(busFactor.files.map(f => [f.file, f]));
   const ageByFile = new Map(ageMap.files.map(f => [f.file, f]));
   const forensicsByFile = new Map(forensics.files.map(f => [f.file, f]));
+  const parallelByFile = new Map(parallelDev.files.map(f => [f.file, f]));
 
   const candidates = new Set([
     ...churn.topFiles.map(f => f.file),
     ...busFactor.criticalFiles.map(f => f.file),
     ...forensics.shameLeaderboard.map(f => f.file),
+    ...parallelDev.hotFiles.map(f => f.file),
   ]);
 
   const cursed: CursedFile[] = [];
@@ -87,6 +91,21 @@ export function findCursedFiles(
       } else if (f.shameScore >= 25) {
         reasons.push('Notable pattern of shame commits');
         curseScore += 6;
+      }
+    }
+
+    // Parallel development risk
+    const pd = parallelByFile.get(file);
+    if (pd) {
+      if (pd.parallelScore >= 70) {
+        reasons.push(`Heavy parallel development — ${pd.parallelWeeks} weeks of concurrent multi-author work`);
+        curseScore += 20;
+      } else if (pd.parallelScore >= 40) {
+        reasons.push('Notable parallel development activity');
+        curseScore += 10;
+      } else if (pd.parallelScore >= 20) {
+        reasons.push('Some parallel development detected');
+        curseScore += 5;
       }
     }
 
