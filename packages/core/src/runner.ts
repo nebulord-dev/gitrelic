@@ -12,6 +12,7 @@ import { analyzeAgeMap } from './analyzers/age-map.js';
 import { analyzeContributors } from './analyzers/contributors.js';
 import { findCursedFiles } from './analyzers/cursed-files.js';
 import { analyzeForensics } from './analyzers/forensics.js';
+import { analyzeParallelDev } from './analyzers/parallel-dev.js';
 import type { LoreReport, RunLoreOptions } from './types.js';
 
 /**
@@ -65,8 +66,11 @@ export async function runLore(options: RunLoreOptions): Promise<LoreReport> {
   onProgress?.('Analyzing commit message forensics...');
   const forensics = analyzeForensics(commits, trackedFiles);
 
+  onProgress?.('Detecting parallel development...');
+  const parallelDev = analyzeParallelDev(commits, trackedFiles);
+
   onProgress?.('Finding cursed files...');
-  const cursedFiles = findCursedFiles(churn, busFactors, ageMap, forensics, commits.length);
+  const cursedFiles = findCursedFiles(churn, busFactors, ageMap, forensics, parallelDev, commits.length);
 
   return {
     timestamp: new Date().toISOString(),
@@ -88,5 +92,6 @@ export async function runLore(options: RunLoreOptions): Promise<LoreReport> {
     contributors,
     cursedFiles,
     forensics,
+    parallelDev,
   };
 }
