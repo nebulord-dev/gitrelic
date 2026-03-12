@@ -1,4 +1,5 @@
 export { runLore } from './runner.js';
+export { analyzeParallelDev } from './analyzers/parallel-dev.js';
 export type {
   LoreReport as LoreReport,
   RunLoreOptions,
@@ -18,4 +19,7 @@ export type {
   ForensicsReport,
   FileForensics,
   ShamefulCommit,
+  ParallelDevReport,
+  FileParallelDev,
+  ParallelWindow,
 } from './types.js';

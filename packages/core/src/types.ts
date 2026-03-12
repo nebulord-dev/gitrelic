@@ -11,6 +11,7 @@ export interface LoreReport {
   contributors: ContributorReport;
   cursedFiles: CursedFile[];
   forensics: ForensicsReport;
+  parallelDev: ParallelDevReport;
 }
 
 // ─── Repo metadata ─────────────────────────────────────────────────────────────
@@ -141,6 +142,32 @@ export interface ForensicsReport {
   files: FileForensics[];
   shameLeaderboard: FileForensics[];  // top 10 most shameful files
   totalShameCommits: number;
+  summary: string;
+}
+
+// ─── Parallel development ─────────────────────────────────────────────────────
+
+export interface ParallelWindow {
+  weekStart: string;           // ISO date of the Monday starting this week
+  authors: string[];           // distinct authors who committed that week
+  commitCount: number;         // total commits from all authors that week
+}
+
+export interface FileParallelDev {
+  file: string;
+  parallelScore: number;       // 0–100
+  totalActiveWeeks: number;    // weeks where any commit happened
+  parallelWeeks: number;       // weeks where 2+ distinct authors committed
+  peakAuthors: number;         // max distinct authors in a single week
+  peakWindow: ParallelWindow;  // the week with the most author overlap
+  topWindows: ParallelWindow[];// top 3 parallel windows by author count
+  narrative: string;           // human-readable summary
+}
+
+export interface ParallelDevReport {
+  files: FileParallelDev[];
+  hotFiles: FileParallelDev[]; // top 10 by parallelScore
+  totalParallelFiles: number;  // files with any parallel activity
   summary: string;
 }
 
