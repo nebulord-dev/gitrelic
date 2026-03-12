@@ -67,6 +67,12 @@ Files that are tracked, never churned, AND old. Not stale — *deliberately* unt
 #### Dependency graph (`madge` integration)
 Wrap `madge` to build a static import/dependency graph: which files import which, and where circular dependencies exist. This is *structural* coupling (what the code declares) vs. the coupling map's *temporal* coupling (what git history reveals). The two together tell a complete story — temporal coupling with no import relationship is the most surprising hidden dependency. Surface circular deps as a dedicated warning, and expose the graph data for a force-directed visualization in the web dashboard. Pairs directly with the coupling map analyzer.
 
+#### Parallel development v2: sustained vs. spike detection
+Distinguish chronic parallel development (8 of 12 weeks) from one-off spikes (1 intense week). The sustained case is the real Tornhill red flag. Add `parallelPattern: 'chronic' | 'spike' | 'occasional'` classification. Also: configurable `--parallel-window` flag (default 7d, support 3d/14d), commit proximity scoring for finer-grained severity. Design spec: `docs/plans/2026-03-11-parallel-development-design.md` § V2 Roadmap.
+
+#### `--parallel` CLI panel
+Dedicated CLI panel for parallel development data (like `--shame` for forensics). Show the parallel dev leaderboard with scores, peak windows, and narratives.
+
 #### Coupling map ⭐ PRIORITIZE
 Files that always change together in the same commit are secretly coupled even if they don't import each other. If `auth.ts` and `session.ts` appear in the same commit 80% of the time, that's a hidden architectural dependency. Surface per-file "coupling partners" and an overall coupling score. Shows real architecture vs. intended architecture. Unique insight that no other git tool surfaces.
 
@@ -170,6 +176,9 @@ Scatter plot: X-axis = churn, Y-axis = complexity (LOC), dot size = number of au
 #### Shame tab in web dashboard
 Add a sixth tab to the web dashboard for commit message forensics. The `forensics` data is already in every `LoreReport` — this is purely a UI addition. Show the shame leaderboard (file, shame score, dominant keywords, top offending commit messages) and a summary stat for total shame commits. Mirrors the `--shame` CLI panel but with more room to show details.
 
+#### Knowledge map visualization ⭐ PRIORITIZE
+Tornhill-style treemap: files as circles, sized by LOC (requires cloc integration), colored by dominant author (from bus factor data), grouped by directory. Parallel development data overlays as a heat ring or border glow around contested files. Connects "who owns what" with "where is concurrent work happening." Great for onboarding ("who do I ask about feature X?"), knowledge transfer planning, and team health. See screenshot from *Software Design X-Rays* for reference. Design spec: `docs/plans/2026-03-11-parallel-development-design.md` § V2 Roadmap.
+
 #### Treemap visualization ⭐ PRIORITIZE
 Directory tree colored by churn/curse score. Instantly see which *parts* of the codebase are on fire. Visually stunning and immediately useful — the single best "wow factor" feature for demos and team presentations.
 - Study `git-truck` (open source, Node/React) before building — it solves the same problem and is worth mining for implementation ideas on treemap layout with git data.
@@ -229,6 +238,12 @@ _(nothing right now)_
 ---
 
 ## Done
+
+### Parallel development analyzer
+Detects temporal concurrency per file — multiple authors committing in the same calendar week. Uses author-week matrix approach with severity-weighted scoring (`max(1.0, min(avg_authors/2, 2.0))`). Produces standalone `ParallelDevReport` on `LoreReport` and feeds into cursed file scoring (+5/+10/+20 bonus). 11 unit tests. Inspired by Tornhill/Meneely research on parallel work correlating with defect rates. V2 roadmap: sustained vs. spike detection, configurable time windows, knowledge map visualization, defect correlation. Design spec: `docs/plans/2026-03-11-parallel-development-design.md`.
+
+### Color-coded cursed file reason tags (web dashboard)
+Each signal type on cursed file cards now has a distinct color: orange (churn), amber (ownership), purple (parallel dev), pink (shame), cyan (age paradox), blue (coordination). Replaces the previous all-red styling.
 
 ### Commit message forensics ("shame score")
 Three-tier weighted keyword scoring (`revert`/`hotfix`/`oops` = critical, `hack`/`workaround` = moderate, `fix`/`typo` = mild). Ratio-based per-file shame score (0–100). Feeds into cursed file scoring (+20 max bonus). `--shame` flag surfaces a dedicated leaderboard panel in the CLI. Full history recommended: `lore --since all --shame`.
