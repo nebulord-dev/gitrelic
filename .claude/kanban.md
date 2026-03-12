@@ -36,6 +36,22 @@ Set up Vitest across the monorepo. Priority test targets:
 ~~Files with a high ratio of "fix", "hotfix", "revert", "oops" commits are cursed in a different way than high churn. Surface a "shame score" per file based on commit message sentiment.~~
 _(Done — see Done column)_
 
+#### Hotspot score ⭐ PRIORITIZE
+The core Tornhill formula: `churn × complexity = hotspot`. A file that changes constantly AND is complex is the highest-risk file in the codebase — not just high churn, not just high complexity, but the *product* of both. Implement as a composite 0–100 score per file. This is the single most actionable metric in behavioral code analysis and the intellectual backbone of the whole tool. Feeds directly into cursed file scoring, the treemap visualization, and the commit graph heat overlay.
+- Use lines-of-code as a complexity proxy initially (no AST parsing needed)
+- Later: swap in cyclomatic complexity via `typhonjs-escomplex` for JS/TS files
+- Surface as a dedicated "Hotspots" section in both CLI and web dashboard
+
+#### `cloc` integration
+Wrap `cloc` (or the npm port `cloc`) to get language breakdown and LOC per file across the repo. Feeds:
+- Hotspot score (LOC as complexity proxy)
+- "What is this repo made of" stat block (languages, % breakdown)
+- Per-file LOC displayed in file drill-down views
+- LOC growth over time when combined with git history
+
+#### `git-sizer` integration
+Wrap `git-sizer` (GitHub's repo health CLI) to surface repo-level health metrics: largest blobs, tree depth, pack efficiency, history size. Not per-file — this is repo-wide infrastructure health. Add a "Repo Health" tab to the web dashboard. Flags repos with bloated history, giant binary files, or pathological tree structures that slow down git operations.
+
 #### Churn velocity
 Is churn accelerating or decelerating? A file with 40 commits but 30 in the last month is more alarming than one spread over 3 years. Track churn rate over time, not just total count.
 
@@ -47,6 +63,9 @@ Track lines-of-code per file across commits to show whether files are growing or
 
 #### "Dead code" candidates
 Files that are tracked, never churned, AND old. Not stale — *deliberately* untouched. Either solid infrastructure or forgotten debt.
+
+#### Dependency graph (`madge` integration)
+Wrap `madge` to build a static import/dependency graph: which files import which, and where circular dependencies exist. This is *structural* coupling (what the code declares) vs. the coupling map's *temporal* coupling (what git history reveals). The two together tell a complete story — temporal coupling with no import relationship is the most surprising hidden dependency. Surface circular deps as a dedicated warning, and expose the graph data for a force-directed visualization in the web dashboard. Pairs directly with the coupling map analyzer.
 
 #### Coupling map ⭐ PRIORITIZE
 Files that always change together in the same commit are secretly coupled even if they don't import each other. If `auth.ts` and `session.ts` appear in the same commit 80% of the time, that's a hidden architectural dependency. Surface per-file "coupling partners" and an overall coupling score. Shows real architecture vs. intended architecture. Unique insight that no other git tool surfaces.
@@ -75,6 +94,21 @@ No actual coverage tooling needed — count `*.test.*` files relative to source 
 #### Release archaeology
 If the repo uses git tags for releases, show which files changed most between each release. Some files appear in every release; some only appear when things go wrong. Reveals which files are on the "hot path" of every deployment.
 
+#### Technical debt introduction ("first blood")
+For each currently-cursed or high-hotspot file, identify *who* wrote the first commit that started its trajectory — the original author of the now-problematic code. Not to blame, but to identify who holds the deepest tribal knowledge about why it exists. That person is the best person to fix it or document it. Surface as "original author" in the file drill-down.
+
+#### Commit message tone over time
+Beyond the static shame score — is the tone getting *worse*? A file with increasing frequency of "fix", "hotfix", "revert" commits over recent months is a codebase in distress right now. Plot shame score over time per file. A rising shame trajectory is more alarming than a historically high but stable one.
+
+#### Knowledge concentration index
+Repo-wide: what percentage of files are "single-author dominant" (>80% commits from one person)? High concentration = fragile team. Surface as a top-level health metric alongside bus factor. Useful for engineering managers doing risk assessments before someone leaves.
+
+#### Co-author analysis
+Parse `Co-authored-by:` trailer lines from commit messages (standard GitHub/GitLab convention for pair programming and AI-assisted commits). Surface who actually collaborates with whom, which files get pair-programmed, and whether AI-assisted commits correlate with lower or higher future churn.
+
+#### `--since` comparison mode
+`lore --since 30d vs 90d` — compare two time windows to show what's getting better vs. worse. A file that was hot 90 days ago but calm recently is recovering. A file that was fine 90 days ago but hot recently is deteriorating. Directional health, not just snapshot health.
+
 ---
 
 ### Narrative & AI
@@ -88,8 +122,14 @@ Click any file in the web dashboard and get an AI-generated explanation of its c
 #### Refactor brief
 For the top cursed file, Claude generates a short brief: why it's cursed, what the likely root cause is based on commit patterns, and what a refactor approach might look like. Actionable output, not just a score.
 
-#### PR risk assessment (`lore-action`)  ⭐ PRIORITIZE
+#### PR risk assessment (`lore-action`) ⭐ PRIORITIZE
 GitHub Action that runs on every PR, looks up the touched files in a cached LoreReport, and posts a comment: "This PR touches 2 cursed files and one file owned 90% by someone who hasn't committed in 4 months." Brings Lore into the daily review workflow without anyone having to remember to run it. Highest practical value for teams.
+
+#### Commit graph annotation layer
+Overlay Lore data directly on the commit graph visualization. Hotspot spikes, ownership changes, shame-score events, and bus-factor warnings appear as markers on the graph timeline. The commit graph becomes a *navigable diagnostic surface*, not just a pretty picture. Click a spike on the graph to see which files caused it and why Lore flagged them.
+
+#### Team narrative report
+AI-generated per-team (or per-contributor) narrative: "Alice owns 60% of the auth subsystem, has been the primary author for 2 years, and her files have the lowest churn in the repo. Bob joined 4 months ago and has touched 12 high-hotspot files — either he's doing important cleanup or spreading risk." Designed to be shared in engineering all-hands or team retrospectives.
 
 ---
 
@@ -104,15 +144,35 @@ Live TUI that updates as you commit. Real-time churn tracking in the terminal.
 #### `lore blame <file>`
 Deep dive on a single file: full commit timeline, author breakdown, message forensics.
 
+#### `lore graph`
+Render the commit DAG in the terminal — branch lanes, colored by hotspot severity. Each commit dot is colored by its churn impact. Hotspot commits glow. Wraps `git log --graph` with Lore enrichment layered on top. The terminal version of the web commit graph.
+
+#### `lore hotspot [--top N]`
+Dedicated CLI command that outputs the top N hotspot files ranked by the churn × complexity composite score. Separate from the general `lore` report — fast, focused, actionable. Pairs well with `lore blame <file>` for drilling in.
+
+#### `lore team`
+Contributor-focused report: bus factor, ghost files, knowledge concentration index, ownership drift summary. Designed for the engineering manager audience rather than the individual developer.
+
 ---
 
 ### Web Dashboard
 
+#### Commit graph visualization ⭐ PRIORITIZE
+The GitKraken-style DAG — colored branch lanes, commit dots, merge lines. Built with `d3-dag` for layout and custom SVG rendering for full control. Nodes colored by hotspot score (cool → hot). Click any commit to see which files changed, their Lore scores at that point in time, and the commit message. This is the visual centerpiece of the web dashboard — the thing people screenshot and share. Makes Lore immediately legible to anyone who's used a git GUI before.
+- Data: `git log --all --pretty=format:"%H|%P|%an|%at|%s" --topo-order`
+- Layout: `d3-dag` handles lane assignment
+- Render: custom SVG — full control over color, dot size, heat overlays
+- Interaction: click commit → file list with Lore scores; hover → tooltip with author, date, shame score
+
+#### Hotspot matrix
+Scatter plot: X-axis = churn, Y-axis = complexity (LOC), dot size = number of authors, dot color = shame score. Every file in the repo plotted simultaneously. The top-right quadrant (high churn, high complexity) is the danger zone. Instantly shows the shape of the codebase's risk. This is the single most information-dense visualization Lore can produce and the one most directly derived from Tornhill's methodology.
+
 #### Shame tab in web dashboard
 Add a sixth tab to the web dashboard for commit message forensics. The `forensics` data is already in every `LoreReport` — this is purely a UI addition. Show the shame leaderboard (file, shame score, dominant keywords, top offending commit messages) and a summary stat for total shame commits. Mirrors the `--shame` CLI panel but with more room to show details.
 
-#### Treemap visualization  ⭐ PRIORITIZE
+#### Treemap visualization ⭐ PRIORITIZE
 Directory tree colored by churn/curse score. Instantly see which *parts* of the codebase are on fire. Visually stunning and immediately useful — the single best "wow factor" feature for demos and team presentations.
+- Study `git-truck` (open source, Node/React) before building — it solves the same problem and is worth mining for implementation ideas on treemap layout with git data.
 
 #### File coupling graph
 Force-directed graph where nodes are files and edges represent "changed together" frequency. Shows the real architecture vs. the intended architecture. Pairs with the coupling map analyzer.
@@ -124,7 +184,16 @@ Horizontal timeline showing when each contributor joined, their peak activity pe
 Commits over time, stacked by contributor. See when people joined, left, went quiet.
 
 #### Drill into a file
-Click any file anywhere in the dashboard to see its full commit history inline.
+Click any file anywhere in the dashboard to see its full commit history inline. When code snippets are shown, consider `sourcegraph/codeintellify` to add hover tooltips with code intelligence (go-to-definition, type info) — IDE-like feel without building it from scratch.
+
+#### Repo health tab
+Top-level health dashboard powered by `git-sizer` integration. Blob sizes, history bloat, pack efficiency. The "infrastructure layer" complement to the code-behavior metrics everywhere else in Lore. Green/amber/red status indicators. Something you'd check once when onboarding to a new repo.
+
+#### Language breakdown panel
+Visual breakdown of what the repo is made of — languages, LOC per language, file count per language — powered by `cloc` integration. Surprisingly absent from most git analytics tools. Immediately useful context for everything else on the dashboard.
+
+#### Hotspot score leaderboard
+Dedicated panel showing files ranked by the churn × complexity composite. Not just cursed files — specifically the Tornhill hotspot formula. Separate from the existing cursed file view because the formula and interpretation are different. Most engineers will understand "high churn AND high complexity = problem" immediately.
 
 ---
 
@@ -141,6 +210,15 @@ Generate a health badge for your README (like coverage badges). Quick visual ind
 
 #### Export as HTML (`lore --format html`)
 Dump a standalone self-contained report HTML file you can share — no server needed. No dashboard, no server — just a file you can email or drop in Slack.
+
+#### `lore init` setup wizard
+Interactive first-run wizard: detects repo age, suggests appropriate `--since` window, asks if you want the pre-commit hook, generates a `lore.config.ts` with sensible defaults. Removes the "now what?" moment after install.
+
+#### VS Code extension
+Surface Lore scores inline in the editor — hotspot severity as a gutter indicator, shame score in the file tab, bus factor warning when you open a ghost file. Passive ambient awareness without running the CLI. The eventual distribution channel that gets Lore in front of the most developers with the least friction.
+
+#### Shareable snapshot (`lore share`)
+Generate a static snapshot of the current `LoreReport` as a hosted URL (or self-hostable JSON + HTML bundle). "Here's the lore of our repo as of today" that you can share with stakeholders who don't have git access. Privacy-aware: strips author emails, optionally anonymizes contributor names.
 
 ---
 

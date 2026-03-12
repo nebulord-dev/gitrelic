@@ -83,6 +83,20 @@ Provide a concise summary covering:
 - pnpm workspaces + Turbo for build orchestration
 - tsup for bundling core/cli; Vite for web
 
+### Sister Project: Vitals
+
+Lore's sister project lives at `/Users/danteel/Desktop/dev/vitals`. Both share the same stack and are built by the same developer. **Keep them aligned.**
+
+Key libraries Vitals has that Lore will need as features grow:
+- `@xyflow/react` + `dagre` — graph visualization, already used for dependency graph. Port to Lore when building the commit graph or coupling map.
+- `react-syntax-highlighter` — code display with syntax highlighting. Port when building file drill-down.
+- `madge` — static import/dependency analysis with circular dep detection. Port to Lore `@lore/core` when building the dependency graph analyzer.
+
+Stack drift to watch:
+- Vitals is on React 19; Lore is on React 18 — upgrade Lore when convenient
+- Vitals Turbo `2.8.14`; Lore `2.3.3` — upgrade Lore root devDependency
+- Vitals has full ESLint config; Lore lint scripts exist but ESLint not yet wired up
+
 ### Current State
 
 - Active branch and recent commits

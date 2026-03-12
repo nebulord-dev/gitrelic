@@ -12,8 +12,8 @@
     "test": "pnpm -r test",
     "test:coverage": "pnpm -r test:coverage",
     "test:web": "pnpm --filter @lore/web  test:ui",
-    "test:cli": "pnpm --filter @vitals/cli test:ui",
-    "test:core": "pnpm --filter @vitals/core test:ui"
+    "test:cli": "pnpm --filter @lore/cli test:ui",
+    "test:core": "pnpm --filter @lore/core test:ui"
   },
   "devDependencies": {
     "turbo": "^2.3.3",
