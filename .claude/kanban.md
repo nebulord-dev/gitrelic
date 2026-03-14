@@ -122,7 +122,9 @@ Parse `Co-authored-by:` trailer lines from commit messages (standard GitHub/GitL
 #### `--since` comparison mode
 `codelore --since 30d vs 90d` — compare two time windows to show what's getting better vs. worse. A file that was hot 90 days ago but calm recently is recovering. A file that was fine 90 days ago but hot recently is deteriorating. Directional health, not just snapshot health.
 
-#### Team dynamics & code quality correlation ⭐ PRIORITIZE
+#### Team dynamics & code quality correlation ⭐ PRIORITIZE — NEEDS DEDICATED DESIGN SESSION
+Large feature (4 sub-analyzers + 5 web visualizations + CLI companion). Requires its own brainstorming → spec → plan cycle. Depends on churn velocity and rewrite ratio analyzers (being built now).
+
 Analyze how developer and team interactions influence code quality over time. Two parts: the **analysis engine** (core analyzers that extract the signals) and the **visualization layer** (web dashboard views that make the patterns visceral and explorable).
 
 **Part 1 — Core analyzers:**
