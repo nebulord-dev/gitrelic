@@ -9,7 +9,7 @@ Phases run roughly sequentially. Phase 2 can begin once Phase 1 core tests are i
 
 ```
 Phase 1 — Hygiene & Rename     ██████████████████░░░░░░░░░░░░░░░
-Phase 2 — Core Analyzers       ░░░░██████████████████░░░░░░░░░░  ← starts mid-P1
+Phase 2 — Core Analyzers       ░░░░██████████████████████████░░  ← starts mid-P1
 Phase 3 — Visual Storytelling   ░░░░░░░░░░██████████████░░░░░░░░  ← starts mid-P2
 Phase 4 — Composite Intelligence░░░░░░░░░░░░░░░░████████████░░░░
 Phase 5 — AI, CLI & Distribution░░░░░░░░░░░░░░░░░░░░░░░░████████
@@ -60,8 +60,7 @@ _(Done — see Done column)_
 #### `git-sizer` integration
 Wrap `git-sizer` (GitHub's repo health CLI) to surface repo-level health metrics: largest blobs, tree depth, pack efficiency, history size. Not per-file — this is repo-wide infrastructure health. Add a "Repo Health" tab to the web dashboard. Flags repos with bloated history, giant binary files, or pathological tree structures that slow down git operations.
 
-#### Churn velocity
-Is churn accelerating or decelerating? A file with 40 commits but 30 in the last month is more alarming than one spread over 3 years. Track churn rate over time, not just total count.
+~~#### Churn velocity~~ _(Done — see Done column)_
 
 #### Rename tracking
 Follow files through renames so churn/age history isn't lost when someone does `mv auth.ts authentication.ts`. Use git's `--follow` or `--find-renames` to stitch history across renames.
@@ -69,8 +68,7 @@ Follow files through renames so churn/age history isn't lost when someone does `
 #### Complexity over time
 Track lines-of-code per file across commits to show whether files are growing or shrinking. Growing + high churn = compounding risk.
 
-#### "Dead code" candidates
-Files that are tracked, never churned, AND old. Not stale — *deliberately* untouched. Either solid infrastructure or forgotten debt.
+~~#### "Dead code" candidates~~ _(Done — see Done column)_
 
 #### Dependency graph (`madge` integration)
 Wrap `madge` to build a static import/dependency graph: which files import which, and where circular dependencies exist. This is *structural* coupling (what the code declares) vs. the coupling map's *temporal* coupling (what git history reveals). The two together tell a complete story — temporal coupling with no import relationship is the most surprising hidden dependency. Surface circular deps as a dedicated warning, and expose the graph data for a force-directed visualization in the web dashboard. Pairs directly with the coupling map analyzer.
@@ -92,11 +90,9 @@ Track *who* the dominant author is over time, not just cumulatively. A file owne
 #### Onboarding difficulty score
 Files that new contributors (first 90 days) never touch vs. files gated to veterans only. The veteran-only files are either the most critical or the most intimidating — useful for onboarding planning and identifying knowledge silos.
 
-#### Blast radius
-Which files, when they change, tend to cause changes in the most other files in the same commit? High blast-radius files are the real architectural load-bearers regardless of what the dependency graph says.
+~~#### Blast radius~~ _(Done — see Done column)_
 
-#### Rewrite ratio
-Track insertions vs. deletions over time per file. High insertions *and* high deletions = lots of rewriting, not just growth. Different from churn — it's "this code never sticks" vs. "this code changes a lot." Good additional signal for curse scoring.
+~~#### Rewrite ratio~~ _(Done — see Done column)_
 
 #### "The Ghost Problem"
 Dedicated view for files owned >70% by someone whose last commit was >6 months ago. Not just bus factor — specifically "this person left and took the knowledge with them." More actionable than generic bus factor because it identifies the specific risk person.
@@ -412,3 +408,15 @@ The core Tornhill formula: `churnScore × log2(loc)` normalized to 0-100. Uses L
 
 ### Coupling map
 Temporal coupling detection from commit co-occurrence. Builds co-occurrence matrix from commit file lists, filters by dual thresholds (minimum 3 co-occurrences AND minimum 30% coupling strength), excludes bulk commits (30+ files). Coupling strength uses `min(totalA, totalB)` as denominator. Per-file coupling profiles with average strength score. CLI panel shows top 10 pairs with strength % and co-commit count. Web dashboard has dedicated Coupling tab with per-file drill-down view. 12 unit tests. Design spec: `docs/superpowers/specs/2026-03-14-phase2-loc-hotspot-coupling-design.md`.
+
+### Churn velocity
+Half-window split algorithm: divides the global commit timeline at the midpoint, counts per-file commits in each half. Velocity score = `recentCommits / total × 100`. Trend classification: accelerating (>60), decelerating (<40), stable (40-60). Files with <2 commits excluded. CLI panel shows top accelerating files with recent/older counts. 7 unit tests.
+
+### Rewrite ratio
+Per-file insertion/deletion balance scoring. Extended `RawCommit` with `fileStats: FileStats[]` for per-file granularity (previously only commit-level totals). Formula: `min(ins, del) / max(ins, del) × 100`. High score = balanced ins/del = code being rewritten, not just growing. CLI panel shows top rewriters with +/- counts. 8 unit tests.
+
+### Blast radius
+Per-file co-change breadth measurement. For each file, counts how many other tracked files change in the same commits (average and peak). Normalized 0-100 relative to repo max. Excludes bulk commits (30+ files). CLI panel shows top load-bearers with avg/peak co-change counts. 7 unit tests.
+
+### Dead code candidates
+Files tracked in the repo but with zero commits in the analysis window. Cross-referenced with age map (last commit date, age) and LOC report (language, line count). Sorted by age descending (oldest untouched first). CLI panel shows candidates with LOC and days untouched. 5 unit tests.
