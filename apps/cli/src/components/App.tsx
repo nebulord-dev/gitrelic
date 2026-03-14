@@ -47,6 +47,14 @@ export function App({ report, progress, error, showShame }: Props) {
       <ContributorPanel report={report} />
       <Newline />
       <BusFactorPanel report={report} />
+      <Newline />
+      <VelocityPanel report={report} />
+      <Newline />
+      <RewritePanel report={report} />
+      <Newline />
+      <BlastRadiusPanel report={report} />
+      <Newline />
+      <DeadCodePanel report={report} />
       {showShame && (
         <>
           <Newline />
@@ -226,6 +234,96 @@ function CouplingPanel({ report }: { report: CodeloreReport }) {
             <Text color="gray">↔</Text>
             <Text color="white">{truncatePath(p.fileB, 25)}</Text>
             <Text color="gray" dimColor>{p.coCommits} commits</Text>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+function VelocityPanel({ report }: { report: CodeloreReport }) {
+  const { churnVelocity } = report;
+  if (churnVelocity.acceleratingFiles.length === 0) return null;
+  return (
+    <Box flexDirection="column">
+      <Text color="yellow" bold>
+        {'── Churn Velocity ──────────────────────────────────────────'}
+      </Text>
+      <Text color="gray" dimColor>{churnVelocity.summary}</Text>
+      <Box flexDirection="column" marginTop={1}>
+        {churnVelocity.acceleratingFiles.slice(0, 8).map(f => (
+          <Box key={f.file} gap={2}>
+            <Text color="red">▲</Text>
+            <Text color="white">{truncatePath(f.file, 45)}</Text>
+            <Text color="gray" dimColor>{f.recentCommits} recent / {f.olderCommits} older</Text>
+            <Text color="red">{f.velocityScore}%</Text>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+function RewritePanel({ report }: { report: CodeloreReport }) {
+  const { rewriteRatio } = report;
+  if (rewriteRatio.topRewriters.length === 0) return null;
+  return (
+    <Box flexDirection="column">
+      <Text color="magenta" bold>
+        {'── Rewrite Ratio (code that doesn\'t stick) ──────────────────'}
+      </Text>
+      <Text color="gray" dimColor>{rewriteRatio.summary}</Text>
+      <Box flexDirection="column" marginTop={1}>
+        {rewriteRatio.topRewriters.slice(0, 8).map(f => (
+          <Box key={f.file} gap={2}>
+            <Text color="magenta">{churnBar(f.rewriteScore)}</Text>
+            <Text color="white">{truncatePath(f.file, 40)}</Text>
+            <Text color="gray" dimColor>+{f.totalInsertions} -{f.totalDeletions}</Text>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+function BlastRadiusPanel({ report }: { report: CodeloreReport }) {
+  const { blastRadius } = report;
+  if (blastRadius.topBlasters.length === 0) return null;
+  return (
+    <Box flexDirection="column">
+      <Text color="red" bold>
+        {'── Blast Radius (architectural load-bearers) ────────────────'}
+      </Text>
+      <Text color="gray" dimColor>{blastRadius.summary}</Text>
+      <Box flexDirection="column" marginTop={1}>
+        {blastRadius.topBlasters.slice(0, 8).map(f => (
+          <Box key={f.file} gap={2}>
+            <Text color="red">{churnBar(f.blastScore)}</Text>
+            <Text color="white">{truncatePath(f.file, 40)}</Text>
+            <Text color="gray" dimColor>avg {f.avgCoChangedFiles} files, peak {f.maxCoChangedFiles}</Text>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+function DeadCodePanel({ report }: { report: CodeloreReport }) {
+  const { deadCode } = report;
+  if (deadCode.candidates.length === 0) return null;
+  return (
+    <Box flexDirection="column">
+      <Text color="gray" bold>
+        {`── Dead Code Candidates (${deadCode.totalDeadFiles} files, ${deadCode.totalDeadLines.toLocaleString()} lines) ─────`}
+      </Text>
+      <Text color="gray" dimColor>{deadCode.summary}</Text>
+      <Box flexDirection="column" marginTop={1}>
+        {deadCode.candidates.slice(0, 8).map(f => (
+          <Box key={f.file} gap={2}>
+            <Text color="gray">◌</Text>
+            <Text color="white">{truncatePath(f.file, 45)}</Text>
+            <Text color="gray" dimColor>{f.loc} LOC</Text>
+            <Text color="gray" dimColor>{f.ageInDays}d untouched</Text>
           </Box>
         ))}
       </Box>
