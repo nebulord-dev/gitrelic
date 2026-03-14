@@ -12,6 +12,9 @@ export interface CodeloreReport {
   cursedFiles: CursedFile[];
   forensics: ForensicsReport;
   parallelDev: ParallelDevReport;
+  loc: LocReport;
+  hotspots: HotspotReport;
+  coupling: CouplingReport;
 }
 
 // ─── Repo metadata ─────────────────────────────────────────────────────────────
@@ -168,6 +171,72 @@ export interface ParallelDevReport {
   files: FileParallelDev[];
   hotFiles: FileParallelDev[]; // top 10 by parallelScore
   totalParallelFiles: number;  // files with any parallel activity
+  summary: string;
+}
+
+// ─── Lines of code ───────────────────────────────────────────────────────────
+
+export interface FileLocEntry {
+  file: string;
+  lines: number;
+  language: string;
+}
+
+export interface LanguageBreakdown {
+  language: string;
+  files: number;
+  lines: number;
+  percentage: number;
+}
+
+export interface LocReport {
+  totalFiles: number;
+  totalLines: number;
+  files: FileLocEntry[];
+  languages: LanguageBreakdown[];
+  summary: string;
+}
+
+// ─── Hotspot score ───────────────────────────────────────────────────────────
+
+export interface HotspotEntry {
+  file: string;
+  hotspotScore: number;
+  churnScore: number;
+  loc: number;
+  category: HotspotCategory;
+}
+
+export type HotspotCategory = 'critical' | 'warning' | 'moderate' | 'low';
+
+export interface HotspotReport {
+  files: HotspotEntry[];
+  topHotspots: HotspotEntry[];
+  summary: string;
+}
+
+// ─── Coupling map ────────────────────────────────────────────────────────────
+
+export interface CoupledPair {
+  fileA: string;
+  fileB: string;
+  coCommits: number;
+  totalCommitsA: number;
+  totalCommitsB: number;
+  couplingStrength: number;
+}
+
+export interface FileCouplingProfile {
+  file: string;
+  partners: CoupledPair[];
+  topPartner: string | null;
+  couplingScore: number;
+}
+
+export interface CouplingReport {
+  pairs: CoupledPair[];
+  fileProfiles: FileCouplingProfile[];
+  topPairs: CoupledPair[];
   summary: string;
 }
 

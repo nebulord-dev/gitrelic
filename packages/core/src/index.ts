@@ -22,4 +22,13 @@ export type {
   ParallelDevReport,
   FileParallelDev,
   ParallelWindow,
+  LocReport,
+  FileLocEntry,
+  LanguageBreakdown,
+  HotspotReport,
+  HotspotEntry,
+  HotspotCategory,
+  CouplingReport,
+  CoupledPair,
+  FileCouplingProfile,
 } from './types.js';
