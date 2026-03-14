@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { CodeloreReport } from '@codelore/core';
 
-type Tab = 'overview' | 'churn' | 'contributors' | 'cursed' | 'age';
+type Tab = 'overview' | 'churn' | 'contributors' | 'cursed' | 'age' | 'coupling';
 
 export default function Dashboard({ report }: { report: CodeloreReport }) {
   const [tab, setTab] = useState<Tab>('overview');
@@ -12,6 +12,7 @@ export default function Dashboard({ report }: { report: CodeloreReport }) {
     { id: 'contributors', label: 'Contributors', emoji: '👥' },
     { id: 'cursed', label: 'Cursed Files', emoji: '☠' },
     { id: 'age', label: 'Age Map', emoji: '⏳' },
+    { id: 'coupling', label: 'Coupling', emoji: '🔗' },
   ];
 
   return (
@@ -56,6 +57,7 @@ export default function Dashboard({ report }: { report: CodeloreReport }) {
         {tab === 'contributors' && <ContributorsTab report={report} />}
         {tab === 'cursed' && <CursedTab report={report} />}
         {tab === 'age' && <AgeTab report={report} />}
+        {tab === 'coupling' && <CouplingTab report={report} />}
       </main>
     </div>
   );
@@ -73,12 +75,12 @@ function Stat({ label, value }: { label: string; value: string }) {
 function OverviewTab({ report }: { report: CodeloreReport }) {
   return (
     <div className="grid grid-cols-2 gap-6">
-      <Card title="🔥 Top Hotspots" subtitle={report.churn.summary}>
-        {report.churn.topFiles.slice(0, 8).map(f => (
+      <Card title="🔥 Top Hotspots" subtitle={report.hotspots.summary}>
+        {report.hotspots.topHotspots.slice(0, 8).map(f => (
           <div key={f.file} className="flex items-center gap-3 py-1">
-            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${churnDot(f.category)}`} />
+            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${hotspotDot(f.category)}`} />
             <span className="text-gray-300 text-sm font-mono truncate flex-1">{f.file}</span>
-            <span className="text-gray-500 text-xs flex-shrink-0">{f.commitCount}</span>
+            <span className="text-gray-500 text-xs flex-shrink-0">{f.hotspotScore}</span>
           </div>
         ))}
       </Card>
@@ -125,16 +127,104 @@ function OverviewTab({ report }: { report: CodeloreReport }) {
 function ChurnTab({ report }: { report: CodeloreReport }) {
   return (
     <div>
-      <p className="text-gray-400 mb-4 text-sm">{report.churn.summary}</p>
+      <p className="text-gray-400 mb-4 text-sm">{report.hotspots.summary}</p>
       <div className="space-y-1">
-        {report.churn.files.slice(0, 50).map(f => (
+        {report.hotspots.files.slice(0, 50).map(f => (
           <div key={f.file} className="flex items-center gap-3 py-1 hover:bg-gray-900 rounded px-2">
-            <div className={`h-3 rounded ${churnBar(f.churnScore, f.category)}`} style={{ width: `${f.churnScore * 2}px`, minWidth: '4px' }} />
+            <div className={`h-3 rounded ${hotspotBar(f.category)}`} style={{ width: `${f.hotspotScore * 2}px`, minWidth: '4px' }} />
             <span className="text-gray-300 text-sm font-mono flex-1">{f.file}</span>
-            <span className="text-gray-500 text-xs">{f.commitCount} commits</span>
-            <span className={`text-xs px-2 py-0.5 rounded ${churnBadge(f.category)}`}>{f.category}</span>
+            <span className="text-gray-500 text-xs">{f.loc} LOC</span>
+            <span className="text-gray-500 text-xs">{f.churnScore} churn</span>
+            <span className={`text-xs px-2 py-0.5 rounded ${hotspotBadge(f.category)}`}>{f.category}</span>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function CouplingTab({ report }: { report: CodeloreReport }) {
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+
+  if (report.coupling.pairs.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <div className="text-5xl mb-4">🔗</div>
+        <p className="text-green-400 text-lg">No temporal coupling detected</p>
+        <p className="text-gray-500 text-sm mt-2">Files change independently — clean architecture</p>
+      </div>
+    );
+  }
+
+  const selectedProfile = selectedFile
+    ? report.coupling.fileProfiles.find(p => p.file === selectedFile)
+    : null;
+
+  return (
+    <div>
+      <p className="text-gray-400 mb-4 text-sm">{report.coupling.summary}</p>
+
+      <h3 className="text-white font-semibold mb-2">Strongest Pairs</h3>
+      <div className="space-y-2 mb-6">
+        {report.coupling.topPairs.map(p => (
+          <div key={`${p.fileA}-${p.fileB}`} className="bg-gray-900 border border-gray-800 rounded p-3">
+            <div className="flex items-center gap-3">
+              <div className="h-3 rounded bg-blue-600" style={{ width: `${p.couplingStrength * 1.5}px`, minWidth: '4px' }} />
+              <span className="text-blue-400 font-bold text-sm">{p.couplingStrength}%</span>
+              <button onClick={() => setSelectedFile(p.fileA)} className="text-gray-300 text-sm font-mono truncate hover:text-blue-300">{p.fileA}</button>
+              <span className="text-gray-500">↔</span>
+              <button onClick={() => setSelectedFile(p.fileB)} className="text-gray-300 text-sm font-mono truncate hover:text-blue-300">{p.fileB}</button>
+            </div>
+            <div className="mt-1 flex gap-4 text-xs text-gray-500">
+              <span>{p.coCommits} shared commits</span>
+              <span>{p.fileA.split('/').pop()}: {p.totalCommitsA} total</span>
+              <span>{p.fileB.split('/').pop()}: {p.totalCommitsB} total</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <h3 className="text-white font-semibold mb-2">Per-File View</h3>
+      <div className="flex gap-4">
+        <div className="w-1/3 space-y-1 max-h-96 overflow-auto">
+          {report.coupling.fileProfiles.map(p => (
+            <button
+              key={p.file}
+              onClick={() => setSelectedFile(p.file)}
+              className={`w-full text-left px-2 py-1 rounded text-sm font-mono truncate ${
+                selectedFile === p.file ? 'bg-blue-900 text-blue-300' : 'text-gray-400 hover:bg-gray-900'
+              }`}
+            >
+              {p.file}
+              <span className="text-gray-500 ml-2">{p.partners.length}</span>
+            </button>
+          ))}
+        </div>
+        <div className="flex-1">
+          {selectedProfile ? (
+            <div className="bg-gray-900 border border-gray-800 rounded p-4">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-white font-mono text-sm">{selectedProfile.file}</span>
+                <span className="text-blue-400 text-sm">{selectedProfile.partners.length} partner{selectedProfile.partners.length !== 1 ? 's' : ''}</span>
+              </div>
+              <div className="space-y-2">
+                {selectedProfile.partners.map(p => {
+                  const partner = p.fileA === selectedProfile.file ? p.fileB : p.fileA;
+                  return (
+                    <div key={partner} className="flex items-center gap-3">
+                      <span className="text-blue-400 text-sm w-12 text-right">{p.couplingStrength}%</span>
+                      <div className="h-2 rounded bg-blue-600" style={{ width: `${p.couplingStrength}px` }} />
+                      <button onClick={() => setSelectedFile(partner)} className="text-gray-300 text-sm font-mono truncate hover:text-blue-300">{partner}</button>
+                      <span className="text-gray-500 text-xs">{p.coCommits} commits</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="text-gray-500 text-sm p-4">Click a file to see its coupling partners</div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -300,5 +390,32 @@ function ageBorder(status: string) {
     case 'stale': return 'border-orange-800';
     case 'ancient': return 'border-red-800';
     default: return 'border-gray-700';
+  }
+}
+
+function hotspotDot(cat: string) {
+  switch (cat) {
+    case 'critical': return 'bg-red-500';
+    case 'warning': return 'bg-yellow-500';
+    case 'moderate': return 'bg-cyan-500';
+    default: return 'bg-gray-600';
+  }
+}
+
+function hotspotBar(cat: string) {
+  switch (cat) {
+    case 'critical': return 'bg-red-600';
+    case 'warning': return 'bg-yellow-600';
+    case 'moderate': return 'bg-cyan-700';
+    default: return 'bg-gray-700';
+  }
+}
+
+function hotspotBadge(cat: string) {
+  switch (cat) {
+    case 'critical': return 'bg-red-950 text-red-400';
+    case 'warning': return 'bg-yellow-950 text-yellow-400';
+    case 'moderate': return 'bg-cyan-950 text-cyan-400';
+    default: return 'bg-gray-800 text-gray-400';
   }
 }
