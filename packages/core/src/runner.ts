@@ -16,6 +16,10 @@ import { analyzeParallelDev } from './analyzers/parallel-dev.js';
 import { analyzeLoc } from './analyzers/loc.js';
 import { analyzeHotspots } from './analyzers/hotspot.js';
 import { analyzeCoupling } from './analyzers/coupling.js';
+import { analyzeChurnVelocity } from './analyzers/churn-velocity.js';
+import { analyzeRewriteRatio } from './analyzers/rewrite-ratio.js';
+import { analyzeBlastRadius } from './analyzers/blast-radius.js';
+import { analyzeDeadCode } from './analyzers/dead-code.js';
 import type { CodeloreReport, RunCodeloreOptions } from './types.js';
 
 /**
@@ -81,6 +85,18 @@ export async function runCodelore(options: RunCodeloreOptions): Promise<Codelore
   onProgress?.('Mapping file coupling...');
   const coupling = analyzeCoupling(commits, trackedFiles);
 
+  onProgress?.('Analyzing churn velocity...');
+  const churnVelocity = analyzeChurnVelocity(commits, trackedFiles);
+
+  onProgress?.('Calculating rewrite ratios...');
+  const rewriteRatio = analyzeRewriteRatio(commits, trackedFiles);
+
+  onProgress?.('Measuring blast radius...');
+  const blastRadius = analyzeBlastRadius(commits, trackedFiles);
+
+  onProgress?.('Finding dead code candidates...');
+  const deadCode = analyzeDeadCode(commits, trackedFiles, ageMap, loc);
+
   onProgress?.('Finding cursed files...');
   const cursedFiles = findCursedFiles(churn, busFactors, ageMap, forensics, parallelDev, commits.length);
 
@@ -108,5 +124,9 @@ export async function runCodelore(options: RunCodeloreOptions): Promise<Codelore
     loc,
     hotspots,
     coupling,
+    churnVelocity,
+    rewriteRatio,
+    blastRadius,
+    deadCode,
   };
 }
