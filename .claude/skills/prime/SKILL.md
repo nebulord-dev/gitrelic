@@ -6,7 +6,7 @@ description: Prime agent with codebase understanding
 
 ## Objective
 
-Build comprehensive understanding of the Lore monorepo before starting work. This is a pnpm workspace with three packages (`core`, `cli`, `web`) and strict build dependency order.
+Build comprehensive understanding of the CodeLore monorepo before starting work. This is a pnpm workspace with three packages (`core`, `cli`, `web`) and strict build dependency order.
 
 ## Process
 
@@ -35,8 +35,8 @@ Read any plan docs relevant to the current task.
 Read based on the task at hand:
 
 **If working on analyzers or report data:**
-- `packages/core/src/types.ts` — core interfaces (`LoreReport`, `ChurnReport`, `CursedFile`, etc.)
-- `packages/core/src/runner.ts` — orchestrator that calls all analyzers, entry point is `runLore()`
+- `packages/core/src/types.ts` — core interfaces (`CodeloreReport`, `ChurnReport`, `CursedFile`, etc.)
+- `packages/core/src/runner.ts` — orchestrator that calls all analyzers, entry point is `runCodelore()`
 - `packages/core/src/utils/git.ts` — raw git primitives (`getAllCommits`, `getTrackedFiles`, `RawCommit`)
 - `packages/core/src/analyzers/` — individual analyzers:
   - `churn.ts` — file churn frequency analysis
@@ -50,7 +50,7 @@ Read based on the task at hand:
 - `apps/cli/src/components/App.tsx` — root Ink component (loading → results)
 
 **If working on web dashboard:**
-- `apps/web/src/App.tsx` — loads `/lore-report.json`, passes to Dashboard
+- `apps/web/src/App.tsx` — loads `/codelore-report.json`, passes to Dashboard
 - `apps/web/src/components/Dashboard.tsx` — tabbed layout (Overview, Hotspots, Contributors, Cursed Files, Age Map)
 
 ### 4. Understand Current State
@@ -75,7 +75,7 @@ Provide a concise summary covering:
 
 - Monorepo package dependency order (`core` → `cli` → `web`)
 - Key architectural patterns: analyzers receive `(commits, trackedFiles)` and return typed reports
-- Data flows from `git log` → `runLore()` → analyzers → `LoreReport` → CLI/Web rendering
+- Data flows from `git log` → `runCodelore()` → analyzers → `CodeloreReport` → CLI/Web rendering
 
 ### Tech Stack
 
@@ -85,17 +85,17 @@ Provide a concise summary covering:
 
 ### Sister Project: Vitals
 
-Lore's sister project lives at `/Users/danteel/Desktop/dev/vitals`. Both share the same stack and are built by the same developer. **Keep them aligned.**
+CodeLore's sister project lives at `/Users/danteel/Desktop/dev/vitals`. Both share the same stack and are built by the same developer. **Keep them aligned.**
 
-Key libraries Vitals has that Lore will need as features grow:
-- `@xyflow/react` + `dagre` — graph visualization, already used for dependency graph. Port to Lore when building the commit graph or coupling map.
+Key libraries Vitals has that CodeLore will need as features grow:
+- `@xyflow/react` + `dagre` — graph visualization, already used for dependency graph. Port to CodeLore when building the commit graph or coupling map.
 - `react-syntax-highlighter` — code display with syntax highlighting. Port when building file drill-down.
-- `madge` — static import/dependency analysis with circular dep detection. Port to Lore `@lore/core` when building the dependency graph analyzer.
+- `madge` — static import/dependency analysis with circular dep detection. Port to CodeLore `@codelore/core` when building the dependency graph analyzer.
 
 Stack drift to watch:
-- Vitals is on React 19; Lore is on React 18 — upgrade Lore when convenient
-- Vitals Turbo `2.8.14`; Lore `2.3.3` — upgrade Lore root devDependency
-- Vitals has full ESLint config; Lore lint scripts exist but ESLint not yet wired up
+- Vitals is on React 19; CodeLore is on React 18 — upgrade CodeLore when convenient
+- Vitals Turbo `2.8.14`; CodeLore `2.3.3` — upgrade CodeLore root devDependency
+- Vitals has full ESLint config; CodeLore lint scripts exist but ESLint not yet wired up
 
 ### Current State
 

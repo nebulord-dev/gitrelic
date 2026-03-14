@@ -1,6 +1,6 @@
 // ─── Core report shape ────────────────────────────────────────────────────────
 
-export interface LoreReport {
+export interface CodeloreReport {
   timestamp: string;
   repoPath: string;
   repoName: string;
@@ -173,7 +173,7 @@ export interface ParallelDevReport {
 
 // ─── Runner options ────────────────────────────────────────────────────────────
 
-export interface RunLoreOptions {
+export interface RunCodeloreOptions {
   repoPath: string;
   branch?: string;
   since?: string;            // e.g. "6 months ago", "2023-01-01"

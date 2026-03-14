@@ -1,6 +1,6 @@
-# Lore — Usage Guide
+# CodeLore — Usage Guide
 
-Practical tips for getting the most out of Lore across different repo types and use cases.
+Practical tips for getting the most out of CodeLore across different repo types and use cases.
 
 ---
 
@@ -18,10 +18,10 @@ Practical tips for getting the most out of Lore across different repo types and 
 ### `--since` accepts natural language or ISO dates
 
 ```bash
-lore --since "6 months ago"
-lore --since "2023-01-01"
-lore --since "1 year ago"
-lore --since all            # full repo history, no time limit
+codelore --since "6 months ago"
+codelore --since "2023-01-01"
+codelore --since "1 year ago"
+codelore --since all            # full repo history, no time limit
 ```
 
 ---
@@ -31,7 +31,7 @@ lore --since all            # full repo history, no time limit
 ### Quick scan — default
 
 ```bash
-lore --path ~/projects/my-app
+codelore --path ~/projects/my-app
 ```
 
 Best for: a fast first look at any repo. Gives you churn hotspots, cursed files, contributor activity, and bus factor in under 10 seconds. Start here.
@@ -41,7 +41,7 @@ Best for: a fast first look at any repo. Gives you churn hotspots, cursed files,
 ### Deep history — `--since all`
 
 ```bash
-lore --path ~/projects/my-app --since all
+codelore --path ~/projects/my-app --since all
 ```
 
 Best for: repos older than 1–2 years where the real curse accumulated over time. The default 12-month window can miss files that were actively broken years ago and left that way. Use `--since all` the first time you analyze a legacy codebase.
@@ -53,8 +53,8 @@ Best for: repos older than 1–2 years where the real curse accumulated over tim
 ### Shame audit — `--shame`
 
 ```bash
-lore --path ~/projects/my-app --shame
-lore --path ~/projects/my-app --since all --shame
+codelore --path ~/projects/my-app --shame
+codelore --path ~/projects/my-app --since all --shame
 ```
 
 Best for: retrospectives, pre-refactor assessments, or when you suspect certain files are repeatedly broken. The shame leaderboard surfaces files with a high ratio of `revert`, `hotfix`, and `oops` commits relative to their total commit count.
@@ -68,7 +68,7 @@ Best for: retrospectives, pre-refactor assessments, or when you suspect certain 
 ### Web dashboard — `--web`
 
 ```bash
-lore --path ~/projects/my-app --web
+codelore --path ~/projects/my-app --web
 ```
 
 Best for: sharing with the team, presenting to a tech lead, or exploring the Age Map and Contributors tabs which are harder to read in the terminal. The dashboard opens at `http://localhost:7777` and stays running until you kill the process.
@@ -80,12 +80,12 @@ Best for: sharing with the team, presenting to a tech lead, or exploring the Age
 ### Scripting and CI — `--json`
 
 ```bash
-lore --path ~/projects/my-app --json > report.json
-lore --path ~/projects/my-app --since all --json | jq '.forensics.shameLeaderboard[0]'
-lore --path ~/projects/my-app --json | jq '.cursedFiles | length'
+codelore --path ~/projects/my-app --json > report.json
+codelore --path ~/projects/my-app --since all --json | jq '.forensics.shameLeaderboard[0]'
+codelore --path ~/projects/my-app --json | jq '.cursedFiles | length'
 ```
 
-Best for: integrating into CI pipelines, writing scripts that track health over time, or extracting specific metrics. The JSON output is the full `LoreReport` — every score, every file, every contributor.
+Best for: integrating into CI pipelines, writing scripts that track health over time, or extracting specific metrics. The JSON output is the full `CodeloreReport` — every score, every file, every contributor.
 
 **Useful `jq` queries:**
 ```bash
@@ -107,8 +107,8 @@ jq '.meta.totalCommits' report.json
 ### Analyzing a specific branch — `--branch`
 
 ```bash
-lore --path ~/projects/my-app --branch develop
-lore --path ~/projects/my-app --branch main --since "3 months ago"
+codelore --path ~/projects/my-app --branch develop
+codelore --path ~/projects/my-app --branch main --since "3 months ago"
 ```
 
 Best for: comparing health between branches, or analyzing a long-running feature branch before merging. Useful to run on both `main` and a release candidate to see if churn patterns have shifted.
@@ -129,7 +129,7 @@ Best for: comparing health between branches, or analyzing a long-running feature
 
 ## Tips for Young Repos (< 6 months old)
 
-Lore's thresholds are proportional to repo age, so young repos won't produce false positives from age-based signals. However:
+CodeLore's thresholds are proportional to repo age, so young repos won't produce false positives from age-based signals. However:
 
 - **Don't use `--since` narrowly.** With a young repo you want all commits — run without `--since` or use `--since all`. They're equivalent for a repo where everything happened in the last few months.
 - **Bus factor findings are the most reliable early signal.** Even with 50 commits, if 1 person owns 90% of a critical file, that's already a risk.
@@ -143,33 +143,33 @@ Lore's thresholds are proportional to repo age, so young repos won't produce fal
 
 ```bash
 # Full history scan with shame, web dashboard for exploration
-lore --path ~/projects/legacy-app --since all --shame --web
+codelore --path ~/projects/legacy-app --since all --shame --web
 ```
 
 ### Pre-sprint health check
 
 ```bash
 # Last 3 months, terminal only, quick scan
-lore --path ~/projects/my-app --since "3 months ago"
+codelore --path ~/projects/my-app --since "3 months ago"
 ```
 
 ### Pre-refactor assessment
 
 ```bash
 # Full history, shame enabled, export JSON for record-keeping
-lore --path ~/projects/my-app --since all --shame --json > before-refactor.json
+codelore --path ~/projects/my-app --since all --shame --json > before-refactor.json
 ```
 
 ### Tracking health over time in CI
 
 ```bash
 # Run weekly, store JSON, compare cursed file count over time
-lore --path . --since all --json > lore-$(date +%Y-%m-%d).json
+codelore --path . --since all --json > codelore-$(date +%Y-%m-%d).json
 ```
 
 ### Sharing findings with the team
 
 ```bash
 # Web dashboard stays open for everyone to browse
-lore --path ~/projects/my-app --since all --web
+codelore --path ~/projects/my-app --since all --web
 ```

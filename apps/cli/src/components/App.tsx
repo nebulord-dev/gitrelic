@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, Newline } from 'ink';
 import Spinner from 'ink-spinner';
-import type { LoreReport } from '@lore/core';
+import type { CodeloreReport } from '@codelore/core';
 
 interface Props {
-  report: LoreReport | null;
+  report: CodeloreReport | null;
   progress: string;
   error: string | null;
   showShame: boolean;
@@ -57,18 +57,18 @@ function Banner({ repoName }: { repoName: string }) {
   return (
     <Box flexDirection="column" marginBottom={1}>
       <Text color="magenta" bold>{`
-██╗      ██████╗ ██████╗ ███████╗
-██║     ██╔═══██╗██╔══██╗██╔════╝
-██║     ██║   ██║██████╔╝█████╗
-██║     ██║   ██║██╔══██╗██╔══╝
-███████╗╚██████╔╝██║  ██║███████╗
-╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝`}</Text>
+ ██████╗ ██████╗ ██████╗ ███████╗██╗      ██████╗ ██████╗ ███████╗
+██╔════╝██╔═══██╗██╔══██╗██╔════╝██║     ██╔═══██╗██╔══██╗██╔════╝
+██║     ██║   ██║██║  ██║█████╗  ██║     ██║   ██║██████╔╝█████╗
+██║     ██║   ██║██║  ██║██╔══╝  ██║     ██║   ██║██╔══██╗██╔══╝
+╚██████╗╚██████╔╝██████╔╝███████╗███████╗╚██████╔╝██║  ██║███████╗
+ ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝`}</Text>
       <Text color="gray">  git archaeology for <Text color="white" bold>{repoName}</Text></Text>
     </Box>
   );
 }
 
-function MetaPanel({ report }: { report: LoreReport }) {
+function MetaPanel({ report }: { report: CodeloreReport }) {
   const { meta } = report;
   const years = (meta.ageInDays / 365).toFixed(1);
   return (
@@ -100,7 +100,7 @@ function MetaPanel({ report }: { report: LoreReport }) {
   );
 }
 
-function ChurnPanel({ report }: { report: LoreReport }) {
+function ChurnPanel({ report }: { report: CodeloreReport }) {
   const { churn } = report;
   return (
     <Box flexDirection="column">
@@ -119,7 +119,7 @@ function ChurnPanel({ report }: { report: LoreReport }) {
   );
 }
 
-function CursedFilesPanel({ report }: { report: LoreReport }) {
+function CursedFilesPanel({ report }: { report: CodeloreReport }) {
   if (report.cursedFiles.length === 0) return null;
   return (
     <Box flexDirection="column">
@@ -138,7 +138,7 @@ function CursedFilesPanel({ report }: { report: LoreReport }) {
   );
 }
 
-function ContributorPanel({ report }: { report: LoreReport }) {
+function ContributorPanel({ report }: { report: CodeloreReport }) {
   const { contributors } = report;
   return (
     <Box flexDirection="column">
@@ -158,7 +158,7 @@ function ContributorPanel({ report }: { report: LoreReport }) {
   );
 }
 
-function BusFactorPanel({ report }: { report: LoreReport }) {
+function BusFactorPanel({ report }: { report: CodeloreReport }) {
   const { busFactors } = report;
   if (busFactors.criticalFiles.length === 0) return (
     <Box>
@@ -182,7 +182,7 @@ function BusFactorPanel({ report }: { report: LoreReport }) {
   );
 }
 
-function ShamePanel({ report }: { report: LoreReport }) {
+function ShamePanel({ report }: { report: CodeloreReport }) {
   const { forensics } = report;
   if (forensics.shameLeaderboard.length === 0) {
     return (

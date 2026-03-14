@@ -1,8 +1,8 @@
 import { program } from 'commander';
 import { render } from 'ink';
 import { useState, useEffect } from 'react';
-import { runLore } from '@lore/core';
-import type { LoreReport } from '@lore/core';
+import { runCodelore } from '@codelore/core';
+import type { CodeloreReport } from '@codelore/core';
 import { App } from './components/App.js';
 import path from 'node:path';
 import { createServer } from 'node:http';
@@ -10,7 +10,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import open from 'open';
 
 program
-  .name('lore')
+  .name('codelore')
   .description('Git archaeology — understand the history and health of your codebase')
   .version('0.1.0')
   .option('-p, --path <path>', 'Path to the git repository', process.cwd())
@@ -36,7 +36,7 @@ const since = opts.since === 'all' ? undefined : opts.since;
 if (opts.json) {
   // Non-interactive JSON mode
   try {
-    const report = await runLore({
+    const report = await runCodelore({
       repoPath,
       branch: opts.branch,
       since,
@@ -50,13 +50,13 @@ if (opts.json) {
 }
 
 // Interactive Ink mode
-function LoreApp() {
-  const [report, setReport] = useState<LoreReport | null>(null);
+function CodeloreApp() {
+  const [report, setReport] = useState<CodeloreReport | null>(null);
   const [progress, setProgress] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    runLore({
+    runCodelore({
       repoPath,
       branch: opts.branch,
       since,
@@ -75,14 +75,14 @@ function LoreApp() {
   return <App report={report} progress={progress} error={error} showShame={opts.shame ?? false} />;
 }
 
-render(<LoreApp />);
+render(<CodeloreApp />);
 
-async function serveWebDashboard(report: LoreReport): Promise<void> {
+async function serveWebDashboard(report: CodeloreReport): Promise<void> {
   const webDist = new URL('../../web/dist', import.meta.url).pathname;
   const port = 7777;
 
   const server = createServer((req, res) => {
-    if (req.url === '/lore-report.json') {
+    if (req.url === '/codelore-report.json') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(report));
       return;

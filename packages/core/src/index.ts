@@ -1,8 +1,8 @@
-export { runLore } from './runner.js';
+export { runCodelore } from './runner.js';
 export { analyzeParallelDev } from './analyzers/parallel-dev.js';
 export type {
-  LoreReport as LoreReport,
-  RunLoreOptions,
+  CodeloreReport,
+  RunCodeloreOptions,
   ChurnReport,
   FileChurn,
   ChurnCategory,

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import type { LoreReport } from '@lore/core';
+import type { CodeloreReport } from '@codelore/core';
 
 type Tab = 'overview' | 'churn' | 'contributors' | 'cursed' | 'age';
 
-export default function Dashboard({ report }: { report: LoreReport }) {
+export default function Dashboard({ report }: { report: CodeloreReport }) {
   const [tab, setTab] = useState<Tab>('overview');
 
   const tabs: { id: Tab; label: string; emoji: string }[] = [
@@ -20,7 +20,7 @@ export default function Dashboard({ report }: { report: LoreReport }) {
       <header className="border-b border-gray-800 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-purple-400 font-bold text-xl tracking-wider">LORE</h1>
+            <h1 className="text-purple-400 font-bold text-xl tracking-wider">CODELORE</h1>
             <p className="text-gray-500 text-xs">git archaeology · <span className="text-gray-300">{report.repoName}</span></p>
           </div>
           <div className="flex gap-6 text-sm">
@@ -70,7 +70,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function OverviewTab({ report }: { report: LoreReport }) {
+function OverviewTab({ report }: { report: CodeloreReport }) {
   return (
     <div className="grid grid-cols-2 gap-6">
       <Card title="🔥 Top Hotspots" subtitle={report.churn.summary}>
@@ -122,7 +122,7 @@ function OverviewTab({ report }: { report: LoreReport }) {
   );
 }
 
-function ChurnTab({ report }: { report: LoreReport }) {
+function ChurnTab({ report }: { report: CodeloreReport }) {
   return (
     <div>
       <p className="text-gray-400 mb-4 text-sm">{report.churn.summary}</p>
@@ -140,7 +140,7 @@ function ChurnTab({ report }: { report: LoreReport }) {
   );
 }
 
-function ContributorsTab({ report }: { report: LoreReport }) {
+function ContributorsTab({ report }: { report: CodeloreReport }) {
   return (
     <div>
       <p className="text-gray-400 mb-4 text-sm">{report.contributors.summary}</p>
@@ -173,7 +173,7 @@ function ContributorsTab({ report }: { report: LoreReport }) {
   );
 }
 
-function CursedTab({ report }: { report: LoreReport }) {
+function CursedTab({ report }: { report: CodeloreReport }) {
   if (report.cursedFiles.length === 0) {
     return (
       <div className="text-center py-20">
@@ -207,7 +207,7 @@ function CursedTab({ report }: { report: LoreReport }) {
   );
 }
 
-function AgeTab({ report }: { report: LoreReport }) {
+function AgeTab({ report }: { report: CodeloreReport }) {
   return (
     <div>
       <p className="text-gray-400 mb-4 text-sm">{report.ageMap.summary}</p>

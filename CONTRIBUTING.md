@@ -1,4 +1,4 @@
-# Contributing to Lore
+# Contributing to CodeLore
 
 Thanks for your interest in contributing! This document covers how to get set up, how the codebase is organized, and what to expect when submitting a pull request.
 
@@ -14,8 +14,8 @@ Thanks for your interest in contributing! This document covers how to get set up
 ### Setup
 
 ```bash
-git clone https://github.com/your-username/lore.git
-cd lore
+git clone https://github.com/your-username/codelore.git
+cd codelore
 pnpm install
 pnpm build
 ```
@@ -35,13 +35,13 @@ pnpm dev
 ## Project Structure
 
 ```
-lore/
+codelore/
 ├── packages/
 │   └── core/               # Analysis engine — start here for new analyzers
 │       └── src/
 │           ├── analyzers/  # One file per analyzer (churn, bus-factor, etc.)
 │           ├── utils/      # Git primitives (parseGitLog, getTrackedFiles)
-│           ├── runner.ts   # Orchestrates all analyzers → LoreReport
+│           ├── runner.ts   # Orchestrates all analyzers → CodeloreReport
 │           └── types.ts    # All TypeScript interfaces
 ├── apps/
 │   ├── cli/                # Terminal UI (Ink + Commander)
@@ -56,7 +56,7 @@ lore/
 1. Create `packages/core/src/analyzers/my-analyzer.ts`
 2. Export a function `analyzeX(commits: RawCommit[], trackedFiles: string[]): XReport`
 3. Add `XReport` (and any supporting interfaces) to `packages/core/src/types.ts`
-4. Call it in `packages/core/src/runner.ts` and include the result in the `LoreReport` return value
+4. Call it in `packages/core/src/runner.ts` and include the result in the `CodeloreReport` return value
 5. Export any public types from `packages/core/src/index.ts`
 6. Add tests in `packages/core/src/analyzers/my-analyzer.test.ts`
 
@@ -71,10 +71,10 @@ See any existing analyzer (e.g. `churn.ts`) as a reference.
 pnpm test
 
 # Core package only (with coverage)
-pnpm --filter @lore/core test
+pnpm --filter @codelore/core test
 
 # Watch mode
-pnpm --filter @lore/core test -- --watch
+pnpm --filter @codelore/core test -- --watch
 ```
 
 Tests live next to source files (`churn.ts` → `churn.test.ts`). New code should come with tests.
@@ -93,7 +93,7 @@ Tests live next to source files (`churn.ts` → `churn.test.ts`). New code shoul
 ## Reporting Issues
 
 Open a GitHub issue with:
-- What you were running (`lore --path ...`)
+- What you were running (`codelore --path ...`)
 - What you expected to see
 - What actually happened
 
