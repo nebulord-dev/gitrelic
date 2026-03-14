@@ -94,11 +94,9 @@ Files that new contributors (first 90 days) never touch vs. files gated to veter
 
 ~~#### Rewrite ratio~~ _(Done — see Done column)_
 
-#### "The Ghost Problem"
-Dedicated view for files owned >70% by someone whose last commit was >6 months ago. Not just bus factor — specifically "this person left and took the knowledge with them." More actionable than generic bus factor because it identifies the specific risk person.
+~~#### "The Ghost Problem"~~ _(Done — see Done column)_
 
-#### Test coverage proxy
-No actual coverage tooling needed — count `*.test.*` files relative to source files per directory. Directories with zero test files alongside high-churn source files are the highest-risk areas. Fast heuristic that pairs well with curse scoring.
+~~#### Test coverage proxy~~ _(Done — see Done column)_
 
 #### Release archaeology
 If the repo uses git tags for releases, show which files changed most between each release. Some files appear in every release; some only appear when things go wrong. Reveals which files are on the "hot path" of every deployment.
@@ -109,10 +107,9 @@ For each currently-cursed or high-hotspot file, identify *who* wrote the first c
 #### Commit message tone over time
 Beyond the static shame score — is the tone getting *worse*? A file with increasing frequency of "fix", "hotfix", "revert" commits over recent months is a codebase in distress right now. Plot shame score over time per file. A rising shame trajectory is more alarming than a historically high but stable one.
 
-#### Knowledge concentration index
-Repo-wide: what percentage of files are "single-author dominant" (>80% commits from one person)? High concentration = fragile team. Surface as a top-level health metric alongside bus factor. Useful for engineering managers doing risk assessments before someone leaves.
+~~#### Knowledge concentration index~~ _(Done — see Done column)_
 
-#### Co-author analysis
+~~#### Co-author analysis~~
 Parse `Co-authored-by:` trailer lines from commit messages (standard GitHub/GitLab convention for pair programming and AI-assisted commits). Surface who actually collaborates with whom, which files get pair-programmed, and whether AI-assisted commits correlate with lower or higher future churn.
 
 #### `--since` comparison mode
@@ -420,3 +417,15 @@ Per-file co-change breadth measurement. For each file, counts how many other tra
 
 ### Dead code candidates
 Files tracked in the repo but with zero commits in the analysis window. Cross-referenced with age map (last commit date, age) and LOC report (language, line count). Sorted by age descending (oldest untouched first). CLI panel shows candidates with LOC and days untouched. 5 unit tests.
+
+### Test coverage proxy
+Directory-level test/source file ratio. Counts `*.test.*` and `*.spec.*` files against source code files per directory. Identifies uncovered directories (source files but zero tests). CLI panel shows gaps. 7 unit tests.
+
+### Ghost files ("The Ghost Problem")
+Files owned >70% by inactive contributors. Combines bus factor (ownership %) with contributor report (activity status). Surfaces files where knowledge may be lost. CLI panel shows ghost files with owner, ownership %, and days inactive. 6 unit tests.
+
+### Knowledge concentration index
+Single repo-wide metric: percentage of files where one author has >80% of commits. High concentration = fragile team. CLI panel shows the index color-coded by risk level (green <40%, yellow 40-70%, red >70%). 6 unit tests.
+
+### Co-author analysis
+Parses `Co-authored-by:` trailer lines from commit messages. Tracks author pairs, co-authored commit counts, and shared files. Builds per-author stats with primary partner identification. Case-insensitive trailer matching. CLI panel shows top pairs. 8 unit tests.
