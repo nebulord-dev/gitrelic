@@ -41,4 +41,12 @@ export type {
   FileBlastRadius,
   DeadCodeReport,
   DeadCodeCandidate,
+  TestCoverageProxyReport,
+  DirectoryCoverage,
+  GhostFilesReport,
+  GhostFile,
+  KnowledgeConcentrationReport,
+  CoAuthorReport,
+  CoAuthorPair,
+  CoAuthorStats,
 } from './types.js';

@@ -19,6 +19,10 @@ export interface CodeloreReport {
   rewriteRatio: RewriteRatioReport;
   blastRadius: BlastRadiusReport;
   deadCode: DeadCodeReport;
+  testCoverage: TestCoverageProxyReport;
+  ghostFiles: GhostFilesReport;
+  knowledgeConcentration: KnowledgeConcentrationReport;
+  coAuthors: CoAuthorReport;
 }
 
 // ─── Repo metadata ─────────────────────────────────────────────────────────────
@@ -309,6 +313,71 @@ export interface DeadCodeReport {
   candidates: DeadCodeCandidate[];
   totalDeadFiles: number;
   totalDeadLines: number;
+  summary: string;
+}
+
+// ─── Test coverage proxy ────────────────────────────────────────────────────
+
+export interface DirectoryCoverage {
+  directory: string;
+  sourceFiles: number;
+  testFiles: number;
+  coverageRatio: number;        // testFiles / sourceFiles, 0-1
+  hasTests: boolean;
+}
+
+export interface TestCoverageProxyReport {
+  directories: DirectoryCoverage[];
+  uncoveredDirectories: DirectoryCoverage[];  // directories with 0 test files
+  overallRatio: number;                        // repo-wide test/source ratio
+  summary: string;
+}
+
+// ─── Ghost files ────────────────────────────────────────────────────────────
+
+export interface GhostFile {
+  file: string;
+  dominantAuthor: string;
+  dominantAuthorPercent: number;
+  lastAuthorCommitDate: string;  // ISO date of dominant author's last commit anywhere
+  authorInactiveDays: number;
+  loc: number;
+}
+
+export interface GhostFilesReport {
+  files: GhostFile[];
+  totalGhostFiles: number;
+  summary: string;
+}
+
+// ─── Knowledge concentration ────────────────────────────────────────────────
+
+export interface KnowledgeConcentrationReport {
+  singleAuthorFiles: number;     // files where one author has >80% of commits
+  totalFiles: number;
+  concentrationIndex: number;    // singleAuthorFiles / totalFiles × 100
+  summary: string;
+}
+
+// ─── Co-author analysis ─────────────────────────────────────────────────────
+
+export interface CoAuthorPair {
+  authorA: string;
+  authorB: string;
+  coAuthoredCommits: number;
+  files: string[];               // files they co-authored together
+}
+
+export interface CoAuthorStats {
+  author: string;
+  coAuthoredCommits: number;     // commits where this author was a co-author
+  primaryPartner: string | null;
+}
+
+export interface CoAuthorReport {
+  pairs: CoAuthorPair[];
+  authorStats: CoAuthorStats[];
+  totalCoAuthoredCommits: number;
   summary: string;
 }
 
