@@ -20,6 +20,10 @@ import { analyzeChurnVelocity } from './analyzers/churn-velocity.js';
 import { analyzeRewriteRatio } from './analyzers/rewrite-ratio.js';
 import { analyzeBlastRadius } from './analyzers/blast-radius.js';
 import { analyzeDeadCode } from './analyzers/dead-code.js';
+import { analyzeTestCoverage } from './analyzers/test-coverage.js';
+import { analyzeGhostFiles } from './analyzers/ghost-files.js';
+import { analyzeKnowledgeConcentration } from './analyzers/knowledge-concentration.js';
+import { analyzeCoAuthors } from './analyzers/co-author.js';
 import type { CodeloreReport, RunCodeloreOptions } from './types.js';
 
 /**
@@ -97,6 +101,18 @@ export async function runCodelore(options: RunCodeloreOptions): Promise<Codelore
   onProgress?.('Finding dead code candidates...');
   const deadCode = analyzeDeadCode(commits, trackedFiles, ageMap, loc);
 
+  onProgress?.('Checking test coverage...');
+  const testCoverage = analyzeTestCoverage(trackedFiles);
+
+  onProgress?.('Detecting ghost files...');
+  const ghostFiles = analyzeGhostFiles(busFactors, contributors, loc);
+
+  onProgress?.('Measuring knowledge concentration...');
+  const knowledgeConcentration = analyzeKnowledgeConcentration(busFactors);
+
+  onProgress?.('Analyzing co-authorship...');
+  const coAuthors = analyzeCoAuthors(commits);
+
   onProgress?.('Finding cursed files...');
   const cursedFiles = findCursedFiles(churn, busFactors, ageMap, forensics, parallelDev, commits.length);
 
@@ -128,5 +144,9 @@ export async function runCodelore(options: RunCodeloreOptions): Promise<Codelore
     rewriteRatio,
     blastRadius,
     deadCode,
+    testCoverage,
+    ghostFiles,
+    knowledgeConcentration,
+    coAuthors,
   };
 }
