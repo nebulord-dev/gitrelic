@@ -217,6 +217,29 @@ AI-generated per-team (or per-contributor) narrative: "Alice owns 60% of the aut
 
 ---
 
+### Terminal UI
+
+#### Interactive TUI mode ⭐ PRIORITIZE
+Replace the current scrolling panel dump with a proper interactive TUI — keyboard navigation between panels, focus/expand individual panels, hotkey bar, and a `?` help overlay. Vitals already has the full TUI infrastructure in `apps/cli/src/components/tui/` that can be ported directly.
+
+**What to port from Vitals:**
+- `TuiApp.tsx` — root TUI component: `useInput` for keybindings, focused/expanded panel state, panel entrance animations (staggered), terminal size awareness via `useTerminalSize`
+- `PanelBorder.tsx` — consistent panel chrome with title, focused highlight, expand indicator
+- `HotkeyBar.tsx` — bottom bar showing available shortcuts (tab/arrows to navigate, enter to expand, `q` to quit, `?` for help, `w` for `--web`)
+- `HelpPanel.tsx` — overlay showing all keybindings
+- `hooks/useTerminalSize.ts` — reactive terminal dimensions for responsive layout
+
+**CodeLore-specific additions beyond Vitals:**
+- Panel IDs map to the existing panels: `hotspots`, `cursed`, `contributors`, `coupling`, `velocity`, `busfactor`, `ghostfiles`, `knowledge`
+- Two-column layout at wide terminals (≥140 cols), single-column at narrow
+- `w` hotkey to launch `--web` dashboard from within the TUI (open browser without restarting)
+- `s` hotkey to toggle shame panel on/off inline
+
+**Implementation notes:**
+- Ink's `useInput` hook handles all keyboard events — no new dependencies needed
+- Keep the existing scroll-dump `App.tsx` for `--json` and CI contexts (non-TTY); TUI only activates when stdout is a TTY
+- Panel entrance animation: stagger each panel appearing 150ms apart on first load
+
 ### CLI Commands
 
 #### `codelore diff <branch>`

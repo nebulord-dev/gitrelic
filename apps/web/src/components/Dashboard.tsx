@@ -273,26 +273,53 @@ function CursedTab({ report }: { report: CodeloreReport }) {
       </div>
     );
   }
+
+  const emailToName = new Map(
+    report.contributors.contributors.map(c => [c.email, c.name])
+  );
+
+  const fileToAuthors = new Map(
+    report.busFactors.files.map(bf => [
+      bf.file,
+      bf.authors.map(email => emailToName.get(email) ?? email),
+    ])
+  );
+
   return (
     <div className="space-y-4">
-      {report.cursedFiles.map(f => (
-        <div key={f.file} className="bg-gray-900 border border-red-900 rounded p-4">
-          <div className="flex items-start justify-between mb-2">
-            <span className="text-red-300 font-mono text-sm">{f.file}</span>
-            <span className="text-red-500 font-bold text-lg">{f.curseScore}/100</span>
+      {report.cursedFiles.map(f => {
+        const authorNames = fileToAuthors.get(f.file) ?? [];
+        return (
+          <div key={f.file} className="bg-gray-900 border border-red-900 rounded p-4">
+            <div className="flex items-start justify-between mb-2">
+              <span className="text-red-300 font-mono text-sm">{f.file}</span>
+              <span className="text-red-500 font-bold text-lg">{f.curseScore}/100</span>
+            </div>
+            <p className="text-gray-400 text-sm mb-3 italic">"{f.narrative}"</p>
+            <div className="flex flex-wrap gap-2">
+              {f.reasons.map((r, i) => (
+                <span key={i} className={`text-xs px-2 py-1 rounded ${reasonBadge(r)}`}>{r}</span>
+              ))}
+            </div>
+            <div className="mt-3 flex gap-4 text-xs text-gray-500">
+              <span>🔥 {f.churn} commits</span>
+              <span className="relative group cursor-help">
+                <span>👥 {f.authors} authors</span>
+                {authorNames.length > 0 && (
+                  <div className="absolute bottom-full left-0 mb-2 z-10 hidden group-hover:block">
+                    <div className="bg-gray-800 border border-gray-700 rounded px-3 py-2 shadow-lg whitespace-nowrap">
+                      <p className="text-gray-400 text-xs font-semibold mb-1 uppercase tracking-wide">Authors</p>
+                      {authorNames.map((name, i) => (
+                        <p key={i} className="text-gray-200 text-xs">{name}</p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </span>
+            </div>
           </div>
-          <p className="text-gray-400 text-sm mb-3 italic">"{f.narrative}"</p>
-          <div className="flex flex-wrap gap-2">
-            {f.reasons.map((r, i) => (
-              <span key={i} className={`text-xs px-2 py-1 rounded ${reasonBadge(r)}`}>{r}</span>
-            ))}
-          </div>
-          <div className="mt-3 flex gap-4 text-xs text-gray-500">
-            <span>🔥 {f.churn} commits</span>
-            <span>👥 {f.authors} authors</span>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
