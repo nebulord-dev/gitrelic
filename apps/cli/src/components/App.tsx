@@ -38,6 +38,10 @@ export function App({ report, progress, error, showShame }: Props) {
       <Newline />
       <ChurnPanel report={report} />
       <Newline />
+      <HotspotPanel report={report} />
+      <Newline />
+      <CouplingPanel report={report} />
+      <Newline />
       <CursedFilesPanel report={report} />
       <Newline />
       <ContributorPanel report={report} />
@@ -104,7 +108,7 @@ function ChurnPanel({ report }: { report: CodeloreReport }) {
   const { churn } = report;
   return (
     <Box flexDirection="column">
-      <Text color="yellow" bold>── Hotspots ({churn.hotspotCount} hot files) ────────────────────────────</Text>
+      <Text color="yellow" bold>── Churn ({churn.hotspotCount} hot files) ────────────────────────────</Text>
       <Text color="gray" dimColor>{churn.summary}</Text>
       <Box flexDirection="column" marginTop={1}>
         {churn.topFiles.slice(0, 10).map(f => (
@@ -182,6 +186,53 @@ function BusFactorPanel({ report }: { report: CodeloreReport }) {
   );
 }
 
+function HotspotPanel({ report }: { report: CodeloreReport }) {
+  const { hotspots } = report;
+  if (hotspots.files.length === 0) return null;
+  return (
+    <Box flexDirection="column">
+      <Text color="red" bold>
+        {'── Hotspots (churn × complexity) ───────────────────────────'}
+      </Text>
+      <Text color="gray" dimColor>{hotspots.summary}</Text>
+      <Box flexDirection="column" marginTop={1}>
+        {hotspots.topHotspots.slice(0, 10).map(f => (
+          <Box key={f.file} gap={2}>
+            <Text color={getHotspotColor(f.category)}>{churnBar(f.hotspotScore)}</Text>
+            <Text color="gray">{truncatePath(f.file, 45)}</Text>
+            <Text color="gray" dimColor>{f.loc} LOC</Text>
+            <Text color={getHotspotColor(f.category)}>{f.category}</Text>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+function CouplingPanel({ report }: { report: CodeloreReport }) {
+  const { coupling } = report;
+  if (coupling.pairs.length === 0) return null;
+  return (
+    <Box flexDirection="column">
+      <Text color="blue" bold>
+        {`── File Coupling (${coupling.pairs.length} pairs) ────────────────────────────`}
+      </Text>
+      <Text color="gray" dimColor>{coupling.summary}</Text>
+      <Box flexDirection="column" marginTop={1}>
+        {coupling.topPairs.slice(0, 10).map(p => (
+          <Box key={`${p.fileA}-${p.fileB}`} gap={2}>
+            <Text color="blue">{String(p.couplingStrength).padStart(3)}%</Text>
+            <Text color="white">{truncatePath(p.fileA, 25)}</Text>
+            <Text color="gray">↔</Text>
+            <Text color="white">{truncatePath(p.fileB, 25)}</Text>
+            <Text color="gray" dimColor>{p.coCommits} commits</Text>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
 function ShamePanel({ report }: { report: CodeloreReport }) {
   const { forensics } = report;
   if (forensics.shameLeaderboard.length === 0) {
@@ -235,4 +286,13 @@ function getChurnColor(category: string): string {
 function truncatePath(file: string, max: number): string {
   if (file.length <= max) return file;
   return '...' + file.slice(-(max - 3));
+}
+
+function getHotspotColor(category: string): string {
+  switch (category) {
+    case 'critical': return 'red';
+    case 'warning': return 'yellow';
+    case 'moderate': return 'cyan';
+    default: return 'gray';
+  }
 }
