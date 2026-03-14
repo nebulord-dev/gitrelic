@@ -13,6 +13,9 @@ import { analyzeContributors } from './analyzers/contributors.js';
 import { findCursedFiles } from './analyzers/cursed-files.js';
 import { analyzeForensics } from './analyzers/forensics.js';
 import { analyzeParallelDev } from './analyzers/parallel-dev.js';
+import { analyzeLoc } from './analyzers/loc.js';
+import { analyzeHotspots } from './analyzers/hotspot.js';
+import { analyzeCoupling } from './analyzers/coupling.js';
 import type { CodeloreReport, RunCodeloreOptions } from './types.js';
 
 /**
@@ -69,6 +72,15 @@ export async function runCodelore(options: RunCodeloreOptions): Promise<Codelore
   onProgress?.('Detecting parallel development...');
   const parallelDev = analyzeParallelDev(commits, trackedFiles);
 
+  onProgress?.('Counting lines of code...');
+  const loc = await analyzeLoc(trackedFiles, repoPath);
+
+  onProgress?.('Computing hotspot scores...');
+  const hotspots = analyzeHotspots(churn, loc);
+
+  onProgress?.('Mapping file coupling...');
+  const coupling = analyzeCoupling(commits, trackedFiles);
+
   onProgress?.('Finding cursed files...');
   const cursedFiles = findCursedFiles(churn, busFactors, ageMap, forensics, parallelDev, commits.length);
 
@@ -93,5 +105,8 @@ export async function runCodelore(options: RunCodeloreOptions): Promise<Codelore
     cursedFiles,
     forensics,
     parallelDev,
+    loc,
+    hotspots,
+    coupling,
   };
 }
