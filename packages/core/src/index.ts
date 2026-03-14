@@ -1,5 +1,6 @@
 export { runCodelore } from './runner.js';
 export { analyzeParallelDev } from './analyzers/parallel-dev.js';
+export type { FileStats } from './utils/git.js';
 export type {
   CodeloreReport,
   RunCodeloreOptions,
@@ -31,4 +32,13 @@ export type {
   CouplingReport,
   CoupledPair,
   FileCouplingProfile,
+  ChurnVelocityReport,
+  FileChurnVelocity,
+  ChurnTrend,
+  RewriteRatioReport,
+  FileRewriteRatio,
+  BlastRadiusReport,
+  FileBlastRadius,
+  DeadCodeReport,
+  DeadCodeCandidate,
 } from './types.js';

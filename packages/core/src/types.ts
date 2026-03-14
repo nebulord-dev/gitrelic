@@ -15,6 +15,10 @@ export interface CodeloreReport {
   loc: LocReport;
   hotspots: HotspotReport;
   coupling: CouplingReport;
+  churnVelocity: ChurnVelocityReport;
+  rewriteRatio: RewriteRatioReport;
+  blastRadius: BlastRadiusReport;
+  deadCode: DeadCodeReport;
 }
 
 // ─── Repo metadata ─────────────────────────────────────────────────────────────
@@ -237,6 +241,74 @@ export interface CouplingReport {
   pairs: CoupledPair[];
   fileProfiles: FileCouplingProfile[];
   topPairs: CoupledPair[];
+  summary: string;
+}
+
+// ─── Churn velocity ──────────────────────────────────────────────────────────
+
+export interface FileChurnVelocity {
+  file: string;
+  velocityScore: number;
+  trend: ChurnTrend;
+  recentCommits: number;
+  olderCommits: number;
+  totalCommits: number;
+}
+
+export type ChurnTrend = 'accelerating' | 'decelerating' | 'stable';
+
+export interface ChurnVelocityReport {
+  files: FileChurnVelocity[];
+  acceleratingFiles: FileChurnVelocity[];
+  summary: string;
+}
+
+// ─── Rewrite ratio ──────────────────────────────────────────────────────────
+
+export interface FileRewriteRatio {
+  file: string;
+  rewriteScore: number;
+  totalInsertions: number;
+  totalDeletions: number;
+  ratio: number;
+}
+
+export interface RewriteRatioReport {
+  files: FileRewriteRatio[];
+  topRewriters: FileRewriteRatio[];
+  summary: string;
+}
+
+// ─── Blast radius ───────────────────────────────────────────────────────────
+
+export interface FileBlastRadius {
+  file: string;
+  blastScore: number;
+  avgCoChangedFiles: number;
+  maxCoChangedFiles: number;
+  totalCommits: number;
+}
+
+export interface BlastRadiusReport {
+  files: FileBlastRadius[];
+  topBlasters: FileBlastRadius[];
+  summary: string;
+}
+
+// ─── Dead code candidates ───────────────────────────────────────────────────
+
+export interface DeadCodeCandidate {
+  file: string;
+  lastCommitDate: string;
+  ageInDays: number;
+  language: string;
+  loc: number;
+}
+
+export interface DeadCodeReport {
+  candidates: DeadCodeCandidate[];
+  totalDeadFiles: number;
+  totalDeadLines: number;
   summary: string;
 }
 

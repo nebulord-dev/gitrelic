@@ -2,6 +2,12 @@ import { execa } from 'execa';
 
 // ─── Raw git primitives ────────────────────────────────────────────────────────
 
+export interface FileStats {
+  file: string;
+  insertions: number;
+  deletions: number;
+}
+
 export interface RawCommit {
   hash: string;
   authorEmail: string;
@@ -9,6 +15,7 @@ export interface RawCommit {
   date: string;          // ISO
   message: string;
   files: string[];
+  fileStats: FileStats[];
   insertions: number;
   deletions: number;
 }
@@ -47,7 +54,7 @@ export function parseGitLog(raw: string): RawCommit[] {
     if (line.startsWith('COMMIT|')) {
       if (current) commits.push(current);
       const [, hash, authorEmail, authorName, date] = line.split('|');
-      current = { hash, authorEmail, authorName, date, message: '', files: [], insertions: 0, deletions: 0 };
+      current = { hash, authorEmail, authorName, date, message: '', files: [], fileStats: [], insertions: 0, deletions: 0 };
     } else if (current && line.startsWith('MSG|')) {
       current.message = line.slice(4);   // everything after "MSG|"
     } else if (current && line.trim()) {
@@ -57,6 +64,7 @@ export function parseGitLog(raw: string): RawCommit[] {
         const [ins, del, file] = parts;
         if (file && !file.includes('{')) {   // skip rename noise like "src/{a => b}/file.ts"
           current.files.push(file);
+          current.fileStats.push({ file, insertions: parseInt(ins, 10) || 0, deletions: parseInt(del, 10) || 0 });
           current.insertions += parseInt(ins, 10) || 0;
           current.deletions += parseInt(del, 10) || 0;
         }
