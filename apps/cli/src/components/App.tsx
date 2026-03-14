@@ -55,6 +55,14 @@ export function App({ report, progress, error, showShame }: Props) {
       <BlastRadiusPanel report={report} />
       <Newline />
       <DeadCodePanel report={report} />
+      <Newline />
+      <TestCoveragePanel report={report} />
+      <Newline />
+      <GhostFilesPanel report={report} />
+      <Newline />
+      <KnowledgePanel report={report} />
+      <Newline />
+      <CoAuthorPanel report={report} />
       {showShame && (
         <>
           <Newline />
@@ -324,6 +332,96 @@ function DeadCodePanel({ report }: { report: CodeloreReport }) {
             <Text color="white">{truncatePath(f.file, 45)}</Text>
             <Text color="gray" dimColor>{f.loc} LOC</Text>
             <Text color="gray" dimColor>{f.ageInDays}d untouched</Text>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+function TestCoveragePanel({ report }: { report: CodeloreReport }) {
+  const { testCoverage } = report;
+  if (testCoverage.uncoveredDirectories.length === 0) {
+    return (
+      <Box>
+        <Text color="green">✓ All directories with source files have tests</Text>
+      </Box>
+    );
+  }
+  return (
+    <Box flexDirection="column">
+      <Text color="yellow" bold>
+        {`── Test Coverage Gaps (${testCoverage.uncoveredDirectories.length} uncovered) ──────────────`}
+      </Text>
+      <Text color="gray" dimColor>{testCoverage.summary}</Text>
+      <Box flexDirection="column" marginTop={1}>
+        {testCoverage.uncoveredDirectories.slice(0, 8).map(d => (
+          <Box key={d.directory} gap={2}>
+            <Text color="yellow">⚠</Text>
+            <Text color="white">{d.directory}</Text>
+            <Text color="gray" dimColor>{d.sourceFiles} source files, 0 tests</Text>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+function GhostFilesPanel({ report }: { report: CodeloreReport }) {
+  const { ghostFiles } = report;
+  if (ghostFiles.files.length === 0) return null;
+  return (
+    <Box flexDirection="column">
+      <Text color="red" bold>
+        {`── Ghost Files (${ghostFiles.totalGhostFiles} files) ──────────────────────────`}
+      </Text>
+      <Text color="gray" dimColor>{ghostFiles.summary}</Text>
+      <Box flexDirection="column" marginTop={1}>
+        {ghostFiles.files.slice(0, 8).map(f => (
+          <Box key={f.file} gap={2}>
+            <Text color="red">👻</Text>
+            <Text color="white">{truncatePath(f.file, 40)}</Text>
+            <Text color="gray" dimColor>{f.dominantAuthorPercent}% by {f.dominantAuthor.split('@')[0]}</Text>
+            <Text color="gray" dimColor>{f.authorInactiveDays}d inactive</Text>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+function KnowledgePanel({ report }: { report: CodeloreReport }) {
+  const { knowledgeConcentration } = report;
+  return (
+    <Box flexDirection="column">
+      <Text color="cyan" bold>── Knowledge Concentration ─────────────────────────────</Text>
+      <Text color="gray" dimColor>{knowledgeConcentration.summary}</Text>
+      <Box marginTop={1}>
+        <Text color={knowledgeConcentration.concentrationIndex > 70 ? 'red' : knowledgeConcentration.concentrationIndex > 40 ? 'yellow' : 'green'}>
+          {knowledgeConcentration.concentrationIndex}% of files are single-author dominant
+        </Text>
+      </Box>
+    </Box>
+  );
+}
+
+function CoAuthorPanel({ report }: { report: CodeloreReport }) {
+  const { coAuthors } = report;
+  if (coAuthors.totalCoAuthoredCommits === 0) return null;
+  return (
+    <Box flexDirection="column">
+      <Text color="green" bold>
+        {`── Co-Authorship (${coAuthors.totalCoAuthoredCommits} commits) ──────────────────────`}
+      </Text>
+      <Text color="gray" dimColor>{coAuthors.summary}</Text>
+      <Box flexDirection="column" marginTop={1}>
+        {coAuthors.pairs.slice(0, 6).map(p => (
+          <Box key={`${p.authorA}-${p.authorB}`} gap={2}>
+            <Text color="green">♦</Text>
+            <Text color="white">{p.authorA.split('@')[0]}</Text>
+            <Text color="gray">↔</Text>
+            <Text color="white">{p.authorB.split('@')[0]}</Text>
+            <Text color="gray" dimColor>{p.coAuthoredCommits} commits, {p.files.length} files</Text>
           </Box>
         ))}
       </Box>
