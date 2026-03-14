@@ -1,24 +1,52 @@
-# Lore — Kanban
+# CodeLore — Kanban
 
-> Task board for tracking Lore development. Update this file as work progresses.
+> Task board for tracking CodeLore development. Update this file as work progresses.
 > Columns: Backlog → In Progress → Done
+
+## Roadmap
+
+Phases run roughly sequentially. Phase 2 can begin once Phase 1 core tests are in place — it doesn't need the full testing suite to be done first. Phase 3 visualizations can start mid-Phase 2 for tabs where data already exists (e.g. shame tab).
+
+```
+Phase 1 — Hygiene & Rename     ████████░░░░░░░░░░░░░░░░░░░░░░░░
+Phase 2 — Core Analyzers       ░░░░████████████░░░░░░░░░░░░░░░░  ← starts mid-P1
+Phase 3 — Visual Storytelling   ░░░░░░░░░░██████████████░░░░░░░░  ← starts mid-P2
+Phase 4 — Composite Intelligence░░░░░░░░░░░░░░░░████████████░░░░
+Phase 5 — AI, CLI & Distribution░░░░░░░░░░░░░░░░░░░░░░░░████████
+```
+
+| Phase | Focus                    | Key tasks                                                                                                                                   | Unblocks                              |
+| ----- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| **1** | Hygiene & Rename         | Vitest suite, oxc linting, Turbo upgrade, React 18→19, rename to CodeLore                                                                   | Safe refactor in Phase 2              |
+| **2** | Core Analyzers           | cloc, hotspot score, coupling map, churn velocity, rewrite ratio, rename tracking, test coverage proxy, dead code candidates, blast radius   | Phase 3 visualizations, Phase 4 composites |
+| **3** | Visual Storytelling      | Treemap, hotspot matrix, commit graph, shame tab, file coupling graph, knowledge map, contributor timeline, file drill-down, language panel, repo health tab | Phase 4 dashboard surfaces            |
+| **4** | Composite Intelligence   | Onboarding difficulty, ownership drift, knowledge concentration, complexity over time, co-author analysis, risk & learning curve dashboard, technical debt workbench, team dynamics analyzers + tab, solo dev insights | Phase 5 AI narratives                 |
+| **5** | AI, CLI & Distribution   | Claude summary, refactor brief, "what happened here?", team narrative, PR risk action, `codelore diff/watch/blame/graph/hotspot/team/debt` commands, `codelore.config.ts`, `codelore init`, badge, share, VS Code ext, HTML export, pre-commit hook | —                                     |
+
+> **Key dependency chains:**
+> - `cloc` → `hotspot score` → treemap, hotspot matrix, debt workbench, risk dashboard
+> - `coupling map` → file coupling graph, Conway's Law map, debt dependency chains, team boundary friction
+> - `churn velocity` + `rewrite ratio` → risk dashboard, debt workbench, team dynamics
+> - `onboarding difficulty` + `test coverage proxy` → learning curve surface
+> - Phase 4 composite dashboards consume multiple Phase 2 analyzers — they're synthesis layers, not new data collection
 
 ---
 
 ## Backlog
 
-### Rename to Fossick
+### Rename to CodeLore
 
-Rename the project from Lore to Fossick across the entire monorepo. The npm package name `fossick` has already been claimed. This is a mechanical find-and-replace — no architectural changes needed.
+Rename the project from Lore to CodeLore across the entire monorepo. The npm package name `codelore` has been claimed. This is a mechanical find-and-replace — no architectural changes needed.
 
-- Internal workspace packages: `@lore/core` → `@fossick/core`, `@lore/web` → `@fossick/web` (scoped, never published directly)
-- CLI package: `@lore/cli` → `fossick` (unscoped — enables `npx fossick --web`)
-- CLI binary name in `apps/cli/package.json` (`bin` field): `lore` → `fossick`
+- Internal workspace packages: `@lore/core` → `@codelore/core`, `@lore/web` → `@codelore/web` (scoped, never published directly)
+- CLI package: `@lore/cli` → `codelore` (unscoped — enables `npx codelore --web`)
+- CLI binary name in `apps/cli/package.json` (`bin` field): `lore` → `codelore`
 - All internal imports referencing `@lore/*`
-- `runLore()` → `runFossick()` in `runner.ts`, `types.ts`, and all call sites
-- `LoreReport` → `FossickReport` and all other `Lore*` type names
+- `runLore()` → `runCodelore()` in `runner.ts`, `types.ts`, and all call sites
+- `LoreReport` → `CodeloreReport` and all other `Lore*` type names
 - `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/USAGE.md` — all prose references
 - `.claude/kanban.md` and `.claude/skills/` — update skill descriptions and file paths
+- README "why the name?" section — code archaeology meets storytelling: every codebase has lore, and CodeLore surfaces it
 - npm publish under the new package name once renamed
 
 ---
@@ -26,7 +54,7 @@ Rename the project from Lore to Fossick across the entire monorepo. The npm pack
 ### Testing & Infrastructure
 
 #### Configure oxc for linting
-Set up `oxlint` as the linter for the Lore monorepo:
+Set up `oxlint` as the linter for the CodeLore monorepo:
 - Install `oxlint` in the workspace root
 - Add `lint` scripts to root and per-package `package.json`
 - Configure `.oxlintrc` with appropriate rules
@@ -129,7 +157,59 @@ Repo-wide: what percentage of files are "single-author dominant" (>80% commits f
 Parse `Co-authored-by:` trailer lines from commit messages (standard GitHub/GitLab convention for pair programming and AI-assisted commits). Surface who actually collaborates with whom, which files get pair-programmed, and whether AI-assisted commits correlate with lower or higher future churn.
 
 #### `--since` comparison mode
-`lore --since 30d vs 90d` — compare two time windows to show what's getting better vs. worse. A file that was hot 90 days ago but calm recently is recovering. A file that was fine 90 days ago but hot recently is deteriorating. Directional health, not just snapshot health.
+`codelore --since 30d vs 90d` — compare two time windows to show what's getting better vs. worse. A file that was hot 90 days ago but calm recently is recovering. A file that was fine 90 days ago but hot recently is deteriorating. Directional health, not just snapshot health.
+
+#### Team dynamics & code quality correlation ⭐ PRIORITIZE
+Analyze how developer and team interactions influence code quality over time. Two parts: the **analysis engine** (core analyzers that extract the signals) and the **visualization layer** (web dashboard views that make the patterns visceral and explorable).
+
+**Part 1 — Core analyzers:**
+
+*Coordination cost analyzer:*
+- For each file, partition its history into single-author windows vs. multi-author overlap windows (reuse parallel dev's author-week matrix).
+- Compare quality metrics (shame ratio, churn velocity, rewrite ratio) between the two modes.
+- Produce a per-file `coordinationCost` score: positive = multi-author work *degrades* quality, negative = multi-author work *improves* quality, zero = no difference.
+- Roll up to per-author-pair stats: "When Alice and Bob overlap on a file, shame ratio increases 40%. When Alice and Carol overlap, churn stabilizes." The pair-level insight is where the real value is.
+
+*Team boundary friction analyzer:*
+- Cross-reference coupling map (files that change together) with bus factor (who owns each file).
+- Flag "Conway's Law violations": coupled file pairs owned by different primary authors (or teams, if team metadata is available via a config or email-domain grouping).
+- Score each violation by coupling strength × quality divergence between the paired files. Strong coupling + divergent quality = high friction.
+
+*Author quality fingerprint analyzer:*
+- For each contributor, measure what happens to files *after* they touch them in a trailing window (configurable, default 30 days):
+  - Does churn velocity increase or decrease?
+  - Does shame ratio rise or fall?
+  - Does the file gain or lose additional authors?
+- Classify each author as: **stabilizer** (files calm down after their commits), **destabilizer** (files heat up after their commits), or **neutral**.
+- Sensitive data — gate behind a `--team` flag so it's opt-in, never shown by default. Frame as team health, not individual blame.
+
+*"Too many cooks" threshold analyzer:*
+- For each file, correlate distinct-author-count-per-window with defect proxy signals (shame ratio, fix-commit frequency, rewrite ratio).
+- Find the inflection point where adding more authors starts degrading quality. Some files handle 3 authors fine but fall apart at 5. Surface the per-file "safe author count" — the number of concurrent contributors before quality degrades.
+- Repo-wide stat: "Files with 4+ authors in a 30-day window have 2.3× the shame ratio of single-author files."
+
+**Part 2 — Web dashboard: "Team Dynamics" tab:**
+
+*Collaboration health matrix:*
+- Grid visualization: authors on both axes, cell color = quality impact when that pair works on the same files. Green = stabilizing pair, red = friction pair, gray = never overlap. Immediately shows which collaborations are productive and which create churn. Click a cell to see the specific files and time windows driving the score.
+
+*Conway's Law map:*
+- Force-directed graph: nodes are files (or directories), edges are coupling strength. Nodes colored by primary owner. When coupled files have *different* owner colors, the edge glows red — that's a boundary friction point. Visually reveals where the team structure and the code structure are misaligned. The "aha moment" visualization — teams see their own organizational problems reflected in their code.
+
+*Author impact timeline:*
+- Horizontal swim lanes per contributor. Each lane shows a sparkline of their "stabilizer score" over time — are they currently in a stabilizing or destabilizing phase? Overlaid with markers for significant events: joined a new area of the codebase, started overlapping with a new collaborator, touched a cursed file. Tells the story of each contributor's *relationship* with the codebase over time, not just their commit count.
+
+*Team quality pulse:*
+- Aggregate dashboard card: team-wide coordination cost trend (is multi-author work getting smoother or rougher?), current Conway's Law violation count, percentage of files past their "safe author count" threshold, and a sparkline of overall team quality trajectory. The single-glance "are we getting better at working together?" metric.
+
+*Friction hotspot overlay:*
+- Toggleable layer on the existing treemap/knowledge map: files colored not by churn or ownership but by *coordination cost*. High coordination cost files in red = "this file creates friction whenever multiple people touch it." Different insight than hotspots — a file can be low-churn but high-friction when it *does* get touched by multiple people.
+
+**CLI companion — `codelore team [--pairs] [--friction] [--fingerprints]`:**
+- `codelore team` — summary: top friction points, worst coordination costs, Conway's Law violations.
+- `codelore team --pairs` — author-pair quality matrix in the terminal.
+- `codelore team --friction` — ranked list of boundary friction files.
+- `codelore team --fingerprints` — per-author stabilizer/destabilizer classification (opt-in, requires `--team` flag on the main scan).
 
 ---
 
@@ -160,7 +240,7 @@ Plot the ratio of `fix:`/`hotfix:`/`revert:` vs. `feat:` commits on a per-week s
 ### Narrative & AI
 
 #### Claude-powered summary
-Pass the full `LoreReport` to Claude API and get a 3-paragraph "story of this codebase" narrative. The tool is already named after the concept — lean into it.
+Pass the full `CodeloreReport` to Claude API and get a 3-paragraph "story of this codebase" narrative. The tool is already named after the concept — lean into it.
 
 #### "What happened here?"
 Click any file in the web dashboard and get an AI-generated explanation of its commit history narrative. Per-file deep dive powered by Claude.
@@ -168,11 +248,11 @@ Click any file in the web dashboard and get an AI-generated explanation of its c
 #### Refactor brief
 For the top cursed file, Claude generates a short brief: why it's cursed, what the likely root cause is based on commit patterns, and what a refactor approach might look like. Actionable output, not just a score.
 
-#### PR risk assessment (`lore-action`) ⭐ PRIORITIZE
-GitHub Action that runs on every PR, looks up the touched files in a cached LoreReport, and posts a comment: "This PR touches 2 cursed files and one file owned 90% by someone who hasn't committed in 4 months." Brings Lore into the daily review workflow without anyone having to remember to run it. Highest practical value for teams.
+#### PR risk assessment (`codelore-action`) ⭐ PRIORITIZE
+GitHub Action that runs on every PR, looks up the touched files in a cached CodeloreReport, and posts a comment: "This PR touches 2 cursed files and one file owned 90% by someone who hasn't committed in 4 months." Brings CodeLore into the daily review workflow without anyone having to remember to run it. Highest practical value for teams.
 
 #### Commit graph annotation layer
-Overlay Lore data directly on the commit graph visualization. Hotspot spikes, ownership changes, shame-score events, and bus-factor warnings appear as markers on the graph timeline. The commit graph becomes a *navigable diagnostic surface*, not just a pretty picture. Click a spike on the graph to see which files caused it and why Lore flagged them.
+Overlay CodeLore data directly on the commit graph visualization. Hotspot spikes, ownership changes, shame-score events, and bus-factor warnings appear as markers on the graph timeline. The commit graph becomes a *navigable diagnostic surface*, not just a pretty picture. Click a spike on the graph to see which files caused it and why CodeLore flagged them.
 
 #### Team narrative report
 AI-generated per-team (or per-contributor) narrative: "Alice owns 60% of the auth subsystem, has been the primary author for 2 years, and her files have the lowest churn in the repo. Bob joined 4 months ago and has touched 12 high-hotspot files — either he's doing important cleanup or spreading risk." Designed to be shared in engineering all-hands or team retrospectives.
@@ -181,22 +261,22 @@ AI-generated per-team (or per-contributor) narrative: "Alice owns 60% of the aut
 
 ### CLI Commands
 
-#### `lore diff <branch>`
+#### `codelore diff <branch>`
 Compare health between branches or commits. "Since you branched from main, these 3 files have become hotspots."
 
-#### `lore watch`
+#### `codelore watch`
 Live TUI that updates as you commit. Real-time churn tracking in the terminal.
 
-#### `lore blame <file>`
+#### `codelore blame <file>`
 Deep dive on a single file: full commit timeline, author breakdown, message forensics.
 
-#### `lore graph`
-Render the commit DAG in the terminal — branch lanes, colored by hotspot severity. Each commit dot is colored by its churn impact. Hotspot commits glow. Wraps `git log --graph` with Lore enrichment layered on top. The terminal version of the web commit graph.
+#### `codelore graph`
+Render the commit DAG in the terminal — branch lanes, colored by hotspot severity. Each commit dot is colored by its churn impact. Hotspot commits glow. Wraps `git log --graph` with CodeLore enrichment layered on top. The terminal version of the web commit graph.
 
-#### `lore hotspot [--top N]`
-Dedicated CLI command that outputs the top N hotspot files ranked by the churn × complexity composite score. Separate from the general `lore` report — fast, focused, actionable. Pairs well with `lore blame <file>` for drilling in.
+#### `codelore hotspot [--top N]`
+Dedicated CLI command that outputs the top N hotspot files ranked by the churn × complexity composite score. Separate from the general `codelore` report — fast, focused, actionable. Pairs well with `codelore blame <file>` for drilling in.
 
-#### `lore team`
+#### `codelore team`
 Contributor-focused report: bus factor, ghost files, knowledge concentration index, ownership drift summary. Designed for the engineering manager audience rather than the individual developer.
 
 ---
@@ -204,17 +284,17 @@ Contributor-focused report: bus factor, ghost files, knowledge concentration ind
 ### Web Dashboard
 
 #### Commit graph visualization ⭐ PRIORITIZE
-The GitKraken-style DAG — colored branch lanes, commit dots, merge lines. Built with `d3-dag` for layout and custom SVG rendering for full control. Nodes colored by hotspot score (cool → hot). Click any commit to see which files changed, their Lore scores at that point in time, and the commit message. This is the visual centerpiece of the web dashboard — the thing people screenshot and share. Makes Lore immediately legible to anyone who's used a git GUI before.
+The GitKraken-style DAG — colored branch lanes, commit dots, merge lines. Built with `d3-dag` for layout and custom SVG rendering for full control. Nodes colored by hotspot score (cool → hot). Click any commit to see which files changed, their CodeLore scores at that point in time, and the commit message. This is the visual centerpiece of the web dashboard — the thing people screenshot and share. Makes CodeLore immediately legible to anyone who's used a git GUI before.
 - Data: `git log --all --pretty=format:"%H|%P|%an|%at|%s" --topo-order`
 - Layout: `d3-dag` handles lane assignment
 - Render: custom SVG — full control over color, dot size, heat overlays
-- Interaction: click commit → file list with Lore scores; hover → tooltip with author, date, shame score
+- Interaction: click commit → file list with CodeLore scores; hover → tooltip with author, date, shame score
 
 #### Hotspot matrix
-Scatter plot: X-axis = churn, Y-axis = complexity (LOC), dot size = number of authors, dot color = shame score. Every file in the repo plotted simultaneously. The top-right quadrant (high churn, high complexity) is the danger zone. Instantly shows the shape of the codebase's risk. This is the single most information-dense visualization Lore can produce and the one most directly derived from Tornhill's methodology.
+Scatter plot: X-axis = churn, Y-axis = complexity (LOC), dot size = number of authors, dot color = shame score. Every file in the repo plotted simultaneously. The top-right quadrant (high churn, high complexity) is the danger zone. Instantly shows the shape of the codebase's risk. This is the single most information-dense visualization CodeLore can produce and the one most directly derived from Tornhill's methodology.
 
 #### Shame tab in web dashboard
-Add a sixth tab to the web dashboard for commit message forensics. The `forensics` data is already in every `LoreReport` — this is purely a UI addition. Show the shame leaderboard (file, shame score, dominant keywords, top offending commit messages) and a summary stat for total shame commits. Mirrors the `--shame` CLI panel but with more room to show details.
+Add a sixth tab to the web dashboard for commit message forensics. The `forensics` data is already in every `CodeloreReport` — this is purely a UI addition. Show the shame leaderboard (file, shame score, dominant keywords, top offending commit messages) and a summary stat for total shame commits. Mirrors the `--shame` CLI panel but with more room to show details.
 
 #### Knowledge map visualization ⭐ PRIORITIZE
 Tornhill-style treemap: files as circles, sized by LOC (requires cloc integration), colored by dominant author (from bus factor data), grouped by directory. Parallel development data overlays as a heat ring or border glow around contested files. Connects "who owns what" with "where is concurrent work happening." Great for onboarding ("who do I ask about feature X?"), knowledge transfer planning, and team health. See screenshot from *Software Design X-Rays* for reference. Design spec: `docs/plans/2026-03-11-parallel-development-design.md` § V2 Roadmap.
@@ -235,6 +315,47 @@ Commits over time, stacked by contributor. See when people joined, left, went qu
 #### Drill into a file
 Click any file anywhere in the dashboard to see its full commit history inline. When code snippets are shown, consider `sourcegraph/codeintellify` to add hover tooltips with code intelligence (go-to-definition, type info) — IDE-like feel without building it from scratch.
 
+#### Risk & learning curve dashboard ⭐ PRIORITIZE
+A dedicated "Developer Intelligence" view that synthesizes existing analyzer data into two composite lenses — **defect risk** and **learning curve** — and presents them in ways that are immediately actionable, not just informative.
+
+**Defect prediction surface:**
+- Quadrant scatter plot (hotspot matrix variant): X = churn velocity (accelerating vs. stable), Y = rewrite ratio (code that doesn't stick). Dot size = shame score, dot color = bus factor risk. Top-right quadrant files are ticking time bombs. Clicking a dot opens a "defect brief" — a timeline showing *when* the file started deteriorating and *what changed* (new author? spike in fix commits? rapid growth?).
+- "Deterioration feed" — a reverse-chronological list of files whose risk scores have *worsened* in the last N commits/weeks. Not a static leaderboard — a *news feed* of emerging problems. Inspired by anomaly detection dashboards.
+- Per-file "stability spark line" — a tiny inline chart (like GitHub contribution graphs) showing the file's risk trajectory over time. Green = stabilizing, red = deteriorating. Visible everywhere a file name appears — in hotspot lists, cursed file cards, search results. Ambient awareness without clicking into anything.
+
+**Learning curve surface:**
+- "Approachability map" — a treemap where each file is sized by LOC and colored by a composite of: contributor count (more authors = more accessible), onboarding difficulty score (do newcomers touch it?), and comment density. Deep red = "here be dragons" (single author, no newcomers, no comments). Green = well-trodden and documented. A new team member looks at this and immediately knows where to start and where to avoid.
+- "Knowledge transfer radar" — for each file or directory, show: who knows it (bus factor), who's learning it (recent new contributors), and who *should* learn it (high-risk files with single owners). Presents as a radar/spider chart per directory with axes like "ownership breadth", "newcomer activity", "documentation", "churn stability", "author diversity".
+- "First-touch guide" — sorted list of files ranked by approachability (low complexity, multiple authors, low churn, has tests nearby). The opposite of the hotspot list. "If you're new here, start with these files." Generated automatically from existing data, zero config.
+
+**Shared UX patterns:**
+- Every visualization links back to the file drill-down — no dead ends.
+- Hover any file anywhere to get a one-line risk summary: "High churn, single owner, accelerating shame score — defect risk: critical."
+- Dashboard-level summary stats: "12 files are deteriorating, 3 files are knowledge silos, 87% of high-risk files have no test coverage proxy."
+
+#### Technical debt workbench ⭐ PRIORITIZE
+A dedicated view that uses *behavioral* signals — not static analysis — to identify, prioritize, and guide remediation of technical debt. Most debt tools tell you what's messy. CodeLore tells you what's messy *and actively costing you time*.
+
+**Debt identification — behavioral signals over static ones:**
+- "Costly debt" ranking: files scored by `churn × complexity × (1 + shame_ratio)`. High-complexity files that nobody touches aren't debt — they're fossils. High-complexity files that churn every sprint are bleeding velocity. This is the core Tornhill insight applied directly to prioritization.
+- "Debt clusters" — group files by directory and aggregate their debt signals. A single bad file is a refactor. An entire directory of churning, shame-heavy, single-owner files is a *systemic* problem. Surface directory-level rollups so teams think in terms of subsystems, not individual files.
+- "Accidental debt vs. deliberate debt" — classify based on commit message patterns. Files with `hack`, `workaround`, `TODO`, `temporary` in their commit history = deliberate debt someone knowingly created. Files with rising churn and fix-commits but no such markers = accidental debt that crept in. Different remediation strategies for each.
+
+**Prioritization — what to fix first:**
+- "ROI estimator" — rank debt items by estimated payoff: `(churn_frequency × author_count × shame_trend) / complexity`. High churn + many authors + worsening trajectory + *low* complexity = easiest win with biggest payoff. High churn + single author + *high* complexity = important but expensive. Show both axes so teams can pick quick wins or strategic investments.
+- "Debt budget" — given a time budget (e.g. "we have 2 days for debt work this sprint"), auto-select the highest-ROI files that fit within the budget based on estimated complexity. Not magic — just sorting by payoff-per-effort and accumulating until the budget is spent.
+- "Debt dependency chain" — using coupling map data, show when fixing one file likely requires touching its coupled partners. A file that looks like a quick win but is tightly coupled to 4 other high-debt files is actually a bigger project. Surface this *before* someone starts the refactor.
+
+**Remediation guidance:**
+- Per-file "debt brief" — a structured summary: what kind of debt (accidental/deliberate), when it started accumulating (first shame commit or churn inflection point), who introduced it (first blood data), who knows it best (bus factor), what it's coupled to, and whether it has test coverage nearby. Everything a developer needs to decide whether and how to tackle it.
+- "Before/after projection" — for the top debt items, show what the hotspot matrix and deterioration feed *would* look like if those files stabilized. "If `auth.ts` stopped churning, your overall codebase risk drops 15%." Motivational and useful for justifying debt sprints to management.
+- AI-powered refactor briefs (pairs with the existing "Refactor brief" backlog item) — for each top-debt file, Claude generates a specific remediation plan based on the behavioral evidence: "This file has been rewritten 4 times in 6 months by 3 different authors. The commit messages suggest the API surface keeps changing. Consider extracting a stable interface."
+
+**CLI companion — `codelore debt [--budget 2d] [--top N]`:**
+- Quick terminal output: ranked debt list with ROI scores, estimated effort, and one-line summaries.
+- `--budget` flag auto-selects what fits in a time window.
+- Feeds into the web dashboard for the full interactive experience.
+
 #### Repo health tab
 Top-level health dashboard powered by `git-sizer` integration. Blob sizes, history bloat, pack efficiency. The "infrastructure layer" complement to the code-behavior metrics everywhere else in Lore. Green/amber/red status indicators. Something you'd check once when onboarding to a new repo.
 
@@ -248,26 +369,26 @@ Dedicated panel showing files ranked by the churn × complexity composite. Not j
 
 ### Polish
 
-#### Ignore list config (`lore.config.ts`)
-Make the ignore list configurable via a `lore.config.ts` file (extends the built-in defaults). Pairs with the existing "ignore list" backlog item.
+#### Ignore list config (`codelore.config.ts`)
+Make the ignore list configurable via a `codelore.config.ts` file (extends the built-in defaults). Pairs with the existing "ignore list" backlog item.
 
 #### Pre-commit hook warning
-When committing to an already-cursed file, warn the developer: "⚠ auth.ts is a cursed file (score: 78/100). Proceed?" Tiny integration surface, high signal value. Installable via `lore install-hook`.
+When committing to an already-cursed file, warn the developer: "⚠ auth.ts is a cursed file (score: 78/100). Proceed?" Tiny integration surface, high signal value. Installable via `codelore install-hook`.
 
-#### `lore badge`
+#### `codelore badge`
 Generate a health badge for your README (like coverage badges). Quick visual indicator of repo health.
 
-#### Export as HTML (`lore --format html`)
+#### Export as HTML (`codelore --format html`)
 Dump a standalone self-contained report HTML file you can share — no server needed. No dashboard, no server — just a file you can email or drop in Slack.
 
-#### `lore init` setup wizard
-Interactive first-run wizard: detects repo age, suggests appropriate `--since` window, asks if you want the pre-commit hook, generates a `lore.config.ts` with sensible defaults. Removes the "now what?" moment after install.
+#### `codelore init` setup wizard
+Interactive first-run wizard: detects repo age, suggests appropriate `--since` window, asks if you want the pre-commit hook, generates a `codelore.config.ts` with sensible defaults. Removes the "now what?" moment after install.
 
 #### VS Code extension
-Surface Lore scores inline in the editor — hotspot severity as a gutter indicator, shame score in the file tab, bus factor warning when you open a ghost file. Passive ambient awareness without running the CLI. The eventual distribution channel that gets Lore in front of the most developers with the least friction.
+Surface CodeLore scores inline in the editor — hotspot severity as a gutter indicator, shame score in the file tab, bus factor warning when you open a ghost file. Passive ambient awareness without running the CLI. The eventual distribution channel that gets CodeLore in front of the most developers with the least friction.
 
-#### Shareable snapshot (`lore share`)
-Generate a static snapshot of the current `LoreReport` as a hosted URL (or self-hostable JSON + HTML bundle). "Here's the lore of our repo as of today" that you can share with stakeholders who don't have git access. Privacy-aware: strips author emails, optionally anonymizes contributor names.
+#### Shareable snapshot (`codelore share`)
+Generate a static snapshot of the current `CodeloreReport` as a hosted URL (or self-hostable JSON + HTML bundle). "Here's the codelore of our repo as of today" that you can share with stakeholders who don't have git access. Privacy-aware: strips author emails, optionally anonymizes contributor names.
 
 ---
 
@@ -280,16 +401,16 @@ _(nothing right now)_
 ## Done
 
 ### Parallel development analyzer
-Detects temporal concurrency per file — multiple authors committing in the same calendar week. Uses author-week matrix approach with severity-weighted scoring (`max(1.0, min(avg_authors/2, 2.0))`). Produces standalone `ParallelDevReport` on `LoreReport` and feeds into cursed file scoring (+5/+10/+20 bonus). 11 unit tests. Inspired by Tornhill/Meneely research on parallel work correlating with defect rates. V2 roadmap: sustained vs. spike detection, configurable time windows, knowledge map visualization, defect correlation. Design spec: `docs/plans/2026-03-11-parallel-development-design.md`.
+Detects temporal concurrency per file — multiple authors committing in the same calendar week. Uses author-week matrix approach with severity-weighted scoring (`max(1.0, min(avg_authors/2, 2.0))`). Produces standalone `ParallelDevReport` on `CodeloreReport` and feeds into cursed file scoring (+5/+10/+20 bonus). 11 unit tests. Inspired by Tornhill/Meneely research on parallel work correlating with defect rates. V2 roadmap: sustained vs. spike detection, configurable time windows, knowledge map visualization, defect correlation. Design spec: `docs/plans/2026-03-11-parallel-development-design.md`.
 
 ### Color-coded cursed file reason tags (web dashboard)
 Each signal type on cursed file cards now has a distinct color: orange (churn), amber (ownership), purple (parallel dev), pink (shame), cyan (age paradox), blue (coordination). Replaces the previous all-red styling.
 
 ### Commit message forensics ("shame score")
-Three-tier weighted keyword scoring (`revert`/`hotfix`/`oops` = critical, `hack`/`workaround` = moderate, `fix`/`typo` = mild). Ratio-based per-file shame score (0–100). Feeds into cursed file scoring (+20 max bonus). `--shame` flag surfaces a dedicated leaderboard panel in the CLI. Full history recommended: `lore --since all --shame`.
+Three-tier weighted keyword scoring (`revert`/`hotfix`/`oops` = critical, `hack`/`workaround` = moderate, `fix`/`typo` = mild). Ratio-based per-file shame score (0–100). Feeds into cursed file scoring (+20 max bonus). `--shame` flag surfaces a dedicated leaderboard panel in the CLI. Full history recommended: `codelore --since all --shame`.
 
-### Adapt skills from Vitals to Lore
-Ported `/plan-feature`, `/prime`, `/review-project`, and `/sync-docs` skills. Replaced all Vitals-specific references with Lore equivalents (analyzers instead of runners, updated file paths, removed fixtures/scoring references).
+### Adapt skills from Vitals to CodeLore
+Ported `/plan-feature`, `/prime`, `/review-project`, and `/sync-docs` skills. Replaced all Vitals-specific references with CodeLore equivalents (analyzers instead of runners, updated file paths, removed fixtures/scoring references).
 
 ### Ignore list for lock files and auto-generated files
 Built-in `IGNORED_PATTERNS` in `git.ts` filters lock files, assets (`.ico`, `.png`, `.svg`, etc.), and generated output (`.next/`, `dist/`, `coverage/`) from `getTrackedFiles()`.
