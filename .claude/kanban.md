@@ -55,7 +55,17 @@ _(Done — see Done column)_
 
 ~~#### Hotspot score~~ _(Done — see Done column)_
 
-~~#### `cloc` integration~~ _(Done as LOC analyzer — pure filesystem, no cloc dependency. See Done column)_
+#### `cloc` integration — replace naive line counting
+Swap the current `analyzeLoc` (reads files and counts newlines) with `cloc --json` for proper code/comment/blank separation. `cloc` handles 250+ languages, understands block comments, docstrings, and heredocs — things we'd never want to build ourselves.
+
+**Changes:**
+- **Types**: Add `codeLines`, `commentLines`, `blankLines` to `FileLocEntry`. Keep `lines` as the total for backwards compatibility. Add `commentDensity` (comments / code ratio) per file.
+- **Analyzer**: Shell out to `cloc --json --by-file` via execa (already a dependency). Parse JSON output. Fall back to current newline counting if `cloc` isn't installed, with a warning.
+- **Hotspot scoring**: Switch from `loc` (total lines) to `codeLines` for the complexity dimension — comments and blanks shouldn't inflate hotspot scores.
+- **Language breakdown**: Use `cloc`'s language detection instead of our extension map. More accurate, handles edge cases (`.h` files, shebangs, polyglot files).
+- **New surface area**: Comment density per file becomes available data for future analyzers (approachability map, learning curve surface, debt workbench).
+
+**Not in scope**: Language breakdown panel in the web dashboard (separate backlog item). This is the data layer only.
 
 #### `git-sizer` integration
 Wrap `git-sizer` (GitHub's repo health CLI) to surface repo-level health metrics: largest blobs, tree depth, pack efficiency, history size. Not per-file — this is repo-wide infrastructure health. Add a "Repo Health" tab to the web dashboard. Flags repos with bloated history, giant binary files, or pathological tree structures that slow down git operations.
@@ -64,6 +74,20 @@ Wrap `git-sizer` (GitHub's repo health CLI) to surface repo-level health metrics
 
 #### Rename tracking
 Follow files through renames so churn/age history isn't lost when someone does `mv auth.ts authentication.ts`. Use git's `--follow` or `--find-renames` to stitch history across renames.
+
+#### Hotspot root cause clustering ("geographic profiling") ⭐ PRIORITIZE
+Inspired by Tornhill's criminal geographic profiling analogy — multiple crime scenes reveal a hidden anchor point. Apply the same idea to code: take the top hotspots and cluster them by shared traits to reveal the *systemic cause* behind them, not just the individual symptoms.
+
+**Shared trait dimensions to analyze:**
+- **Structural**: do hotspots cluster in the same directory/subsystem? If 6 of the top 10 are in `src/auth/`, the problem is the subsystem's design, not individual files.
+- **Ownership**: do hotspots share a dominant author? The "black hole" might be a contributor spreading complexity.
+- **Temporal**: did multiple hotspots start churning around the same time? Points to a specific event (migration, feature push, botched refactor).
+- **Coupling hub**: are hotspots coupled to a *common file* that isn't itself a hotspot? That quiet hub file is the killer's home address — it's not on fire, it's *causing* fires. This is the highest-signal insight.
+
+**Implementation notes:**
+- Synthesis layer over existing data — hotspots, coupling pairs, bus factor, churn velocity, directory structure. No new git primitives needed.
+- Output: ranked list of "root cause clusters" with the shared trait, the hotspot members, and a narrative explaining the pattern.
+- Pairs naturally with the technical debt workbench (clusters become debt targets) and the knowledge map (visualize clusters spatially).
 
 #### Complexity over time
 Track lines-of-code per file across commits to show whether files are growing or shrinking. Growing + high churn = compounding risk.
@@ -274,8 +298,7 @@ The GitKraken-style DAG — colored branch lanes, commit dots, merge lines. Buil
 #### Hotspot matrix
 Scatter plot: X-axis = churn, Y-axis = complexity (LOC), dot size = number of authors, dot color = shame score. Every file in the repo plotted simultaneously. The top-right quadrant (high churn, high complexity) is the danger zone. Instantly shows the shape of the codebase's risk. This is the single most information-dense visualization CodeLore can produce and the one most directly derived from Tornhill's methodology.
 
-#### Shame tab in web dashboard
-Add a sixth tab to the web dashboard for commit message forensics. The `forensics` data is already in every `CodeloreReport` — this is purely a UI addition. Show the shame leaderboard (file, shame score, dominant keywords, top offending commit messages) and a summary stat for total shame commits. Mirrors the `--shame` CLI panel but with more room to show details.
+~~#### Shame tab in web dashboard~~ _(Done — see Done column)_
 
 #### Knowledge map visualization ⭐ PRIORITIZE
 Tornhill-style treemap: files as circles, sized by LOC (requires cloc integration), colored by dominant author (from bus factor data), grouped by directory. Parallel development data overlays as a heat ring or border glow around contested files. Connects "who owns what" with "where is concurrent work happening." Great for onboarding ("who do I ask about feature X?"), knowledge transfer planning, and team health. See screenshot from *Software Design X-Rays* for reference. Design spec: `docs/plans/2026-03-11-parallel-development-design.md` § V2 Roadmap.
@@ -345,6 +368,25 @@ Visual breakdown of what the repo is made of — languages, LOC per language, fi
 
 #### Hotspot score leaderboard
 Dedicated panel showing files ranked by the churn × complexity composite. Not just cursed files — specifically the Tornhill hotspot formula. Separate from the existing cursed file view because the formula and interpretation are different. Most engineers will understand "high churn AND high complexity = problem" immediately.
+
+#### Hotspot health sentiment — distinguish healthy churn from dangerous churn
+Inspired by Tornhill: "If all hotspots have low complexity, you're in great shape." Currently the hotspot UI is a warning leaderboard regardless of whether the hotspots are actually concerning. Three changes:
+
+**1. Health assessment narrative (CLI + web)**
+Open the hotspot section with a one-sentence verdict based on the complexity profile of the top-churned files:
+- *Positive*: "Your top 10 most-changed files have a median complexity of 120 lines — your active code is well-structured."
+- *Concerning*: "6 of your top 10 most-changed files exceed 500 lines — complexity is concentrating where you work most."
+- Computed from the intersection of churn rank and LOC (or `codeLines` once cloc lands). No new analyzer — just a summary function over existing hotspot data.
+
+**2. Visual sentiment on hotspot entries (web dashboard)**
+Color-code individual hotspot entries by *why* they scored what they scored:
+- Green: high churn, low complexity — "active but healthy." You're working on well-structured code.
+- Amber: moderate churn × moderate complexity — worth watching.
+- Red: high churn, high complexity — genuine concern, the classic Tornhill hotspot.
+Right now everything feels like a warning because it's a ranked list with no color distinction. Adding sentiment turns the leaderboard into a diagnostic.
+
+**3. "All clear" state (CLI + web)**
+When no files cross the warning threshold, don't show a low-scoring leaderboard that still *feels* alarming. Explicitly say "No concerning hotspots detected" and frame it positively. The absence of bad news is good news — the UI should reflect that instead of showing an empty or underwhelming list.
 
 ---
 
@@ -452,3 +494,6 @@ Single repo-wide metric: percentage of files where one author has >80% of commit
 
 ### Co-author analysis
 Parses `Co-authored-by:` trailer lines from commit messages. Tracks author pairs, co-authored commit counts, and shared files. Builds per-author stats with primary partner identification. Case-insensitive trailer matching. CLI panel shows top pairs. 8 unit tests.
+
+### Shame tab in web dashboard
+Seventh tab in the web dashboard surfacing commit message forensics. List + side panel layout (matching Coupling tab pattern): left panel shows shame leaderboard with purple-highlighted scores, right panel shows file detail with shame score, shame-to-total commit ratio, color-coded keyword severity tags (red=critical, amber=moderate, muted=mild), and top shame commits with messages and points. Empty state for clean repos. Design spec: `docs/superpowers/specs/2026-03-15-shame-tab-design.md`.
