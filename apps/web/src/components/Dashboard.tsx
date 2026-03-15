@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { CodeloreReport } from '@codelore/core';
 
-type Tab = 'overview' | 'churn' | 'contributors' | 'cursed' | 'age' | 'coupling';
+type Tab = 'overview' | 'churn' | 'contributors' | 'cursed' | 'age' | 'coupling' | 'shame';
 
 export default function Dashboard({ report }: { report: CodeloreReport }) {
   const [tab, setTab] = useState<Tab>('overview');
@@ -13,6 +13,7 @@ export default function Dashboard({ report }: { report: CodeloreReport }) {
     { id: 'cursed', label: 'Cursed Files', emoji: '☠' },
     { id: 'age', label: 'Age Map', emoji: '⏳' },
     { id: 'coupling', label: 'Coupling', emoji: '🔗' },
+    { id: 'shame', label: 'Shame', emoji: '⚑' },
   ];
 
   return (
@@ -58,6 +59,7 @@ export default function Dashboard({ report }: { report: CodeloreReport }) {
         {tab === 'cursed' && <CursedTab report={report} />}
         {tab === 'age' && <AgeTab report={report} />}
         {tab === 'coupling' && <CouplingTab report={report} />}
+        {tab === 'shame' && <ShameTab report={report} />}
       </main>
     </div>
   );
@@ -223,6 +225,91 @@ function CouplingTab({ report }: { report: CodeloreReport }) {
             </div>
           ) : (
             <div className="text-gray-500 text-sm p-4">Click a file to see its coupling partners</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ShameTab({ report }: { report: CodeloreReport }) {
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+
+  if (report.forensics.shameLeaderboard.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <div className="text-5xl mb-4">✨</div>
+        <p className="text-green-400 text-lg">No commit message red flags detected</p>
+        <p className="text-gray-500 text-sm mt-2">Clean commit history — no shame keywords found</p>
+      </div>
+    );
+  }
+
+  const selectedForensics = selectedFile
+    ? report.forensics.shameLeaderboard.find(f => f.file === selectedFile)
+    : null;
+
+  const churnFile = selectedFile
+    ? report.churn.files.find(f => f.file === selectedFile)
+    : null;
+
+  return (
+    <div>
+      <p className="text-gray-400 mb-4 text-sm">
+        {report.forensics.summary} &middot; {report.forensics.totalShameCommits} shame commits total
+      </p>
+
+      <div className="flex gap-4">
+        <div className="w-1/3 space-y-1 max-h-96 overflow-auto">
+          {report.forensics.shameLeaderboard.map(f => (
+            <button
+              key={f.file}
+              onClick={() => setSelectedFile(f.file)}
+              className={`w-full text-left px-2 py-1 rounded text-sm font-mono flex items-center gap-2 ${
+                selectedFile === f.file ? 'bg-purple-900 text-purple-300' : 'text-gray-400 hover:bg-gray-900'
+              }`}
+            >
+              <span className="truncate flex-1">{f.file}</span>
+              <span className={`flex-shrink-0 ${selectedFile === f.file ? 'text-purple-300' : 'text-purple-400'}`}>{f.shameScore}</span>
+            </button>
+          ))}
+        </div>
+        <div className="flex-1">
+          {selectedForensics ? (
+            <div className="bg-gray-900 border border-gray-800 rounded p-4">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-white font-mono text-sm">{selectedForensics.file}</span>
+                <span className="text-purple-400 font-bold text-lg">{selectedForensics.shameScore}/100</span>
+              </div>
+
+              <p className="text-gray-500 text-xs mb-3">
+                {selectedForensics.shameCommitCount} shame commit{selectedForensics.shameCommitCount !== 1 ? 's' : ''}
+                {churnFile ? ` out of ${churnFile.commitCount} total` : ''}
+              </p>
+
+              <div className="flex flex-wrap gap-2 mb-4">
+                {selectedForensics.dominantKeywords.map(kw => (
+                  <span key={kw} className={`text-xs px-2 py-1 rounded ${shameKeywordBadge(kw)}`}>{kw}</span>
+                ))}
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-gray-500 text-xs uppercase tracking-wide">Top shame commits</p>
+                {selectedForensics.topShameCommits.map(c => (
+                  <div key={c.hash} className="bg-gray-950 border border-gray-800 rounded p-2">
+                    <p className="text-gray-300 text-sm font-mono">"{c.message}"</p>
+                    <div className="flex gap-2 mt-1">
+                      {c.keywords.map(kw => (
+                        <span key={kw} className={`text-xs px-1.5 py-0.5 rounded ${shameKeywordBadge(kw)}`}>{kw}</span>
+                      ))}
+                      <span className="text-gray-600 text-xs ml-auto">+{c.shamePoints}pts</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="text-gray-500 text-sm p-4">Click a file to see its shame history</div>
           )}
         </div>
       </div>
@@ -445,4 +532,12 @@ function hotspotBadge(cat: string) {
     case 'moderate': return 'bg-cyan-950 text-cyan-400';
     default: return 'bg-gray-800 text-gray-400';
   }
+}
+
+function shameKeywordBadge(keyword: string): string {
+  const k = keyword.toLowerCase();
+  if (['revert', 'hotfix', 'oops', 'broken'].includes(k)) return 'bg-red-950 text-red-400';
+  if (['hack', 'workaround', 'todo', 'temporary'].includes(k)) return 'bg-amber-950 text-amber-400';
+  if (['fix', 'typo', 'patch', 'fixup'].includes(k)) return 'bg-stone-800 text-stone-400';
+  return 'bg-gray-800 text-gray-400';
 }
