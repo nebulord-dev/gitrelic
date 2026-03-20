@@ -17,6 +17,7 @@ export function analyzeHotspotClustering(
   const allClusters: HotspotCluster[] = [
     ...clusterByStructure(top, trackedFiles),
     ...clusterByOwnership(top, busFactor, contributors),
+    ...clusterByTemporal(top, commits),
   ];
 
   return assembleReport(allClusters);
@@ -99,6 +100,87 @@ function clusterByOwnership(
       clusterScore: members.length * avgScore,
       narrative: `${author} owns ${members.length} of the top 20 hotspots (avg ${avgPercent}% ownership). Either they're the team's most critical contributor or they're spreading complexity.`,
       sharedTrait: author,
+    });
+  }
+
+  return clusters;
+}
+
+// ─── Temporal ────────────────────────────────────────────────────────────────
+
+function toMonthKey(dateStr: string): string {
+  // Parse only the YYYY-MM portion to avoid timezone shift issues
+  const [year, month] = dateStr.slice(0, 7).split('-');
+  return `${year}-${month}`;
+}
+
+function findInflectionMonth(timestamps: string[]): string | null {
+  if (timestamps.length < 4) return null;
+
+  const monthlyCounts = new Map<string, number>();
+  for (const ts of timestamps) {
+    const key = toMonthKey(ts);
+    monthlyCounts.set(key, (monthlyCounts.get(key) ?? 0) + 1);
+  }
+
+  const avg = timestamps.length / monthlyCounts.size;
+
+  // Find first month exceeding the average — that's the inflection
+  const sorted = [...monthlyCounts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  for (const [month, count] of sorted) {
+    if (count > avg) return month;
+  }
+
+  return null;
+}
+
+function clusterByTemporal(hotspots: ClusterMember[], commits: RawCommit[]): HotspotCluster[] {
+  const hotspotSet = new Set(hotspots.map(h => h.file));
+
+  // Collect per-file commit dates
+  const fileDates = new Map<string, string[]>();
+  for (const commit of commits) {
+    for (const file of commit.files) {
+      if (!hotspotSet.has(file)) continue;
+      if (!fileDates.has(file)) fileDates.set(file, []);
+      fileDates.get(file)!.push(commit.date);
+    }
+  }
+
+  // Check minimum 3 distinct months across all hotspot commits
+  const allMonths = new Set<string>();
+  for (const dates of fileDates.values()) {
+    for (const d of dates) allMonths.add(toMonthKey(d));
+  }
+  if (allMonths.size < 3) return [];
+
+  // Find inflection month per file
+  const scoreByFile = new Map(hotspots.map(h => [h.file, h.hotspotScore]));
+  const inflections = new Map<string, ClusterMember[]>();
+  for (const [file, dates] of fileDates) {
+    const month = findInflectionMonth(dates);
+    if (!month) continue;
+    if (!inflections.has(month)) inflections.set(month, []);
+    inflections.get(month)!.push({ file, hotspotScore: scoreByFile.get(file)! });
+  }
+
+  const clusters: HotspotCluster[] = [];
+  for (const [month, members] of inflections) {
+    if (members.length < 2) continue;
+
+    const avgScore = Math.round(members.reduce((s, m) => s + m.hotspotScore, 0) / members.length);
+    const [year, mo] = month.split('-');
+    // Use UTC date to avoid timezone shifting the month
+    const monthName = new Date(Date.UTC(Number(year), Number(mo) - 1)).toLocaleString('en', { month: 'short', timeZone: 'UTC' });
+    const label = `${monthName} ${year} inflection`;
+
+    clusters.push({
+      dimension: 'temporal',
+      label,
+      members,
+      clusterScore: members.length * avgScore,
+      narrative: `${members.length} hotspots started accelerating in ${monthName} ${year}. Something happened that month — a migration, a feature push, or a staffing change — that destabilized multiple files simultaneously.`,
+      sharedTrait: month,
     });
   }
 

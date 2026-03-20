@@ -164,3 +164,84 @@ describe('ownership clustering', () => {
     expect(ownership).toHaveLength(0);
   });
 });
+
+// ─── Temporal clustering ──────────────────────────────────────────────────────
+
+function makeCommits(fileCommits: { file: string; dates: string[] }[]): RawCommit[] {
+  const commits: RawCommit[] = [];
+  for (const fc of fileCommits) {
+    for (const date of fc.dates) {
+      commits.push({
+        hash: `${fc.file}-${date}`,
+        authorEmail: 'dev@test.com',
+        authorName: 'Dev',
+        date,
+        message: 'change',
+        files: [fc.file],
+        fileStats: [],
+        insertions: 1,
+        deletions: 0,
+      });
+    }
+  }
+  return commits;
+}
+
+describe('temporal clustering', () => {
+  it('groups hotspots whose churn inflected in the same month', () => {
+    // Both files have low activity early, spike in 2025-10
+    const hotspots = makeHotspotReport([
+      { file: 'a.ts', score: 80 },
+      { file: 'b.ts', score: 70 },
+    ]);
+    const commits = makeCommits([
+      { file: 'a.ts', dates: ['2025-06-01', '2025-07-01', '2025-10-01', '2025-10-10', '2025-10-20', '2025-11-01'] },
+      { file: 'b.ts', dates: ['2025-05-01', '2025-08-01', '2025-10-05', '2025-10-15', '2025-10-25', '2025-11-05'] },
+    ]);
+    const result = analyzeHotspotClustering(
+      hotspots, emptyBusFactor(), emptyCoupling(), emptyContributors(), commits,
+      ['a.ts', 'b.ts']
+    );
+
+    const temporal = result.clusters.filter(c => c.dimension === 'temporal');
+    expect(temporal).toHaveLength(1);
+    expect(temporal[0].members).toHaveLength(2);
+    expect(temporal[0].sharedTrait).toContain('2025-10');
+  });
+
+  it('skips files with fewer than 4 commits', () => {
+    const hotspots = makeHotspotReport([
+      { file: 'a.ts', score: 80 },
+      { file: 'b.ts', score: 70 },
+    ]);
+    const commits = makeCommits([
+      { file: 'a.ts', dates: ['2025-06-01', '2025-10-01', '2025-10-10'] },
+      { file: 'b.ts', dates: ['2025-06-01', '2025-10-01', '2025-10-10'] },
+    ]);
+    const result = analyzeHotspotClustering(
+      hotspots, emptyBusFactor(), emptyCoupling(), emptyContributors(), commits,
+      ['a.ts', 'b.ts']
+    );
+
+    const temporal = result.clusters.filter(c => c.dimension === 'temporal');
+    expect(temporal).toHaveLength(0);
+  });
+
+  it('skips temporal dimension when less than 3 distinct months', () => {
+    const hotspots = makeHotspotReport([
+      { file: 'a.ts', score: 80 },
+      { file: 'b.ts', score: 70 },
+    ]);
+    const commits = makeCommits([
+      { file: 'a.ts', dates: ['2025-10-01', '2025-10-10', '2025-10-20', '2025-11-01'] },
+      { file: 'b.ts', dates: ['2025-10-05', '2025-10-15', '2025-10-25', '2025-11-05'] },
+    ]);
+    const result = analyzeHotspotClustering(
+      hotspots, emptyBusFactor(), emptyCoupling(), emptyContributors(), commits,
+      ['a.ts', 'b.ts']
+    );
+
+    const temporal = result.clusters.filter(c => c.dimension === 'temporal');
+    expect(temporal).toHaveLength(0);
+  });
+});
