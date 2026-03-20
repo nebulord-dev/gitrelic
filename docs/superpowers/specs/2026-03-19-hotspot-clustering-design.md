@@ -103,7 +103,7 @@ Four independent dimension functions, each receiving the top 20 hotspots + relev
 ### Assembly
 
 1. Collect all clusters from all four dimensions.
-2. Score each: `members.length × average(memberScores)`.
+2. Score each: `members.length × average(members[].hotspotScore)`.
 3. Sort descending by `clusterScore`.
 4. Scan for files appearing in 2+ clusters → populate `multiSignalFiles`.
 5. Generate narratives per cluster.
