@@ -24,6 +24,7 @@ import { analyzeTestCoverage } from './analyzers/test-coverage.js';
 import { analyzeGhostFiles } from './analyzers/ghost-files.js';
 import { analyzeKnowledgeConcentration } from './analyzers/knowledge-concentration.js';
 import { analyzeCoAuthors } from './analyzers/co-author.js';
+import { analyzeHotspotClustering } from './analyzers/hotspot-clustering.js';
 import type { CodeloreReport, RunCodeloreOptions } from './types.js';
 
 /**
@@ -113,6 +114,9 @@ export async function runCodelore(options: RunCodeloreOptions): Promise<Codelore
   onProgress?.('Analyzing co-authorship...');
   const coAuthors = analyzeCoAuthors(commits);
 
+  onProgress?.('Clustering hotspots...');
+  const hotspotClusters = analyzeHotspotClustering(hotspots, busFactors, coupling, contributors, commits, trackedFiles);
+
   onProgress?.('Finding cursed files...');
   const cursedFiles = findCursedFiles(churn, busFactors, ageMap, forensics, parallelDev, commits.length);
 
@@ -148,10 +152,6 @@ export async function runCodelore(options: RunCodeloreOptions): Promise<Codelore
     ghostFiles,
     knowledgeConcentration,
     coAuthors,
-    hotspotClusters: {
-      clusters: [],
-      multiSignalFiles: [],
-      summary: '',
-    },
+    hotspotClusters,
   };
 }

@@ -1,5 +1,6 @@
 export { runCodelore } from './runner.js';
 export { analyzeParallelDev } from './analyzers/parallel-dev.js';
+export { analyzeHotspotClustering } from './analyzers/hotspot-clustering.js';
 export type { FileStats } from './utils/git.js';
 export type {
   CodeloreReport,
@@ -49,4 +50,9 @@ export type {
   CoAuthorReport,
   CoAuthorPair,
   CoAuthorStats,
+  HotspotClusterReport,
+  HotspotCluster,
+  ClusterMember,
+  ClusterDimension,
+  MultiSignalFile,
 } from './types.js';
