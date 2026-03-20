@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { CodeloreReport } from '@codelore/core';
+import HotspotClusters from './HotspotClusters';
 
 type Tab = 'overview' | 'churn' | 'contributors' | 'cursed' | 'age' | 'coupling' | 'shame';
 
@@ -141,6 +142,7 @@ function ChurnTab({ report }: { report: CodeloreReport }) {
           </div>
         ))}
       </div>
+      <HotspotClusters data={report.hotspotClusters} />
     </div>
   );
 }
