@@ -40,6 +40,8 @@ export function App({ report, progress, error, showShame }: Props) {
       <Newline />
       <HotspotPanel report={report} />
       <Newline />
+      <ClusteringPanel report={report} />
+      <Newline />
       <CouplingPanel report={report} />
       <Newline />
       <CursedFilesPanel report={report} />
@@ -220,6 +222,48 @@ function HotspotPanel({ report }: { report: CodeloreReport }) {
             <Text color={getHotspotColor(f.category)}>{f.category}</Text>
           </Box>
         ))}
+      </Box>
+    </Box>
+  );
+}
+
+function ClusteringPanel({ report }: { report: CodeloreReport }) {
+  const { hotspotClusters } = report;
+  if (hotspotClusters.clusters.length === 0) return null;
+
+  const dimensionColor: Record<string, string> = {
+    'structural': 'green',
+    'ownership': 'blue',
+    'temporal': 'yellow',
+    'coupling-hub': 'red',
+  };
+
+  return (
+    <Box flexDirection="column">
+      <Text color="magenta" bold>
+        {`── Root Causes (${hotspotClusters.clusters.length} cluster${hotspotClusters.clusters.length !== 1 ? 's' : ''}) ──────────────────────────────`}
+      </Text>
+      <Text color="gray" dimColor>{hotspotClusters.summary}</Text>
+      <Box flexDirection="column" marginTop={1}>
+        {hotspotClusters.clusters.slice(0, 3).map(c => (
+          <Box key={`${c.dimension}-${c.sharedTrait}`} flexDirection="column" marginBottom={1}>
+            <Box gap={2}>
+              <Text color={dimensionColor[c.dimension] ?? 'gray'}>[{c.dimension}]</Text>
+              <Text color="white">{c.label}</Text>
+              <Text color="gray" dimColor>— {c.members.length} hotspots</Text>
+            </Box>
+            <Text color="gray" dimColor>  "{c.narrative.split('.')[0]}."</Text>
+          </Box>
+        ))}
+        {hotspotClusters.multiSignalFiles.length > 0 && (
+          <Box gap={2}>
+            <Text color="red">⚑</Text>
+            <Text color="white">{hotspotClusters.multiSignalFiles[0].file}</Text>
+            <Text color="gray" dimColor>
+              appears in {hotspotClusters.multiSignalFiles[0].clusterCount} clusters
+            </Text>
+          </Box>
+        )}
       </Box>
     </Box>
   );
