@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type {
   HotspotReport, HotspotEntry, BusFactorReport, CouplingReport,
-  ContributorReport, ClusterMember,
+  ContributorReport, ClusterMember, ContributorProfile,
 } from '../types.js';
 import type { RawCommit } from '../utils/git.js';
 import { analyzeHotspotClustering } from './hotspot-clustering.js';
@@ -40,6 +40,22 @@ function emptyContributors(): ContributorReport {
     activeContributors: [],
     ghostContributors: [],
     topContributor: {} as any,
+    summary: '',
+  };
+}
+
+function makeBusFactor(entries: { file: string; dominantAuthor: string; dominantAuthorPercent: number }[]): BusFactorReport {
+  return {
+    files: entries.map(e => ({
+      file: e.file,
+      uniqueAuthors: 2,
+      authors: [e.dominantAuthor],
+      dominantAuthor: e.dominantAuthor,
+      dominantAuthorPercent: e.dominantAuthorPercent,
+      risk: 'medium' as const,
+    })),
+    criticalFiles: [],
+    overallBusFactor: 2,
     summary: '',
   };
 }
@@ -91,5 +107,60 @@ describe('structural clustering', () => {
 
     const structural = result.clusters.filter(c => c.dimension === 'structural');
     expect(structural).toHaveLength(0);
+  });
+});
+
+// ─── Ownership clustering ─────────────────────────────────────────────────────
+
+describe('ownership clustering', () => {
+  it('groups hotspots by dominant author', () => {
+    const hotspots = makeHotspotReport([
+      { file: 'a.ts', score: 80 },
+      { file: 'b.ts', score: 70 },
+      { file: 'c.ts', score: 60 },
+    ]);
+    const bf = makeBusFactor([
+      { file: 'a.ts', dominantAuthor: 'alice@dev.com', dominantAuthorPercent: 85 },
+      { file: 'b.ts', dominantAuthor: 'alice@dev.com', dominantAuthorPercent: 90 },
+      { file: 'c.ts', dominantAuthor: 'bob@dev.com', dominantAuthorPercent: 75 },
+    ]);
+    const result = analyzeHotspotClustering(
+      hotspots, bf, emptyCoupling(), emptyContributors(), [],
+      ['a.ts', 'b.ts', 'c.ts']
+    );
+
+    const ownership = result.clusters.filter(c => c.dimension === 'ownership');
+    expect(ownership).toHaveLength(1);
+    expect(ownership[0].sharedTrait).toBe('alice@dev.com');
+    expect(ownership[0].label).toContain('alice@dev.com');
+    expect(ownership[0].label).toContain('avg');
+    expect(ownership[0].members).toHaveLength(2);
+  });
+
+  it('skips ownership dimension for single-author repos', () => {
+    const hotspots = makeHotspotReport([
+      { file: 'a.ts', score: 80 },
+      { file: 'b.ts', score: 70 },
+    ]);
+    const bf = makeBusFactor([
+      { file: 'a.ts', dominantAuthor: 'solo@dev.com', dominantAuthorPercent: 100 },
+      { file: 'b.ts', dominantAuthor: 'solo@dev.com', dominantAuthorPercent: 100 },
+    ]);
+    const singleAuthorContribs: ContributorReport = {
+      contributors: [
+        { email: 'solo@dev.com', name: 'Solo', commitCount: 100, firstCommit: '', lastCommit: '', filesOwned: 0, linesChanged: 0, activeDays: 0, focusAreas: [], isActive: true },
+      ],
+      activeContributors: [],
+      ghostContributors: [],
+      topContributor: {} as any,
+      summary: '',
+    };
+    const result = analyzeHotspotClustering(
+      hotspots, bf, emptyCoupling(), singleAuthorContribs, [],
+      ['a.ts', 'b.ts']
+    );
+
+    const ownership = result.clusters.filter(c => c.dimension === 'ownership');
+    expect(ownership).toHaveLength(0);
   });
 });

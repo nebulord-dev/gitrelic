@@ -16,6 +16,7 @@ export function analyzeHotspotClustering(
 
   const allClusters: HotspotCluster[] = [
     ...clusterByStructure(top, trackedFiles),
+    ...clusterByOwnership(top, busFactor, contributors),
   ];
 
   return assembleReport(allClusters);
@@ -57,6 +58,47 @@ function clusterByStructure(hotspots: ClusterMember[], trackedFiles: string[]): 
       clusterScore: members.length * avgScore,
       narrative: `${members.length} of your top 20 hotspots live in \`${prefix}/\`. The problem may not be individual files — this subsystem's design is concentrating risk.`,
       sharedTrait: prefix,
+    });
+  }
+
+  return clusters;
+}
+
+// ─── Ownership ───────────────────────────────────────────────────────────────
+
+function clusterByOwnership(
+  hotspots: ClusterMember[],
+  busFactor: BusFactorReport,
+  contributors: ContributorReport,
+): HotspotCluster[] {
+  if (contributors.contributors.length <= 1) return [];
+
+  const busFactorByFile = new Map(busFactor.files.map(f => [f.file, f]));
+  const groups = new Map<string, { members: ClusterMember[]; percents: number[] }>();
+
+  for (const h of hotspots) {
+    const bf = busFactorByFile.get(h.file);
+    if (!bf) continue;
+    const author = bf.dominantAuthor;
+    if (!groups.has(author)) groups.set(author, { members: [], percents: [] });
+    const g = groups.get(author)!;
+    g.members.push(h);
+    g.percents.push(bf.dominantAuthorPercent);
+  }
+
+  const clusters: HotspotCluster[] = [];
+  for (const [author, { members, percents }] of groups) {
+    if (members.length < 2) continue;
+
+    const avgScore = Math.round(members.reduce((s, m) => s + m.hotspotScore, 0) / members.length);
+    const avgPercent = Math.round(percents.reduce((s, p) => s + p, 0) / percents.length);
+    clusters.push({
+      dimension: 'ownership',
+      label: `${author} (avg ${avgPercent}%)`,
+      members,
+      clusterScore: members.length * avgScore,
+      narrative: `${author} owns ${members.length} of the top 20 hotspots (avg ${avgPercent}% ownership). Either they're the team's most critical contributor or they're spreading complexity.`,
+      sharedTrait: author,
     });
   }
 
