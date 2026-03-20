@@ -18,7 +18,7 @@ export default function HotspotClusters({ data }: { data: HotspotClusterReport }
       {data.multiSignalFiles.length > 0 && (
         <div className="bg-red-950 border border-red-800 rounded p-3 mb-4">
           <p className="text-red-300 text-sm font-semibold mb-1">Multi-Signal Files</p>
-          {data.multiSignalFiles.map(f => (
+          {data.multiSignalFiles.slice(0, 10).map(f => (
             <div key={f.file} className="flex items-center gap-2 py-1">
               <span className="text-red-400 text-sm font-mono truncate flex-1">{f.file}</span>
               <span className="text-red-500 text-xs">{f.clusterCount} clusters</span>
@@ -29,11 +29,14 @@ export default function HotspotClusters({ data }: { data: HotspotClusterReport }
               </div>
             </div>
           ))}
+          {data.multiSignalFiles.length > 10 && (
+            <p className="text-red-500 text-xs mt-1">+ {data.multiSignalFiles.length - 10} more</p>
+          )}
         </div>
       )}
 
       <div className="space-y-3">
-        {data.clusters.map(c => (
+        {data.clusters.slice(0, 20).map(c => (
           <div key={`${c.dimension}-${c.sharedTrait}`} className="bg-gray-900 border border-gray-800 rounded p-4">
             <div className="flex items-center gap-3 mb-2">
               <span className={`text-xs px-2 py-1 rounded ${dimensionBadge[c.dimension]}`}>{c.dimension}</span>
@@ -50,6 +53,9 @@ export default function HotspotClusters({ data }: { data: HotspotClusterReport }
             </div>
           </div>
         ))}
+        {data.clusters.length > 20 && (
+          <p className="text-gray-500 text-sm text-center py-2">+ {data.clusters.length - 20} more clusters</p>
+        )}
       </div>
     </div>
   );

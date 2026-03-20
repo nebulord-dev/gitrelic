@@ -251,7 +251,8 @@ function assembleReport(clusters: HotspotCluster[]): HotspotClusterReport {
   const multiSignalFiles: MultiSignalFile[] = [];
   for (const [file, dimensions] of fileClusters) {
     if (dimensions.length >= 2) {
-      multiSignalFiles.push({ file, clusterCount: dimensions.length, dimensions });
+      const uniqueDimensions = [...new Set(dimensions)];
+      multiSignalFiles.push({ file, clusterCount: dimensions.length, dimensions: uniqueDimensions });
     }
   }
   multiSignalFiles.sort((a, b) => b.clusterCount - a.clusterCount);
@@ -266,7 +267,7 @@ function assembleReport(clusters: HotspotCluster[]): HotspotClusterReport {
 
   if (multiSignalFiles.length > 0) {
     const msf = multiSignalFiles[0];
-    summary += ` \`${msf.file}\` appears in ${msf.clusterCount} clusters (${msf.dimensions.join(', ')}) — this file is hot for multiple systemic reasons and is the strongest candidate for intervention.`;
+    summary += ` \`${msf.file}\` appears in ${msf.clusterCount} clusters across ${msf.dimensions.length} dimensions (${msf.dimensions.join(', ')}) — strongest candidate for intervention.`;
   }
 
   return { clusters, multiSignalFiles, summary };
