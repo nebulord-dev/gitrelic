@@ -252,7 +252,7 @@ function ClusteringPanel({ report }: { report: CodeloreReport }) {
               <Text color="white">{c.label}</Text>
               <Text color="gray" dimColor>— {c.members.length} hotspots</Text>
             </Box>
-            <Text color="gray" dimColor>  "{c.narrative.split('.')[0]}."</Text>
+            <Text color="gray" dimColor>  "{c.narrative.split('. ')[0]}."</Text>
           </Box>
         ))}
         {hotspotClusters.multiSignalFiles.length > 0 && (
