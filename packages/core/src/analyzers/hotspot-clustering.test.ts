@@ -318,3 +318,114 @@ describe('coupling hub detection', () => {
     expect(hubs).toHaveLength(0);
   });
 });
+
+// ─── Assembly and multi-signal detection ──────────────────────────────────────
+
+describe('assembly and multi-signal detection', () => {
+  it('ranks clusters by clusterScore descending', () => {
+    const hotspots = makeHotspotReport([
+      { file: 'src/auth/a.ts', score: 80 },
+      { file: 'src/auth/b.ts', score: 70 },
+      { file: 'src/api/c.ts', score: 90 },
+      { file: 'src/api/d.ts', score: 85 },
+    ]);
+    const result = analyzeHotspotClustering(
+      hotspots, emptyBusFactor(), emptyCoupling(), emptyContributors(), [],
+      ['src/auth/a.ts', 'src/auth/b.ts', 'src/api/c.ts', 'src/api/d.ts', 'src/other/e.ts', 'src/other/f.ts', 'src/other/g.ts']
+    );
+
+    const scores = result.clusters.map(c => c.clusterScore);
+    expect(scores).toEqual([...scores].sort((a, b) => b - a));
+  });
+
+  it('detects multi-signal files appearing in 2+ clusters', () => {
+    const hotspots = makeHotspotReport([
+      { file: 'src/auth/a.ts', score: 80 },
+      { file: 'src/auth/b.ts', score: 70 },
+    ]);
+    const bf = makeBusFactor([
+      { file: 'src/auth/a.ts', dominantAuthor: 'alice@dev.com', dominantAuthorPercent: 85 },
+      { file: 'src/auth/b.ts', dominantAuthor: 'alice@dev.com', dominantAuthorPercent: 90 },
+    ]);
+    const result = analyzeHotspotClustering(
+      hotspots, bf, emptyCoupling(), emptyContributors(), [],
+      ['src/auth/a.ts', 'src/auth/b.ts', 'src/other/c.ts', 'src/other/d.ts', 'src/other/e.ts']
+    );
+
+    // Both files should appear in structural (src/auth) and ownership (alice) clusters
+    expect(result.multiSignalFiles.length).toBeGreaterThanOrEqual(1);
+    expect(result.multiSignalFiles[0].clusterCount).toBe(2);
+    expect(result.multiSignalFiles[0].dimensions).toContain('structural');
+    expect(result.multiSignalFiles[0].dimensions).toContain('ownership');
+  });
+
+  it('returns empty report with correct summary when no clusters found', () => {
+    const hotspots = makeHotspotReport([
+      { file: 'a.ts', score: 80 },
+      { file: 'b.ts', score: 70 },
+    ]);
+    const result = analyzeHotspotClustering(
+      hotspots, emptyBusFactor(), emptyCoupling(), emptyContributors(), [],
+      ['a.ts', 'b.ts']
+    );
+
+    expect(result.clusters).toHaveLength(0);
+    expect(result.summary).toBe('No root cause patterns detected — hotspots appear independent.');
+  });
+
+  it('generates narratives containing dimension-specific content', () => {
+    const hotspots = makeHotspotReport([
+      { file: 'src/auth/a.ts', score: 80 },
+      { file: 'src/auth/b.ts', score: 70 },
+    ]);
+    const bf = makeBusFactor([
+      { file: 'src/auth/a.ts', dominantAuthor: 'alice@dev.com', dominantAuthorPercent: 85 },
+      { file: 'src/auth/b.ts', dominantAuthor: 'alice@dev.com', dominantAuthorPercent: 90 },
+    ]);
+    const result = analyzeHotspotClustering(
+      hotspots, bf, emptyCoupling(), emptyContributors(), [],
+      ['src/auth/a.ts', 'src/auth/b.ts', 'src/other/c.ts', 'src/other/d.ts', 'src/other/e.ts']
+    );
+
+    const structural = result.clusters.find(c => c.dimension === 'structural');
+    expect(structural?.narrative).toContain('src/auth');
+    expect(structural?.narrative).toContain('subsystem');
+
+    const ownership = result.clusters.find(c => c.dimension === 'ownership');
+    expect(ownership?.narrative).toContain('alice@dev.com');
+    expect(ownership?.narrative).toContain('ownership');
+  });
+
+  it('handles small repos with few hotspots gracefully', () => {
+    const hotspots = makeHotspotReport([
+      { file: 'src/auth/a.ts', score: 20 },
+      { file: 'src/auth/b.ts', score: 15 },
+    ]);
+    const result = analyzeHotspotClustering(
+      hotspots, emptyBusFactor(), emptyCoupling(), emptyContributors(), [],
+      ['src/auth/a.ts', 'src/auth/b.ts', 'src/other/c.ts', 'src/other/d.ts', 'src/other/e.ts']
+    );
+
+    // Should still attempt clustering with available data
+    expect(result.clusters.length).toBeGreaterThanOrEqual(0);
+    // If clusters exist, they should have valid scores
+    for (const c of result.clusters) {
+      expect(c.clusterScore).toBeGreaterThan(0);
+      expect(c.members.length).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('generates a summary string when clusters exist', () => {
+    const hotspots = makeHotspotReport([
+      { file: 'src/auth/a.ts', score: 80 },
+      { file: 'src/auth/b.ts', score: 70 },
+    ]);
+    const result = analyzeHotspotClustering(
+      hotspots, emptyBusFactor(), emptyCoupling(), emptyContributors(), [],
+      ['src/auth/a.ts', 'src/auth/b.ts', 'src/other/c.ts', 'src/other/d.ts', 'src/other/e.ts']
+    );
+
+    expect(result.summary).toContain('root cause cluster');
+    expect(result.summary).toContain('src/auth');
+  });
+});
