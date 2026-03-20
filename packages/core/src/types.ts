@@ -23,6 +23,7 @@ export interface CodeloreReport {
   ghostFiles: GhostFilesReport;
   knowledgeConcentration: KnowledgeConcentrationReport;
   coAuthors: CoAuthorReport;
+  hotspotClusters: HotspotClusterReport;
 }
 
 // ─── Repo metadata ─────────────────────────────────────────────────────────────
@@ -379,6 +380,36 @@ export interface CoAuthorReport {
   authorStats: CoAuthorStats[];
   totalCoAuthoredCommits: number;
   summary: string;
+}
+
+// ─── Hotspot clustering ────────────────────────────────────────────────────
+
+export type ClusterDimension = 'structural' | 'ownership' | 'temporal' | 'coupling-hub';
+
+export interface ClusterMember {
+  file: string;
+  hotspotScore: number;
+}
+
+export interface HotspotCluster {
+  dimension: ClusterDimension;
+  label: string;
+  members: ClusterMember[];
+  clusterScore: number;
+  narrative: string;
+  sharedTrait: string;
+}
+
+export interface HotspotClusterReport {
+  clusters: HotspotCluster[];
+  multiSignalFiles: MultiSignalFile[];
+  summary: string;
+}
+
+export interface MultiSignalFile {
+  file: string;
+  clusterCount: number;
+  dimensions: ClusterDimension[];
 }
 
 // ─── Runner options ────────────────────────────────────────────────────────────

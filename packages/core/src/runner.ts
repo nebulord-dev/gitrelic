@@ -148,5 +148,10 @@ export async function runCodelore(options: RunCodeloreOptions): Promise<Codelore
     ghostFiles,
     knowledgeConcentration,
     coAuthors,
+    hotspotClusters: {
+      clusters: [],
+      multiSignalFiles: [],
+      summary: '',
+    },
   };
 }
