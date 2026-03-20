@@ -75,19 +75,7 @@ Wrap `git-sizer` (GitHub's repo health CLI) to surface repo-level health metrics
 #### Rename tracking
 Follow files through renames so churn/age history isn't lost when someone does `mv auth.ts authentication.ts`. Use git's `--follow` or `--find-renames` to stitch history across renames.
 
-#### Hotspot root cause clustering ("geographic profiling") ⭐ PRIORITIZE
-Inspired by Tornhill's criminal geographic profiling analogy — multiple crime scenes reveal a hidden anchor point. Apply the same idea to code: take the top hotspots and cluster them by shared traits to reveal the *systemic cause* behind them, not just the individual symptoms.
-
-**Shared trait dimensions to analyze:**
-- **Structural**: do hotspots cluster in the same directory/subsystem? If 6 of the top 10 are in `src/auth/`, the problem is the subsystem's design, not individual files.
-- **Ownership**: do hotspots share a dominant author? The "black hole" might be a contributor spreading complexity.
-- **Temporal**: did multiple hotspots start churning around the same time? Points to a specific event (migration, feature push, botched refactor).
-- **Coupling hub**: are hotspots coupled to a *common file* that isn't itself a hotspot? That quiet hub file is the killer's home address — it's not on fire, it's *causing* fires. This is the highest-signal insight.
-
-**Implementation notes:**
-- Synthesis layer over existing data — hotspots, coupling pairs, bus factor, churn velocity, directory structure. No new git primitives needed.
-- Output: ranked list of "root cause clusters" with the shared trait, the hotspot members, and a narrative explaining the pattern.
-- Pairs naturally with the technical debt workbench (clusters become debt targets) and the knowledge map (visualize clusters spatially).
+~~#### Hotspot root cause clustering ("geographic profiling")~~ _(Done — see Done column)_
 
 #### Complexity over time
 Track lines-of-code per file across commits to show whether files are growing or shrinking. Growing + high churn = compounding risk.
@@ -497,3 +485,6 @@ Parses `Co-authored-by:` trailer lines from commit messages. Tracks author pairs
 
 ### Shame tab in web dashboard
 Seventh tab in the web dashboard surfacing commit message forensics. List + side panel layout (matching Coupling tab pattern): left panel shows shame leaderboard with purple-highlighted scores, right panel shows file detail with shame score, shame-to-total commit ratio, color-coded keyword severity tags (red=critical, amber=moderate, muted=mild), and top shame commits with messages and points. Empty state for clean repos. Design spec: `docs/superpowers/specs/2026-03-15-shame-tab-design.md`.
+
+### Hotspot root cause clustering ("geographic profiling")
+Tornhill-inspired geographic profiling — clusters top 20 hotspots by shared traits to surface systemic root causes. Four independent dimensions: **structural** (directory prefix grouping with breadth filter), **ownership** (dominant author from bus factor, skips single-author repos), **temporal** (churn inflection point detection per file, groups by calendar month), **coupling hub** (non-hotspot files coupled to 2+ hotspots — the "killer's home address"). Clusters ranked by `memberCount × avgHotspotScore`. Files appearing in 2+ clusters flagged as multi-signal (strongest intervention candidates). Template-based narratives per dimension. CLI panel (top 3 clusters after Hotspots), web section within Hotspots tab with color-coded dimension badges. 17 unit tests. Design spec: `docs/superpowers/specs/2026-03-19-hotspot-clustering-design.md`.
