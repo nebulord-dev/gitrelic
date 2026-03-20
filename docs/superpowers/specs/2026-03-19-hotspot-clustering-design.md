@@ -17,12 +17,16 @@ New types in `packages/core/src/types.ts`:
 ```ts
 type ClusterDimension = 'structural' | 'ownership' | 'temporal' | 'coupling-hub';
 
+interface ClusterMember {
+  file: string;
+  hotspotScore: number;       // from HotspotEntry.hotspotScore
+}
+
 interface HotspotCluster {
   dimension: ClusterDimension;
   label: string;              // e.g. "src/auth/", "alice@dev.com", "Oct 2025 inflection", "config.ts (hub)"
-  members: string[];          // file paths of hotspot files in this cluster
-  memberScores: number[];     // corresponding hotspot scores
-  clusterScore: number;       // memberCount × avgHotspotScore
+  members: ClusterMember[];   // hotspot files in this cluster with their scores
+  clusterScore: number;       // members.length × avg(members[].hotspotScore)
   narrative: string;          // human-readable explanation
   sharedTrait: string;        // the specific value that binds them (directory, author email, date range, hub file)
 }
@@ -42,14 +46,27 @@ interface MultiSignalFile {
 
 `HotspotClusterReport` is added to `CodeloreReport` as `hotspotClusters`.
 
+## Function Signature
+
+```ts
+export function analyzeHotspotClustering(
+  hotspots: HotspotReport,
+  busFactor: BusFactorReport,
+  coupling: CouplingReport,
+  contributors: ContributorReport,
+  commits: RawCommit[],
+  trackedFiles: string[]
+): HotspotClusterReport
+```
+
 ## Input
 
-The top 20 hotspots from `HotspotReport.topHotspots`, plus data from:
-- `BusFactorReport` (ownership dimension)
-- `CouplingReport` (coupling hub dimension)
-- `ChurnVelocityReport` (temporal dimension — inflection detection)
+The top 20 hotspots from `HotspotReport.topHotspots`, plus:
+- `BusFactorReport` (ownership dimension — dominant author per file)
+- `CouplingReport` (coupling hub dimension — uses `pairs`, not `topPairs`, to maximize hub detection coverage)
+- `ContributorReport` (ownership dimension — single-author repo detection)
+- `RawCommit[]` (temporal dimension — per-file commit timestamps for inflection detection; `ChurnVelocityReport` doesn't expose per-file timestamp arrays)
 - `trackedFiles` (structural dimension — breadth filter)
-- Raw commits (temporal dimension — per-file commit timestamps)
 
 ## Clustering Algorithm
 
@@ -77,10 +94,11 @@ Four independent dimension functions, each receiving the top 20 hotspots + relev
 
 ### Coupling hub detection
 
-- From the coupling report, find all non-hotspot files that appear in `CoupledPair` entries with 2+ hotspot files.
+- Scan `CouplingReport.pairs` (the full list, not `topPairs`) for non-hotspot files that appear in `CoupledPair` entries with 2+ hotspot files.
 - Each such hub file forms a cluster whose members are the hotspots it's coupled to.
 - This is the "killer's home address" — a quiet file causing fires elsewhere.
 - Label is the hub file path. The hub itself is stored in `sharedTrait`.
+- **Limitation**: hub detection is bounded by the coupling analyzer's existing thresholds (minimum 3 co-occurrences, minimum 30% coupling strength). Files coupled below these thresholds are invisible.
 
 ### Assembly
 
@@ -123,8 +141,8 @@ Empty state: "No root cause patterns detected — hotspots appear independent."
 ### Core (`packages/core`)
 
 - **New file**: `src/analyzers/hotspot-clustering.ts` — four dimension functions + assembly + narrative generation.
-- **`runner.ts`**: call `analyzeHotspotClustering()` after hotspots, coupling, bus factor, and churn velocity are computed. Pass those reports + `trackedFiles` + commits.
-- **`types.ts`**: add `ClusterDimension`, `HotspotCluster`, `HotspotClusterReport`, `MultiSignalFile` types and `hotspotClusters` field on `CodeloreReport`.
+- **`runner.ts`**: add `onProgress?.('Clustering hotspots...')` then call `analyzeHotspotClustering(hotspots, busFactors, coupling, contributors, commits, trackedFiles)` after hotspots, coupling, bus factor, and contributors are computed.
+- **`types.ts`**: add `ClusterDimension`, `ClusterMember`, `HotspotCluster`, `HotspotClusterReport`, `MultiSignalFile` types and `hotspotClusters` field on `CodeloreReport`.
 - **`index.ts`**: export the new analyzer function.
 
 ### CLI (`apps/cli`)
@@ -158,7 +176,7 @@ New section within the existing Hotspots tab in `Dashboard.tsx`, below the hotsp
 |------|----------|
 | No clusters found | Empty `clusters` array, summary says "hotspots appear independent". CLI panel and web section don't render. |
 | Single-author repo | Skip ownership dimension entirely. Other three dimensions proceed. |
-| Small repo (<5 hotspots above "moderate") | Fall back to top 10 by score regardless of category. Still require clusters of 2+. |
+| Small repo (<5 files in `topHotspots` with score >= 25) | Use all available `topHotspots` entries (up to 20). Clustering still requires groups of 2+, so very small sets may simply produce no clusters. |
 | Flat directory structure | Breadth filter discards prefixes containing >50% of tracked files. |
 | No coupling data | Coupling hub dimension returns zero clusters. Other dimensions proceed. |
 | Short history window (<3 distinct months) | Skip temporal dimension entirely. No error. |
