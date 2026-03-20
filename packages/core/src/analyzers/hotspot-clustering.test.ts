@@ -245,3 +245,76 @@ describe('temporal clustering', () => {
     expect(temporal).toHaveLength(0);
   });
 });
+
+// ─── Coupling hub detection ───────────────────────────────────────────────────
+
+function makeCoupling(pairs: { fileA: string; fileB: string; coCommits: number; strength: number }[]): CouplingReport {
+  return {
+    pairs: pairs.map(p => ({
+      fileA: p.fileA,
+      fileB: p.fileB,
+      coCommits: p.coCommits,
+      totalCommitsA: 10,
+      totalCommitsB: 10,
+      couplingStrength: p.strength,
+    })),
+    fileProfiles: [],
+    topPairs: [],
+    summary: '',
+  };
+}
+
+describe('coupling hub detection', () => {
+  it('finds non-hotspot files coupled to 2+ hotspots', () => {
+    const hotspots = makeHotspotReport([
+      { file: 'a.ts', score: 80 },
+      { file: 'b.ts', score: 70 },
+    ]);
+    const coupling = makeCoupling([
+      { fileA: 'config.ts', fileB: 'a.ts', coCommits: 5, strength: 50 },
+      { fileA: 'config.ts', fileB: 'b.ts', coCommits: 4, strength: 45 },
+    ]);
+    const result = analyzeHotspotClustering(
+      hotspots, emptyBusFactor(), coupling, emptyContributors(), [],
+      ['a.ts', 'b.ts', 'config.ts']
+    );
+
+    const hubs = result.clusters.filter(c => c.dimension === 'coupling-hub');
+    expect(hubs).toHaveLength(1);
+    expect(hubs[0].sharedTrait).toBe('config.ts');
+    expect(hubs[0].members).toHaveLength(2);
+  });
+
+  it('ignores hub files that are themselves hotspots', () => {
+    const hotspots = makeHotspotReport([
+      { file: 'a.ts', score: 80 },
+      { file: 'b.ts', score: 70 },
+      { file: 'hub.ts', score: 90 },
+    ]);
+    const coupling = makeCoupling([
+      { fileA: 'hub.ts', fileB: 'a.ts', coCommits: 5, strength: 50 },
+      { fileA: 'hub.ts', fileB: 'b.ts', coCommits: 4, strength: 45 },
+    ]);
+    const result = analyzeHotspotClustering(
+      hotspots, emptyBusFactor(), coupling, emptyContributors(), [],
+      ['a.ts', 'b.ts', 'hub.ts']
+    );
+
+    const hubs = result.clusters.filter(c => c.dimension === 'coupling-hub');
+    expect(hubs).toHaveLength(0);
+  });
+
+  it('returns empty when no coupling data exists', () => {
+    const hotspots = makeHotspotReport([
+      { file: 'a.ts', score: 80 },
+      { file: 'b.ts', score: 70 },
+    ]);
+    const result = analyzeHotspotClustering(
+      hotspots, emptyBusFactor(), emptyCoupling(), emptyContributors(), [],
+      ['a.ts', 'b.ts']
+    );
+
+    const hubs = result.clusters.filter(c => c.dimension === 'coupling-hub');
+    expect(hubs).toHaveLength(0);
+  });
+});

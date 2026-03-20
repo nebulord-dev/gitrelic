@@ -18,6 +18,7 @@ export function analyzeHotspotClustering(
     ...clusterByStructure(top, trackedFiles),
     ...clusterByOwnership(top, busFactor, contributors),
     ...clusterByTemporal(top, commits),
+    ...clusterByCouplingHub(top, coupling),
   ];
 
   return assembleReport(allClusters);
@@ -181,6 +182,53 @@ function clusterByTemporal(hotspots: ClusterMember[], commits: RawCommit[]): Hot
       clusterScore: members.length * avgScore,
       narrative: `${members.length} hotspots started accelerating in ${monthName} ${year}. Something happened that month — a migration, a feature push, or a staffing change — that destabilized multiple files simultaneously.`,
       sharedTrait: month,
+    });
+  }
+
+  return clusters;
+}
+
+// ─── Coupling Hub ─────────────────────────────────────────────────────────────
+
+function clusterByCouplingHub(hotspots: ClusterMember[], coupling: CouplingReport): HotspotCluster[] {
+  if (coupling.pairs.length === 0) return [];
+
+  const hotspotSet = new Set(hotspots.map(h => h.file));
+  const scoreByFile = new Map(hotspots.map(h => [h.file, h.hotspotScore]));
+
+  // For each pair, if one side is a hotspot and the other isn't, record the non-hotspot as a potential hub
+  const hubToHotspots = new Map<string, Set<string>>();
+  for (const pair of coupling.pairs) {
+    const aIsHot = hotspotSet.has(pair.fileA);
+    const bIsHot = hotspotSet.has(pair.fileB);
+
+    if (aIsHot && !bIsHot) {
+      if (!hubToHotspots.has(pair.fileB)) hubToHotspots.set(pair.fileB, new Set());
+      hubToHotspots.get(pair.fileB)!.add(pair.fileA);
+    }
+    if (bIsHot && !aIsHot) {
+      if (!hubToHotspots.has(pair.fileA)) hubToHotspots.set(pair.fileA, new Set());
+      hubToHotspots.get(pair.fileA)!.add(pair.fileB);
+    }
+  }
+
+  const clusters: HotspotCluster[] = [];
+  for (const [hub, hotspotFiles] of hubToHotspots) {
+    if (hotspotFiles.size < 2) continue;
+
+    const members: ClusterMember[] = [...hotspotFiles].map(f => ({
+      file: f,
+      hotspotScore: scoreByFile.get(f)!,
+    }));
+    const avgScore = Math.round(members.reduce((s, m) => s + m.hotspotScore, 0) / members.length);
+
+    clusters.push({
+      dimension: 'coupling-hub',
+      label: `${hub} (hub)`,
+      members,
+      clusterScore: members.length * avgScore,
+      narrative: `\`${hub}\` isn't a hotspot itself, but it's temporally coupled to ${members.length} files that are. Changes to this quiet file ripple outward — it may be the root cause behind the churn you're seeing.`,
+      sharedTrait: hub,
     });
   }
 
