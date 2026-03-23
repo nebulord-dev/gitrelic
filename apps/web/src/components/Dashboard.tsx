@@ -128,9 +128,40 @@ function OverviewTab({ report }: { report: GitloreReport }) {
 }
 
 function ChurnTab({ report }: { report: GitloreReport }) {
+  const criticalCount = report.hotspots.topHotspots.filter(f => f.category === 'critical').length;
+  const warningCount = report.hotspots.topHotspots.filter(f => f.category === 'warning').length;
+  const hasConcerning = criticalCount > 0 || warningCount > 0;
+
+  let verdictText: string;
+  let verdictColor: string;
+  if (criticalCount >= 4) {
+    verdictText = `Complexity is concentrating where you work most — ${criticalCount} of your top hotspots are critical.`;
+    verdictColor = 'text-red-400';
+  } else if (criticalCount >= 1 || warningCount >= 3) {
+    verdictText = 'A few hotspots show high churn combined with high complexity — worth investigating.';
+    verdictColor = 'text-yellow-400';
+  } else {
+    verdictText = 'Your most-changed files have manageable complexity — active code is well-structured.';
+    verdictColor = 'text-green-400';
+  }
+
+  if (!hasConcerning) {
+    return (
+      <div>
+        <div className="text-center py-20">
+          <div className="text-5xl mb-4">✅</div>
+          <p className="text-green-400 text-lg">No concerning hotspots detected</p>
+          <p className="text-gray-500 text-sm mt-2">Your active code is well-structured — no files show dangerous churn × complexity</p>
+        </div>
+        <HotspotClusters data={report.hotspotClusters} />
+      </div>
+    );
+  }
+
   return (
     <div>
-      <p className="text-gray-400 mb-4 text-sm">{report.hotspots.summary}</p>
+      <p className="text-gray-400 mb-2 text-sm">{report.hotspots.summary}</p>
+      <p className={`${verdictColor} text-sm mb-4`}>{verdictText}</p>
       <div className="space-y-1">
         {report.hotspots.files.slice(0, 50).map(f => (
           <div key={f.file} className="flex items-center gap-3 py-1 hover:bg-gray-900 rounded-sm px-2">
@@ -513,8 +544,8 @@ function hotspotDot(cat: string) {
   switch (cat) {
     case 'critical': return 'bg-red-500';
     case 'warning': return 'bg-yellow-500';
-    case 'moderate': return 'bg-cyan-500';
-    default: return 'bg-gray-600';
+    case 'moderate': return 'bg-green-500';
+    default: return 'bg-green-500';
   }
 }
 
@@ -522,8 +553,8 @@ function hotspotBar(cat: string) {
   switch (cat) {
     case 'critical': return 'bg-red-600';
     case 'warning': return 'bg-yellow-600';
-    case 'moderate': return 'bg-cyan-700';
-    default: return 'bg-gray-700';
+    case 'moderate': return 'bg-green-700';
+    default: return 'bg-green-700';
   }
 }
 
@@ -531,8 +562,8 @@ function hotspotBadge(cat: string) {
   switch (cat) {
     case 'critical': return 'bg-red-950 text-red-400';
     case 'warning': return 'bg-yellow-950 text-yellow-400';
-    case 'moderate': return 'bg-cyan-950 text-cyan-400';
-    default: return 'bg-gray-800 text-gray-400';
+    case 'moderate': return 'bg-green-950 text-green-400';
+    default: return 'bg-green-950 text-green-400';
   }
 }
 
