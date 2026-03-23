@@ -86,13 +86,16 @@ const IGNORED_PATTERNS = {
     'bun.lockb',
     'next-env.d.ts',
     'vite-env.d.ts',
+    'AGENTS.md',
+    'CONTRIBUTING.md',
+    'CLAUDE.md',
   ]),
   extensions: new Set([
     '.ico', '.png', '.jpg', '.jpeg', '.gif', '.svg',
     '.woff', '.woff2', '.ttf', '.eot',
     '.min.js', '.min.css', '.map',
   ]),
-  prefixes: ['.next/', 'dist/', 'coverage/'],
+  prefixes: ['.next/', 'dist/', 'coverage/', '.claude/'],
 };
 
 export function isIgnored(file: string): boolean {
