@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { GitloreReport } from '@gitlore/core';
 import HotspotClusters from './HotspotClusters';
 
-type Tab = 'overview' | 'churn' | 'contributors' | 'cursed' | 'age' | 'coupling' | 'shame';
+type Tab = 'overview' | 'churn' | 'contributors' | 'cursed' | 'age' | 'coupling' | 'shame' | 'parallel' | 'leaderboard';
 
 export default function Dashboard({ report }: { report: GitloreReport }) {
   const [tab, setTab] = useState<Tab>('overview');
@@ -15,6 +15,8 @@ export default function Dashboard({ report }: { report: GitloreReport }) {
     { id: 'age', label: 'Age Map', emoji: '⏳' },
     { id: 'coupling', label: 'Coupling', emoji: '🔗' },
     { id: 'shame', label: 'Shame', emoji: '⚑' },
+    { id: 'parallel', label: 'Parallel Dev', emoji: '⚡' },
+    { id: 'leaderboard', label: 'Leaderboard', emoji: '🏆' },
   ];
 
   return (
@@ -61,6 +63,8 @@ export default function Dashboard({ report }: { report: GitloreReport }) {
         {tab === 'age' && <AgeTab report={report} />}
         {tab === 'coupling' && <CouplingTab report={report} />}
         {tab === 'shame' && <ShameTab report={report} />}
+        {tab === 'parallel' && <ParallelTab report={report} />}
+        {tab === 'leaderboard' && <LeaderboardTab report={report} />}
       </main>
     </div>
   );
@@ -465,6 +469,134 @@ function AgeTab({ report }: { report: GitloreReport }) {
             <span className={`text-xs w-14 shrink-0 ${ageColor(f.status)}`}>{f.status}</span>
             <span className="text-gray-300 text-sm font-mono flex-1">{f.file}</span>
             <span className="text-gray-500 text-xs">{f.ageInDays}d ago</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ParallelTab({ report }: { report: GitloreReport }) {
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+
+  if (report.parallelDev.hotFiles.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <div className="text-5xl mb-4">👤</div>
+        <p className="text-green-400 text-lg">No parallel development detected</p>
+        <p className="text-gray-500 text-sm mt-2">Files are edited by one author at a time — no concurrent work overlap</p>
+      </div>
+    );
+  }
+
+  const selectedEntry = selectedFile
+    ? report.parallelDev.files.find(f => f.file === selectedFile)
+    : null;
+
+  return (
+    <div>
+      <p className="text-gray-400 mb-4 text-sm">
+        {report.parallelDev.summary} &middot; {report.parallelDev.totalParallelFiles} files with parallel activity
+      </p>
+
+      <div className="flex gap-4">
+        <div className="w-1/3 space-y-1 max-h-96 overflow-auto">
+          {report.parallelDev.hotFiles.map(f => (
+            <button
+              key={f.file}
+              onClick={() => setSelectedFile(f.file)}
+              className={`w-full text-left px-2 py-1 rounded text-sm font-mono flex items-center gap-2 ${
+                selectedFile === f.file ? 'bg-yellow-900 text-yellow-300' : 'text-gray-400 hover:bg-gray-900'
+              }`}
+            >
+              <span className="truncate flex-1">{f.file}</span>
+              <span className={`shrink-0 ${selectedFile === f.file ? 'text-yellow-300' : 'text-yellow-400'}`}>{f.parallelScore}</span>
+            </button>
+          ))}
+        </div>
+        <div className="flex-1">
+          {selectedEntry ? (
+            <div className="bg-gray-900 border border-gray-800 rounded-sm p-4">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-white font-mono text-sm">{selectedEntry.file}</span>
+                <span className="text-yellow-400 font-bold text-lg">{selectedEntry.parallelScore}/100</span>
+              </div>
+
+              <p className="text-gray-400 text-sm italic mb-3">"{selectedEntry.narrative}"</p>
+
+              <div className="flex gap-4 text-xs text-gray-500 mb-4">
+                <span>{selectedEntry.parallelWeeks} parallel weeks</span>
+                <span>{selectedEntry.totalActiveWeeks} active weeks</span>
+                <span>Peak: {selectedEntry.peakAuthors} authors</span>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-gray-500 text-xs uppercase tracking-wide">Top overlap windows</p>
+                {selectedEntry.topWindows.map(w => (
+                  <div key={w.weekStart} className="bg-gray-950 border border-gray-800 rounded-sm p-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-300 text-sm font-mono">{w.weekStart}</span>
+                      <span className="text-yellow-400 text-xs">{w.authors.length} authors · {w.commitCount} commits</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {w.authors.map(a => (
+                        <span key={a} className="text-xs bg-yellow-950 text-yellow-300 px-1.5 py-0.5 rounded-sm">{a}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="text-gray-500 text-sm p-4">Click a file to see its parallel development history</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LeaderboardTab({ report }: { report: GitloreReport }) {
+  const ranked = [...report.hotspots.files]
+    .sort((a, b) => b.hotspotScore - a.hotspotScore)
+    .slice(0, 50);
+
+  if (ranked.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <div className="text-5xl mb-4">✅</div>
+        <p className="text-green-400 text-lg">No hotspot data available</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-gray-400 mb-1 text-sm">Files ranked by the Tornhill composite: <span className="text-gray-300 font-mono">churnScore × log₂(LOC)</span>, normalized 0–100.</p>
+      <p className="text-gray-500 mb-4 text-xs">{report.hotspots.summary}</p>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-sm overflow-hidden">
+        <div className="grid grid-cols-[3rem_1fr_5rem_5rem_5rem_6rem] gap-2 px-4 py-2 border-b border-gray-800 text-xs text-gray-500 uppercase tracking-wide">
+          <span>#</span>
+          <span>File</span>
+          <span className="text-right">Score</span>
+          <span className="text-right">Churn</span>
+          <span className="text-right">LOC</span>
+          <span className="text-right">Severity</span>
+        </div>
+        {ranked.map((f, i) => (
+          <div key={f.file} className="grid grid-cols-[3rem_1fr_5rem_5rem_5rem_6rem] gap-2 px-4 py-2 border-b border-gray-800 last:border-0 hover:bg-gray-800 items-center">
+            <span className="text-gray-500 text-sm">{i + 1}</span>
+            <span className="text-gray-300 text-sm font-mono truncate">{f.file}</span>
+            <div className="flex items-center justify-end gap-2">
+              <div className={`h-2 rounded-sm ${hotspotBar(f.category)}`} style={{ width: `${f.hotspotScore * 0.4}px`, minWidth: '2px' }} />
+              <span className="text-white text-sm font-mono">{f.hotspotScore}</span>
+            </div>
+            <span className="text-gray-500 text-sm text-right font-mono">{f.churnScore}</span>
+            <span className="text-gray-500 text-sm text-right font-mono">{f.loc}</span>
+            <div className="text-right">
+              <span className={`text-xs px-2 py-0.5 rounded-sm ${hotspotBadge(f.category)}`}>{f.category}</span>
+            </div>
           </div>
         ))}
       </div>

@@ -352,8 +352,7 @@ Top-level health dashboard powered by `git-sizer` integration. Blob sizes, histo
 #### Language breakdown panel
 Visual breakdown of what the repo is made of — languages, LOC per language, file count per language — powered by `cloc` integration. Surprisingly absent from most git analytics tools. Immediately useful context for everything else on the dashboard.
 
-#### Hotspot score leaderboard
-Dedicated panel showing files ranked by the churn × complexity composite. Not just cursed files — specifically the Tornhill hotspot formula. Separate from the existing cursed file view because the formula and interpretation are different. Most engineers will understand "high churn AND high complexity = problem" immediately.
+~~#### Hotspot score leaderboard~~ _(Done — see Done column)_
 
 ~~#### Hotspot health sentiment — distinguish healthy churn from dangerous churn~~ _(Done — see Done column)_
 
@@ -478,3 +477,9 @@ Tracks net LOC growth per file across monthly buckets using existing `fileStats`
 
 ### Hotspot health sentiment
 Tornhill-inspired diagnostic sentiment for the hotspot UI. Three changes: **health narrative** (one-sentence verdict above the file list — green/yellow/red based on critical + warning counts in `topHotspots`), **per-entry sentiment coloring** (moderate/low categories shifted from cyan/gray to green so entries read as healthy vs dangerous), and **"all clear" state** (positive message replacing the leaderboard when no critical or warning files exist). Applied to both CLI (`HotspotPanel`) and web dashboard (`ChurnTab` + `hotspotDot`/`hotspotBar`/`hotspotBadge` helpers). Design spec: `docs/superpowers/specs/2026-03-22-hotspot-health-sentiment-design.md`.
+
+### Parallel dev web dashboard tab
+Ninth tab in the web dashboard surfacing parallel development data. List + side panel layout (matching Shame/Coupling tab patterns): left panel shows hot files ranked by parallel score with yellow highlighting, right panel shows file detail with parallel score, narrative, parallel/active weeks, peak authors, and top overlap windows with author badges. Empty state for solo repos. Mirrors the `--parallel` CLI panel data.
+
+### Hotspot score leaderboard tab
+Tenth tab in the web dashboard — a clean ranked table of files by the Tornhill hotspot composite (`churnScore × log₂(LOC)`, normalized 0–100). Shows rank, file path, score with inline bar, churn score, LOC, and severity badge. Top 50 files. Separate from the Hotspots tab (which includes health sentiment verdict and root cause clustering) — this is purely the ranked leaderboard.
