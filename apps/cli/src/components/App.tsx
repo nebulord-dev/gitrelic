@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, Newline } from 'ink';
 import Spinner from 'ink-spinner';
-import type { CodeloreReport } from '@codelore/core';
+import type { GitloreReport } from '@gitlore/core';
 
 interface Props {
-  report: CodeloreReport | null;
+  report: GitloreReport | null;
   progress: string;
   error: string | null;
   showShame: boolean;
@@ -90,7 +90,7 @@ function Banner({ repoName }: { repoName: string }) {
   );
 }
 
-function MetaPanel({ report }: { report: CodeloreReport }) {
+function MetaPanel({ report }: { report: GitloreReport }) {
   const { meta } = report;
   const years = (meta.ageInDays / 365).toFixed(1);
   return (
@@ -122,7 +122,7 @@ function MetaPanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function ChurnPanel({ report }: { report: CodeloreReport }) {
+function ChurnPanel({ report }: { report: GitloreReport }) {
   const { churn } = report;
   return (
     <Box flexDirection="column">
@@ -141,7 +141,7 @@ function ChurnPanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function CursedFilesPanel({ report }: { report: CodeloreReport }) {
+function CursedFilesPanel({ report }: { report: GitloreReport }) {
   if (report.cursedFiles.length === 0) return null;
   return (
     <Box flexDirection="column">
@@ -160,7 +160,7 @@ function CursedFilesPanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function ContributorPanel({ report }: { report: CodeloreReport }) {
+function ContributorPanel({ report }: { report: GitloreReport }) {
   const { contributors } = report;
   return (
     <Box flexDirection="column">
@@ -180,7 +180,7 @@ function ContributorPanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function BusFactorPanel({ report }: { report: CodeloreReport }) {
+function BusFactorPanel({ report }: { report: GitloreReport }) {
   const { busFactors } = report;
   if (busFactors.criticalFiles.length === 0) return (
     <Box>
@@ -204,7 +204,7 @@ function BusFactorPanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function HotspotPanel({ report }: { report: CodeloreReport }) {
+function HotspotPanel({ report }: { report: GitloreReport }) {
   const { hotspots } = report;
   if (hotspots.files.length === 0) return null;
   return (
@@ -227,7 +227,7 @@ function HotspotPanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function ClusteringPanel({ report }: { report: CodeloreReport }) {
+function ClusteringPanel({ report }: { report: GitloreReport }) {
   const { hotspotClusters } = report;
   if (hotspotClusters.clusters.length === 0) return null;
 
@@ -269,7 +269,7 @@ function ClusteringPanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function CouplingPanel({ report }: { report: CodeloreReport }) {
+function CouplingPanel({ report }: { report: GitloreReport }) {
   const { coupling } = report;
   if (coupling.pairs.length === 0) return null;
   return (
@@ -293,7 +293,7 @@ function CouplingPanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function VelocityPanel({ report }: { report: CodeloreReport }) {
+function VelocityPanel({ report }: { report: GitloreReport }) {
   const { churnVelocity } = report;
   if (churnVelocity.acceleratingFiles.length === 0) return null;
   return (
@@ -316,7 +316,7 @@ function VelocityPanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function RewritePanel({ report }: { report: CodeloreReport }) {
+function RewritePanel({ report }: { report: GitloreReport }) {
   const { rewriteRatio } = report;
   if (rewriteRatio.topRewriters.length === 0) return null;
   return (
@@ -338,7 +338,7 @@ function RewritePanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function BlastRadiusPanel({ report }: { report: CodeloreReport }) {
+function BlastRadiusPanel({ report }: { report: GitloreReport }) {
   const { blastRadius } = report;
   if (blastRadius.topBlasters.length === 0) return null;
   return (
@@ -360,7 +360,7 @@ function BlastRadiusPanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function DeadCodePanel({ report }: { report: CodeloreReport }) {
+function DeadCodePanel({ report }: { report: GitloreReport }) {
   const { deadCode } = report;
   if (deadCode.candidates.length === 0) return null;
   return (
@@ -383,7 +383,7 @@ function DeadCodePanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function TestCoveragePanel({ report }: { report: CodeloreReport }) {
+function TestCoveragePanel({ report }: { report: GitloreReport }) {
   const { testCoverage } = report;
   if (testCoverage.uncoveredDirectories.length === 0) {
     return (
@@ -411,7 +411,7 @@ function TestCoveragePanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function GhostFilesPanel({ report }: { report: CodeloreReport }) {
+function GhostFilesPanel({ report }: { report: GitloreReport }) {
   const { ghostFiles } = report;
   if (ghostFiles.files.length === 0) return null;
   return (
@@ -434,7 +434,7 @@ function GhostFilesPanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function KnowledgePanel({ report }: { report: CodeloreReport }) {
+function KnowledgePanel({ report }: { report: GitloreReport }) {
   const { knowledgeConcentration } = report;
   return (
     <Box flexDirection="column">
@@ -449,7 +449,7 @@ function KnowledgePanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function CoAuthorPanel({ report }: { report: CodeloreReport }) {
+function CoAuthorPanel({ report }: { report: GitloreReport }) {
   const { coAuthors } = report;
   if (coAuthors.totalCoAuthoredCommits === 0) return null;
   return (
@@ -473,7 +473,7 @@ function CoAuthorPanel({ report }: { report: CodeloreReport }) {
   );
 }
 
-function ShamePanel({ report }: { report: CodeloreReport }) {
+function ShamePanel({ report }: { report: GitloreReport }) {
   const { forensics } = report;
   if (forensics.shameLeaderboard.length === 0) {
     return (

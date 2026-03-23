@@ -1,11 +1,11 @@
-# CODELORE
+# GITLORE
 
 Git archaeology — understand the history and health of your codebase.
 
 
 ## What it does
 
-Run `codelore` in any git repository and get a narrative health report on the codebase's *history* — not just its current state.
+Run `gitlore` in any git repository and get a narrative health report on the codebase's *history* — not just its current state.
 
 - **Churn analysis** — which files change the most, and what that means
 - **Bus factor** — who owns what, where you're exposed if someone leaves
@@ -18,27 +18,27 @@ Run `codelore` in any git repository and get a narrative health report on the co
 
 ```bash
 # Analyze current directory
-codelore
+gitlore
 
 # Analyze a specific repo
-codelore --path ~/projects/my-app
+gitlore --path ~/projects/my-app
 
 # Open web dashboard
-codelore --path ~/projects/my-app --web
+gitlore --path ~/projects/my-app --web
 
 # Analyze only the last 6 months
-codelore --path ~/projects/my-app --since "6 months ago"
+gitlore --path ~/projects/my-app --since "6 months ago"
 
 # Output JSON for piping
-codelore --path ~/projects/my-app --json > codelore-report.json
+gitlore --path ~/projects/my-app --json > gitlore-report.json
 
 # Show commit message shame leaderboard
-codelore --path ~/projects/my-app --shame
+gitlore --path ~/projects/my-app --shame
 ```
 
-## How CodeLore scores files
+## How GitLore scores files
 
-CodeLore uses three scoring systems, each 0–100:
+GitLore uses three scoring systems, each 0–100:
 
 ### Churn score
 How often a file has been modified relative to the most-committed file in the repo.
@@ -82,7 +82,7 @@ pnpm monorepo + Turbo:
 ## Monorepo
 
 ```
-codelore/
+gitlore/
 ├── packages/
 │   └── core/           # Analysis engine
 ├── apps/

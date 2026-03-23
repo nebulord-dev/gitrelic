@@ -25,14 +25,14 @@ import { analyzeGhostFiles } from './analyzers/ghost-files.js';
 import { analyzeKnowledgeConcentration } from './analyzers/knowledge-concentration.js';
 import { analyzeCoAuthors } from './analyzers/co-author.js';
 import { analyzeHotspotClustering } from './analyzers/hotspot-clustering.js';
-import type { CodeloreReport, RunCodeloreOptions } from './types.js';
+import type { GitloreReport, RunGitloreOptions } from './types.js';
 
 /**
- * Runs the CodeLore analysis on a given git repository and returns a comprehensive report.
+ * Runs the GitLore analysis on a given git repository and returns a comprehensive report.
  * @param options - The options for running the analysis, including repository path, branch, and since date.
- * @Returns a CodeloreReport containing churn, bus factor, age map, contributors, cursed files, and forensics data. 
+ * @Returns a GitloreReport containing churn, bus factor, age map, contributors, cursed files, and forensics data. 
  */
-export async function runCodelore(options: RunCodeloreOptions): Promise<CodeloreReport> {
+export async function runGitlore(options: RunGitloreOptions): Promise<GitloreReport> {
   const { repoPath, branch, since, onProgress } = options;
   const repoName = path.basename(repoPath);
 

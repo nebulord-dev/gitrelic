@@ -1,6 +1,6 @@
 // ─── Core report shape ────────────────────────────────────────────────────────
 
-export interface CodeloreReport {
+export interface GitloreReport {
   timestamp: string;
   repoPath: string;
   repoName: string;
@@ -414,7 +414,7 @@ export interface MultiSignalFile {
 
 // ─── Runner options ────────────────────────────────────────────────────────────
 
-export interface RunCodeloreOptions {
+export interface RunGitloreOptions {
   repoPath: string;
   branch?: string;
   since?: string;            // e.g. "6 months ago", "2023-01-01"

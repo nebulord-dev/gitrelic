@@ -1,6 +1,6 @@
-# CodeLore — Kanban
+# GitLore — Kanban
 
-> Task board for tracking CodeLore development. Update this file as work progresses.
+> Task board for tracking GitLore development. Update this file as work progresses.
 > Columns: Backlog → In Progress → Done
 
 ## Roadmap
@@ -17,11 +17,11 @@ Phase 5 — AI, CLI & Distribution░░░░░░░░░░░░░░░�
 
 | Phase | Focus                    | Key tasks                                                                                                                                   | Unblocks                              |
 | ----- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| **1** | Hygiene & Rename         | Vitest suite, oxc linting, Turbo upgrade, React 18→19, rename to CodeLore                                                                   | Safe refactor in Phase 2              |
+| **1** | Hygiene & Rename         | Vitest suite, oxc linting, Turbo upgrade, React 18→19, rename to GitLore                                                                   | Safe refactor in Phase 2              |
 | **2** | Core Analyzers           | cloc, hotspot score, coupling map, churn velocity, rewrite ratio, rename tracking, test coverage proxy, dead code candidates, blast radius   | Phase 3 visualizations, Phase 4 composites |
 | **3** | Visual Storytelling      | Treemap, hotspot matrix, commit graph, shame tab, file coupling graph, knowledge map, contributor timeline, file drill-down, language panel, repo health tab | Phase 4 dashboard surfaces            |
 | **4** | Composite Intelligence   | Onboarding difficulty, ownership drift, knowledge concentration, complexity over time, co-author analysis, risk & learning curve dashboard, technical debt workbench, team dynamics analyzers + tab, solo dev insights | Phase 5 AI narratives                 |
-| **5** | AI, CLI & Distribution   | Claude summary, refactor brief, "what happened here?", team narrative, PR risk action, `codelore diff/watch/blame/graph/hotspot/team/debt` commands, `codelore.config.ts`, `codelore init`, badge, share, VS Code ext, HTML export, pre-commit hook | —                                     |
+| **5** | AI, CLI & Distribution   | Claude summary, refactor brief, "what happened here?", team narrative, PR risk action, `gitlore diff/watch/blame/graph/hotspot/team/debt` commands, `gitlore.config.ts`, `gitlore init`, badge, share, VS Code ext, HTML export, pre-commit hook | —                                     |
 
 > **Key dependency chains:**
 > - `cloc` → `hotspot score` → treemap, hotspot matrix, debt workbench, risk dashboard
@@ -37,7 +37,7 @@ Phase 5 — AI, CLI & Distribution░░░░░░░░░░░░░░░�
 ### Testing & Infrastructure
 
 #### Configure oxc for linting ⏸ ON HOLD
-Set up `oxlint` as the linter for the CodeLore monorepo. **On hold:** oxc's React ESLint plugin support is alpha-only as of March 2025 — React linting is important for the web package, so we're waiting until it stabilizes. Revisit when oxc promotes React plugin support to stable.
+Set up `oxlint` as the linter for the GitLore monorepo. **On hold:** oxc's React ESLint plugin support is alpha-only as of March 2025 — React linting is important for the web package, so we're waiting until it stabilizes. Revisit when oxc promotes React plugin support to stable.
 - Install `oxlint` in the workspace root
 - Add `lint` scripts to root and per-package `package.json`
 - Configure `.oxlintrc` with appropriate rules
@@ -125,7 +125,7 @@ Beyond the static shame score — is the tone getting *worse*? A file with incre
 Parse `Co-authored-by:` trailer lines from commit messages (standard GitHub/GitLab convention for pair programming and AI-assisted commits). Surface who actually collaborates with whom, which files get pair-programmed, and whether AI-assisted commits correlate with lower or higher future churn.
 
 #### `--since` comparison mode
-`codelore --since 30d vs 90d` — compare two time windows to show what's getting better vs. worse. A file that was hot 90 days ago but calm recently is recovering. A file that was fine 90 days ago but hot recently is deteriorating. Directional health, not just snapshot health.
+`gitlore --since 30d vs 90d` — compare two time windows to show what's getting better vs. worse. A file that was hot 90 days ago but calm recently is recovering. A file that was fine 90 days ago but hot recently is deteriorating. Directional health, not just snapshot health.
 
 #### Team dynamics & code quality correlation ⭐ PRIORITIZE — NEEDS DEDICATED DESIGN SESSION
 Large feature (4 sub-analyzers + 5 web visualizations + CLI companion). Requires its own brainstorming → spec → plan cycle. Depends on churn velocity and rewrite ratio analyzers (being built now).
@@ -175,11 +175,11 @@ Analyze how developer and team interactions influence code quality over time. Tw
 *Friction hotspot overlay:*
 - Toggleable layer on the existing treemap/knowledge map: files colored not by churn or ownership but by *coordination cost*. High coordination cost files in red = "this file creates friction whenever multiple people touch it." Different insight than hotspots — a file can be low-churn but high-friction when it *does* get touched by multiple people.
 
-**CLI companion — `codelore team [--pairs] [--friction] [--fingerprints]`:**
-- `codelore team` — summary: top friction points, worst coordination costs, Conway's Law violations.
-- `codelore team --pairs` — author-pair quality matrix in the terminal.
-- `codelore team --friction` — ranked list of boundary friction files.
-- `codelore team --fingerprints` — per-author stabilizer/destabilizer classification (opt-in, requires `--team` flag on the main scan).
+**CLI companion — `gitlore team [--pairs] [--friction] [--fingerprints]`:**
+- `gitlore team` — summary: top friction points, worst coordination costs, Conway's Law violations.
+- `gitlore team --pairs` — author-pair quality matrix in the terminal.
+- `gitlore team --friction` — ranked list of boundary friction files.
+- `gitlore team --fingerprints` — per-author stabilizer/destabilizer classification (opt-in, requires `--team` flag on the main scan).
 
 ---
 
@@ -210,7 +210,7 @@ Plot the ratio of `fix:`/`hotfix:`/`revert:` vs. `feat:` commits on a per-week s
 ### Narrative & AI
 
 #### Claude-powered summary
-Pass the full `CodeloreReport` to Claude API and get a 3-paragraph "story of this codebase" narrative. The tool is already named after the concept — lean into it.
+Pass the full `GitloreReport` to Claude API and get a 3-paragraph "story of this codebase" narrative. The tool is already named after the concept — lean into it.
 
 #### "What happened here?"
 Click any file in the web dashboard and get an AI-generated explanation of its commit history narrative. Per-file deep dive powered by Claude.
@@ -218,11 +218,11 @@ Click any file in the web dashboard and get an AI-generated explanation of its c
 #### Refactor brief
 For the top cursed file, Claude generates a short brief: why it's cursed, what the likely root cause is based on commit patterns, and what a refactor approach might look like. Actionable output, not just a score.
 
-#### PR risk assessment (`codelore-action`) ⭐ PRIORITIZE
-GitHub Action that runs on every PR, looks up the touched files in a cached CodeloreReport, and posts a comment: "This PR touches 2 cursed files and one file owned 90% by someone who hasn't committed in 4 months." Brings CodeLore into the daily review workflow without anyone having to remember to run it. Highest practical value for teams.
+#### PR risk assessment (`gitlore-action`) ⭐ PRIORITIZE
+GitHub Action that runs on every PR, looks up the touched files in a cached GitloreReport, and posts a comment: "This PR touches 2 cursed files and one file owned 90% by someone who hasn't committed in 4 months." Brings GitLore into the daily review workflow without anyone having to remember to run it. Highest practical value for teams.
 
 #### Commit graph annotation layer
-Overlay CodeLore data directly on the commit graph visualization. Hotspot spikes, ownership changes, shame-score events, and bus-factor warnings appear as markers on the graph timeline. The commit graph becomes a *navigable diagnostic surface*, not just a pretty picture. Click a spike on the graph to see which files caused it and why CodeLore flagged them.
+Overlay GitLore data directly on the commit graph visualization. Hotspot spikes, ownership changes, shame-score events, and bus-factor warnings appear as markers on the graph timeline. The commit graph becomes a *navigable diagnostic surface*, not just a pretty picture. Click a spike on the graph to see which files caused it and why GitLore flagged them.
 
 #### Team narrative report
 AI-generated per-team (or per-contributor) narrative: "Alice owns 60% of the auth subsystem, has been the primary author for 2 years, and her files have the lowest churn in the repo. Bob joined 4 months ago and has touched 12 high-hotspot files — either he's doing important cleanup or spreading risk." Designed to be shared in engineering all-hands or team retrospectives.
@@ -241,7 +241,7 @@ Replace the current scrolling panel dump with a proper interactive TUI — keybo
 - `HelpPanel.tsx` — overlay showing all keybindings
 - `hooks/useTerminalSize.ts` — reactive terminal dimensions for responsive layout
 
-**CodeLore-specific additions beyond Vitals:**
+**GitLore-specific additions beyond Vitals:**
 - Panel IDs map to the existing panels: `hotspots`, `cursed`, `contributors`, `coupling`, `velocity`, `busfactor`, `ghostfiles`, `knowledge`
 - Two-column layout at wide terminals (≥140 cols), single-column at narrow
 - `w` hotkey to launch `--web` dashboard from within the TUI (open browser without restarting)
@@ -254,22 +254,22 @@ Replace the current scrolling panel dump with a proper interactive TUI — keybo
 
 ### CLI Commands
 
-#### `codelore diff <branch>`
+#### `gitlore diff <branch>`
 Compare health between branches or commits. "Since you branched from main, these 3 files have become hotspots."
 
-#### `codelore watch`
+#### `gitlore watch`
 Live TUI that updates as you commit. Real-time churn tracking in the terminal.
 
-#### `codelore blame <file>`
+#### `gitlore blame <file>`
 Deep dive on a single file: full commit timeline, author breakdown, message forensics.
 
-#### `codelore graph`
-Render the commit DAG in the terminal — branch lanes, colored by hotspot severity. Each commit dot is colored by its churn impact. Hotspot commits glow. Wraps `git log --graph` with CodeLore enrichment layered on top. The terminal version of the web commit graph.
+#### `gitlore graph`
+Render the commit DAG in the terminal — branch lanes, colored by hotspot severity. Each commit dot is colored by its churn impact. Hotspot commits glow. Wraps `git log --graph` with GitLore enrichment layered on top. The terminal version of the web commit graph.
 
-#### `codelore hotspot [--top N]`
-Dedicated CLI command that outputs the top N hotspot files ranked by the churn × complexity composite score. Separate from the general `codelore` report — fast, focused, actionable. Pairs well with `codelore blame <file>` for drilling in.
+#### `gitlore hotspot [--top N]`
+Dedicated CLI command that outputs the top N hotspot files ranked by the churn × complexity composite score. Separate from the general `gitlore` report — fast, focused, actionable. Pairs well with `gitlore blame <file>` for drilling in.
 
-#### `codelore team`
+#### `gitlore team`
 Contributor-focused report: bus factor, ghost files, knowledge concentration index, ownership drift summary. Designed for the engineering manager audience rather than the individual developer.
 
 ---
@@ -277,14 +277,14 @@ Contributor-focused report: bus factor, ghost files, knowledge concentration ind
 ### Web Dashboard
 
 #### Commit graph visualization ⭐ PRIORITIZE
-The GitKraken-style DAG — colored branch lanes, commit dots, merge lines. Built with `d3-dag` for layout and custom SVG rendering for full control. Nodes colored by hotspot score (cool → hot). Click any commit to see which files changed, their CodeLore scores at that point in time, and the commit message. This is the visual centerpiece of the web dashboard — the thing people screenshot and share. Makes CodeLore immediately legible to anyone who's used a git GUI before.
+The GitKraken-style DAG — colored branch lanes, commit dots, merge lines. Built with `d3-dag` for layout and custom SVG rendering for full control. Nodes colored by hotspot score (cool → hot). Click any commit to see which files changed, their GitLore scores at that point in time, and the commit message. This is the visual centerpiece of the web dashboard — the thing people screenshot and share. Makes GitLore immediately legible to anyone who's used a git GUI before.
 - Data: `git log --all --pretty=format:"%H|%P|%an|%at|%s" --topo-order`
 - Layout: `d3-dag` handles lane assignment
 - Render: custom SVG — full control over color, dot size, heat overlays
-- Interaction: click commit → file list with CodeLore scores; hover → tooltip with author, date, shame score
+- Interaction: click commit → file list with GitLore scores; hover → tooltip with author, date, shame score
 
 #### Hotspot matrix
-Scatter plot: X-axis = churn, Y-axis = complexity (LOC), dot size = number of authors, dot color = shame score. Every file in the repo plotted simultaneously. The top-right quadrant (high churn, high complexity) is the danger zone. Instantly shows the shape of the codebase's risk. This is the single most information-dense visualization CodeLore can produce and the one most directly derived from Tornhill's methodology.
+Scatter plot: X-axis = churn, Y-axis = complexity (LOC), dot size = number of authors, dot color = shame score. Every file in the repo plotted simultaneously. The top-right quadrant (high churn, high complexity) is the danger zone. Instantly shows the shape of the codebase's risk. This is the single most information-dense visualization GitLore can produce and the one most directly derived from Tornhill's methodology.
 
 ~~#### Shame tab in web dashboard~~ _(Done — see Done column)_
 
@@ -326,7 +326,7 @@ A dedicated "Developer Intelligence" view that synthesizes existing analyzer dat
 - Dashboard-level summary stats: "12 files are deteriorating, 3 files are knowledge silos, 87% of high-risk files have no test coverage proxy."
 
 #### Technical debt workbench ⭐ PRIORITIZE
-A dedicated view that uses *behavioral* signals — not static analysis — to identify, prioritize, and guide remediation of technical debt. Most debt tools tell you what's messy. CodeLore tells you what's messy *and actively costing you time*.
+A dedicated view that uses *behavioral* signals — not static analysis — to identify, prioritize, and guide remediation of technical debt. Most debt tools tell you what's messy. GitLore tells you what's messy *and actively costing you time*.
 
 **Debt identification — behavioral signals over static ones:**
 - "Costly debt" ranking: files scored by `churn × complexity × (1 + shame_ratio)`. High-complexity files that nobody touches aren't debt — they're fossils. High-complexity files that churn every sprint are bleeding velocity. This is the core Tornhill insight applied directly to prioritization.
@@ -343,7 +343,7 @@ A dedicated view that uses *behavioral* signals — not static analysis — to i
 - "Before/after projection" — for the top debt items, show what the hotspot matrix and deterioration feed *would* look like if those files stabilized. "If `auth.ts` stopped churning, your overall codebase risk drops 15%." Motivational and useful for justifying debt sprints to management.
 - AI-powered refactor briefs (pairs with the existing "Refactor brief" backlog item) — for each top-debt file, Claude generates a specific remediation plan based on the behavioral evidence: "This file has been rewritten 4 times in 6 months by 3 different authors. The commit messages suggest the API surface keeps changing. Consider extracting a stable interface."
 
-**CLI companion — `codelore debt [--budget 2d] [--top N]`:**
+**CLI companion — `gitlore debt [--budget 2d] [--top N]`:**
 - Quick terminal output: ranked debt list with ROI scores, estimated effort, and one-line summaries.
 - `--budget` flag auto-selects what fits in a time window.
 - Feeds into the web dashboard for the full interactive experience.
@@ -380,26 +380,26 @@ When no files cross the warning threshold, don't show a low-scoring leaderboard 
 
 ### Polish
 
-#### Ignore list config (`codelore.config.ts`)
-Make the ignore list configurable via a `codelore.config.ts` file (extends the built-in defaults). Pairs with the existing "ignore list" backlog item.
+#### Ignore list config (`gitlore.config.ts`)
+Make the ignore list configurable via a `gitlore.config.ts` file (extends the built-in defaults). Pairs with the existing "ignore list" backlog item.
 
 #### Pre-commit hook warning
-When committing to an already-cursed file, warn the developer: "⚠ auth.ts is a cursed file (score: 78/100). Proceed?" Tiny integration surface, high signal value. Installable via `codelore install-hook`.
+When committing to an already-cursed file, warn the developer: "⚠ auth.ts is a cursed file (score: 78/100). Proceed?" Tiny integration surface, high signal value. Installable via `gitlore install-hook`.
 
-#### `codelore badge`
+#### `gitlore badge`
 Generate a health badge for your README (like coverage badges). Quick visual indicator of repo health.
 
-#### Export as HTML (`codelore --format html`)
+#### Export as HTML (`gitlore --format html`)
 Dump a standalone self-contained report HTML file you can share — no server needed. No dashboard, no server — just a file you can email or drop in Slack.
 
-#### `codelore init` setup wizard
-Interactive first-run wizard: detects repo age, suggests appropriate `--since` window, asks if you want the pre-commit hook, generates a `codelore.config.ts` with sensible defaults. Removes the "now what?" moment after install.
+#### `gitlore init` setup wizard
+Interactive first-run wizard: detects repo age, suggests appropriate `--since` window, asks if you want the pre-commit hook, generates a `gitlore.config.ts` with sensible defaults. Removes the "now what?" moment after install.
 
 #### VS Code extension
-Surface CodeLore scores inline in the editor — hotspot severity as a gutter indicator, shame score in the file tab, bus factor warning when you open a ghost file. Passive ambient awareness without running the CLI. The eventual distribution channel that gets CodeLore in front of the most developers with the least friction.
+Surface GitLore scores inline in the editor — hotspot severity as a gutter indicator, shame score in the file tab, bus factor warning when you open a ghost file. Passive ambient awareness without running the CLI. The eventual distribution channel that gets GitLore in front of the most developers with the least friction.
 
-#### Shareable snapshot (`codelore share`)
-Generate a static snapshot of the current `CodeloreReport` as a hosted URL (or self-hostable JSON + HTML bundle). "Here's the codelore of our repo as of today" that you can share with stakeholders who don't have git access. Privacy-aware: strips author emails, optionally anonymizes contributor names.
+#### Shareable snapshot (`gitlore share`)
+Generate a static snapshot of the current `GitloreReport` as a hosted URL (or self-hostable JSON + HTML bundle). "Here's the gitlore of our repo as of today" that you can share with stakeholders who don't have git access. Privacy-aware: strips author emails, optionally anonymizes contributor names.
 
 ---
 
@@ -412,16 +412,16 @@ _(nothing right now)_
 ## Done
 
 ### Parallel development analyzer
-Detects temporal concurrency per file — multiple authors committing in the same calendar week. Uses author-week matrix approach with severity-weighted scoring (`max(1.0, min(avg_authors/2, 2.0))`). Produces standalone `ParallelDevReport` on `CodeloreReport` and feeds into cursed file scoring (+5/+10/+20 bonus). 11 unit tests. Inspired by Tornhill/Meneely research on parallel work correlating with defect rates. V2 roadmap: sustained vs. spike detection, configurable time windows, knowledge map visualization, defect correlation. Design spec: `docs/plans/2026-03-11-parallel-development-design.md`.
+Detects temporal concurrency per file — multiple authors committing in the same calendar week. Uses author-week matrix approach with severity-weighted scoring (`max(1.0, min(avg_authors/2, 2.0))`). Produces standalone `ParallelDevReport` on `GitloreReport` and feeds into cursed file scoring (+5/+10/+20 bonus). 11 unit tests. Inspired by Tornhill/Meneely research on parallel work correlating with defect rates. V2 roadmap: sustained vs. spike detection, configurable time windows, knowledge map visualization, defect correlation. Design spec: `docs/plans/2026-03-11-parallel-development-design.md`.
 
 ### Color-coded cursed file reason tags (web dashboard)
 Each signal type on cursed file cards now has a distinct color: orange (churn), amber (ownership), purple (parallel dev), pink (shame), cyan (age paradox), blue (coordination). Replaces the previous all-red styling.
 
 ### Commit message forensics ("shame score")
-Three-tier weighted keyword scoring (`revert`/`hotfix`/`oops` = critical, `hack`/`workaround` = moderate, `fix`/`typo` = mild). Ratio-based per-file shame score (0–100). Feeds into cursed file scoring (+20 max bonus). `--shame` flag surfaces a dedicated leaderboard panel in the CLI. Full history recommended: `codelore --since all --shame`.
+Three-tier weighted keyword scoring (`revert`/`hotfix`/`oops` = critical, `hack`/`workaround` = moderate, `fix`/`typo` = mild). Ratio-based per-file shame score (0–100). Feeds into cursed file scoring (+20 max bonus). `--shame` flag surfaces a dedicated leaderboard panel in the CLI. Full history recommended: `gitlore --since all --shame`.
 
-### Adapt skills from Vitals to CodeLore
-Ported `/plan-feature`, `/prime`, `/review-project`, and `/sync-docs` skills. Replaced all Vitals-specific references with CodeLore equivalents (analyzers instead of runners, updated file paths, removed fixtures/scoring references).
+### Adapt skills from Vitals to GitLore
+Ported `/plan-feature`, `/prime`, `/review-project`, and `/sync-docs` skills. Replaced all Vitals-specific references with GitLore equivalents (analyzers instead of runners, updated file paths, removed fixtures/scoring references).
 
 ### Ignore list for lock files and auto-generated files
 Built-in `IGNORED_PATTERNS` in `git.ts` filters lock files, assets (`.ico`, `.png`, `.svg`, etc.), and generated output (`.next/`, `dist/`, `coverage/`) from `getTrackedFiles()`.
@@ -435,8 +435,8 @@ Age map thresholds (fresh/aging/stale/ancient) and contributor windows (active/g
 ### Default `--since` to last 12 months
 CLI defaults to `--since="12 months ago"`. Use `--since all` for full history. Young repos naturally return all commits.
 
-### Rename to CodeLore
-Full monorepo rename: `@lore/*` → `@codelore/*`, CLI binary `lore` → `codelore`, all type names (`LoreReport` → `CodeloreReport`, `runLore()` → `runCodelore()`), all imports, docs, and skill references updated.
+### Rename to GitLore
+Full monorepo rename: `@lore/*` → `@gitlore/*`, CLI binary `lore` → `gitlore`, all type names (`LoreReport` → `GitloreReport`, `runLore()` → `runGitlore()`), all imports, docs, and skill references updated.
 
 ### Vitest test suite
 Set up Vitest with coverage and UI across the monorepo. Core package has unit tests for all analyzers (churn, bus-factor, age-map, contributors, cursed-files) using mock commit data, plus git primitive tests (`parseGitLog`, `isIgnored`). Tests colocated with source files.
@@ -445,7 +445,7 @@ Set up Vitest with coverage and UI across the monorepo. Core package has unit te
 Upgraded Turbo from `2.3.3` → `2.8.14`, now aligned with Vitals.
 
 ### React 18 → 19 upgrade
-Upgraded `@codelore/web` from React 18 to React 19. Stack drift with Vitals eliminated.
+Upgraded `@gitlore/web` from React 18 to React 19. Stack drift with Vitals eliminated.
 
 ### Project documentation
 Added AGENTS.md (architecture guide for Claude Code), CONTRIBUTING.md, MIT LICENSE, USAGE.md (flag reference + example workflows), .editorconfig.

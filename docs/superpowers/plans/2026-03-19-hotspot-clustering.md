@@ -17,9 +17,9 @@
 **Files:**
 - Modify: `packages/core/src/types.ts`
 
-- [ ] **Step 1: Add the new types at the end of the types file, before the `RunCodeloreOptions` section**
+- [ ] **Step 1: Add the new types at the end of the types file, before the `RunGitloreOptions` section**
 
-Add after the `CoAuthorReport` section (after line 382), before `RunCodeloreOptions`:
+Add after the `CoAuthorReport` section (after line 382), before `RunGitloreOptions`:
 
 ```ts
 // ─── Hotspot clustering ────────────────────────────────────────────────────
@@ -53,9 +53,9 @@ export interface MultiSignalFile {
 }
 ```
 
-- [ ] **Step 2: Add `hotspotClusters` to `CodeloreReport`**
+- [ ] **Step 2: Add `hotspotClusters` to `GitloreReport`**
 
-Add after the `coAuthors: CoAuthorReport;` line in the `CodeloreReport` interface:
+Add after the `coAuthors: CoAuthorReport;` line in the `GitloreReport` interface:
 
 ```ts
   hotspotClusters: HotspotClusterReport;
@@ -63,7 +63,7 @@ Add after the `coAuthors: CoAuthorReport;` line in the `CodeloreReport` interfac
 
 - [ ] **Step 3: Verify types compile**
 
-Run: `pnpm --filter @codelore/core build`
+Run: `pnpm --filter @gitlore/core build`
 Expected: Build succeeds (CLI/web will fail until wired up — that's fine)
 
 - [ ] **Step 4: Commit**
@@ -185,7 +185,7 @@ describe('structural clustering', () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `pnpm --filter @codelore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
+Run: `pnpm --filter @gitlore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
 Expected: FAIL — module not found
 
 - [ ] **Step 3: Create `hotspot-clustering.ts` with structural clustering + stub assembly**
@@ -300,7 +300,7 @@ function assembleReport(clusters: HotspotCluster[]): HotspotClusterReport {
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `pnpm --filter @codelore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
+Run: `pnpm --filter @gitlore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
 Expected: 3 tests PASS
 
 - [ ] **Step 5: Commit**
@@ -395,7 +395,7 @@ describe('ownership clustering', () => {
 
 - [ ] **Step 2: Run tests to verify new tests fail**
 
-Run: `pnpm --filter @codelore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
+Run: `pnpm --filter @gitlore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
 Expected: ownership tests FAIL (function doesn't cluster by ownership yet)
 
 - [ ] **Step 3: Implement ownership clustering**
@@ -448,7 +448,7 @@ function clusterByOwnership(
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `pnpm --filter @codelore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
+Run: `pnpm --filter @gitlore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
 Expected: All tests PASS
 
 - [ ] **Step 5: Commit**
@@ -553,7 +553,7 @@ describe('temporal clustering', () => {
 
 - [ ] **Step 2: Run tests to verify new tests fail**
 
-Run: `pnpm --filter @codelore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
+Run: `pnpm --filter @gitlore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
 Expected: temporal tests FAIL
 
 - [ ] **Step 3: Implement temporal clustering**
@@ -644,7 +644,7 @@ function clusterByTemporal(hotspots: ClusterMember[], commits: RawCommit[]): Hot
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `pnpm --filter @codelore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
+Run: `pnpm --filter @gitlore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
 Expected: All tests PASS
 
 - [ ] **Step 5: Commit**
@@ -741,7 +741,7 @@ describe('coupling hub detection', () => {
 
 - [ ] **Step 2: Run tests to verify new tests fail**
 
-Run: `pnpm --filter @codelore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
+Run: `pnpm --filter @gitlore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
 Expected: coupling hub tests FAIL
 
 - [ ] **Step 3: Implement coupling hub detection**
@@ -800,7 +800,7 @@ function clusterByCouplingHub(hotspots: ClusterMember[], coupling: CouplingRepor
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `pnpm --filter @codelore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
+Run: `pnpm --filter @gitlore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
 Expected: All tests PASS
 
 - [ ] **Step 5: Commit**
@@ -934,7 +934,7 @@ describe('assembly and multi-signal detection', () => {
 
 - [ ] **Step 2: Run tests to verify they pass**
 
-Run: `pnpm --filter @codelore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
+Run: `pnpm --filter @gitlore/core exec vitest run src/analyzers/hotspot-clustering.test.ts`
 Expected: All tests PASS (assembly was already implemented in Task 2)
 
 - [ ] **Step 3: Commit**
@@ -993,12 +993,12 @@ Add the type exports alongside the existing ones:
 
 - [ ] **Step 3: Build and verify**
 
-Run: `pnpm --filter @codelore/core build`
+Run: `pnpm --filter @gitlore/core build`
 Expected: Build succeeds
 
 - [ ] **Step 4: Run all core tests**
 
-Run: `pnpm --filter @codelore/core exec vitest run`
+Run: `pnpm --filter @gitlore/core exec vitest run`
 Expected: All tests PASS
 
 - [ ] **Step 5: Commit**
@@ -1020,7 +1020,7 @@ git commit -m "feat(core): wire hotspot clustering into runner and exports"
 Add after the `HotspotPanel` function in `App.tsx`:
 
 ```tsx
-function ClusteringPanel({ report }: { report: CodeloreReport }) {
+function ClusteringPanel({ report }: { report: GitloreReport }) {
   const { hotspotClusters } = report;
   if (hotspotClusters.clusters.length === 0) return null;
 
@@ -1097,7 +1097,7 @@ git commit -m "feat(cli): add hotspot root cause clustering panel"
 Create `apps/web/src/components/HotspotClusters.tsx`:
 
 ```tsx
-import type { HotspotClusterReport, ClusterDimension } from '@codelore/core';
+import type { HotspotClusterReport, ClusterDimension } from '@gitlore/core';
 
 const dimensionBadge: Record<ClusterDimension, string> = {
   'structural': 'bg-green-950 text-green-400',
@@ -1190,7 +1190,7 @@ git commit -m "feat(dashboard): add hotspot root cause clusters to Hotspots tab"
 
 - [ ] **Step 1: Run all core tests**
 
-Run: `pnpm --filter @codelore/core exec vitest run`
+Run: `pnpm --filter @gitlore/core exec vitest run`
 Expected: All tests PASS
 
 - [ ] **Step 2: Build the entire project**

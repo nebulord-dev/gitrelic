@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import type { CodeloreReport } from '@codelore/core';
+import type { GitloreReport } from '@gitlore/core';
 import HotspotClusters from './HotspotClusters';
 
 type Tab = 'overview' | 'churn' | 'contributors' | 'cursed' | 'age' | 'coupling' | 'shame';
 
-export default function Dashboard({ report }: { report: CodeloreReport }) {
+export default function Dashboard({ report }: { report: GitloreReport }) {
   const [tab, setTab] = useState<Tab>('overview');
 
   const tabs: { id: Tab; label: string; emoji: string }[] = [
@@ -23,7 +23,7 @@ export default function Dashboard({ report }: { report: CodeloreReport }) {
       <header className="border-b border-gray-800 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-purple-400 font-bold text-xl tracking-wider">CODELORE</h1>
+            <h1 className="text-purple-400 font-bold text-xl tracking-wider">GITLORE</h1>
             <p className="text-gray-500 text-xs">git archaeology · <span className="text-gray-300">{report.repoName}</span></p>
           </div>
           <div className="flex gap-6 text-sm">
@@ -75,7 +75,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function OverviewTab({ report }: { report: CodeloreReport }) {
+function OverviewTab({ report }: { report: GitloreReport }) {
   return (
     <div className="grid grid-cols-2 gap-6">
       <Card title="🔥 Top Hotspots" subtitle={report.hotspots.summary}>
@@ -127,7 +127,7 @@ function OverviewTab({ report }: { report: CodeloreReport }) {
   );
 }
 
-function ChurnTab({ report }: { report: CodeloreReport }) {
+function ChurnTab({ report }: { report: GitloreReport }) {
   return (
     <div>
       <p className="text-gray-400 mb-4 text-sm">{report.hotspots.summary}</p>
@@ -147,7 +147,7 @@ function ChurnTab({ report }: { report: CodeloreReport }) {
   );
 }
 
-function CouplingTab({ report }: { report: CodeloreReport }) {
+function CouplingTab({ report }: { report: GitloreReport }) {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
   if (report.coupling.pairs.length === 0) {
@@ -234,7 +234,7 @@ function CouplingTab({ report }: { report: CodeloreReport }) {
   );
 }
 
-function ShameTab({ report }: { report: CodeloreReport }) {
+function ShameTab({ report }: { report: GitloreReport }) {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
   if (report.forensics.shameLeaderboard.length === 0) {
@@ -319,7 +319,7 @@ function ShameTab({ report }: { report: CodeloreReport }) {
   );
 }
 
-function ContributorsTab({ report }: { report: CodeloreReport }) {
+function ContributorsTab({ report }: { report: GitloreReport }) {
   return (
     <div>
       <p className="text-gray-400 mb-4 text-sm">{report.contributors.summary}</p>
@@ -352,7 +352,7 @@ function ContributorsTab({ report }: { report: CodeloreReport }) {
   );
 }
 
-function CursedTab({ report }: { report: CodeloreReport }) {
+function CursedTab({ report }: { report: GitloreReport }) {
   if (report.cursedFiles.length === 0) {
     return (
       <div className="text-center py-20">
@@ -413,7 +413,7 @@ function CursedTab({ report }: { report: CodeloreReport }) {
   );
 }
 
-function AgeTab({ report }: { report: CodeloreReport }) {
+function AgeTab({ report }: { report: GitloreReport }) {
   return (
     <div>
       <p className="text-gray-400 mb-4 text-sm">{report.ageMap.summary}</p>

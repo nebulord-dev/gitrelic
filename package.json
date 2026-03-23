@@ -1,5 +1,5 @@
 {
-  "name": "codelore",
+  "name": "gitlore",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -8,15 +8,15 @@
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
     "typecheck": "turbo run typecheck",
-    "codelore": "node apps/cli/dist/index.js",
+    "gitlore": "node apps/cli/dist/index.js",
     "test": "pnpm -r test",
     "test:coverage": "pnpm -r test:coverage",
-    "test:web": "pnpm --filter @codelore/web test:ui",
-    "test:cli": "pnpm --filter @codelore/cli test:ui",
-    "test:core": "pnpm --filter @codelore/core test:ui"
+    "test:web": "pnpm --filter @gitlore/web test:ui",
+    "test:cli": "pnpm --filter @gitlore/cli test:ui",
+    "test:core": "pnpm --filter @gitlore/core test:ui"
   },
   "devDependencies": {
-    "turbo": "^2.8.14",
+    "turbo": "^2.8.20",
     "typescript": "^5.7.2"
   },
   "packageManager": "pnpm@10.30.1"

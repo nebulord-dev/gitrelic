@@ -1,5 +1,5 @@
 {
-  "name": "@codelore/web",
+  "name": "@gitlore/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -15,7 +15,7 @@
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@codelore/core": "workspace:*",
+    "@gitlore/core": "workspace:*",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.3.4",

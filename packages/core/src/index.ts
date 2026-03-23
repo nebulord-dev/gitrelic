@@ -1,10 +1,10 @@
-export { runCodelore } from './runner.js';
+export { runGitlore } from './runner.js';
 export { analyzeParallelDev } from './analyzers/parallel-dev.js';
 export { analyzeHotspotClustering } from './analyzers/hotspot-clustering.js';
 export type { FileStats } from './utils/git.js';
 export type {
-  CodeloreReport,
-  RunCodeloreOptions,
+  GitloreReport,
+  RunGitloreOptions,
   ChurnReport,
   FileChurn,
   ChurnCategory,

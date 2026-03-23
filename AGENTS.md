@@ -1,26 +1,26 @@
-# CodeLore — Claude Code Guide
+# GitLore — Claude Code Guide
 
 ## Project Overview
 
-**CodeLore** is a git archaeology CLI. It analyzes a git repository's *history* to surface churn patterns, bus factor risks, file age, contributor profiles, and "cursed files" — files at the intersection of high churn, concentrated ownership, and age anomalies.
+**GitLore** is a git archaeology CLI. It analyzes a git repository's *history* to surface churn patterns, bus factor risks, file age, contributor profiles, and "cursed files" — files at the intersection of high churn, concentrated ownership, and age anomalies.
 
 ## Monorepo Architecture
 
 pnpm workspace + Turbo. Strict dependency order:
 
 ```
-@codelore/core (foundation)
+@gitlore/core (foundation)
     ↓
-@codelore/cli (depends on core)
-@codelore/web (independent, served by CLI --web flag)
+@gitlore/cli (depends on core)
+@gitlore/web (independent, served by CLI --web flag)
 ```
 
 ## Package Breakdown
 
 ### `packages/core` — Analysis Engine
 
-- `src/runner.ts` — orchestrates all analyzers, entry point is `runCodelore()`
-- `src/types.ts` — all TypeScript interfaces (`CodeloreReport`, `ChurnReport`, etc.)
+- `src/runner.ts` — orchestrates all analyzers, entry point is `runGitlore()`
+- `src/types.ts` — all TypeScript interfaces (`GitloreReport`, `ChurnReport`, etc.)
 - `src/utils/git.ts` — raw git primitives (parsing `git log`, `git ls-files`)
 - `src/analyzers/churn.ts` — file churn frequency analysis
 - `src/analyzers/bus-factor.ts` — ownership concentration per file
@@ -35,22 +35,22 @@ pnpm workspace + Turbo. Strict dependency order:
 
 ### `apps/web` — Web Dashboard
 
-- `src/App.tsx` — loads `/codelore-report.json`, passes to Dashboard
+- `src/App.tsx` — loads `/gitlore-report.json`, passes to Dashboard
 - `src/components/Dashboard.tsx` — tabbed layout (Overview, Hotspots, Contributors, Cursed Files, Age Map)
 
 ## Key Concepts
 
 ### Report flow
 
-1. `runCodelore()` in core runs all analyzers
-2. CLI receives `CodeloreReport` and renders Ink UI
-3. With `--web`: CLI starts HTTP server, serves web/dist + `/codelore-report.json`
+1. `runGitlore()` in core runs all analyzers
+2. CLI receives `GitloreReport` and renders Ink UI
+3. With `--web`: CLI starts HTTP server, serves web/dist + `/gitlore-report.json`
 
 ### Adding a new analyzer
 
 1. Create `packages/core/src/analyzers/my-analyzer.ts`
 2. Export a function `analyzeX(commits, trackedFiles): XReport`
-3. Add result to `CodeloreReport` in `types.ts`
+3. Add result to `GitloreReport` in `types.ts`
 4. Call it in `runner.ts` and include in return value
 
 ### Data source
@@ -65,9 +65,9 @@ When the user mentions "kanban", "task", "backlog", or "add a task", they are re
 
 ```bash
 pnpm build                          # all packages
-pnpm --filter @codelore/core build
-pnpm --filter @codelore/cli build
-pnpm --filter @codelore/web build
+pnpm --filter @gitlore/core build
+pnpm --filter @gitlore/cli build
+pnpm --filter @gitlore/web build
 pnpm dev                            # watch all
 ```
 

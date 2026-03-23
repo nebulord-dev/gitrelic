@@ -25,7 +25,7 @@
 **Modified files:**
 | File | Change |
 |------|--------|
-| `packages/core/src/types.ts` | Add `LocReport`, `HotspotReport`, `CouplingReport` types + fields on `CodeloreReport` |
+| `packages/core/src/types.ts` | Add `LocReport`, `HotspotReport`, `CouplingReport` types + fields on `GitloreReport` |
 | `packages/core/src/runner.ts` | Call three new analyzers, add progress steps |
 | `packages/core/src/index.ts` | Export new types |
 | `apps/cli/src/components/App.tsx` | Add `HotspotPanel` and `CouplingPanel` |
@@ -125,12 +125,12 @@ export interface CouplingReport {
 }
 ```
 
-- [ ] **Step 4: Add new fields to `CodeloreReport`**
+- [ ] **Step 4: Add new fields to `GitloreReport`**
 
 Add three fields after `parallelDev`:
 
 ```typescript
-export interface CodeloreReport {
+export interface GitloreReport {
   // ... existing fields ...
   parallelDev: ParallelDevReport;
   loc: LocReport;
@@ -282,7 +282,7 @@ describe('analyzeLoc', () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @codelore/core test -- --run src/analyzers/loc.test.ts`
+Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @gitlore/core test -- --run src/analyzers/loc.test.ts`
 Expected: FAIL — `./loc.js` module not found
 
 ---
@@ -376,7 +376,7 @@ export async function analyzeLoc(trackedFiles: string[], repoPath: string): Prom
 
 - [ ] **Step 2: Run tests to verify they pass**
 
-Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @codelore/core test -- --run src/analyzers/loc.test.ts`
+Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @gitlore/core test -- --run src/analyzers/loc.test.ts`
 Expected: All tests PASS
 
 - [ ] **Step 3: Commit**
@@ -529,7 +529,7 @@ describe('analyzeHotspots', () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @codelore/core test -- --run src/analyzers/hotspot.test.ts`
+Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @gitlore/core test -- --run src/analyzers/hotspot.test.ts`
 Expected: FAIL — `./hotspot.js` module not found
 
 ---
@@ -597,7 +597,7 @@ export function analyzeHotspots(churnReport: ChurnReport, locReport: LocReport):
 
 - [ ] **Step 2: Run tests to verify they pass**
 
-Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @codelore/core test -- --run src/analyzers/hotspot.test.ts`
+Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @gitlore/core test -- --run src/analyzers/hotspot.test.ts`
 Expected: All tests PASS
 
 - [ ] **Step 3: Commit**
@@ -817,7 +817,7 @@ describe('analyzeCoupling', () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @codelore/core test -- --run src/analyzers/coupling.test.ts`
+Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @gitlore/core test -- --run src/analyzers/coupling.test.ts`
 Expected: FAIL — `./coupling.js` module not found
 
 ---
@@ -920,7 +920,7 @@ export function analyzeCoupling(commits: RawCommit[], trackedFiles: string[]): C
 
 - [ ] **Step 2: Run tests to verify they pass**
 
-Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @codelore/core test -- --run src/analyzers/coupling.test.ts`
+Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @gitlore/core test -- --run src/analyzers/coupling.test.ts`
 Expected: All tests PASS
 
 - [ ] **Step 3: Commit**
@@ -980,12 +980,12 @@ Add `loc`, `hotspots`, and `coupling` to the return object:
 
 - [ ] **Step 4: Build and verify**
 
-Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @codelore/core build`
+Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @gitlore/core build`
 Expected: Build succeeds with no type errors.
 
 - [ ] **Step 5: Run all core tests**
 
-Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @codelore/core test -- --run`
+Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @gitlore/core test -- --run`
 Expected: All tests pass (existing + new).
 
 - [ ] **Step 6: Commit**
@@ -1009,7 +1009,7 @@ git commit -m "feat(core): wire LOC, hotspot, and coupling analyzers into runner
 Add after the `BusFactorPanel` function in `App.tsx`:
 
 ```typescript
-function HotspotPanel({ report }: { report: CodeloreReport }) {
+function HotspotPanel({ report }: { report: GitloreReport }) {
   const { hotspots } = report;
   if (hotspots.files.length === 0) return null;
   return (
@@ -1038,7 +1038,7 @@ function HotspotPanel({ report }: { report: CodeloreReport }) {
 Add after the `HotspotPanel` function:
 
 ```typescript
-function CouplingPanel({ report }: { report: CodeloreReport }) {
+function CouplingPanel({ report }: { report: GitloreReport }) {
   const { coupling } = report;
   if (coupling.pairs.length === 0) return null;
   return (
@@ -1173,7 +1173,7 @@ function hotspotBadge(cat: string) {
 Replace the `ChurnTab` function to show composite hotspot scores alongside churn:
 
 ```typescript
-function ChurnTab({ report }: { report: CodeloreReport }) {
+function ChurnTab({ report }: { report: GitloreReport }) {
   return (
     <div>
       <p className="text-gray-400 mb-4 text-sm">{report.hotspots.summary}</p>
@@ -1196,7 +1196,7 @@ function ChurnTab({ report }: { report: CodeloreReport }) {
 - [ ] **Step 4: Add `CouplingTab` component with per-file search**
 
 ```typescript
-function CouplingTab({ report }: { report: CodeloreReport }) {
+function CouplingTab({ report }: { report: GitloreReport }) {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
   if (report.coupling.pairs.length === 0) {
@@ -1333,7 +1333,7 @@ git commit -m "feat(web): update hotspots tab and add coupling tab to dashboard"
 Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm test`
 Expected: All tests pass.
 
-- [ ] **Step 2: Run CodeLore against its own repo**
+- [ ] **Step 2: Run GitLore against its own repo**
 
 Run: `cd /Users/tracericochet/Desktop/dev/lore && node apps/cli/dist/index.js --path . --since all`
 
@@ -1352,7 +1352,7 @@ Expected: JSON output includes `loc`, `hotspots`, and `coupling` top-level field
 
 If anything fails, fix and re-run. Common issues:
 - Import path `.js` extensions missing
-- Type mismatches between runner return and `CodeloreReport`
+- Type mismatches between runner return and `GitloreReport`
 
 - [ ] **Step 5: Final commit if fixes were needed**
 

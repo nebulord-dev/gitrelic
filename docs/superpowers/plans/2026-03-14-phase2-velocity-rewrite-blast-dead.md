@@ -4,7 +4,7 @@
 
 **Goal:** Add four new core analyzers with CLI panels. Web surfaces deferred to Phase 3.
 
-**Architecture:** Four stateless synchronous analyzer functions. All work from existing `RawCommit[]` data — no new git primitives or filesystem access needed. Each produces an independent report on `CodeloreReport`.
+**Architecture:** Four stateless synchronous analyzer functions. All work from existing `RawCommit[]` data — no new git primitives or filesystem access needed. Each produces an independent report on `GitloreReport`.
 
 **Tech Stack:** TypeScript, Vitest, Ink (CLI)
 
@@ -27,7 +27,7 @@
 **Modified files:**
 | File | Change |
 |------|--------|
-| `packages/core/src/types.ts` | Add 4 report types + fields on `CodeloreReport` |
+| `packages/core/src/types.ts` | Add 4 report types + fields on `GitloreReport` |
 | `packages/core/src/index.ts` | Export new types |
 | `packages/core/src/runner.ts` | Call 4 new analyzers, add progress steps |
 | `apps/cli/src/components/App.tsx` | Add 4 CLI panels |
@@ -116,10 +116,10 @@ export interface DeadCodeReport {
 }
 ```
 
-- [ ] **Step 2: Add new fields to `CodeloreReport`**
+- [ ] **Step 2: Add new fields to `GitloreReport`**
 
 ```typescript
-export interface CodeloreReport {
+export interface GitloreReport {
   // ... existing fields ...
   coupling: CouplingReport;
   churnVelocity: ChurnVelocityReport;
@@ -259,7 +259,7 @@ describe('analyzeChurnVelocity', () => {
 
 - [ ] **Step 2: Run tests, verify they fail**
 
-Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @codelore/core test -- --run src/analyzers/churn-velocity.test.ts`
+Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @gitlore/core test -- --run src/analyzers/churn-velocity.test.ts`
 
 - [ ] **Step 3: Implement**
 
@@ -397,7 +397,7 @@ current.fileStats.push({ file, insertions: parseInt(ins, 10) || 0, deletions: pa
 
 - [ ] **Step 2: Verify existing git tests still pass**
 
-Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @codelore/core test -- --run src/utils/git.test.ts`
+Run: `cd /Users/tracericochet/Desktop/dev/lore && pnpm --filter @gitlore/core test -- --run src/utils/git.test.ts`
 
 - [ ] **Step 3: Write rewrite ratio tests**
 
@@ -975,8 +975,8 @@ import { analyzeDeadCode } from './analyzers/dead-code.js';
     deadCode,
 ```
 
-- [ ] **Step 4: Build and verify**: `pnpm --filter @codelore/core build`
-- [ ] **Step 5: Run all core tests**: `pnpm --filter @codelore/core test -- --run`
+- [ ] **Step 4: Build and verify**: `pnpm --filter @gitlore/core build`
+- [ ] **Step 5: Run all core tests**: `pnpm --filter @gitlore/core test -- --run`
 - [ ] **Step 6: Commit**
 
 ```bash
@@ -994,7 +994,7 @@ git commit -m "feat(core): wire churn velocity, rewrite ratio, blast radius, dea
 - [ ] **Step 1: Add `VelocityPanel` component**
 
 ```typescript
-function VelocityPanel({ report }: { report: CodeloreReport }) {
+function VelocityPanel({ report }: { report: GitloreReport }) {
   const { churnVelocity } = report;
   if (churnVelocity.acceleratingFiles.length === 0) return null;
   return (
@@ -1021,7 +1021,7 @@ function VelocityPanel({ report }: { report: CodeloreReport }) {
 - [ ] **Step 2: Add `RewritePanel` component**
 
 ```typescript
-function RewritePanel({ report }: { report: CodeloreReport }) {
+function RewritePanel({ report }: { report: GitloreReport }) {
   const { rewriteRatio } = report;
   if (rewriteRatio.topRewriters.length === 0) return null;
   return (
@@ -1047,7 +1047,7 @@ function RewritePanel({ report }: { report: CodeloreReport }) {
 - [ ] **Step 3: Add `BlastRadiusPanel` component**
 
 ```typescript
-function BlastRadiusPanel({ report }: { report: CodeloreReport }) {
+function BlastRadiusPanel({ report }: { report: GitloreReport }) {
   const { blastRadius } = report;
   if (blastRadius.topBlasters.length === 0) return null;
   return (
@@ -1073,7 +1073,7 @@ function BlastRadiusPanel({ report }: { report: CodeloreReport }) {
 - [ ] **Step 4: Add `DeadCodePanel` component**
 
 ```typescript
-function DeadCodePanel({ report }: { report: CodeloreReport }) {
+function DeadCodePanel({ report }: { report: GitloreReport }) {
   const { deadCode } = report;
   if (deadCode.candidates.length === 0) return null;
   return (
@@ -1125,6 +1125,6 @@ git commit -m "feat(cli): add velocity, rewrite, blast radius, and dead code pan
 ### Task 8: End-to-end verification
 
 - [ ] **Step 1: Run all tests**: `pnpm test`
-- [ ] **Step 2: Run CodeLore against its own repo**: `node apps/cli/dist/index.js --path . --since all`
+- [ ] **Step 2: Run GitLore against its own repo**: `node apps/cli/dist/index.js --path . --since all`
 - [ ] **Step 3: Verify JSON output**: write to file and check for `churnVelocity`, `rewriteRatio`, `blastRadius`, `deadCode` fields
 - [ ] **Step 4: Fix any issues, commit if needed**

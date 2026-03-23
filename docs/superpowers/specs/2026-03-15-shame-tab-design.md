@@ -6,7 +6,7 @@
 
 ## Overview
 
-Add a seventh tab to the web dashboard that surfaces commit message forensics data. The forensics analyzer already produces `ForensicsReport` on every `CodeloreReport` — this is purely a UI addition. The tab uses a list + side panel layout (matching the Coupling tab pattern) with color-coded keyword severity tags.
+Add a seventh tab to the web dashboard that surfaces commit message forensics data. The forensics analyzer already produces `ForensicsReport` on every `GitloreReport` — this is purely a UI addition. The tab uses a list + side panel layout (matching the Coupling tab pattern) with color-coded keyword severity tags.
 
 ## Data Source
 

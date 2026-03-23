@@ -1,5 +1,5 @@
 ---
-description: "Create a comprehensive implementation plan for a CodeLore feature before writing any code"
+description: "Create a comprehensive implementation plan for a GitLore feature before writing any code"
 ---
 
 # Plan a Feature
@@ -33,7 +33,7 @@ Before anything else:
 **Deep Feature Analysis:**
 
 - Extract the core problem being solved
-- Identify user value and impact on the CodeLore analysis workflow
+- Identify user value and impact on the GitLore analysis workflow
 - Determine feature type: New Analyzer / Enhancement / Threshold Tuning / Bug Fix / CLI/Web Feature
 - Assess complexity: Low / Medium / High
 - Identify which packages are affected: `core`, `cli`, `web` (or multiple)
@@ -55,7 +55,7 @@ So that <benefit/value>
 
 **1. Package Impact Analysis**
 
-CodeLore has strict build order: `core` → `cli` → `web`. For each affected package:
+GitLore has strict build order: `core` → `cli` → `web`. For each affected package:
 
 - What files need to change?
 - Does `packages/core/src/types.ts` need updating? (If yes, all packages may be affected)
@@ -74,12 +74,12 @@ CodeLore has strict build order: `core` → `cli` → `web`. For each affected p
 **3. Dependency Analysis**
 
 - Catalog any new npm packages needed (prefer existing deps — check `package.json` first)
-- Confirm web-safe imports: `apps/web` must only use `import type` from `@codelore/core`
+- Confirm web-safe imports: `apps/web` must only use `import type` from `@gitlore/core`
 - Note any tools that need to be bundled as dependencies in `core` (not global installs)
 
 **4. Integration Points**
 
-- Which existing files need updating (e.g. `runner.ts` `runCodelore()` function, `types.ts` exports)
+- Which existing files need updating (e.g. `runner.ts` `runGitlore()` function, `types.ts` exports)
 - Which new files need creating and exactly where
 - Does the web report shape change? (affects `App.tsx` → `Dashboard.tsx` data flow)
 
@@ -90,7 +90,7 @@ CodeLore has strict build order: `core` → `cli` → `web`. For each affected p
 - Does this depend on anything not yet built?
 - What could go wrong? (Edge cases, type changes that break consumers, git edge cases)
 - How will this be tested? Can the analyzer be tested with mock commit data?
-- Any performance implications? (Analyzers run sequentially in `runCodelore()`)
+- Any performance implications? (Analyzers run sequentially in `runGitlore()`)
 - Are there git edge cases? (empty repos, single-commit repos, detached HEAD)
 
 **Design decisions:**
@@ -176,7 +176,7 @@ export function analyzeMyThing(commits: RawCommit[], trackedFiles: string[]): My
 
 **Runner integration:**
 \`\`\`typescript
-// In runner.ts — call the analyzer and include in CodeloreReport
+// In runner.ts — call the analyzer and include in GitloreReport
 onProgress?.('Running my analysis...');
 const myReport = analyzeMyThing(commits, trackedFiles);
 // Add to return object
@@ -185,7 +185,7 @@ const myReport = analyzeMyThing(commits, trackedFiles);
 **Web-safe imports:**
 \`\`\`typescript
 // In apps/web — always import type, never value imports from core
-import type { CodeloreReport } from '@codelore/core';
+import type { GitloreReport } from '@gitlore/core';
 \`\`\`
 
 **Naming conventions:** <observed from codebase>
@@ -210,8 +210,8 @@ import type { CodeloreReport } from '@codelore/core';
 
 **Tasks:**
 - Implement analyzer in `packages/core/src/analyzers/<name>.ts`
-- Call from `packages/core/src/runner.ts` `runCodelore()` function
-- Include result in `CodeloreReport` return value
+- Call from `packages/core/src/runner.ts` `runGitlore()` function
+- Include result in `GitloreReport` return value
 
 ### Phase 3: CLI Integration
 
@@ -228,7 +228,7 @@ import type { CodeloreReport } from '@codelore/core';
 **Tasks:**
 - Add/update component in `apps/web/src/components/`
 - Update `apps/web/src/components/Dashboard.tsx` if layout changes
-- Only use `import type` from `@codelore/core`
+- Only use `import type` from `@gitlore/core`
 
 ---
 
@@ -263,9 +263,9 @@ Run all of these before considering the feature complete.
 
 ### Level 1: Type checking
 \`\`\`bash
-pnpm --filter @codelore/core build          # catches type errors in core
-pnpm --filter @codelore/cli build           # catches type errors in cli
-pnpm --filter @codelore/web build           # catches type errors in web
+pnpm --filter @gitlore/core build          # catches type errors in core
+pnpm --filter @gitlore/cli build           # catches type errors in cli
+pnpm --filter @gitlore/web build           # catches type errors in web
 \`\`\`
 
 ### Level 2: Full build
@@ -290,8 +290,8 @@ node apps/cli/dist/index.js --path ~/path/to/small-repo --json
 - [ ] Feature implements all specified functionality
 - [ ] All type checks pass (`pnpm build`)
 - [ ] No regressions in existing analyzers or UI
-- [ ] New analyzer called from `runCodelore()` (if applicable)
-- [ ] Result included in `CodeloreReport` (if applicable)
+- [ ] New analyzer called from `runGitlore()` (if applicable)
+- [ ] Result included in `GitloreReport` (if applicable)
 - [ ] Web package uses only `import type` from core (if applicable)
 - [ ] CLI renders new data correctly in Ink (if applicable)
 - [ ] Web dashboard displays new data correctly (if applicable)

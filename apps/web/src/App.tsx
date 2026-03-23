@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import type { CodeloreReport } from '@codelore/core';
+import type { GitloreReport } from '@gitlore/core';
 import Dashboard from './components/Dashboard.js';
 
 export default function App() {
-  const [report, setReport] = useState<CodeloreReport | null>(null);
+  const [report, setReport] = useState<GitloreReport | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/codelore-report.json')
+    fetch('/gitlore-report.json')
       .then(r => {
-        if (!r.ok) throw new Error('No report found. Run codelore --web to generate one.');
-        return r.json() as Promise<CodeloreReport>;
+        if (!r.ok) throw new Error('No report found. Run gitlore --web to generate one.');
+        return r.json() as Promise<GitloreReport>;
       })
       .then(setReport)
       .catch((err: Error) => setError(err.message));
@@ -22,7 +22,7 @@ export default function App() {
         <div className="text-center">
           <div className="text-6xl mb-4">☠</div>
           <p className="text-red-400 text-lg">{error}</p>
-          <p className="text-gray-500 mt-2 text-sm">Run: <code className="text-purple-400">codelore --path ./your-repo --web</code></p>
+          <p className="text-gray-500 mt-2 text-sm">Run: <code className="text-purple-400">gitlore --path ./your-repo --web</code></p>
         </div>
       </div>
     );

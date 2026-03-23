@@ -44,7 +44,7 @@ interface MultiSignalFile {
 }
 ```
 
-`HotspotClusterReport` is added to `CodeloreReport` as `hotspotClusters`.
+`HotspotClusterReport` is added to `GitloreReport` as `hotspotClusters`.
 
 ## Function Signature
 
@@ -142,7 +142,7 @@ Empty state: "No root cause patterns detected — hotspots appear independent."
 
 - **New file**: `src/analyzers/hotspot-clustering.ts` — four dimension functions + assembly + narrative generation.
 - **`runner.ts`**: add `onProgress?.('Clustering hotspots...')` then call `analyzeHotspotClustering(hotspots, busFactors, coupling, contributors, commits, trackedFiles)` after hotspots, coupling, bus factor, and contributors are computed.
-- **`types.ts`**: add `ClusterDimension`, `ClusterMember`, `HotspotCluster`, `HotspotClusterReport`, `MultiSignalFile` types and `hotspotClusters` field on `CodeloreReport`.
+- **`types.ts`**: add `ClusterDimension`, `ClusterMember`, `HotspotCluster`, `HotspotClusterReport`, `MultiSignalFile` types and `hotspotClusters` field on `GitloreReport`.
 - **`index.ts`**: export the new analyzer function.
 
 ### CLI (`apps/cli`)

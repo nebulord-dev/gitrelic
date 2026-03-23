@@ -6,13 +6,13 @@
 
 ## Context
 
-CodeLore's Phase 1 (hygiene, tests, rename) is complete. Phase 2 introduces the core analyzers that make CodeLore a serious behavioral code analysis tool. This spec covers the first batch: LOC counting, the Tornhill hotspot formula, and temporal coupling detection.
+GitLore's Phase 1 (hygiene, tests, rename) is complete. Phase 2 introduces the core analyzers that make GitLore a serious behavioral code analysis tool. This spec covers the first batch: LOC counting, the Tornhill hotspot formula, and temporal coupling detection.
 
 **Dependency chain:** `loc` → `hotspot` (needs LOC data). `coupling` is independent.
 
 ## Design Decisions
 
-- **Pure filesystem for LOC** — no `cloc` dependency. Count lines by reading tracked files directly. Keeps CodeLore's zero-external-tool philosophy intact. Language detection via file extension mapping (extending existing `detectPrimaryLanguage` logic).
+- **Pure filesystem for LOC** — no `cloc` dependency. Count lines by reading tracked files directly. Keeps GitLore's zero-external-tool philosophy intact. Language detection via file extension mapping (extending existing `detectPrimaryLanguage` logic).
 - **Three independent analyzers** — follows established pattern of stateless functions. LOC produces data reusable by future features (treemap sizing, language panel, file drill-down).
 - **Coupling filters** — minimum 3 co-occurrences AND minimum 30% coupling strength. Commits touching 30+ files excluded (bulk operations create false coupling).
 - **No cursed file changes** — hotspot and coupling data could feed into curse scoring later but that's a separate decision.
@@ -204,10 +204,10 @@ Three new steps added to `onProgress`:
 - `"Computing hotspot scores..."`
 - `"Mapping file coupling..."`
 
-### CodeloreReport Additions
+### GitloreReport Additions
 
 ```typescript
-interface CodeloreReport {
+interface GitloreReport {
   // ... existing fields ...
   loc: LocReport;
   hotspots: HotspotReport;
@@ -276,7 +276,7 @@ All tests colocated with source files.
 - `packages/core/src/analyzers/coupling.test.ts`
 
 **Modified files:**
-- `packages/core/src/types.ts` — add `LocReport`, `HotspotReport`, `CouplingReport` types and add fields to `CodeloreReport`
+- `packages/core/src/types.ts` — add `LocReport`, `HotspotReport`, `CouplingReport` types and add fields to `GitloreReport`
 - `packages/core/src/runner.ts` — call new analyzers, add progress steps
 - `apps/cli/src/components/App.tsx` — add Hotspot Panel and Coupling Panel
 - `apps/web/src/components/Dashboard.tsx` — replace Hotspots tab content, add Coupling tab, update Overview card

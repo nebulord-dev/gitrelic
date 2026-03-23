@@ -1,4 +1,4 @@
-import type { HotspotClusterReport, ClusterDimension } from '@codelore/core';
+import type { HotspotClusterReport, ClusterDimension } from '@gitlore/core';
 
 const dimensionBadge: Record<ClusterDimension, string> = {
   'structural': 'bg-green-950 text-green-400',
