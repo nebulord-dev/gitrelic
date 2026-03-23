@@ -77,8 +77,7 @@ Follow files through renames so churn/age history isn't lost when someone does `
 
 ~~#### Hotspot root cause clustering ("geographic profiling")~~ _(Done — see Done column)_
 
-#### Complexity over time
-Track lines-of-code per file across commits to show whether files are growing or shrinking. Growing + high churn = compounding risk.
+~~#### Complexity over time~~ _(Done — see Done column)_
 
 ~~#### "Dead code" candidates~~ _(Done — see Done column)_
 
@@ -88,8 +87,7 @@ Wrap `madge` to build a static import/dependency graph: which files import which
 #### Parallel development v2: sustained vs. spike detection
 Distinguish chronic parallel development (8 of 12 weeks) from one-off spikes (1 intense week). The sustained case is the real Tornhill red flag. Add `parallelPattern: 'chronic' | 'spike' | 'occasional'` classification. Also: configurable `--parallel-window` flag (default 7d, support 3d/14d), commit proximity scoring for finer-grained severity. Design spec: `docs/plans/2026-03-11-parallel-development-design.md` § V2 Roadmap.
 
-#### `--parallel` CLI panel
-Dedicated CLI panel for parallel development data (like `--shame` for forensics). Show the parallel dev leaderboard with scores, peak windows, and narratives.
+~~#### `--parallel` CLI panel~~ _(Done — see Done column)_
 
 ~~#### Coupling map~~ _(Done — see Done column)_
 
@@ -471,6 +469,12 @@ Seventh tab in the web dashboard surfacing commit message forensics. List + side
 
 ### Hotspot root cause clustering ("geographic profiling")
 Tornhill-inspired geographic profiling — clusters top 20 hotspots by shared traits to surface systemic root causes. Four independent dimensions: **structural** (directory prefix grouping with breadth filter), **ownership** (dominant author from bus factor, skips single-author repos), **temporal** (churn inflection point detection per file, groups by calendar month), **coupling hub** (non-hotspot files coupled to 2+ hotspots — the "killer's home address"). Clusters ranked by `memberCount × avgHotspotScore`. Files appearing in 2+ clusters flagged as multi-signal (strongest intervention candidates). Template-based narratives per dimension. CLI panel (top 3 clusters after Hotspots), web section within Hotspots tab with color-coded dimension badges. 17 unit tests. Design spec: `docs/superpowers/specs/2026-03-19-hotspot-clustering-design.md`.
+
+### `--parallel` CLI panel
+Dedicated CLI panel for parallel development data (mirrors `--shame` for forensics). Shows the parallel dev leaderboard with scores, peak authors, and narratives. Top 10 hot files with score bars. Empty state for solo repos.
+
+### Complexity over time
+Tracks net LOC growth per file across monthly buckets using existing `fileStats` data. Buckets insertions minus deletions by `YYYY-MM`, computes running cumulative, classifies each file as `growing`/`shrinking`/`stable` based on average net lines/month over last 3 active months (threshold: 5 lines/month). Files with <2 active months excluded. Sorted by absolute growth rate with alphabetical tiebreaker. 9 unit tests. Design spec: `docs/superpowers/specs/2026-03-22-complexity-trend-design.md`.
 
 ### Hotspot health sentiment
 Tornhill-inspired diagnostic sentiment for the hotspot UI. Three changes: **health narrative** (one-sentence verdict above the file list — green/yellow/red based on critical + warning counts in `topHotspots`), **per-entry sentiment coloring** (moderate/low categories shifted from cyan/gray to green so entries read as healthy vs dangerous), and **"all clear" state** (positive message replacing the leaderboard when no critical or warning files exist). Applied to both CLI (`HotspotPanel`) and web dashboard (`ChurnTab` + `hotspotDot`/`hotspotBar`/`hotspotBadge` helpers). Design spec: `docs/superpowers/specs/2026-03-22-hotspot-health-sentiment-design.md`.
