@@ -30,10 +30,12 @@ export function analyzeContributors(commits: RawCommit[], repoAgeDays: number): 
   }
 
   const now = Date.now();
-  const activeWindow = Math.round(repoAgeDays * 0.25) * 86_400_000;
-  const ghostWindow = Math.round(repoAgeDays * 0.50) * 86_400_000;
-  const activeCutoff = now - activeWindow;
-  const ghostCutoff = now - ghostWindow;
+  const MIN_ACTIVE_DAYS = 90;
+  const MIN_GHOST_DAYS = 180;
+  const activeWindowDays = Math.max(MIN_ACTIVE_DAYS, Math.round(repoAgeDays * 0.25));
+  const ghostWindowDays = Math.max(MIN_GHOST_DAYS, Math.round(repoAgeDays * 0.50));
+  const activeCutoff = now - activeWindowDays * 86_400_000;
+  const ghostCutoff = now - ghostWindowDays * 86_400_000;
 
   const contributors: Contributor[] = Array.from(authorMap.entries()).map(([email, data]) => {
     const sorted = [...data.commits].sort((a, b) => a.date.localeCompare(b.date));
@@ -67,7 +69,7 @@ export function analyzeContributors(commits: RawCommit[], repoAgeDays: number): 
   const topContributor = contributors[0];
 
   const summary = ghostContributors.length > 0
-    ? `${contributors.length} contributors total — ${activeContributors.length} active, ${ghostContributors.length} ghosts who haven't committed in ${Math.round(repoAgeDays * 0.50)}+ days`
+    ? `${contributors.length} contributors total — ${activeContributors.length} active, ${ghostContributors.length} ghosts who haven't committed in ${ghostWindowDays}+ days`
     : `${contributors.length} contributors — ${activeContributors.length} actively committing`;
 
   return { contributors, activeContributors, ghostContributors, topContributor, summary };

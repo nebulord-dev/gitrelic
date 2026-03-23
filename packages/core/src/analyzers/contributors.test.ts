@@ -52,14 +52,24 @@ describe('analyzeContributors', () => {
     expect(result.ghostContributors[0].email).toBe('alice@example.com');
   });
 
-  it('scales windows for young repo (90 days)', () => {
-    // repoAgeDays=90, active window = 23 days, ghost window = 45 days
+  it('enforces minimum floors on young repos', () => {
+    // repoAgeDays=90 — without floors, ghost window would be 45 days.
+    // With the 180-day floor, a 60-day-inactive author is NOT a ghost.
     const commits = [
       makeCommit({ hash: '1', authorEmail: 'active@example.com', authorName: 'Active', date: daysAgo(10), files: ['a.ts'] }),
-      makeCommit({ hash: '2', authorEmail: 'ghost@example.com', authorName: 'Ghost', date: daysAgo(60), files: ['b.ts'] }),
+      makeCommit({ hash: '2', authorEmail: 'recent@example.com', authorName: 'Recent', date: daysAgo(60), files: ['b.ts'] }),
     ];
     const result = analyzeContributors(commits, 90);
     expect(result.activeContributors.map(c => c.email)).toContain('active@example.com');
+    expect(result.ghostContributors).toHaveLength(0); // 60 days < 180-day floor
+  });
+
+  it('flags ghosts on young repos when past the floor', () => {
+    const commits = [
+      makeCommit({ hash: '1', authorEmail: 'active@example.com', authorName: 'Active', date: daysAgo(10), files: ['a.ts'] }),
+      makeCommit({ hash: '2', authorEmail: 'ghost@example.com', authorName: 'Ghost', date: daysAgo(200), files: ['b.ts'] }),
+    ];
+    const result = analyzeContributors(commits, 90);
     expect(result.ghostContributors.map(c => c.email)).toContain('ghost@example.com');
   });
 
