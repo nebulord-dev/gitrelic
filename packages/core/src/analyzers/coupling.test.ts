@@ -10,6 +10,7 @@ function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
     date: '2025-06-01T00:00:00Z',
     message: '',
     files: [],
+    fileStats: [],
     insertions: 0,
     deletions: 0,
     ...overrides,

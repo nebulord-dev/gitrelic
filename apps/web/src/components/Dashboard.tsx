@@ -386,8 +386,8 @@ function CursedTab({ report }: { report: GitloreReport }) {
             </div>
             <p className="text-gray-400 text-sm mb-3 italic">"{f.narrative}"</p>
             <div className="flex flex-wrap gap-2">
-              {f.reasons.map((r, i) => (
-                <span key={i} className={`text-xs px-2 py-1 rounded-sm ${reasonBadge(r)}`}>{r}</span>
+              {f.reasons.map(r => (
+                <span key={r} className={`text-xs px-2 py-1 rounded-sm ${reasonBadge(r)}`}>{r}</span>
               ))}
             </div>
             <div className="mt-3 flex gap-4 text-xs text-gray-500">
@@ -398,8 +398,8 @@ function CursedTab({ report }: { report: GitloreReport }) {
                   <div className="absolute bottom-full left-0 mb-2 z-10 hidden group-hover:block">
                     <div className="bg-gray-800 border border-gray-700 rounded-sm px-3 py-2 shadow-lg whitespace-nowrap">
                       <p className="text-gray-400 text-xs font-semibold mb-1 uppercase tracking-wide">Authors</p>
-                      {authorNames.map((name, i) => (
-                        <p key={i} className="text-gray-200 text-xs">{name}</p>
+                      {authorNames.map(name => (
+                        <p key={name} className="text-gray-200 text-xs">{name}</p>
                       ))}
                     </div>
                   </div>

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type {
   HotspotReport, HotspotEntry, BusFactorReport, CouplingReport,
-  ContributorReport, ClusterMember, ContributorProfile,
+  ContributorReport, ClusterMember,
 } from '../types.js';
 import type { RawCommit } from '../utils/git.js';
 import { analyzeHotspotClustering } from './hotspot-clustering.js';
