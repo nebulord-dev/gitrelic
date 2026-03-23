@@ -354,6 +354,9 @@ Visual breakdown of what the repo is made of — languages, LOC per language, fi
 
 ~~#### Hotspot health sentiment — distinguish healthy churn from dangerous churn~~ _(Done — see Done column)_
 
+#### Tab header explanations with methodology drawer
+Each dashboard tab should have a brief section header explaining what the data shows at a high level — one or two sentences that orient the viewer ("What am I looking at?"). Below or beside that, a "How is this calculated?" link that opens a slideout drawer with a more detailed but still general breakdown of how the numbers are crunched: what inputs feed the score, what the thresholds mean, and how to interpret the results. Not code-level detail — more like a methodology card. Applies to all tabs: Hotspots (already has the Tornhill formula line — extend it), Cursed Files, Contributors, Age Map, Coupling, Shame, Parallel Dev. The Hotspots tab can serve as the template since it already has a formula explanation.
+
 ---
 
 ### Polish
