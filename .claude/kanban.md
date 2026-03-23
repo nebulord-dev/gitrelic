@@ -357,24 +357,7 @@ Visual breakdown of what the repo is made of — languages, LOC per language, fi
 #### Hotspot score leaderboard
 Dedicated panel showing files ranked by the churn × complexity composite. Not just cursed files — specifically the Tornhill hotspot formula. Separate from the existing cursed file view because the formula and interpretation are different. Most engineers will understand "high churn AND high complexity = problem" immediately.
 
-#### Hotspot health sentiment — distinguish healthy churn from dangerous churn
-Inspired by Tornhill: "If all hotspots have low complexity, you're in great shape." Currently the hotspot UI is a warning leaderboard regardless of whether the hotspots are actually concerning. Three changes:
-
-**1. Health assessment narrative (CLI + web)**
-Open the hotspot section with a one-sentence verdict based on the complexity profile of the top-churned files:
-- *Positive*: "Your top 10 most-changed files have a median complexity of 120 lines — your active code is well-structured."
-- *Concerning*: "6 of your top 10 most-changed files exceed 500 lines — complexity is concentrating where you work most."
-- Computed from the intersection of churn rank and LOC (or `codeLines` once cloc lands). No new analyzer — just a summary function over existing hotspot data.
-
-**2. Visual sentiment on hotspot entries (web dashboard)**
-Color-code individual hotspot entries by *why* they scored what they scored:
-- Green: high churn, low complexity — "active but healthy." You're working on well-structured code.
-- Amber: moderate churn × moderate complexity — worth watching.
-- Red: high churn, high complexity — genuine concern, the classic Tornhill hotspot.
-Right now everything feels like a warning because it's a ranked list with no color distinction. Adding sentiment turns the leaderboard into a diagnostic.
-
-**3. "All clear" state (CLI + web)**
-When no files cross the warning threshold, don't show a low-scoring leaderboard that still *feels* alarming. Explicitly say "No concerning hotspots detected" and frame it positively. The absence of bad news is good news — the UI should reflect that instead of showing an empty or underwhelming list.
+~~#### Hotspot health sentiment — distinguish healthy churn from dangerous churn~~ _(Done — see Done column)_
 
 ---
 
@@ -488,3 +471,6 @@ Seventh tab in the web dashboard surfacing commit message forensics. List + side
 
 ### Hotspot root cause clustering ("geographic profiling")
 Tornhill-inspired geographic profiling — clusters top 20 hotspots by shared traits to surface systemic root causes. Four independent dimensions: **structural** (directory prefix grouping with breadth filter), **ownership** (dominant author from bus factor, skips single-author repos), **temporal** (churn inflection point detection per file, groups by calendar month), **coupling hub** (non-hotspot files coupled to 2+ hotspots — the "killer's home address"). Clusters ranked by `memberCount × avgHotspotScore`. Files appearing in 2+ clusters flagged as multi-signal (strongest intervention candidates). Template-based narratives per dimension. CLI panel (top 3 clusters after Hotspots), web section within Hotspots tab with color-coded dimension badges. 17 unit tests. Design spec: `docs/superpowers/specs/2026-03-19-hotspot-clustering-design.md`.
+
+### Hotspot health sentiment
+Tornhill-inspired diagnostic sentiment for the hotspot UI. Three changes: **health narrative** (one-sentence verdict above the file list — green/yellow/red based on critical + warning counts in `topHotspots`), **per-entry sentiment coloring** (moderate/low categories shifted from cyan/gray to green so entries read as healthy vs dangerous), and **"all clear" state** (positive message replacing the leaderboard when no critical or warning files exist). Applied to both CLI (`HotspotPanel`) and web dashboard (`ChurnTab` + `hotspotDot`/`hotspotBar`/`hotspotBadge` helpers). Design spec: `docs/superpowers/specs/2026-03-22-hotspot-health-sentiment-design.md`.
