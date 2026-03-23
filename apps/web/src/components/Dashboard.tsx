@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, type ReactNode } from 'react';
 import type { GitloreReport } from '@gitlore/core';
 import HotspotClusters from './HotspotClusters';
 
@@ -165,32 +165,34 @@ function ChurnTab({ report }: { report: GitloreReport }) {
       <p className="text-gray-400 mb-1 text-sm">Files ranked by the Tornhill composite: <span className="text-gray-300 font-mono">churnScore × log₂(LOC)</span>, normalized 0–100.</p>
       <p className="text-gray-500 mb-2 text-xs">{report.hotspots.summary}</p>
       <p className={`${verdictColor} text-sm mb-4`}>{verdictText}</p>
-      <div className="bg-gray-900 border border-gray-800 rounded-sm overflow-hidden">
-        <div className="grid grid-cols-[3rem_1fr_5rem_5rem_5rem_6rem] gap-2 px-4 py-2 border-b border-gray-800 text-xs text-gray-500 uppercase tracking-wide">
-          <span>#</span>
-          <span>File</span>
-          <span className="text-right">Score</span>
-          <span className="text-right">Churn</span>
-          <span className="text-right">LOC</span>
-          <span className="text-right">Severity</span>
-        </div>
-        {report.hotspots.files.slice(0, 50).map((f, i) => (
-          <div key={f.file} className="grid grid-cols-[3rem_1fr_5rem_5rem_5rem_6rem] gap-2 px-4 py-2 border-b border-gray-800 last:border-0 hover:bg-gray-800 items-center">
-            <span className="text-gray-500 text-sm">{i + 1}</span>
-            <span className="text-gray-300 text-sm font-mono truncate">{f.file}</span>
-            <div className="flex items-center justify-end gap-2">
-              <div className={`h-2 rounded-sm ${hotspotBar(f.category)}`} style={{ width: `${f.hotspotScore * 0.4}px`, minWidth: '2px' }} />
-              <span className="text-white text-sm font-mono">{f.hotspotScore}</span>
-            </div>
-            <span className="text-gray-500 text-sm text-right font-mono">{f.churnScore}</span>
-            <span className="text-gray-500 text-sm text-right font-mono">{f.loc}</span>
-            <div className="text-right">
-              <span className={`text-xs px-2 py-0.5 rounded-sm ${hotspotBadge(f.category)}`}>{f.category}</span>
-            </div>
+      <div className="space-y-4">
+        <Collapsible title="Ranked Files" subtitle={`Top ${Math.min(50, report.hotspots.files.length)} by hotspot score`}>
+          <div className="grid grid-cols-[3rem_1fr_5rem_5rem_5rem_6rem] gap-2 px-4 py-2 border-b border-gray-800 text-xs text-gray-500 uppercase tracking-wide">
+            <span>#</span>
+            <span>File</span>
+            <span className="text-right">Score</span>
+            <span className="text-right">Churn</span>
+            <span className="text-right">LOC</span>
+            <span className="text-right">Severity</span>
           </div>
-        ))}
+          {report.hotspots.files.slice(0, 50).map((f, i) => (
+            <div key={f.file} className="grid grid-cols-[3rem_1fr_5rem_5rem_5rem_6rem] gap-2 px-4 py-2 border-b border-gray-800 last:border-0 hover:bg-gray-800 items-center">
+              <span className="text-gray-500 text-sm">{i + 1}</span>
+              <span className="text-gray-300 text-sm font-mono truncate">{f.file}</span>
+              <div className="flex items-center justify-end gap-2">
+                <div className={`h-2 rounded-sm ${hotspotBar(f.category)}`} style={{ width: `${f.hotspotScore * 0.4}px`, minWidth: '2px' }} />
+                <span className="text-white text-sm font-mono">{f.hotspotScore}</span>
+              </div>
+              <span className="text-gray-500 text-sm text-right font-mono">{f.churnScore}</span>
+              <span className="text-gray-500 text-sm text-right font-mono">{f.loc}</span>
+              <div className="text-right">
+                <span className={`text-xs px-2 py-0.5 rounded-sm ${hotspotBadge(f.category)}`}>{f.category}</span>
+              </div>
+            </div>
+          ))}
+        </Collapsible>
+        <HotspotClusters data={report.hotspotClusters} />
       </div>
-      <HotspotClusters data={report.hotspotClusters} />
     </div>
   );
 }
@@ -576,6 +578,25 @@ function Card({ title, subtitle, children }: { title: string; subtitle?: string;
       <h3 className="text-white font-semibold mb-1">{title}</h3>
       {subtitle && <p className="text-gray-500 text-xs mb-3">{subtitle}</p>}
       {children}
+    </div>
+  );
+}
+
+function Collapsible({ title, subtitle, defaultOpen = true, children }: { title: string; subtitle?: string; defaultOpen?: boolean; children: ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border border-gray-800 rounded-sm overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-3 px-4 py-3 bg-gray-900 hover:bg-gray-800 transition-colors text-left"
+      >
+        <span className="text-gray-500 text-xs shrink-0">{open ? '▼' : '▶'}</span>
+        <div className="min-w-0">
+          <span className="text-white font-semibold text-sm">{title}</span>
+          {subtitle && <p className="text-gray-500 text-xs mt-0.5 truncate">{subtitle}</p>}
+        </div>
+      </button>
+      {open && <div className="border-t border-gray-800">{children}</div>}
     </div>
   );
 }

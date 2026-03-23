@@ -95,7 +95,7 @@ const IGNORED_PATTERNS = {
     '.woff', '.woff2', '.ttf', '.eot',
     '.min.js', '.min.css', '.map',
   ]),
-  prefixes: ['.next/', 'dist/', 'coverage/', '.claude/'],
+  prefixes: ['.next/', 'dist/', 'coverage/', '.claude/', 'docs/'],
 };
 
 export function isIgnored(file: string): boolean {
