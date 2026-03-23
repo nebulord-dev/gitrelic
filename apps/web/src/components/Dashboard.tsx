@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { GitloreReport } from '@gitlore/core';
 import HotspotClusters from './HotspotClusters';
 
-type Tab = 'overview' | 'churn' | 'contributors' | 'cursed' | 'age' | 'coupling' | 'shame' | 'parallel' | 'leaderboard';
+type Tab = 'overview' | 'churn' | 'contributors' | 'cursed' | 'age' | 'coupling' | 'shame' | 'parallel';
 
 export default function Dashboard({ report }: { report: GitloreReport }) {
   const [tab, setTab] = useState<Tab>('overview');
@@ -16,7 +16,6 @@ export default function Dashboard({ report }: { report: GitloreReport }) {
     { id: 'coupling', label: 'Coupling', emoji: '🔗' },
     { id: 'shame', label: 'Shame', emoji: '⚑' },
     { id: 'parallel', label: 'Parallel Dev', emoji: '⚡' },
-    { id: 'leaderboard', label: 'Leaderboard', emoji: '🏆' },
   ];
 
   return (
@@ -64,7 +63,6 @@ export default function Dashboard({ report }: { report: GitloreReport }) {
         {tab === 'coupling' && <CouplingTab report={report} />}
         {tab === 'shame' && <ShameTab report={report} />}
         {tab === 'parallel' && <ParallelTab report={report} />}
-        {tab === 'leaderboard' && <LeaderboardTab report={report} />}
       </main>
     </div>
   );
@@ -164,16 +162,31 @@ function ChurnTab({ report }: { report: GitloreReport }) {
 
   return (
     <div>
-      <p className="text-gray-400 mb-2 text-sm">{report.hotspots.summary}</p>
+      <p className="text-gray-400 mb-1 text-sm">Files ranked by the Tornhill composite: <span className="text-gray-300 font-mono">churnScore × log₂(LOC)</span>, normalized 0–100.</p>
+      <p className="text-gray-500 mb-2 text-xs">{report.hotspots.summary}</p>
       <p className={`${verdictColor} text-sm mb-4`}>{verdictText}</p>
-      <div className="space-y-1">
-        {report.hotspots.files.slice(0, 50).map(f => (
-          <div key={f.file} className="flex items-center gap-3 py-1 hover:bg-gray-900 rounded-sm px-2">
-            <div className={`h-3 rounded-sm ${hotspotBar(f.category)}`} style={{ width: `${f.hotspotScore * 2}px`, minWidth: '4px' }} />
-            <span className="text-gray-300 text-sm font-mono flex-1">{f.file}</span>
-            <span className="text-gray-500 text-xs">{f.loc} LOC</span>
-            <span className="text-gray-500 text-xs">{f.churnScore} churn</span>
-            <span className={`text-xs px-2 py-0.5 rounded-sm ${hotspotBadge(f.category)}`}>{f.category}</span>
+      <div className="bg-gray-900 border border-gray-800 rounded-sm overflow-hidden">
+        <div className="grid grid-cols-[3rem_1fr_5rem_5rem_5rem_6rem] gap-2 px-4 py-2 border-b border-gray-800 text-xs text-gray-500 uppercase tracking-wide">
+          <span>#</span>
+          <span>File</span>
+          <span className="text-right">Score</span>
+          <span className="text-right">Churn</span>
+          <span className="text-right">LOC</span>
+          <span className="text-right">Severity</span>
+        </div>
+        {report.hotspots.files.slice(0, 50).map((f, i) => (
+          <div key={f.file} className="grid grid-cols-[3rem_1fr_5rem_5rem_5rem_6rem] gap-2 px-4 py-2 border-b border-gray-800 last:border-0 hover:bg-gray-800 items-center">
+            <span className="text-gray-500 text-sm">{i + 1}</span>
+            <span className="text-gray-300 text-sm font-mono truncate">{f.file}</span>
+            <div className="flex items-center justify-end gap-2">
+              <div className={`h-2 rounded-sm ${hotspotBar(f.category)}`} style={{ width: `${f.hotspotScore * 0.4}px`, minWidth: '2px' }} />
+              <span className="text-white text-sm font-mono">{f.hotspotScore}</span>
+            </div>
+            <span className="text-gray-500 text-sm text-right font-mono">{f.churnScore}</span>
+            <span className="text-gray-500 text-sm text-right font-mono">{f.loc}</span>
+            <div className="text-right">
+              <span className={`text-xs px-2 py-0.5 rounded-sm ${hotspotBadge(f.category)}`}>{f.category}</span>
+            </div>
           </div>
         ))}
       </div>
@@ -556,53 +569,6 @@ function ParallelTab({ report }: { report: GitloreReport }) {
   );
 }
 
-function LeaderboardTab({ report }: { report: GitloreReport }) {
-  const ranked = [...report.hotspots.files]
-    .sort((a, b) => b.hotspotScore - a.hotspotScore)
-    .slice(0, 50);
-
-  if (ranked.length === 0) {
-    return (
-      <div className="text-center py-20">
-        <div className="text-5xl mb-4">✅</div>
-        <p className="text-green-400 text-lg">No hotspot data available</p>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <p className="text-gray-400 mb-1 text-sm">Files ranked by the Tornhill composite: <span className="text-gray-300 font-mono">churnScore × log₂(LOC)</span>, normalized 0–100.</p>
-      <p className="text-gray-500 mb-4 text-xs">{report.hotspots.summary}</p>
-
-      <div className="bg-gray-900 border border-gray-800 rounded-sm overflow-hidden">
-        <div className="grid grid-cols-[3rem_1fr_5rem_5rem_5rem_6rem] gap-2 px-4 py-2 border-b border-gray-800 text-xs text-gray-500 uppercase tracking-wide">
-          <span>#</span>
-          <span>File</span>
-          <span className="text-right">Score</span>
-          <span className="text-right">Churn</span>
-          <span className="text-right">LOC</span>
-          <span className="text-right">Severity</span>
-        </div>
-        {ranked.map((f, i) => (
-          <div key={f.file} className="grid grid-cols-[3rem_1fr_5rem_5rem_5rem_6rem] gap-2 px-4 py-2 border-b border-gray-800 last:border-0 hover:bg-gray-800 items-center">
-            <span className="text-gray-500 text-sm">{i + 1}</span>
-            <span className="text-gray-300 text-sm font-mono truncate">{f.file}</span>
-            <div className="flex items-center justify-end gap-2">
-              <div className={`h-2 rounded-sm ${hotspotBar(f.category)}`} style={{ width: `${f.hotspotScore * 0.4}px`, minWidth: '2px' }} />
-              <span className="text-white text-sm font-mono">{f.hotspotScore}</span>
-            </div>
-            <span className="text-gray-500 text-sm text-right font-mono">{f.churnScore}</span>
-            <span className="text-gray-500 text-sm text-right font-mono">{f.loc}</span>
-            <div className="text-right">
-              <span className={`text-xs px-2 py-0.5 rounded-sm ${hotspotBadge(f.category)}`}>{f.category}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
