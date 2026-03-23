@@ -207,22 +207,47 @@ function BusFactorPanel({ report }: { report: GitloreReport }) {
 function HotspotPanel({ report }: { report: GitloreReport }) {
   const { hotspots } = report;
   if (hotspots.files.length === 0) return null;
+
+  const criticalCount = hotspots.topHotspots.filter(f => f.category === 'critical').length;
+  const warningCount = hotspots.topHotspots.filter(f => f.category === 'warning').length;
+  const hasConcerning = criticalCount > 0 || warningCount > 0;
+
+  let verdictText: string;
+  let verdictColor: string;
+  if (criticalCount >= 4) {
+    verdictText = `Complexity is concentrating where you work most — ${criticalCount} of your top hotspots are critical.`;
+    verdictColor = 'red';
+  } else if (criticalCount >= 1 || warningCount >= 3) {
+    verdictText = 'A few hotspots show high churn combined with high complexity — worth investigating.';
+    verdictColor = 'yellow';
+  } else {
+    verdictText = 'Your most-changed files have manageable complexity — active code is well-structured.';
+    verdictColor = 'green';
+  }
+
   return (
     <Box flexDirection="column">
       <Text color="red" bold>
         {'── Hotspots (churn × complexity) ───────────────────────────'}
       </Text>
       <Text color="gray" dimColor>{hotspots.summary}</Text>
-      <Box flexDirection="column" marginTop={1}>
-        {hotspots.topHotspots.slice(0, 10).map(f => (
-          <Box key={f.file} gap={2}>
-            <Text color={getHotspotColor(f.category)}>{churnBar(f.hotspotScore)}</Text>
-            <Text color="gray">{truncatePath(f.file, 45)}</Text>
-            <Text color="gray" dimColor>{f.loc} LOC</Text>
-            <Text color={getHotspotColor(f.category)}>{f.category}</Text>
+      {hasConcerning ? (
+        <>
+          <Text color={verdictColor}>{verdictText}</Text>
+          <Box flexDirection="column" marginTop={1}>
+            {hotspots.topHotspots.slice(0, 10).map(f => (
+              <Box key={f.file} gap={2}>
+                <Text color={getHotspotColor(f.category)}>{churnBar(f.hotspotScore)}</Text>
+                <Text color="gray">{truncatePath(f.file, 45)}</Text>
+                <Text color="gray" dimColor>{f.loc} LOC</Text>
+                <Text color={getHotspotColor(f.category)}>{f.category}</Text>
+              </Box>
+            ))}
           </Box>
-        ))}
-      </Box>
+        </>
+      ) : (
+        <Text color="green">✓ No concerning hotspots — your active code is well-structured</Text>
+      )}
     </Box>
   );
 }
@@ -532,7 +557,7 @@ function getHotspotColor(category: string): string {
   switch (category) {
     case 'critical': return 'red';
     case 'warning': return 'yellow';
-    case 'moderate': return 'cyan';
-    default: return 'gray';
+    case 'moderate': return 'green';
+    default: return 'green';
   }
 }
