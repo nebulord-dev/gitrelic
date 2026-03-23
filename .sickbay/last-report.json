@@ -1,0 +1,639 @@
+{
+  "timestamp": "2026-03-23T03:25:40.405Z",
+  "projectPath": "/Users/tracericochet/Desktop/dev/gitlore",
+  "projectInfo": {
+    "name": "monorepo (3 packages)",
+    "version": "0.0.0",
+    "hasTypeScript": false,
+    "hasESLint": false,
+    "hasPrettier": false,
+    "framework": "node",
+    "packageManager": "pnpm",
+    "totalDependencies": 0,
+    "dependencies": {},
+    "devDependencies": {}
+  },
+  "checks": [
+    {
+      "id": "knip",
+      "category": "dependencies",
+      "name": "Unused Code",
+      "score": 100,
+      "status": "pass",
+      "issues": [],
+      "toolsUsed": [
+        "knip"
+      ],
+      "duration": 1130,
+      "metadata": {
+        "unusedFiles": 0,
+        "unusedDeps": 0,
+        "unusedDevDeps": 0,
+        "unusedExports": 0
+      }
+    },
+    {
+      "id": "depcheck",
+      "category": "dependencies",
+      "name": "Dependency Health",
+      "score": 100,
+      "status": "pass",
+      "issues": [],
+      "toolsUsed": [
+        "depcheck"
+      ],
+      "duration": 993,
+      "metadata": {
+        "unused": 0,
+        "missing": 0
+      }
+    },
+    {
+      "id": "outdated",
+      "category": "dependencies",
+      "name": "Outdated Packages",
+      "score": 100,
+      "status": "pass",
+      "issues": [],
+      "toolsUsed": [
+        "pnpm"
+      ],
+      "duration": 1227,
+      "metadata": {
+        "outdatedCount": 0
+      }
+    },
+    {
+      "id": "npm-audit",
+      "category": "security",
+      "name": "Security Vulnerabilities",
+      "score": 100,
+      "status": "pass",
+      "issues": [],
+      "toolsUsed": [
+        "npm-audit"
+      ],
+      "duration": 503,
+      "metadata": {}
+    },
+    {
+      "id": "madge",
+      "category": "code-quality",
+      "name": "Circular Dependencies",
+      "score": 100,
+      "status": "pass",
+      "issues": [],
+      "toolsUsed": [
+        "madge"
+      ],
+      "duration": 1242,
+      "metadata": {
+        "circularCount": 0,
+        "graph": {
+          "analyzers/age-map.test.ts": [
+            "analyzers/age-map.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/age-map.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/blast-radius.test.ts": [
+            "analyzers/blast-radius.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/blast-radius.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/bus-factor.test.ts": [
+            "analyzers/bus-factor.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/bus-factor.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/churn-velocity.test.ts": [
+            "analyzers/churn-velocity.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/churn-velocity.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/churn.test.ts": [
+            "analyzers/churn.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/churn.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/co-author.test.ts": [
+            "analyzers/co-author.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/co-author.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/commit-timing.test.ts": [
+            "analyzers/commit-timing.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/commit-timing.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/complexity-trend.test.ts": [
+            "analyzers/complexity-trend.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/complexity-trend.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/contributors.test.ts": [
+            "analyzers/contributors.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/contributors.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/coupling.test.ts": [
+            "analyzers/coupling.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/coupling.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/cursed-files.test.ts": [
+            "analyzers/cursed-files.ts",
+            "types.ts"
+          ],
+          "analyzers/cursed-files.ts": [
+            "types.ts"
+          ],
+          "analyzers/dead-code.test.ts": [
+            "analyzers/dead-code.ts",
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/dead-code.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/forensics.test.ts": [
+            "analyzers/forensics.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/forensics.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/ghost-files.test.ts": [
+            "analyzers/ghost-files.ts",
+            "types.ts"
+          ],
+          "analyzers/ghost-files.ts": [
+            "types.ts"
+          ],
+          "analyzers/hotspot-clustering.test.ts": [
+            "analyzers/hotspot-clustering.ts",
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/hotspot-clustering.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/hotspot.test.ts": [
+            "analyzers/hotspot.ts",
+            "types.ts"
+          ],
+          "analyzers/hotspot.ts": [
+            "types.ts"
+          ],
+          "analyzers/knowledge-concentration.test.ts": [
+            "analyzers/knowledge-concentration.ts",
+            "types.ts"
+          ],
+          "analyzers/knowledge-concentration.ts": [
+            "types.ts"
+          ],
+          "analyzers/loc.test.ts": [
+            "analyzers/loc.ts"
+          ],
+          "analyzers/loc.ts": [
+            "types.ts"
+          ],
+          "analyzers/parallel-dev.test.ts": [
+            "analyzers/parallel-dev.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/parallel-dev.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/rename-tracking.test.ts": [
+            "analyzers/rename-tracking.ts",
+            "types.ts"
+          ],
+          "analyzers/rename-tracking.ts": [
+            "types.ts"
+          ],
+          "analyzers/rewrite-ratio.test.ts": [
+            "analyzers/rewrite-ratio.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/rewrite-ratio.ts": [
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "analyzers/test-coverage.test.ts": [
+            "analyzers/test-coverage.ts"
+          ],
+          "analyzers/test-coverage.ts": [
+            "types.ts"
+          ],
+          "index.ts": [
+            "analyzers/hotspot-clustering.ts",
+            "analyzers/parallel-dev.ts",
+            "runner.ts",
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "runner.ts": [
+            "analyzers/age-map.ts",
+            "analyzers/blast-radius.ts",
+            "analyzers/bus-factor.ts",
+            "analyzers/churn-velocity.ts",
+            "analyzers/churn.ts",
+            "analyzers/co-author.ts",
+            "analyzers/commit-timing.ts",
+            "analyzers/complexity-trend.ts",
+            "analyzers/contributors.ts",
+            "analyzers/coupling.ts",
+            "analyzers/cursed-files.ts",
+            "analyzers/dead-code.ts",
+            "analyzers/forensics.ts",
+            "analyzers/ghost-files.ts",
+            "analyzers/hotspot-clustering.ts",
+            "analyzers/hotspot.ts",
+            "analyzers/knowledge-concentration.ts",
+            "analyzers/loc.ts",
+            "analyzers/parallel-dev.ts",
+            "analyzers/rename-tracking.ts",
+            "analyzers/rewrite-ratio.ts",
+            "analyzers/test-coverage.ts",
+            "types.ts",
+            "utils/git.ts"
+          ],
+          "types.ts": [],
+          "utils/git.test.ts": [
+            "utils/git.ts"
+          ],
+          "utils/git.ts": []
+        }
+      }
+    },
+    {
+      "id": "coverage",
+      "category": "code-quality",
+      "name": "Tests & Coverage",
+      "score": 95,
+      "status": "pass",
+      "issues": [],
+      "toolsUsed": [
+        "vitest"
+      ],
+      "duration": 1264,
+      "metadata": {
+        "testRunner": "vitest",
+        "totalTests": 207,
+        "passed": 207,
+        "failed": 0,
+        "skipped": 0,
+        "lines": 87.5,
+        "statements": 87.76,
+        "functions": 91.53,
+        "branches": 81.39
+      }
+    },
+    {
+      "id": "license-checker",
+      "category": "security",
+      "name": "License Compliance",
+      "score": 100,
+      "status": "pass",
+      "issues": [],
+      "toolsUsed": [
+        "license-checker"
+      ],
+      "duration": 279,
+      "metadata": {
+        "totalPackages": 2,
+        "flagged": 0
+      }
+    },
+    {
+      "id": "jscpd",
+      "category": "code-quality",
+      "name": "Code Duplication",
+      "score": 100,
+      "status": "pass",
+      "issues": [],
+      "toolsUsed": [
+        "jscpd"
+      ],
+      "duration": 1324,
+      "metadata": {
+        "percentage": 0,
+        "clones": 0
+      }
+    },
+    {
+      "id": "typescript",
+      "category": "code-quality",
+      "name": "Type Safety",
+      "score": 100,
+      "status": "pass",
+      "issues": [],
+      "toolsUsed": [
+        "tsc"
+      ],
+      "duration": 1201,
+      "metadata": {
+        "errors": 0
+      }
+    },
+    {
+      "id": "todo-scanner",
+      "category": "code-quality",
+      "name": "Technical Debt",
+      "score": 97,
+      "status": "pass",
+      "issues": [
+        {
+          "severity": "warning",
+          "message": "src/analyzers/forensics.ts:11 — HACK: , workaround, temporary, temp, kludge, band-aid |",
+          "reportedBy": [
+            "todo-scanner"
+          ]
+        }
+      ],
+      "toolsUsed": [
+        "todo-scanner"
+      ],
+      "duration": 5,
+      "metadata": {
+        "total": 1,
+        "todo": 0,
+        "fixme": 1,
+        "hack": 1
+      }
+    },
+    {
+      "id": "complexity",
+      "category": "code-quality",
+      "name": "File Complexity",
+      "score": 90,
+      "status": "warning",
+      "issues": [
+        {
+          "severity": "info",
+          "message": "src/types.ts: 412 lines — consider splitting into smaller modules",
+          "fix": {
+            "description": "Extract concerns into smaller, focused files"
+          },
+          "reportedBy": [
+            "complexity"
+          ]
+        }
+      ],
+      "toolsUsed": [
+        "complexity"
+      ],
+      "duration": 1,
+      "metadata": {
+        "totalFiles": 26,
+        "totalLines": 2369,
+        "avgLines": 91,
+        "oversizedCount": 1,
+        "topFiles": [
+          {
+            "path": "src/types.ts",
+            "lines": 412
+          },
+          {
+            "path": "src/analyzers/hotspot-clustering.ts",
+            "lines": 225
+          },
+          {
+            "path": "src/runner.ts",
+            "lines": 143
+          },
+          {
+            "path": "src/analyzers/parallel-dev.ts",
+            "lines": 141
+          },
+          {
+            "path": "src/utils/git.ts",
+            "lines": 141
+          },
+          {
+            "path": "src/analyzers/cursed-files.ts",
+            "lines": 132
+          },
+          {
+            "path": "src/analyzers/forensics.ts",
+            "lines": 127
+          },
+          {
+            "path": "src/analyzers/rename-tracking.ts",
+            "lines": 114
+          },
+          {
+            "path": "src/analyzers/commit-timing.ts",
+            "lines": 103
+          },
+          {
+            "path": "src/analyzers/co-author.ts",
+            "lines": 81
+          }
+        ]
+      }
+    },
+    {
+      "id": "secrets",
+      "category": "security",
+      "name": "Secrets Detection",
+      "score": 100,
+      "status": "pass",
+      "issues": [],
+      "toolsUsed": [
+        "secrets"
+      ],
+      "duration": 2,
+      "metadata": {
+        "findings": 0
+      }
+    },
+    {
+      "id": "heavy-deps",
+      "category": "performance",
+      "name": "Heavy Dependencies",
+      "score": 100,
+      "status": "pass",
+      "issues": [],
+      "toolsUsed": [
+        "heavy-deps"
+      ],
+      "duration": 0,
+      "metadata": {
+        "totalDeps": 7,
+        "heavyDepsFound": 0,
+        "heavyDeps": []
+      }
+    },
+    {
+      "id": "node-async-errors",
+      "category": "code-quality",
+      "name": "Async Error Handling",
+      "score": 100,
+      "status": "pass",
+      "issues": [],
+      "toolsUsed": [
+        "node-async-errors"
+      ],
+      "duration": 2
+    },
+    {
+      "id": "source-map-explorer",
+      "category": "performance",
+      "name": "Bundle Size",
+      "score": 100,
+      "status": "pass",
+      "issues": [],
+      "toolsUsed": [
+        "file-size-analysis"
+      ],
+      "duration": 33,
+      "metadata": {
+        "initialBytes": 34354,
+        "initialKB": 34,
+        "totalBytes": 34354,
+        "totalKB": 34,
+        "fileCount": 1,
+        "entryChunks": 0,
+        "method": "file-size-analysis",
+        "note": "No source maps — using total bundle size"
+      }
+    },
+    {
+      "id": "react-perf",
+      "category": "performance",
+      "name": "React Performance",
+      "score": 87,
+      "status": "warning",
+      "issues": [
+        {
+          "severity": "info",
+          "message": "src/components/Dashboard.tsx — Large component file (709 lines) — consider splitting",
+          "file": "src/components/Dashboard.tsx",
+          "fix": {
+            "description": "Break into smaller, focused components to improve readability and render performance"
+          },
+          "reportedBy": [
+            "react-perf"
+          ]
+        },
+        {
+          "severity": "warning",
+          "message": "src/components/Dashboard.tsx:172 — Inline object in JSX prop — creates new reference every render",
+          "file": "src/components/Dashboard.tsx",
+          "fix": {
+            "description": "Extract the object to a constant outside the component or use useMemo()"
+          },
+          "reportedBy": [
+            "react-perf"
+          ]
+        },
+        {
+          "severity": "warning",
+          "message": "src/components/Dashboard.tsx:211 — Inline object in JSX prop — creates new reference every render",
+          "file": "src/components/Dashboard.tsx",
+          "fix": {
+            "description": "Extract the object to a constant outside the component or use useMemo()"
+          },
+          "reportedBy": [
+            "react-perf"
+          ]
+        },
+        {
+          "severity": "warning",
+          "message": "src/components/Dashboard.tsx:255 — Inline object in JSX prop — creates new reference every render",
+          "file": "src/components/Dashboard.tsx",
+          "fix": {
+            "description": "Extract the object to a constant outside the component or use useMemo()"
+          },
+          "reportedBy": [
+            "react-perf"
+          ]
+        },
+        {
+          "severity": "warning",
+          "message": "src/components/Dashboard.tsx:592 — Inline object in JSX prop — creates new reference every render",
+          "file": "src/components/Dashboard.tsx",
+          "fix": {
+            "description": "Extract the object to a constant outside the component or use useMemo()"
+          },
+          "reportedBy": [
+            "react-perf"
+          ]
+        }
+      ],
+      "toolsUsed": [
+        "react-perf"
+      ],
+      "duration": 0,
+      "metadata": {
+        "filesScanned": 4,
+        "reactCompiler": false,
+        "totalFindings": 5,
+        "inlineObjects": 4,
+        "indexAsKey": 0,
+        "largeComponents": 1
+      }
+    },
+    {
+      "id": "asset-size",
+      "category": "performance",
+      "name": "Asset Sizes",
+      "score": 100,
+      "status": "pass",
+      "issues": [],
+      "toolsUsed": [
+        "asset-size"
+      ],
+      "duration": 0,
+      "metadata": {
+        "totalAssets": 0,
+        "totalSizeBytes": 0,
+        "totalSizeMB": "0.0",
+        "images": 0,
+        "svgs": 0,
+        "fonts": 0
+      }
+    }
+  ],
+  "overallScore": 99,
+  "summary": {
+    "critical": 0,
+    "warnings": 5,
+    "info": 2
+  }
+}
