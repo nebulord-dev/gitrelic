@@ -15,13 +15,13 @@ Three rendering-layer changes. No new analyzers, types, or data collection.
 
 A one-sentence verdict based on the category distribution of the top 10 hotspots, shown above the file list in both CLI and web.
 
-**Logic:** Count entries with `category === 'critical'` in `report.hotspots.topHotspots.slice(0, 10)`.
+**Logic:** Count entries with `category === 'critical'` and `category === 'warning'` in `report.hotspots.topHotspots` (the full curated array, not sliced).
 
-| Critical count | Verdict | Color |
+| Condition | Verdict | Color |
 |---|---|---|
-| 0 | "Your most-changed files have manageable complexity — active code is well-structured." | Green |
-| 1–3 | "A few hotspots show high churn combined with high complexity — worth investigating." | Yellow/Amber |
-| 4+ | "Complexity is concentrating where you work most — N of your top 10 hotspots are critical." | Red |
+| 0 critical, ≤2 warning | "Your most-changed files have manageable complexity — active code is well-structured." | Green |
+| 0 critical, 3+ warning OR 1–3 critical | "A few hotspots show high churn combined with high complexity — worth investigating." | Yellow/Amber |
+| 4+ critical | "Complexity is concentrating where you work most — N of your top hotspots are critical." | Red |
 
 ### 2. Per-Entry Sentiment Coloring
 
@@ -44,7 +44,7 @@ Recolor hotspot entries so the visual reads as a diagnostic (healthy vs dangerou
 
 ### 3. "All Clear" State
 
-When zero files have `critical` or `warning` category, replace the hotspot leaderboard with a positive message.
+When zero files in `report.hotspots.topHotspots` (full array) have `critical` or `warning` category, replace the hotspot leaderboard with a positive message.
 
 **CLI:** Single green line: `"✓ No concerning hotspots — your active code is well-structured"`. Skip the file list.
 
