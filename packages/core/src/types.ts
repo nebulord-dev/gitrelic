@@ -24,6 +24,7 @@ export interface GitloreReport {
   knowledgeConcentration: KnowledgeConcentrationReport;
   coAuthors: CoAuthorReport;
   hotspotClusters: HotspotClusterReport;
+  complexityTrend: ComplexityTrendReport;
 }
 
 // ─── Repo metadata ─────────────────────────────────────────────────────────────
@@ -410,6 +411,31 @@ export interface MultiSignalFile {
   file: string;
   clusterCount: number;
   dimensions: ClusterDimension[];
+}
+
+// ─── Complexity trend ─────────────────────────────────────────────────
+
+export interface FileGrowthBucket {
+  month: string;        // "2025-06"
+  netLines: number;     // insertions - deletions that month
+  cumulative: number;   // running total of net lines within the analysis window (not absolute file size)
+}
+
+export interface FileComplexityTrend {
+  file: string;
+  buckets: FileGrowthBucket[];
+  totalNetLines: number;          // sum of all net lines across all buckets
+  recentGrowthRate: number;       // avg net lines/month over last 3 active months
+  trend: GrowthTrend;
+}
+
+export type GrowthTrend = 'growing' | 'shrinking' | 'stable';
+
+export interface ComplexityTrendReport {
+  files: FileComplexityTrend[];
+  growingFiles: FileComplexityTrend[];   // top 10 growers by recentGrowthRate
+  shrinkingFiles: FileComplexityTrend[]; // top 10 shrinkers
+  summary: string;
 }
 
 // ─── Runner options ────────────────────────────────────────────────────────────
