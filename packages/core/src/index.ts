@@ -55,4 +55,8 @@ export type {
   ClusterMember,
   ClusterDimension,
   MultiSignalFile,
+  ComplexityTrendReport,
+  FileComplexityTrend,
+  FileGrowthBucket,
+  GrowthTrend,
 } from './types.js';

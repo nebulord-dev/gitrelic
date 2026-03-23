@@ -25,6 +25,7 @@ import { analyzeGhostFiles } from './analyzers/ghost-files.js';
 import { analyzeKnowledgeConcentration } from './analyzers/knowledge-concentration.js';
 import { analyzeCoAuthors } from './analyzers/co-author.js';
 import { analyzeHotspotClustering } from './analyzers/hotspot-clustering.js';
+import { analyzeComplexityTrend } from './analyzers/complexity-trend.js';
 import type { GitloreReport, RunGitloreOptions } from './types.js';
 
 /**
@@ -117,6 +118,9 @@ export async function runGitlore(options: RunGitloreOptions): Promise<GitloreRep
   onProgress?.('Clustering hotspots...');
   const hotspotClusters = analyzeHotspotClustering(hotspots, busFactors, coupling, contributors, commits, trackedFiles);
 
+  onProgress?.('Tracking complexity trends...');
+  const complexityTrend = analyzeComplexityTrend(commits, trackedFiles);
+
   onProgress?.('Finding cursed files...');
   const cursedFiles = findCursedFiles(churn, busFactors, ageMap, forensics, parallelDev, commits.length);
 
@@ -153,5 +157,6 @@ export async function runGitlore(options: RunGitloreOptions): Promise<GitloreRep
     knowledgeConcentration,
     coAuthors,
     hotspotClusters,
+    complexityTrend,
   };
 }
