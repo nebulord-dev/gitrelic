@@ -16,7 +16,7 @@ export default function HotspotClusters({ data }: { data: HotspotClusterReport }
       <p className="text-gray-500 text-xs mb-4">{data.summary}</p>
 
       {data.multiSignalFiles.length > 0 && (
-        <div className="bg-red-950 border border-red-800 rounded p-3 mb-4">
+        <div className="bg-red-950 border border-red-800 rounded-sm p-3 mb-4">
           <p className="text-red-300 text-sm font-semibold mb-1">Multi-Signal Files</p>
           {data.multiSignalFiles.slice(0, 10).map(f => (
             <div key={f.file} className="flex items-center gap-2 py-1">
@@ -24,7 +24,7 @@ export default function HotspotClusters({ data }: { data: HotspotClusterReport }
               <span className="text-red-500 text-xs">{f.clusterCount} clusters</span>
               <div className="flex gap-1">
                 {f.dimensions.map(d => (
-                  <span key={d} className={`text-xs px-1.5 py-0.5 rounded ${dimensionBadge[d]}`}>{d}</span>
+                  <span key={d} className={`text-xs px-1.5 py-0.5 rounded-sm ${dimensionBadge[d]}`}>{d}</span>
                 ))}
               </div>
             </div>
@@ -37,16 +37,16 @@ export default function HotspotClusters({ data }: { data: HotspotClusterReport }
 
       <div className="space-y-3">
         {data.clusters.slice(0, 20).map(c => (
-          <div key={`${c.dimension}-${c.sharedTrait}`} className="bg-gray-900 border border-gray-800 rounded p-4">
+          <div key={`${c.dimension}-${c.sharedTrait}`} className="bg-gray-900 border border-gray-800 rounded-sm p-4">
             <div className="flex items-center gap-3 mb-2">
-              <span className={`text-xs px-2 py-1 rounded ${dimensionBadge[c.dimension]}`}>{c.dimension}</span>
+              <span className={`text-xs px-2 py-1 rounded-sm ${dimensionBadge[c.dimension]}`}>{c.dimension}</span>
               <span className="text-white font-mono text-sm">{c.label}</span>
               <span className="text-gray-500 text-xs ml-auto">{c.members.length} hotspots · score {c.clusterScore}</span>
             </div>
             <p className="text-gray-400 text-sm italic mb-3">"{c.narrative}"</p>
             <div className="flex flex-wrap gap-2">
               {c.members.map(m => (
-                <span key={m.file} className="text-xs font-mono bg-gray-800 text-gray-300 px-2 py-1 rounded">
+                <span key={m.file} className="text-xs font-mono bg-gray-800 text-gray-300 px-2 py-1 rounded-sm">
                   {m.file} <span className="text-gray-500">({m.hotspotScore})</span>
                 </span>
               ))}

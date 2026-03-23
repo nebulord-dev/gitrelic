@@ -81,9 +81,9 @@ function OverviewTab({ report }: { report: GitloreReport }) {
       <Card title="🔥 Top Hotspots" subtitle={report.hotspots.summary}>
         {report.hotspots.topHotspots.slice(0, 8).map(f => (
           <div key={f.file} className="flex items-center gap-3 py-1">
-            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${hotspotDot(f.category)}`} />
+            <div className={`w-2 h-2 rounded-full shrink-0 ${hotspotDot(f.category)}`} />
             <span className="text-gray-300 text-sm font-mono truncate flex-1">{f.file}</span>
-            <span className="text-gray-500 text-xs flex-shrink-0">{f.hotspotScore}</span>
+            <span className="text-gray-500 text-xs shrink-0">{f.hotspotScore}</span>
           </div>
         ))}
       </Card>
@@ -95,7 +95,7 @@ function OverviewTab({ report }: { report: GitloreReport }) {
           <div key={f.file} className="py-2 border-b border-gray-800 last:border-0">
             <div className="flex justify-between items-center">
               <span className="text-red-300 text-sm font-mono truncate">{f.file}</span>
-              <span className="text-red-500 text-xs ml-2 flex-shrink-0">{f.curseScore}/100</span>
+              <span className="text-red-500 text-xs ml-2 shrink-0">{f.curseScore}/100</span>
             </div>
             <p className="text-gray-500 text-xs mt-1">{f.narrative}</p>
           </div>
@@ -133,12 +133,12 @@ function ChurnTab({ report }: { report: GitloreReport }) {
       <p className="text-gray-400 mb-4 text-sm">{report.hotspots.summary}</p>
       <div className="space-y-1">
         {report.hotspots.files.slice(0, 50).map(f => (
-          <div key={f.file} className="flex items-center gap-3 py-1 hover:bg-gray-900 rounded px-2">
-            <div className={`h-3 rounded ${hotspotBar(f.category)}`} style={{ width: `${f.hotspotScore * 2}px`, minWidth: '4px' }} />
+          <div key={f.file} className="flex items-center gap-3 py-1 hover:bg-gray-900 rounded-sm px-2">
+            <div className={`h-3 rounded-sm ${hotspotBar(f.category)}`} style={{ width: `${f.hotspotScore * 2}px`, minWidth: '4px' }} />
             <span className="text-gray-300 text-sm font-mono flex-1">{f.file}</span>
             <span className="text-gray-500 text-xs">{f.loc} LOC</span>
             <span className="text-gray-500 text-xs">{f.churnScore} churn</span>
-            <span className={`text-xs px-2 py-0.5 rounded ${hotspotBadge(f.category)}`}>{f.category}</span>
+            <span className={`text-xs px-2 py-0.5 rounded-sm ${hotspotBadge(f.category)}`}>{f.category}</span>
           </div>
         ))}
       </div>
@@ -171,9 +171,9 @@ function CouplingTab({ report }: { report: GitloreReport }) {
       <h3 className="text-white font-semibold mb-2">Strongest Pairs</h3>
       <div className="space-y-2 mb-6">
         {report.coupling.topPairs.map(p => (
-          <div key={`${p.fileA}-${p.fileB}`} className="bg-gray-900 border border-gray-800 rounded p-3">
+          <div key={`${p.fileA}-${p.fileB}`} className="bg-gray-900 border border-gray-800 rounded-sm p-3">
             <div className="flex items-center gap-3">
-              <div className="h-3 rounded bg-blue-600" style={{ width: `${p.couplingStrength * 1.5}px`, minWidth: '4px' }} />
+              <div className="h-3 rounded-sm bg-blue-600" style={{ width: `${p.couplingStrength * 1.5}px`, minWidth: '4px' }} />
               <span className="text-blue-400 font-bold text-sm">{p.couplingStrength}%</span>
               <button onClick={() => setSelectedFile(p.fileA)} className="text-gray-300 text-sm font-mono truncate hover:text-blue-300">{p.fileA}</button>
               <span className="text-gray-500">↔</span>
@@ -206,7 +206,7 @@ function CouplingTab({ report }: { report: GitloreReport }) {
         </div>
         <div className="flex-1">
           {selectedProfile ? (
-            <div className="bg-gray-900 border border-gray-800 rounded p-4">
+            <div className="bg-gray-900 border border-gray-800 rounded-sm p-4">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-white font-mono text-sm">{selectedProfile.file}</span>
                 <span className="text-blue-400 text-sm">{selectedProfile.partners.length} partner{selectedProfile.partners.length !== 1 ? 's' : ''}</span>
@@ -217,7 +217,7 @@ function CouplingTab({ report }: { report: GitloreReport }) {
                   return (
                     <div key={partner} className="flex items-center gap-3">
                       <span className="text-blue-400 text-sm w-12 text-right">{p.couplingStrength}%</span>
-                      <div className="h-2 rounded bg-blue-600" style={{ width: `${p.couplingStrength}px` }} />
+                      <div className="h-2 rounded-sm bg-blue-600" style={{ width: `${p.couplingStrength}px` }} />
                       <button onClick={() => setSelectedFile(partner)} className="text-gray-300 text-sm font-mono truncate hover:text-blue-300">{partner}</button>
                       <span className="text-gray-500 text-xs">{p.coCommits} commits</span>
                     </div>
@@ -272,13 +272,13 @@ function ShameTab({ report }: { report: GitloreReport }) {
               }`}
             >
               <span className="truncate flex-1">{f.file}</span>
-              <span className={`flex-shrink-0 ${selectedFile === f.file ? 'text-purple-300' : 'text-purple-400'}`}>{f.shameScore}</span>
+              <span className={`shrink-0 ${selectedFile === f.file ? 'text-purple-300' : 'text-purple-400'}`}>{f.shameScore}</span>
             </button>
           ))}
         </div>
         <div className="flex-1">
           {selectedForensics ? (
-            <div className="bg-gray-900 border border-gray-800 rounded p-4">
+            <div className="bg-gray-900 border border-gray-800 rounded-sm p-4">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-white font-mono text-sm">{selectedForensics.file}</span>
                 <span className="text-purple-400 font-bold text-lg">{selectedForensics.shameScore}/100</span>
@@ -291,18 +291,18 @@ function ShameTab({ report }: { report: GitloreReport }) {
 
               <div className="flex flex-wrap gap-2 mb-4">
                 {selectedForensics.dominantKeywords.map(kw => (
-                  <span key={kw} className={`text-xs px-2 py-1 rounded ${shameKeywordBadge(kw)}`}>{kw}</span>
+                  <span key={kw} className={`text-xs px-2 py-1 rounded-sm ${shameKeywordBadge(kw)}`}>{kw}</span>
                 ))}
               </div>
 
               <div className="space-y-2">
                 <p className="text-gray-500 text-xs uppercase tracking-wide">Top shame commits</p>
                 {selectedForensics.topShameCommits.map(c => (
-                  <div key={c.hash} className="bg-gray-950 border border-gray-800 rounded p-2">
+                  <div key={c.hash} className="bg-gray-950 border border-gray-800 rounded-sm p-2">
                     <p className="text-gray-300 text-sm font-mono">"{c.message}"</p>
                     <div className="flex gap-2 mt-1">
                       {c.keywords.map(kw => (
-                        <span key={kw} className={`text-xs px-1.5 py-0.5 rounded ${shameKeywordBadge(kw)}`}>{kw}</span>
+                        <span key={kw} className={`text-xs px-1.5 py-0.5 rounded-sm ${shameKeywordBadge(kw)}`}>{kw}</span>
                       ))}
                       <span className="text-gray-600 text-xs ml-auto">+{c.shamePoints}pts</span>
                     </div>
@@ -325,7 +325,7 @@ function ContributorsTab({ report }: { report: GitloreReport }) {
       <p className="text-gray-400 mb-4 text-sm">{report.contributors.summary}</p>
       <div className="grid gap-3">
         {report.contributors.contributors.map(c => (
-          <div key={c.email} className="bg-gray-900 border border-gray-800 rounded p-4">
+          <div key={c.email} className="bg-gray-900 border border-gray-800 rounded-sm p-4">
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2">
@@ -379,7 +379,7 @@ function CursedTab({ report }: { report: GitloreReport }) {
       {report.cursedFiles.map(f => {
         const authorNames = fileToAuthors.get(f.file) ?? [];
         return (
-          <div key={f.file} className="bg-gray-900 border border-red-900 rounded p-4">
+          <div key={f.file} className="bg-gray-900 border border-red-900 rounded-sm p-4">
             <div className="flex items-start justify-between mb-2">
               <span className="text-red-300 font-mono text-sm">{f.file}</span>
               <span className="text-red-500 font-bold text-lg">{f.curseScore}/100</span>
@@ -387,7 +387,7 @@ function CursedTab({ report }: { report: GitloreReport }) {
             <p className="text-gray-400 text-sm mb-3 italic">"{f.narrative}"</p>
             <div className="flex flex-wrap gap-2">
               {f.reasons.map((r, i) => (
-                <span key={i} className={`text-xs px-2 py-1 rounded ${reasonBadge(r)}`}>{r}</span>
+                <span key={i} className={`text-xs px-2 py-1 rounded-sm ${reasonBadge(r)}`}>{r}</span>
               ))}
             </div>
             <div className="mt-3 flex gap-4 text-xs text-gray-500">
@@ -396,7 +396,7 @@ function CursedTab({ report }: { report: GitloreReport }) {
                 <span>👥 {f.authors} authors</span>
                 {authorNames.length > 0 && (
                   <div className="absolute bottom-full left-0 mb-2 z-10 hidden group-hover:block">
-                    <div className="bg-gray-800 border border-gray-700 rounded px-3 py-2 shadow-lg whitespace-nowrap">
+                    <div className="bg-gray-800 border border-gray-700 rounded-sm px-3 py-2 shadow-lg whitespace-nowrap">
                       <p className="text-gray-400 text-xs font-semibold mb-1 uppercase tracking-wide">Authors</p>
                       {authorNames.map((name, i) => (
                         <p key={i} className="text-gray-200 text-xs">{name}</p>
@@ -421,7 +421,7 @@ function AgeTab({ report }: { report: GitloreReport }) {
         {(['fresh', 'aging', 'stale', 'ancient'] as const).map(status => {
           const count = report.ageMap.files.filter(f => f.status === status).length;
           return (
-            <div key={status} className={`bg-gray-900 border rounded p-3 ${ageBorder(status)}`}>
+            <div key={status} className={`bg-gray-900 border rounded-sm p-3 ${ageBorder(status)}`}>
               <div className="text-xl font-bold text-white">{count}</div>
               <div className={`text-xs ${ageColor(status)}`}>{status}</div>
             </div>
@@ -430,8 +430,8 @@ function AgeTab({ report }: { report: GitloreReport }) {
       </div>
       <div className="space-y-1">
         {report.ageMap.files.slice(0, 50).map(f => (
-          <div key={f.file} className="flex items-center gap-3 py-1 hover:bg-gray-900 rounded px-2">
-            <span className={`text-xs w-14 flex-shrink-0 ${ageColor(f.status)}`}>{f.status}</span>
+          <div key={f.file} className="flex items-center gap-3 py-1 hover:bg-gray-900 rounded-sm px-2">
+            <span className={`text-xs w-14 shrink-0 ${ageColor(f.status)}`}>{f.status}</span>
             <span className="text-gray-300 text-sm font-mono flex-1">{f.file}</span>
             <span className="text-gray-500 text-xs">{f.ageInDays}d ago</span>
           </div>
@@ -443,7 +443,7 @@ function AgeTab({ report }: { report: GitloreReport }) {
 
 function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded p-4">
+    <div className="bg-gray-900 border border-gray-800 rounded-sm p-4">
       <h3 className="text-white font-semibold mb-1">{title}</h3>
       {subtitle && <p className="text-gray-500 text-xs mb-3">{subtitle}</p>}
       {children}
