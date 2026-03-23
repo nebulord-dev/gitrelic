@@ -8,9 +8,10 @@ interface Props {
   progress: string;
   error: string | null;
   showShame: boolean;
+  showParallel: boolean;
 }
 
-export function App({ report, progress, error, showShame }: Props) {
+export function App({ report, progress, error, showShame, showParallel }: Props) {
   if (error) {
     return (
       <Box flexDirection="column" padding={1}>
@@ -69,6 +70,12 @@ export function App({ report, progress, error, showShame }: Props) {
         <>
           <Newline />
           <ShamePanel report={report} />
+        </>
+      )}
+      {showParallel && (
+        <>
+          <Newline />
+          <ParallelPanel report={report} />
         </>
       )}
     </Box>
@@ -525,6 +532,38 @@ function ShamePanel({ report }: { report: GitloreReport }) {
             {f.topShameCommits.slice(0, 1).map(c => (
               <Text key={c.hash} color="gray" dimColor>  "{c.message}"</Text>
             ))}
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+function ParallelPanel({ report }: { report: GitloreReport }) {
+  const { parallelDev } = report;
+  if (parallelDev.hotFiles.length === 0) {
+    return (
+      <Box>
+        <Text color="green">✓ No parallel development detected — files have single-author timelines</Text>
+      </Box>
+    );
+  }
+  return (
+    <Box flexDirection="column">
+      <Text color="yellow" bold>
+        {`── Parallel Development (${parallelDev.totalParallelFiles} contested files) ──────────────`}
+      </Text>
+      <Text color="gray" dimColor>{parallelDev.summary}</Text>
+      <Box flexDirection="column" marginTop={1}>
+        {parallelDev.hotFiles.slice(0, 10).map(f => (
+          <Box key={f.file} flexDirection="column" marginBottom={1}>
+            <Box gap={2}>
+              <Text color="yellow">{churnBar(f.parallelScore)}</Text>
+              <Text color="white">{truncatePath(f.file, 40)}</Text>
+              <Text color="yellow">[{f.parallelScore}/100]</Text>
+              <Text color="gray" dimColor>peak {f.peakAuthors} authors</Text>
+            </Box>
+            <Text color="gray" dimColor>  {f.narrative.split('. ')[0]}.</Text>
           </Box>
         ))}
       </Box>

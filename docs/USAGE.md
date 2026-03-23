@@ -12,6 +12,7 @@ Practical tips for getting the most out of GitLore across different repo types a
 | `--since <date>` | `-s` | `"12 months ago"` | Only analyze commits since this date. Use `all` for full history |
 | `--branch <branch>` | `-b` | current branch | Analyze a specific branch instead of the checked-out one |
 | `--shame` | — | off | Show the commit message forensics / shame leaderboard panel |
+| `--parallel` | — | off | Show the parallel development leaderboard panel |
 | `--web` | — | off | Open the interactive web dashboard after analysis |
 | `--json` | — | off | Output raw JSON to stdout (non-interactive, good for scripting) |
 
@@ -62,6 +63,21 @@ Best for: retrospectives, pre-refactor assessments, or when you suspect certain 
 **Tip:** Combine with `--since all` for the full picture — a file that was reverted 5 times in year 2 won't appear in the last-12-months window.
 
 **Interpreting the score:** A shame score of 30 on a file with 200 commits is meaningful. A score of 80 on a file with 3 commits is less so — look at `shame commits` count alongside the score.
+
+---
+
+### Parallel development audit — `--parallel`
+
+```bash
+gitlore --path ~/projects/my-app --parallel
+gitlore --path ~/projects/my-app --since all --parallel
+```
+
+Best for: multi-author repos where you want to see which files have concurrent development — multiple authors committing in the same week. High parallel scores correlate with higher defect rates (Tornhill/Meneely research). Solo repos won't produce any results here.
+
+**Interpreting the score:** A parallel score of 80+ means the file regularly has 2+ authors working on it in the same week. The `peak authors` count shows the worst-case overlap. The narrative gives context on how many weeks had concurrent work.
+
+**Tip:** Combine with `--shame` to see both coordination signals at once — files that are *both* heavily contested and full of fix/revert commits are the strongest candidates for decomposition.
 
 ---
 

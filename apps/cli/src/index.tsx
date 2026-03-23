@@ -19,6 +19,7 @@ program
   .option('--web', 'Open web dashboard after analysis')
   .option('--json', 'Output raw JSON report to stdout')
   .option('--shame', 'Show commit message forensics / shame leaderboard panel')
+  .option('--parallel', 'Show parallel development leaderboard panel')
   .parse();
 
 const opts = program.opts<{
@@ -28,6 +29,7 @@ const opts = program.opts<{
   web?: boolean;
   json?: boolean;
   shame?: boolean;
+  parallel?: boolean;
 }>();
 
 const repoPath = path.resolve(opts.path);
@@ -72,7 +74,7 @@ function GitloreApp() {
       .catch((err: Error) => setError(err.message));
   }, []);
 
-  return <App report={report} progress={progress} error={error} showShame={opts.shame ?? false} />;
+  return <App report={report} progress={progress} error={error} showShame={opts.shame ?? false} showParallel={opts.parallel ?? false} />;
 }
 
 render(<GitloreApp />);
