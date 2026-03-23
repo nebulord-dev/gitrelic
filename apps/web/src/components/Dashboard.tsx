@@ -167,25 +167,26 @@ function ChurnTab({ report }: { report: GitloreReport }) {
       <p className={`${verdictColor} text-sm mb-4`}>{verdictText}</p>
       <div className="space-y-4">
         <Collapsible title="Ranked Files" subtitle={`Top ${Math.min(50, report.hotspots.files.length)} by hotspot score`}>
-          <div className="grid grid-cols-[3rem_1fr_5rem_5rem_5rem_6rem] gap-2 px-4 py-2 border-b border-gray-800 text-xs text-gray-500 uppercase tracking-wide">
-            <span>#</span>
-            <span>File</span>
-            <span className="text-right">Score</span>
-            <span className="text-right">Churn</span>
-            <span className="text-right">LOC</span>
-            <span className="text-right">Severity</span>
+          <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-800 text-xs text-gray-500 uppercase tracking-wide">
+            <span className="w-10 shrink-0">#</span>
+            <span className="w-80 shrink-0">File</span>
+            <span className="flex-1" />
+            <span className="w-14 text-right shrink-0">Score</span>
+            <span className="w-14 text-right shrink-0">Churn</span>
+            <span className="w-14 text-right shrink-0">LOC</span>
+            <span className="w-20 text-right shrink-0">Severity</span>
           </div>
           {report.hotspots.files.slice(0, 50).map((f, i) => (
-            <div key={f.file} className="grid grid-cols-[3rem_1fr_5rem_5rem_5rem_6rem] gap-2 px-4 py-2 border-b border-gray-800 last:border-0 hover:bg-gray-800 items-center">
-              <span className="text-gray-500 text-sm">{i + 1}</span>
-              <span className="text-gray-300 text-sm font-mono truncate">{f.file}</span>
-              <div className="flex items-center justify-end gap-2">
-                <div className={`h-2 rounded-sm ${hotspotBar(f.category)}`} style={{ width: `${f.hotspotScore * 0.4}px`, minWidth: '2px' }} />
-                <span className="text-white text-sm font-mono">{f.hotspotScore}</span>
+            <div key={f.file} className="flex items-center gap-2 px-4 py-2 border-b border-gray-800 last:border-0 hover:bg-gray-800">
+              <span className="text-gray-500 text-sm w-10 shrink-0">{i + 1}</span>
+              <span className="text-gray-300 text-sm font-mono w-80 shrink-0 truncate">{f.file}</span>
+              <div className="flex-1 flex justify-end">
+                <div className={`h-2 rounded-sm ${hotspotBar(f.category)}`} style={{ width: `${f.hotspotScore}%` }} />
               </div>
-              <span className="text-gray-500 text-sm text-right font-mono">{f.churnScore}</span>
-              <span className="text-gray-500 text-sm text-right font-mono">{f.loc}</span>
-              <div className="text-right">
+              <span className="text-white text-sm font-mono w-14 text-right shrink-0">{f.hotspotScore}</span>
+              <span className="text-gray-500 text-sm font-mono w-14 text-right shrink-0">{f.churnScore}</span>
+              <span className="text-gray-500 text-sm font-mono w-14 text-right shrink-0">{f.loc}</span>
+              <div className="w-20 text-right shrink-0">
                 <span className={`text-xs px-2 py-0.5 rounded-sm ${hotspotBadge(f.category)}`}>{f.category}</span>
               </div>
             </div>
