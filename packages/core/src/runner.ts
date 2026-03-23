@@ -26,6 +26,8 @@ import { analyzeKnowledgeConcentration } from './analyzers/knowledge-concentrati
 import { analyzeCoAuthors } from './analyzers/co-author.js';
 import { analyzeHotspotClustering } from './analyzers/hotspot-clustering.js';
 import { analyzeComplexityTrend } from './analyzers/complexity-trend.js';
+import { analyzeCommitTiming } from './analyzers/commit-timing.js';
+import { analyzeRenameTracking } from './analyzers/rename-tracking.js';
 import type { GitloreReport, RunGitloreOptions } from './types.js';
 
 /**
@@ -121,6 +123,12 @@ export async function runGitlore(options: RunGitloreOptions): Promise<GitloreRep
   onProgress?.('Tracking complexity trends...');
   const complexityTrend = analyzeComplexityTrend(commits, trackedFiles);
 
+  onProgress?.('Analyzing commit timing...');
+  const commitTiming = analyzeCommitTiming(commits, trackedFiles);
+
+  onProgress?.('Tracking file renames...');
+  const renameTracking = await analyzeRenameTracking(repoPath, trackedFiles, { since });
+
   onProgress?.('Finding cursed files...');
   const cursedFiles = findCursedFiles(churn, busFactors, ageMap, forensics, parallelDev, commits.length);
 
@@ -158,5 +166,7 @@ export async function runGitlore(options: RunGitloreOptions): Promise<GitloreRep
     coAuthors,
     hotspotClusters,
     complexityTrend,
+    commitTiming,
+    renameTracking,
   };
 }

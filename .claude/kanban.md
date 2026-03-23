@@ -72,8 +72,7 @@ Wrap `git-sizer` (GitHub's repo health CLI) to surface repo-level health metrics
 
 ~~#### Churn velocity~~ _(Done — see Done column)_
 
-#### Rename tracking
-Follow files through renames so churn/age history isn't lost when someone does `mv auth.ts authentication.ts`. Use git's `--follow` or `--find-renames` to stitch history across renames.
+~~#### Rename tracking~~ _(Done — see Done column)_
 
 ~~#### Hotspot root cause clustering ("geographic profiling")~~ _(Done — see Done column)_
 
@@ -91,8 +90,7 @@ Distinguish chronic parallel development (8 of 12 weeks) from one-off spikes (1 
 
 ~~#### Coupling map~~ _(Done — see Done column)_
 
-#### Commit timing forensics
-When does this team actually write code? Surface late-night commits, weekend commits, and timezone clustering per file and per contributor. A file with 40% of its commits between 11pm–2am is a different kind of red flag than high churn. Could feed into curse scoring as a stress signal.
+~~#### Commit timing forensics~~ _(Done — see Done column)_
 
 #### Ownership drift
 Track *who* the dominant author is over time, not just cumulatively. A file owned by Alice for 2 years but now owned by Bob for the last 3 months tells a story about knowledge transfer (or lack of it). Especially powerful combined with bus factor data.
@@ -483,3 +481,9 @@ Ninth tab in the web dashboard surfacing parallel development data. List + side 
 
 ### Hotspot score leaderboard tab
 Tenth tab in the web dashboard — a clean ranked table of files by the Tornhill hotspot composite (`churnScore × log₂(LOC)`, normalized 0–100). Shows rank, file path, score with inline bar, churn score, LOC, and severity badge. Top 50 files. Separate from the Hotspots tab (which includes health sentiment verdict and root cause clustering) — this is purely the ranked leaderboard.
+
+### Rename tracking
+Async analyzer that shells out to `git log --diff-filter=R --find-renames --name-status` to detect file renames. Parses R100/R095-style rename entries, builds rename chains (a→b→c produces `{ currentPath: 'c.ts', previousNames: ['a.ts', 'b.ts'] }`). Only tracks chains for currently-tracked files. Exports `parseRenameLog` and `buildRenameChains` as pure functions for testability. 12 unit tests. Data-enrichment layer for future use by churn/age analyzers.
+
+### Commit timing forensics
+Parses ISO timestamps (using author-local timezone from `%aI`) to surface late-night (11pm–5am) and weekend commit patterns per file. Builds 24-bucket hour distributions, identifies peak hours/days, computes a weighted stress score (`lateNightPercent × 0.6 + weekendPercent × 0.4`). Files with <3 commits excluded. Top 10 stress files surfaced. 9 unit tests.

@@ -59,4 +59,11 @@ export type {
   FileComplexityTrend,
   FileGrowthBucket,
   GrowthTrend,
+  CommitTimingReport,
+  FileTimingProfile,
+  TimeOfDay,
+  DayType,
+  RenameTrackingReport,
+  FileRenameChain,
+  FileRename,
 } from './types.js';

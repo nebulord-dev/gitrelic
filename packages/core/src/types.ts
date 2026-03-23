@@ -25,6 +25,8 @@ export interface GitloreReport {
   coAuthors: CoAuthorReport;
   hotspotClusters: HotspotClusterReport;
   complexityTrend: ComplexityTrendReport;
+  commitTiming: CommitTimingReport;
+  renameTracking: RenameTrackingReport;
 }
 
 // ─── Repo metadata ─────────────────────────────────────────────────────────────
@@ -435,6 +437,53 @@ export interface ComplexityTrendReport {
   files: FileComplexityTrend[];
   growingFiles: FileComplexityTrend[];   // top 10 growers by recentGrowthRate
   shrinkingFiles: FileComplexityTrend[]; // top 10 shrinkers
+  summary: string;
+}
+
+// ─── Commit timing forensics ─────────────────────────────────────────
+
+export type TimeOfDay = 'early-morning' | 'morning' | 'afternoon' | 'evening' | 'night';
+export type DayType = 'weekday' | 'weekend';
+
+export interface FileTimingProfile {
+  file: string;
+  totalCommits: number;
+  lateNightPercent: number;      // commits between 11pm–5am as percentage
+  weekendPercent: number;         // Saturday + Sunday commits as percentage
+  peakHour: number;               // 0-23, hour with most commits
+  peakDay: number;                // 0-6 (Sun=0), day with most commits
+  hourDistribution: number[];     // 24 entries, commit count per hour
+  stressScore: number;            // 0–100, weighted from late-night + weekend frequency
+}
+
+export interface CommitTimingReport {
+  files: FileTimingProfile[];
+  stressFiles: FileTimingProfile[];   // top 10 by stressScore
+  repoLateNightPercent: number;       // repo-wide late night commit percentage
+  repoWeekendPercent: number;         // repo-wide weekend commit percentage
+  summary: string;
+}
+
+// ─── Rename tracking ─────────────────────────────────────────────────────────
+
+export interface FileRename {
+  oldPath: string;
+  newPath: string;
+  commitHash: string;
+  date: string;           // ISO date of the rename commit
+}
+
+export interface FileRenameChain {
+  currentPath: string;
+  previousNames: string[];     // ordered oldest → newest (not including currentPath)
+  renameCount: number;
+}
+
+export interface RenameTrackingReport {
+  renames: FileRename[];
+  chains: FileRenameChain[];            // files with rename history
+  totalRenames: number;
+  filesWithRenames: number;             // how many current files have been renamed at least once
   summary: string;
 }
 
