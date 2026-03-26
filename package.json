@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "turbo": "^2.8.20",
-    "typescript": "^5.7.2"
+    "typescript": "catalog:"
   },
   "packageManager": "pnpm@10.30.1"
 }

@@ -25,11 +25,11 @@
     "execa": "^9.5.2"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0",
+    "@types/node": "catalog:",
     "@vitest/coverage-v8": "^4.1.0",
     "@vitest/ui": "^4.1.0",
-    "tsup": "^8.3.5",
-    "typescript": "^5.7.2",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
     "vitest": "^4.1.0"
   }
 }
