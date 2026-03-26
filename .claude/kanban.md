@@ -345,7 +345,7 @@ A dedicated view that uses *behavioral* signals — not static analysis — to i
 - Feeds into the web dashboard for the full interactive experience.
 
 #### Repo health tab
-Top-level health dashboard powered by `git-sizer` integration. Blob sizes, history bloat, pack efficiency. The "infrastructure layer" complement to the code-behavior metrics everywhere else in Lore. Green/amber/red status indicators. Something you'd check once when onboarding to a new repo.
+Top-level health dashboard powered by `git-sizer` integration. Blob sizes, history bloat, pack efficiency. The "infrastructure layer" complement to the code-behavior metrics everywhere else in Gitlore. Green/amber/red status indicators. Something you'd check once when onboarding to a new repo.
 
 #### Language breakdown panel
 Visual breakdown of what the repo is made of — languages, LOC per language, file count per language — powered by `cloc` integration. Surprisingly absent from most git analytics tools. Immediately useful context for everything else on the dashboard.

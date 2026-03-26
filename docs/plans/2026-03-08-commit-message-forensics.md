@@ -989,14 +989,14 @@ git commit -m "feat: add --shame flag and ShamePanel to CLI"
 # Read README.md to understand its current structure before editing
 ```
 
-### Step 2: Add a "How Lore scores files" section
+### Step 2: Add a "How Gitlore scores files" section
 
 Add this section to `README.md` in a logical location (after usage examples, before contributing):
 
 ```markdown
-## How Lore scores files
+## How Gitlore scores files
 
-Lore uses three scoring systems, each 0–100:
+Gitlore uses three scoring systems, each 0–100:
 
 ### Churn score
 How often a file has been modified relative to the most-committed file in the repo.

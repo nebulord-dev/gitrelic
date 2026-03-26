@@ -123,7 +123,7 @@ Files that cross the curse threshold due to shame get a human-readable reason, e
 Two locations:
 
 1. **JSDoc in `forensics.ts`** — inline documentation of keyword tiers and normalization formula for code readers
-2. **`README.md` — "How Lore scores files" section** — prose + table explanation for end users covering churn score, shame score, and curse score
+2. **`README.md` — "How Gitlore scores files" section** — prose + table explanation for end users covering churn score, shame score, and curse score
 
 ---
 
@@ -139,4 +139,4 @@ Two locations:
 | `packages/core/src/runner.ts` | Call `analyzeForensics`, pass to `findCursedFiles`, include in return |
 | `apps/cli/src/index.tsx` | Add `--shame` flag |
 | `apps/cli/src/components/App.tsx` | Render shame panel when flag is set |
-| `README.md` | Add "How Lore scores files" section |
+| `README.md` | Add "How Gitlore scores files" section |

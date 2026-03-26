@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Make Lore's analysis meaningful across repos of all sizes and ages by adding an ignore list, tightening cursed file scoring, making time windows relative to repo age, and defaulting `--since` to 12 months.
+**Goal:** Make Gitlore's analysis meaningful across repos of all sizes and ages by adding an ignore list, tightening cursed file scoring, making time windows relative to repo age, and defaulting `--since` to 12 months.
 
 **Architecture:** All four changes are in `packages/core` except for a small CLI default change. They're ordered by dependency: ignore list first (reduces noise for everything), then scoring, then relative windows, then `--since`. Each task modifies 1-2 files.
 

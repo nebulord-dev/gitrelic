@@ -11,7 +11,7 @@ All git command execution in `@gitlore/core` MUST go through `packages/core/src/
 
 ## Why
 
-Lore's core package runs many git commands across its analyzers. Centralizing execution through `utils/git.ts` ensures:
+Gitlore's core package runs many git commands across its analyzers. Centralizing execution through `utils/git.ts` ensures:
 
 - **Consistent error handling** — one place to catch and wrap git failures
 - **Consistent `cwd` passing** — every git call needs `repoPath`, enforced by the function signatures

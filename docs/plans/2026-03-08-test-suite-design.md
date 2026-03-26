@@ -4,7 +4,7 @@
 
 ## Problem
 
-Lore has no tests. All analysis logic lives in `packages/core` — analyzers, git primitives, scoring — with no way to verify correctness or catch regressions. The recent calibration work (relative thresholds, tightened scoring) especially needs test coverage since the math is nuanced.
+Gitlore has no tests. All analysis logic lives in `packages/core` — analyzers, git primitives, scoring — with no way to verify correctness or catch regressions. The recent calibration work (relative thresholds, tightened scoring) especially needs test coverage since the math is nuanced.
 
 ## Solution Overview
 

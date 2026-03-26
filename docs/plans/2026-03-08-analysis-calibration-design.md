@@ -1,10 +1,10 @@
 # Design: Analysis Calibration
 
-> Four tightly coupled fixes to make Lore's analysis meaningful across repos of all sizes and ages.
+> Four tightly coupled fixes to make Gitlore's analysis meaningful across repos of all sizes and ages.
 
 ## Problem
 
-Running Lore against a 115-file, 3-month-old Next.js repo surfaced 63 cursed files (over half), flagged contributors as "ghosts" in a repo that's barely existed, and included noise files like `pnpm-lock.yaml` in churn analysis. The root causes:
+Running Gitlore against a 115-file, 3-month-old Next.js repo surfaced 63 cursed files (over half), flagged contributors as "ghosts" in a repo that's barely existed, and included noise files like `pnpm-lock.yaml` in churn analysis. The root causes:
 
 1. No ignore list — lock files, assets, and generated files pollute every analyzer
 2. Cursed file scoring is too loose — moderate signals in any two dimensions qualify a file
