@@ -2,8 +2,9 @@ import { useMemo } from 'react';
 import type { GitloreReport } from '@gitlore/core';
 import Badge from './Badge';
 import { hotspotColor, fileName, filePath, fmt } from './theme';
+import type { StatsFilter } from './StatsBar';
 
-export default function HotspotTable({ report }: { report: GitloreReport }) {
+export default function HotspotTable({ report, filter }: { report: GitloreReport; filter?: StatsFilter }) {
   const busFactorMap = useMemo(
     () => new Map(report.busFactors.files.map(f => [f.file, f])),
     [report]
@@ -39,6 +40,28 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
     [report]
   );
 
+  const cursedSet = useMemo(
+    () => new Set(report.cursedFiles.map(f => f.file)),
+    [report]
+  );
+  const busFactorCriticalSet = useMemo(
+    () => new Set(report.busFactors.criticalFiles.map(f => f.file)),
+    [report]
+  );
+
+  const filtered = useMemo(() => {
+    if (!filter) return sorted;
+    return sorted.filter(f => {
+      switch (filter) {
+        case 'critical': return f.category === 'critical';
+        case 'warning': return f.category === 'warning';
+        case 'cursed': return cursedSet.has(f.file);
+        case 'busfactor': return busFactorCriticalSet.has(f.file);
+        default: return true;
+      }
+    });
+  }, [sorted, filter, cursedSet, busFactorCriticalSet]);
+
   if (sorted.length === 0) return null;
 
   return (
@@ -50,7 +73,7 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
         letterSpacing: '0.08em',
         marginBottom: 12,
       }}>
-        Hotspot Files — Ranked by Composite Risk
+        Hotspot Files — {filter ? `Filtered: ${filter}` : 'Ranked by Composite Risk'}
       </p>
 
       <div style={{ width: '100%', maxHeight: 520, overflowY: 'auto' }}>
@@ -72,7 +95,7 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
         </div>
 
         {/* Rows — stacked cards on mobile, grid on desktop */}
-        {sorted.map(f => {
+        {filtered.map(f => {
           const busFactor = busFactorMap.get(f.file);
           const churnEntry = churnMap.get(f.file);
           const shameEntry = shameMap.get(f.file);

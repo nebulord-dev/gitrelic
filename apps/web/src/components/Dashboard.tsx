@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import type { GitloreReport } from '@gitlore/core';
-import { StatsBar } from './StatsBar';
+import { StatsBar, type StatsFilter } from './StatsBar';
 import HotspotTable from './HotspotTable';
 import ContributorsSection from './ContributorsSection';
 import HotspotClusters from './HotspotClusters';
@@ -11,6 +12,7 @@ import { fmt } from './theme';
 export default function Dashboard({ report }: { report: GitloreReport }) {
   const { meta } = report;
   const ageYears = Math.round(meta.ageInDays / 365);
+  const [filter, setFilter] = useState<StatsFilter>(null);
 
   return (
     <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 var(--space-lg)' }}>
@@ -63,11 +65,11 @@ export default function Dashboard({ report }: { report: GitloreReport }) {
 
       {/* Body */}
       <div style={{ padding: 'var(--space-lg) 0' }}>
-        <StatsBar report={report} />
+        <StatsBar report={report} active={filter} onFilter={f => setFilter(f === filter ? null : f)} />
 
         <div style={{ borderTop: '0.5px solid var(--border)', margin: 'var(--space-lg) 0' }} />
 
-        <HotspotTable report={report} />
+        <HotspotTable report={report} filter={filter} />
 
         <div style={{ borderTop: '0.5px solid var(--border)', margin: 'var(--space-lg) 0' }} />
 
