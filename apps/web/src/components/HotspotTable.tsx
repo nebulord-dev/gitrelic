@@ -10,6 +10,7 @@ type SortDir = 'asc' | 'desc';
 export default function HotspotTable({ report, filter }: { report: GitloreReport; filter?: StatsFilter }) {
   const [sortKey, setSortKey] = useState<SortKey>('score');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
+  const [expandedFile, setExpandedFile] = useState<string | null>(null);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) {
@@ -51,6 +52,10 @@ export default function HotspotTable({ report, filter }: { report: GitloreReport
   );
   const emailToName = useMemo(
     () => new Map(report.contributors.contributors.map(c => [c.email, c.name])),
+    [report]
+  );
+  const couplingProfileMap = useMemo(
+    () => new Map(report.coupling.fileProfiles.map(p => [p.file, p])),
     [report]
   );
 
@@ -135,8 +140,16 @@ export default function HotspotTable({ report, filter }: { report: GitloreReport
           const shameEntry = shameMap.get(f.file);
           const multiSignal = multiSignalMap.get(f.file);
 
+          const isExpanded = expandedFile === f.file;
+          const couplingProfile = couplingProfileMap.get(f.file);
+
           return (
-            <div key={f.file} className="hotspot-row">
+            <div key={f.file}>
+            <div
+              className="hotspot-row"
+              onClick={() => setExpandedFile(isExpanded ? null : f.file)}
+              style={{ cursor: 'pointer', background: isExpanded ? 'var(--bg2)' : undefined }}
+            >
               {/* File */}
               <div style={{ minWidth: 0 }}>
                 <div style={{
@@ -232,6 +245,97 @@ export default function HotspotTable({ report, filter }: { report: GitloreReport
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* Detail panel */}
+            {isExpanded && (
+              <div style={{
+                padding: '12px 16px',
+                background: 'var(--bg2)',
+                borderBottom: '0.5px solid var(--border)',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: 16,
+                fontSize: 12,
+              }}>
+                {/* Bus factor */}
+                {busFactor && (
+                  <div>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--fg3)', letterSpacing: '0.08em', marginBottom: 6 }}>
+                      Ownership
+                    </div>
+                    <div style={{ color: 'var(--fg2)', marginBottom: 4 }}>
+                      {busFactor.uniqueAuthors} author{busFactor.uniqueAuthors !== 1 ? 's' : ''} · dominant: {emailToName.get(busFactor.dominantAuthor) ?? busFactor.dominantAuthor} ({busFactor.dominantAuthorPercent}%)
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {busFactor.authors.slice(0, 6).map(email => (
+                        <span key={email} style={{
+                          fontSize: 10,
+                          background: 'var(--bg)',
+                          color: 'var(--fg2)',
+                          padding: '2px 6px',
+                          borderRadius: 3,
+                          fontFamily: 'var(--font-mono)',
+                        }}>
+                          {emailToName.get(email) ?? email}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Coupling partners */}
+                {couplingProfile && couplingProfile.partners.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--fg3)', letterSpacing: '0.08em', marginBottom: 6 }}>
+                      Coupled with
+                    </div>
+                    {couplingProfile.partners.slice(0, 4).map(p => {
+                      const partner = p.fileA === f.file ? p.fileB : p.fileA;
+                      return (
+                        <div key={partner} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 3 }}>
+                          <span style={{ color: 'var(--blue)', fontFamily: 'var(--font-mono)', fontSize: 11 }}>{p.couplingStrength}%</span>
+                          <span style={{ color: 'var(--fg2)', fontFamily: 'var(--font-mono)', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fileName(partner)}</span>
+                          <span style={{ color: 'var(--fg3)', fontSize: 10 }}>{p.coCommits} commits</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Shame commits */}
+                {shameEntry && shameEntry.shameScore > 0 && (
+                  <div>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--fg3)', letterSpacing: '0.08em', marginBottom: 6 }}>
+                      Shame ({shameEntry.shameScore}/100)
+                    </div>
+                    {shameEntry.topShameCommits.slice(0, 3).map(c => (
+                      <div key={c.hash} style={{ color: 'var(--fg2)', fontFamily: 'var(--font-mono)', fontSize: 10, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        "{c.message}"
+                      </div>
+                    ))}
+                    <div style={{ color: 'var(--fg3)', fontSize: 10, marginTop: 4 }}>
+                      {shameEntry.dominantKeywords.join(', ')}
+                    </div>
+                  </div>
+                )}
+
+                {/* Churn velocity */}
+                {churnEntry && (
+                  <div>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--fg3)', letterSpacing: '0.08em', marginBottom: 6 }}>
+                      Activity
+                    </div>
+                    <div style={{ color: 'var(--fg2)' }}>
+                      {fmt(churnEntry.commitCount)} commits · {fmt(f.loc)} lines
+                    </div>
+                    <div style={{ color: 'var(--fg2)', marginTop: 2 }}>
+                      Hotspot score: {f.hotspotScore}/100 ({f.category})
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             </div>
           );
         })}
