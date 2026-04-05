@@ -39,7 +39,7 @@ export function ShameSection({ report }: ShameSectionProps) {
           >
             <span
               style={{
-                fontFamily: 'monospace',
+                fontFamily: 'var(--font-mono)',
                 fontSize: 12,
                 color: 'var(--fg)',
                 overflow: 'hidden',
@@ -53,7 +53,7 @@ export function ShameSection({ report }: ShameSectionProps) {
             </span>
             <span
               style={{
-                fontFamily: 'monospace',
+                fontFamily: 'var(--font-mono)',
                 fontSize: 12,
                 color: 'var(--red)',
                 flexShrink: 0,

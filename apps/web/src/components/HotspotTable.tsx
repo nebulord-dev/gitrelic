@@ -92,7 +92,7 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
               {/* File column */}
               <div style={{ minWidth: 0 }}>
                 <div style={{
-                  fontFamily: 'monospace',
+                  fontFamily: 'var(--font-mono)',
                   fontSize: 12,
                   color: 'var(--fg)',
                   overflow: 'hidden',
@@ -153,18 +153,18 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
                     borderRadius: 2,
                   }} />
                 </div>
-                <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--fg)' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg)' }}>
                   {fmt(f.hotspotScore)}
                 </span>
               </div>
 
               {/* Churn column */}
-              <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--fg)' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg)' }}>
                 {churnEntry ? fmt(churnEntry.commitCount) : '—'}
               </div>
 
               {/* LOC column */}
-              <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--fg)' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg)' }}>
                 {fmt(f.loc)}
               </div>
 

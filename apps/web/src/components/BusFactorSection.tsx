@@ -70,7 +70,7 @@ export function BusFactorSection({ report }: BusFactorSectionProps) {
           >
             <span
               style={{
-                fontFamily: 'monospace',
+                fontFamily: 'var(--font-mono)',
                 fontSize: 12,
                 color: 'var(--fg)',
                 overflow: 'hidden',
@@ -84,7 +84,7 @@ export function BusFactorSection({ report }: BusFactorSectionProps) {
             </span>
             <span
               style={{
-                fontFamily: 'monospace',
+                fontFamily: 'var(--font-mono)',
                 fontSize: 12,
                 color: 'var(--red)',
                 flexShrink: 0,
@@ -107,7 +107,7 @@ export function BusFactorSection({ report }: BusFactorSectionProps) {
             paddingTop: 8,
           }}
         >
-          <span style={{ fontFamily: 'monospace' }}>{atRiskDir}</span> is most at risk
+          <span style={{ fontFamily: 'var(--font-mono)' }}>{atRiskDir}</span> is most at risk
         </div>
       )}
     </div>

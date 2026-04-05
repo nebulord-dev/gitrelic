@@ -42,7 +42,7 @@ function ClusterCard({ cluster, defaultOpen = false }: {
               <span
                 key={m.file}
                 style={{
-                  fontFamily: 'monospace',
+                  fontFamily: 'var(--font-mono)',
                   fontSize: 10,
                   background: 'var(--bg)',
                   color: 'var(--fg2)',
