@@ -49,9 +49,9 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
         Hotspot Files — Ranked by Composite Risk
       </p>
 
-      <div style={{ width: '100%', maxHeight: 520, overflowY: 'auto', borderCollapse: 'collapse' } as React.CSSProperties}>
-        {/* Header */}
-        <div className="hotspot-table-grid" style={{
+      <div style={{ width: '100%', maxHeight: 520, overflowY: 'auto' }}>
+        {/* Header — hidden on mobile, grid on desktop */}
+        <div className="hotspot-header" style={{
           padding: '6px 12px',
           fontSize: 11,
           textTransform: 'uppercase' as const,
@@ -67,7 +67,7 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
           <span>Severity</span>
         </div>
 
-        {/* Rows */}
+        {/* Rows — stacked cards on mobile, grid on desktop */}
         {sorted.map(f => {
           const busFactor = busFactorMap.get(f.file);
           const churnEntry = churnMap.get(f.file);
@@ -75,16 +75,8 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
           const multiSignal = multiSignalMap.get(f.file);
 
           return (
-            <div
-              key={f.file}
-              className="hotspot-table-grid"
-              style={{
-                padding: '8px 12px',
-                borderBottom: '0.5px solid var(--border)',
-                alignItems: 'center',
-              }}
-            >
-              {/* File column */}
+            <div key={f.file} className="hotspot-row">
+              {/* File */}
               <div style={{ minWidth: 0 }}>
                 <div style={{
                   fontFamily: 'var(--font-mono)',
@@ -109,7 +101,7 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
                 )}
               </div>
 
-              {/* Signals column */}
+              {/* Signals */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
                 {(f.category === 'critical' || f.category === 'warning') && (
                   <Badge variant={f.category}>{f.category}</Badge>
@@ -131,45 +123,48 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
                 )}
               </div>
 
-              {/* Score column */}
-              <div>
-                <div style={{
-                  height: 4,
-                  width: '100%',
-                  background: 'var(--bg3)',
-                  borderRadius: 2,
-                  marginBottom: 4,
-                  overflow: 'hidden',
-                }}>
+              {/* Stats — flex row on mobile, display:contents on desktop (fills grid cells) */}
+              <div className="hotspot-row-stats">
+                {/* Score */}
+                <div style={{ width: 80 }}>
                   <div style={{
-                    height: '100%',
-                    width: `${f.hotspotScore}%`,
-                    background: hotspotColor(f.category),
+                    height: 4,
+                    width: '100%',
+                    background: 'var(--bg3)',
                     borderRadius: 2,
-                  }} />
+                    marginBottom: 4,
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${f.hotspotScore}%`,
+                      background: hotspotColor(f.category),
+                      borderRadius: 2,
+                    }} />
+                  </div>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg)' }}>
+                    {fmt(f.hotspotScore)}
+                  </span>
                 </div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg)' }}>
-                  {fmt(f.hotspotScore)}
-                </span>
-              </div>
 
-              {/* Churn column */}
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg)' }}>
-                {churnEntry ? fmt(churnEntry.commitCount) : '—'}
-              </div>
+                {/* Churn */}
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg)' }}>
+                  {churnEntry ? fmt(churnEntry.commitCount) : '—'}
+                </div>
 
-              {/* LOC column */}
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg)' }}>
-                {fmt(f.loc)}
-              </div>
+                {/* LOC */}
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg)' }}>
+                  {fmt(f.loc)}
+                </div>
 
-              {/* Severity column */}
-              <div>
-                {(f.category === 'critical' || f.category === 'warning') ? (
-                  <Badge variant={f.category}>{f.category}</Badge>
-                ) : (
-                  <Badge variant="stale">{f.category}</Badge>
-                )}
+                {/* Severity */}
+                <div style={{ marginLeft: 'auto' }}>
+                  {(f.category === 'critical' || f.category === 'warning') ? (
+                    <Badge variant={f.category}>{f.category}</Badge>
+                  ) : (
+                    <Badge variant="stale">{f.category}</Badge>
+                  )}
+                </div>
               </div>
             </div>
           );
