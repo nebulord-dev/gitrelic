@@ -75,15 +75,17 @@ export default function HotspotClusters({ data }: { data: HotspotClusterReport }
         Root Cause Clusters
       </p>
 
-      {data.clusters.slice(0, 20).map((c, i) => (
-        <ClusterCard key={`${c.dimension}-${c.sharedTrait}`} cluster={c} defaultOpen={i === 0} />
-      ))}
+      <div style={{ maxHeight: 520, overflowY: 'auto' }}>
+        {data.clusters.slice(0, 20).map((c, i) => (
+          <ClusterCard key={`${c.dimension}-${c.sharedTrait}`} cluster={c} defaultOpen={i === 0} />
+        ))}
 
-      {data.clusters.length > 20 && (
-        <p style={{ color: 'var(--fg3)', fontSize: 11, textAlign: 'center', paddingTop: 8 }}>
-          + {data.clusters.length - 20} more clusters
-        </p>
-      )}
+        {data.clusters.length > 20 && (
+          <p style={{ color: 'var(--fg3)', fontSize: 11, textAlign: 'center', paddingTop: 8 }}>
+            + {data.clusters.length - 20} more clusters
+          </p>
+        )}
+      </div>
     </div>
   );
 }
