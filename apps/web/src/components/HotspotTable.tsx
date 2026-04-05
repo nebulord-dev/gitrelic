@@ -184,7 +184,9 @@ export default function HotspotTable({ report, filter }: { report: GitloreReport
                   <span className="tooltip-wrap">
                     <Badge variant="ownership">{busFactor.uniqueAuthors} authors</Badge>
                     <span className="tooltip">
-                      {busFactor.authors.map(email => emailToName.get(email) ?? email).join(', ')}
+                      {busFactor.authors.map(email => (
+                        <div key={email}>{emailToName.get(email) ?? email}</div>
+                      ))}
                     </span>
                   </span>
                 )}
