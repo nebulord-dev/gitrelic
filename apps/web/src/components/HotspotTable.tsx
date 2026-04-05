@@ -29,6 +29,10 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
     () => new Map(report.hotspotClusters.multiSignalFiles.map(f => [f.file, f])),
     [report]
   );
+  const emailToName = useMemo(
+    () => new Map(report.contributors.contributors.map(c => [c.email, c.name])),
+    [report]
+  );
 
   const sorted = useMemo(
     () => [...report.hotspots.files].sort((a, b) => b.hotspotScore - a.hotspotScore).slice(0, 50),
@@ -107,7 +111,12 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
                   <Badge variant={f.category}>{f.category}</Badge>
                 )}
                 {busFactor && busFactor.uniqueAuthors >= 3 && (
-                  <Badge variant="ownership">{busFactor.uniqueAuthors} authors</Badge>
+                  <span className="tooltip-wrap">
+                    <Badge variant="ownership">{busFactor.uniqueAuthors} authors</Badge>
+                    <span className="tooltip">
+                      {busFactor.authors.map(email => emailToName.get(email) ?? email).join(', ')}
+                    </span>
+                  </span>
                 )}
                 {couplingSet.has(f.file) && (
                   <Badge variant="coupling">coupling hub</Badge>

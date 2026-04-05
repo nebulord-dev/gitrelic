@@ -106,6 +106,30 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Tooltip ──────────────────────────────────────────────────────── */
+
+.tooltip-wrap {
+  position: relative;
+}
+.tooltip-wrap .tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  background: var(--bg2);
+  border: 0.5px solid var(--border2);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--fg2);
+  pointer-events: none;
+}
+.tooltip-wrap:hover .tooltip {
+  display: block;
+}
+
 /* ── Responsive Grid Layouts ──────────────────────────────────────── */
 
 .grid-stats {
