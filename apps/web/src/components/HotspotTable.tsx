@@ -270,7 +270,7 @@ export default function HotspotTable({ report, filter }: { report: GitloreReport
                       {busFactor.uniqueAuthors} author{busFactor.uniqueAuthors !== 1 ? 's' : ''} · dominant: {emailToName.get(busFactor.dominantAuthor) ?? busFactor.dominantAuthor} ({busFactor.dominantAuthorPercent}%)
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                      {busFactor.authors.slice(0, 6).map(email => (
+                      {busFactor.authors.map(email => (
                         <span key={email} style={{
                           fontSize: 10,
                           background: 'var(--bg)',
