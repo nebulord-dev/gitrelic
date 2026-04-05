@@ -23,7 +23,7 @@ function Cell({ label, value, color, hint, filterId, active, onFilter }: CellPro
   const isActive = active === filterId;
   return (
     <button
-      className="tooltip-wrap"
+      title={hint}
       onClick={() => onFilter(filterId)}
       style={{
         background: isActive ? 'var(--bg3)' : 'var(--bg)',
@@ -56,7 +56,6 @@ function Cell({ label, value, color, hint, filterId, active, onFilter }: CellPro
       >
         {fmt(value)}
       </div>
-      <span className="tooltip tooltip-wide">{hint}</span>
     </button>
   );
 }
