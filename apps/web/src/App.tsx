@@ -20,9 +20,11 @@ export default function App() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="text-6xl mb-4">☠</div>
-          <p className="text-red-400 text-lg">{error}</p>
-          <p className="text-gray-500 mt-2 text-sm">Run: <code className="text-purple-400">gitlore --path ./your-repo --web</code></p>
+          <div style={{ fontSize: '3.75rem', marginBottom: '1rem' }}>☠</div>
+          <p style={{ color: 'var(--red)', fontSize: '1.125rem' }}>{error}</p>
+          <p style={{ color: 'var(--fg3)', marginTop: '0.5rem', fontSize: '0.875rem' }}>
+            Run: <code style={{ color: 'var(--purple)' }}>gitlore --path ./your-repo --web</code>
+          </p>
         </div>
       </div>
     );
@@ -32,8 +34,8 @@ export default function App() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="text-purple-400 text-4xl mb-4 animate-pulse">◎</div>
-          <p className="text-gray-400">Excavating git history...</p>
+          <div className="animate-pulse" style={{ color: 'var(--fg2)', fontSize: '2.25rem', marginBottom: '1rem' }}>◎</div>
+          <p style={{ color: 'var(--fg3)' }}>Excavating git history...</p>
         </div>
       </div>
     );
