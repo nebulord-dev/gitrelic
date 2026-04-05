@@ -72,7 +72,7 @@ export default function Dashboard({ report }: { report: GitloreReport }) {
         <div style={{ borderTop: '0.5px solid var(--border)', margin: 'var(--space-lg) 0' }} />
 
         {/* Three-column grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-lg)' }}>
+        <div className="grid-three">
           <ContributorsSection report={report} />
           <HotspotClusters data={report.hotspotClusters} />
           <BusFactorSection report={report} />
@@ -81,7 +81,7 @@ export default function Dashboard({ report }: { report: GitloreReport }) {
         <div style={{ borderTop: '0.5px solid var(--border)', margin: 'var(--space-lg) 0' }} />
 
         {/* Two-column grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)' }}>
+        <div className="grid-two">
           <AgeDistribution report={report} />
           <ShameSection report={report} />
         </div>

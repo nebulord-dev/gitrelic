@@ -55,16 +55,7 @@ export function StatsBar({ report }: StatsBarProps) {
   const ghostAuthors = report.contributors.ghostContributors.length;
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(5, 1fr)',
-        gap: 1,
-        background: 'var(--border)',
-        borderRadius: 8,
-        overflow: 'hidden',
-      }}
-    >
+    <div className="grid-stats">
       <Cell label="Critical Hotspots" value={criticalHotspots} color="var(--red)" />
       <Cell label="Warnings" value={warnings} color="var(--amber)" />
       <Cell label="Cursed Files" value={cursedFiles} color="var(--amber)" />

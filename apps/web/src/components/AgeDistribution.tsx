@@ -77,16 +77,7 @@ export function AgeDistribution({ report }: AgeDistributionProps) {
       >
         Codebase Age — {fmt(untouchedCount)} files untouched {oldestDays}+ days
       </div>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 1,
-          background: 'var(--border)',
-          borderRadius: 8,
-          overflow: 'hidden',
-        }}
-      >
+      <div className="grid-age">
         <Cell label="Fresh" value={fresh} color="var(--teal)" />
         <Cell label="Aging" value={aging} color="var(--amber)" />
         <Cell label="Stale" value={stale} color="var(--red)" />

@@ -51,10 +51,7 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
 
       <div style={{ width: '100%', maxHeight: 520, overflowY: 'auto', borderCollapse: 'collapse' } as React.CSSProperties}>
         {/* Header */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr auto 80px 50px 50px auto',
-          gap: '0 16px',
+        <div className="hotspot-table-grid" style={{
           padding: '6px 12px',
           fontSize: 11,
           textTransform: 'uppercase' as const,
@@ -80,10 +77,8 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
           return (
             <div
               key={f.file}
+              className="hotspot-table-grid"
               style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr auto 80px 50px 50px auto',
-                gap: '0 16px',
                 padding: '8px 12px',
                 borderBottom: '0.5px solid var(--border)',
                 alignItems: 'center',
