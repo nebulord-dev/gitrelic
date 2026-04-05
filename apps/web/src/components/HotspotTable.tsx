@@ -49,7 +49,7 @@ export default function HotspotTable({ report }: { report: GitloreReport }) {
         Hotspot Files — Ranked by Composite Risk
       </p>
 
-      <div style={{ width: '100%', borderCollapse: 'collapse' } as React.CSSProperties}>
+      <div style={{ width: '100%', maxHeight: 520, overflowY: 'auto', borderCollapse: 'collapse' } as React.CSSProperties}>
         {/* Header */}
         <div style={{
           display: 'grid',
