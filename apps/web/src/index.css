@@ -130,6 +130,11 @@ body {
 .tooltip-wrap:hover .tooltip {
   display: block;
 }
+.tooltip-wrap .tooltip.tooltip-wide {
+  white-space: normal;
+  max-width: 280px;
+  line-height: 1.5;
+}
 
 /* ── Responsive Grid Layouts ──────────────────────────────────────── */
 
