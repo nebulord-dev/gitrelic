@@ -1,25 +1,108 @@
 @import 'tailwindcss';
 
-/*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
+/* ── Design Tokens ─────────────────────────────────────────────────── */
 
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
+:root {
+  /* Surface */
+  --bg: #F5F2EC;
+  --bg2: #EEEBE4;
+  --bg3: #E6E3DC;
+  --fg: #1A1A18;
+  --fg2: #6B6860;
+  --fg3: #9C9990;
+  --border: #D4D1C8;
+  --border2: #C2BFB6;
+
+  /* Semantic: Red (critical) */
+  --red: #C4503A;
+  --red-bg: #F5E6E2;
+  --red-fg: #8A3122;
+
+  /* Semantic: Amber (warning) */
+  --amber: #B87A1A;
+  --amber-bg: #F5EDD8;
+  --amber-fg: #7A5010;
+
+  /* Semantic: Teal (healthy) */
+  --teal: #1A8C6A;
+  --teal-bg: #E0F0E8;
+  --teal-fg: #0E5E48;
+
+  /* Semantic: Blue (coupling) */
+  --blue: #2E6CB8;
+  --blue-bg: #E2EDF8;
+  --blue-fg: #1A4478;
+
+  /* Semantic: Purple (ownership) */
+  --purple: #6B52B0;
+  --purple-bg: #EBE6F5;
+  --purple-fg: #3E2E78;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Border & Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --border-width: 1px;
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Surface */
+    --bg: #1C1B18;
+    --bg2: #252420;
+    --bg3: #2E2D28;
+    --fg: #E4E1D8;
+    --fg2: #9C9990;
+    --fg3: #6B6860;
+    --border: #3A3830;
+    --border2: #4A4840;
+
+    /* Semantic: Red (critical) */
+    --red: #E06B55;
+    --red-bg: #3A2420;
+    --red-fg: #F0A090;
+
+    /* Semantic: Amber (warning) */
+    --amber: #E0A030;
+    --amber-bg: #3A3018;
+    --amber-fg: #F0C870;
+
+    /* Semantic: Teal (healthy) */
+    --teal: #30B888;
+    --teal-bg: #1A3028;
+    --teal-fg: #80DDB8;
+
+    /* Semantic: Blue (coupling) */
+    --blue: #5090D0;
+    --blue-bg: #1A2838;
+    --blue-fg: #90C0E8;
+
+    /* Semantic: Purple (ownership) */
+    --purple: #9078D0;
+    --purple-bg: #28203A;
+    --purple-fg: #C0B0E8;
   }
 }
 
+/* ── Base Styles ───────────────────────────────────────────────────── */
+
 body {
-  background-color: #0a0a0f;
-  color: #e2e8f0;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
