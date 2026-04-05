@@ -1,10 +1,29 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { GitloreReport } from '@gitlore/core';
 import Badge from './Badge';
 import { hotspotColor, fileName, filePath, fmt } from './theme';
 import type { StatsFilter } from './StatsBar';
 
+type SortKey = 'score' | 'churn' | 'loc';
+type SortDir = 'asc' | 'desc';
+
 export default function HotspotTable({ report, filter }: { report: GitloreReport; filter?: StatsFilter }) {
+  const [sortKey, setSortKey] = useState<SortKey>('score');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+  function toggleSort(key: SortKey) {
+    if (sortKey === key) {
+      setSortDir(d => d === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+  }
+
+  function sortIndicator(key: SortKey) {
+    if (sortKey !== key) return '';
+    return sortDir === 'desc' ? ' ▼' : ' ▲';
+  }
   const busFactorMap = useMemo(
     () => new Map(report.busFactors.files.map(f => [f.file, f])),
     [report]
@@ -35,10 +54,25 @@ export default function HotspotTable({ report, filter }: { report: GitloreReport
     [report]
   );
 
-  const sorted = useMemo(
-    () => [...report.hotspots.files].sort((a, b) => b.hotspotScore - a.hotspotScore).slice(0, 50),
-    [report]
-  );
+  const sorted = useMemo(() => {
+    const files = [...report.hotspots.files].slice(0, 50);
+    const mul = sortDir === 'desc' ? -1 : 1;
+    return files.sort((a, b) => {
+      let va: number, vb: number;
+      switch (sortKey) {
+        case 'churn':
+          va = churnMap.get(a.file)?.commitCount ?? 0;
+          vb = churnMap.get(b.file)?.commitCount ?? 0;
+          break;
+        case 'loc':
+          va = a.loc; vb = b.loc;
+          break;
+        default:
+          va = a.hotspotScore; vb = b.hotspotScore;
+      }
+      return mul * (va - vb);
+    });
+  }, [report, sortKey, sortDir, churnMap]);
 
   const cursedSet = useMemo(
     () => new Set(report.cursedFiles.map(f => f.file)),
@@ -88,9 +122,9 @@ export default function HotspotTable({ report, filter }: { report: GitloreReport
         }}>
           <span>File</span>
           <span>Signals</span>
-          <span>Score</span>
-          <span>Churn</span>
-          <span>LOC</span>
+          <span onClick={() => toggleSort('score')} style={{ cursor: 'pointer' }}>Score{sortIndicator('score')}</span>
+          <span onClick={() => toggleSort('churn')} style={{ cursor: 'pointer' }}>Churn{sortIndicator('churn')}</span>
+          <span onClick={() => toggleSort('loc')} style={{ cursor: 'pointer' }}>LOC{sortIndicator('loc')}</span>
           <span>Severity</span>
         </div>
 
