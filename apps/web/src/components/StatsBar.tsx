@@ -13,17 +13,15 @@ interface CellProps {
   label: string;
   value: number;
   color: string;
-  hint: string;
   filterId: StatsFilter;
   active: StatsFilter;
   onFilter: (filter: StatsFilter) => void;
 }
 
-function Cell({ label, value, color, hint, filterId, active, onFilter }: CellProps) {
+function Cell({ label, value, color, filterId, active, onFilter }: CellProps) {
   const isActive = active === filterId;
   return (
     <button
-      title={hint}
       onClick={() => onFilter(filterId)}
       style={{
         background: isActive ? 'var(--bg3)' : 'var(--bg)',
@@ -73,31 +71,11 @@ export function StatsBar({ report, active, onFilter }: StatsBarProps) {
 
   return (
     <div className="grid-stats">
-      <Cell
-        label="Critical Hotspots" value={criticalHotspots} color="var(--red)"
-        hint="Files with high churn and high complexity — the most expensive code to maintain"
-        filterId="critical" active={active} onFilter={onFilter}
-      />
-      <Cell
-        label="Warnings" value={warnings} color="var(--amber)"
-        hint="Files showing early signs of churn × complexity risk — not critical yet, but worth watching"
-        filterId="warning" active={active} onFilter={onFilter}
-      />
-      <Cell
-        label="Cursed Files" value={cursedFiles} color="var(--amber)"
-        hint="Files hit by multiple risk signals at once: high churn, concentrated ownership, shame commits, or age anomalies"
-        filterId="cursed" active={active} onFilter={onFilter}
-      />
-      <Cell
-        label="Bus Factor Risk" value={busFactorRisk} color="var(--red)"
-        hint="Files where a single author owns 80%+ of commits — if they leave, knowledge walks out the door"
-        filterId="busfactor" active={active} onFilter={onFilter}
-      />
-      <Cell
-        label="Ghost Authors" value={ghostAuthors} color="var(--fg3)"
-        hint="Contributors who haven't committed in 6+ months but still own files in the codebase"
-        filterId={null} active={active} onFilter={onFilter}
-      />
+      <Cell label="Critical Hotspots" value={criticalHotspots} color="var(--red)" filterId="critical" active={active} onFilter={onFilter} />
+      <Cell label="Warnings" value={warnings} color="var(--amber)" filterId="warning" active={active} onFilter={onFilter} />
+      <Cell label="Cursed Files" value={cursedFiles} color="var(--amber)" filterId="cursed" active={active} onFilter={onFilter} />
+      <Cell label="Bus Factor Risk" value={busFactorRisk} color="var(--red)" filterId="busfactor" active={active} onFilter={onFilter} />
+      <Cell label="Ghost Authors" value={ghostAuthors} color="var(--fg3)" filterId={null} active={active} onFilter={onFilter} />
     </div>
   );
 }
