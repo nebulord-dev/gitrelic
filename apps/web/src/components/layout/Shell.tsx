@@ -1,5 +1,6 @@
 import type { GitloreReport } from "@gitlore/core";
 import { useSelection } from "../../hooks/useSelection";
+import { ChurnTreemap } from "../hero/ChurnTreemap";
 import { BottomPanel } from "./BottomPanel";
 import { InspectorPanel } from "./InspectorPanel";
 import { MetricsStrip } from "./MetricsStrip";
@@ -51,20 +52,54 @@ export function Shell({ report }: ShellProps) {
               flex: 1,
               minHeight: 0,
               padding: "var(--space-md)",
-              overflow: "auto",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
             <div
               style={{
-                color: "var(--text-tertiary)",
                 display: "flex",
+                justifyContent: "space-between",
                 alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-                fontSize: 12,
+                marginBottom: 12,
+                flexShrink: 0,
               }}
             >
-              Hero visualization (treemap) — Task 18
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
+                Repository Map
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 2,
+                  background: "var(--surface-tertiary)",
+                  borderRadius: 6,
+                  padding: 2,
+                }}
+              >
+                {["Treemap", "Ownership", "Coupling", "Graph"].map((label, i) => (
+                  <span
+                    key={label}
+                    style={{
+                      padding: "4px 10px",
+                      borderRadius: 4,
+                      fontSize: 10,
+                      cursor: "pointer",
+                      color: i === 0 ? "var(--text-primary)" : "var(--text-secondary)",
+                      background: i === 0 ? "var(--surface-elevated)" : "transparent",
+                    }}
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div style={{ flex: 1, minHeight: 0 }}>
+              <ChurnTreemap
+                report={report}
+                selectedFile={selection.selectedFile}
+                onSelectFile={selection.selectFile}
+              />
             </div>
           </div>
 
