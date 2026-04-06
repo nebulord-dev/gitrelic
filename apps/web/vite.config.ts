@@ -6,8 +6,9 @@ export default defineConfig({
   plugins: [tailwindcss(), react()],
   server: { port: 7777 },
   test: {
-    environment: "jsdom",
+    environment: "happy-dom",
     globals: true,
     setupFiles: ["./src/test-setup.ts"],
+    pool: "vmThreads",
   },
 });
