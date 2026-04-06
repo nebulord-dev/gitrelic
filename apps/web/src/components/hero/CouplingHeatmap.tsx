@@ -17,7 +17,7 @@ interface HeatmapCell {
 }
 
 const ROW_LABEL_WIDTH = 140;
-const COL_HEADER_HEIGHT = 100;
+const COL_HEADER_HEIGHT = 160;
 const MIN_CELL = 24;
 
 function getDirectory(filePath: string): string {
