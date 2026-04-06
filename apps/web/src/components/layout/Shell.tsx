@@ -1,5 +1,6 @@
 import { useSelection } from '../../hooks/useSelection';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
+import { HotspotScatter } from '../hero/HotspotScatter';
 import { OwnershipBubble } from '../hero/OwnershipBubble';
 import { BottomPanel } from './BottomPanel';
 import { InspectorPanel } from './InspectorPanel';
@@ -129,20 +130,29 @@ export function Shell({ report }: ShellProps) {
                   onSelectFile={selection.selectFile}
                 />
               )}
-              {selection.activeHeroViz !== 'treemap' && selection.activeHeroViz !== 'ownership' && (
-                <div
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--text-tertiary)',
-                    fontSize: 12,
-                  }}
-                >
-                  {selection.activeHeroViz} — coming soon
-                </div>
+              {selection.activeHeroViz === 'scatter' && (
+                <HotspotScatter
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
               )}
+              {selection.activeHeroViz !== 'treemap' &&
+                selection.activeHeroViz !== 'ownership' &&
+                selection.activeHeroViz !== 'scatter' && (
+                  <div
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--text-tertiary)',
+                      fontSize: 12,
+                    }}
+                  >
+                    {selection.activeHeroViz} — coming soon
+                  </div>
+                )}
             </div>
           </div>
 
