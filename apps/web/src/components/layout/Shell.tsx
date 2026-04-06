@@ -6,7 +6,18 @@ import { MetricsStrip } from './MetricsStrip';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 
+import type { HeroViz } from '../../hooks/useSelection';
 import type { GitloreReport } from '@gitlore/core';
+
+const HERO_VIZZES: { id: HeroViz; label: string }[] = [
+  { id: 'treemap', label: 'Treemap' },
+  { id: 'ownership', label: 'Ownership' },
+  { id: 'coupling', label: 'Coupling' },
+  { id: 'commit-graph', label: 'Graph' },
+  { id: 'scatter', label: 'Scatter' },
+  { id: 'timeline', label: 'Timeline' },
+  { id: 'swimlanes', label: 'Swimlanes' },
+];
 
 interface ShellProps {
   report: GitloreReport;
@@ -78,29 +89,52 @@ export function Shell({ report }: ShellProps) {
                   padding: 2,
                 }}
               >
-                {['Treemap', 'Ownership', 'Coupling', 'Graph'].map((label, i) => (
+                {HERO_VIZZES.map((viz) => (
                   <span
-                    key={label}
+                    key={viz.id}
+                    onClick={() => selection.setActiveHeroViz(viz.id)}
                     style={{
                       padding: '4px 10px',
                       borderRadius: 4,
                       fontSize: 10,
                       cursor: 'pointer',
-                      color: i === 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
-                      background: i === 0 ? 'var(--surface-elevated)' : 'transparent',
+                      color:
+                        selection.activeHeroViz === viz.id
+                          ? 'var(--text-primary)'
+                          : 'var(--text-secondary)',
+                      background:
+                        selection.activeHeroViz === viz.id
+                          ? 'var(--surface-elevated)'
+                          : 'transparent',
                     }}
                   >
-                    {label}
+                    {viz.label}
                   </span>
                 ))}
               </div>
             </div>
             <div style={{ flex: 1, minHeight: 0 }}>
-              <ChurnTreemap
-                report={report}
-                selectedFile={selection.selectedFile}
-                onSelectFile={selection.selectFile}
-              />
+              {selection.activeHeroViz === 'treemap' && (
+                <ChurnTreemap
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
+              )}
+              {selection.activeHeroViz !== 'treemap' && (
+                <div
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--text-tertiary)',
+                    fontSize: 12,
+                  }}
+                >
+                  {selection.activeHeroViz} — coming soon
+                </div>
+              )}
             </div>
           </div>
 
