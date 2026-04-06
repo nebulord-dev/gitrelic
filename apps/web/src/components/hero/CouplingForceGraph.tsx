@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation } from 'd3-force';
+import { forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY } from 'd3-force';
 
 import { categoryColor } from '../../utils/colors';
 
@@ -86,6 +86,7 @@ export function CouplingForceGraph({
     }));
     const simLinks = links.map((l) => ({ ...l }));
 
+    const padding = 30;
     const sim = forceSimulation(simNodes)
       .force(
         'link',
@@ -95,14 +96,18 @@ export function CouplingForceGraph({
           .strength((d: any) => d.strength * 0.5),
       )
       .force('charge', forceManyBody().strength(-200))
-      .force('center', forceCenter(dims.width / 2, dims.height / 2))
+      .force('x', forceX(dims.width / 2).strength(0.1))
+      .force('y', forceY(dims.height / 2).strength(0.1))
       .force('collide', forceCollide().radius(20))
       .velocityDecay(0.3);
 
     sim.on('tick', () => {
       const positions = new Map<string, { x: number; y: number }>();
       for (const n of simNodes) {
-        positions.set(n.id, { x: n.x ?? 0, y: n.y ?? 0 });
+        // Clamp to SVG bounds
+        n.x = Math.max(padding, Math.min(dims.width - padding, n.x ?? 0));
+        n.y = Math.max(padding, Math.min(dims.height - padding, n.y ?? 0));
+        positions.set(n.id, { x: n.x, y: n.y });
       }
       setNodePositions(new Map(positions));
     });
