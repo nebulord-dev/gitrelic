@@ -58,6 +58,13 @@ export function binCommitsForHeatmap(commits: RawCommit[]): HeatmapData {
 export function CommitHeatmap({ commits }: CommitHeatmapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(800);
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    email: string;
+    count: number;
+    week: Date;
+  } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -73,7 +80,10 @@ export function CommitHeatmap({ commits }: CommitHeatmapProps) {
   const cellW = Math.max((width - LABEL_WIDTH) / (weeks.length || 1), 2);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+    <div
+      ref={containerRef}
+      style={{ width: '100%', height: '100%', overflow: 'auto', position: 'relative' }}
+    >
       {authors.map((email, ai) => {
         const color = authorColor(email);
         const name = email.split('@')[0];
@@ -107,17 +117,51 @@ export function CommitHeatmap({ commits }: CommitHeatmapProps) {
                     borderRadius: 2,
                     cursor: count > 0 ? 'pointer' : 'default',
                   }}
-                  title={
+                  onMouseEnter={
                     count > 0
-                      ? `${email}: ${count} commits (week of ${weeks[wi].toISOString().slice(0, 10)})`
+                      ? (e) => {
+                          const rect = containerRef.current?.getBoundingClientRect();
+                          if (!rect) return;
+                          setTooltip({
+                            x: e.clientX - rect.left,
+                            y: e.clientY - rect.top,
+                            email,
+                            count,
+                            week: weeks[wi],
+                          });
+                        }
                       : undefined
                   }
+                  onMouseLeave={count > 0 ? () => setTooltip(null) : undefined}
                 />
               ))}
             </div>
           </div>
         );
       })}
+      {tooltip && (
+        <div
+          style={{
+            position: 'absolute',
+            left: tooltip.x + 12,
+            top: tooltip.y - 8,
+            background: 'var(--surface-elevated)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 4,
+            padding: '6px 10px',
+            fontSize: 10,
+            color: 'var(--text-primary)',
+            pointerEvents: 'none',
+            zIndex: 20,
+            maxWidth: 300,
+          }}
+        >
+          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.email}</div>
+          <div style={{ color: 'var(--text-secondary)' }}>
+            {tooltip.count} commits · week of {tooltip.week.toISOString().slice(0, 10)}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

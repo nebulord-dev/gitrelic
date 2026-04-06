@@ -18,6 +18,7 @@ const PADDING_LEFT = 40;
 export function CommitDAG({ commits, selectedFile, onSelectFile }: CommitDAGProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(800);
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; commit: RawCommit } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -36,7 +37,10 @@ export function CommitDAG({ commits, selectedFile, onSelectFile }: CommitDAGProp
   const totalHeight = displayed.length * ROW_HEIGHT + 40;
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+    <div
+      ref={containerRef}
+      style={{ width: '100%', height: '100%', overflow: 'auto', position: 'relative' }}
+    >
       <svg width={width} height={totalHeight}>
         <line
           x1={PADDING_LEFT}
@@ -60,6 +64,12 @@ export function CommitDAG({ commits, selectedFile, onSelectFile }: CommitDAGProp
                 if (topFile) onSelectFile(topFile);
               }}
               style={{ cursor: topFile ? 'pointer' : 'default' }}
+              onMouseEnter={(e) => {
+                const rect = containerRef.current?.getBoundingClientRect();
+                if (!rect) return;
+                setTooltip({ x: e.clientX - rect.left, y: e.clientY - rect.top, commit });
+              }}
+              onMouseLeave={() => setTooltip(null)}
             >
               {i < displayed.length - 1 && (
                 <line
@@ -107,6 +117,31 @@ export function CommitDAG({ commits, selectedFile, onSelectFile }: CommitDAGProp
           );
         })}
       </svg>
+      {tooltip && (
+        <div
+          style={{
+            position: 'absolute',
+            left: tooltip.x + 12,
+            top: tooltip.y - 8,
+            background: 'var(--surface-elevated)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 4,
+            padding: '6px 10px',
+            fontSize: 10,
+            color: 'var(--text-primary)',
+            pointerEvents: 'none',
+            zIndex: 20,
+            maxWidth: 350,
+          }}
+        >
+          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.commit.message}</div>
+          <div style={{ color: 'var(--text-secondary)' }}>
+            {tooltip.commit.authorName} · {tooltip.commit.date.slice(0, 10)} ·{' '}
+            {tooltip.commit.files.length} files · +{tooltip.commit.insertions}/ -
+            {tooltip.commit.deletions}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

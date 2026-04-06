@@ -62,6 +62,7 @@ export function CouplingForceGraph({
   const [nodePositions, setNodePositions] = useState<Map<string, { x: number; y: number }>>(
     new Map(),
   );
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; node: GraphNode } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -123,6 +124,15 @@ export function CouplingForceGraph({
 
   const fileName = (path: string) => path.split('/').pop() ?? path;
 
+  const partnerCount = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const l of links) {
+      counts.set(l.source, (counts.get(l.source) ?? 0) + 1);
+      counts.set(l.target, (counts.get(l.target) ?? 0) + 1);
+    }
+    return counts;
+  }, [links]);
+
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
       <svg width={dims.width} height={dims.height}>
@@ -149,7 +159,17 @@ export function CouplingForceGraph({
           const showLabel = r > 8;
 
           return (
-            <g key={n.id} onClick={() => onSelectFile(n.id)} style={{ cursor: 'pointer' }}>
+            <g
+              key={n.id}
+              onClick={() => onSelectFile(n.id)}
+              style={{ cursor: 'pointer' }}
+              onMouseEnter={(e) => {
+                const rect = containerRef.current?.getBoundingClientRect();
+                if (!rect) return;
+                setTooltip({ x: e.clientX - rect.left, y: e.clientY - rect.top, node: n });
+              }}
+              onMouseLeave={() => setTooltip(null)}
+            >
               <circle
                 cx={pos.x}
                 cy={pos.y}
@@ -174,6 +194,30 @@ export function CouplingForceGraph({
           );
         })}
       </svg>
+      {tooltip && (
+        <div
+          style={{
+            position: 'absolute',
+            left: tooltip.x + 12,
+            top: tooltip.y - 8,
+            background: 'var(--surface-elevated)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 4,
+            padding: '6px 10px',
+            fontSize: 10,
+            color: 'var(--text-primary)',
+            pointerEvents: 'none',
+            zIndex: 20,
+            maxWidth: 300,
+          }}
+        >
+          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.node.id}</div>
+          <div style={{ color: 'var(--text-secondary)' }}>
+            Score: {tooltip.node.hotspotScore} · {tooltip.node.category} ·{' '}
+            {partnerCount.get(tooltip.node.id) ?? 0} partners
+          </div>
+        </div>
+      )}
     </div>
   );
 }
