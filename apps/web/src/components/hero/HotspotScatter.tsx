@@ -54,6 +54,9 @@ export function prepareScatterData(report: GitloreReport): ScatterPoint[] {
 export function HotspotScatter({ report, selectedFile, onSelectFile }: HotspotScatterProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; point: ScatterPoint } | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -105,6 +108,16 @@ export function HotspotScatter({ report, selectedFile, onSelectFile }: HotspotSc
             Churn (commits)
           </text>
 
+          {/* X axis ticks */}
+          {xScale.ticks(5).map((tick) => (
+            <g key={`x-${tick}`} transform={`translate(${xScale(tick)},${plotH})`}>
+              <line y2={4} stroke="var(--border-primary)" />
+              <text y={14} textAnchor="middle" fontSize={8} fill="var(--text-tertiary)">
+                {tick}
+              </text>
+            </g>
+          ))}
+
           {/* Y axis */}
           <line x1={0} y1={0} x2={0} y2={plotH} stroke="var(--border-primary)" />
           <text
@@ -115,6 +128,22 @@ export function HotspotScatter({ report, selectedFile, onSelectFile }: HotspotSc
           >
             Lines of Code
           </text>
+
+          {/* Y axis ticks */}
+          {yScale.ticks(5).map((tick) => (
+            <g key={`y-${tick}`} transform={`translate(0,${yScale(tick)})`}>
+              <line x2={-4} stroke="var(--border-primary)" />
+              <text
+                x={-8}
+                textAnchor="end"
+                dominantBaseline="central"
+                fontSize={8}
+                fill="var(--text-tertiary)"
+              >
+                {tick}
+              </text>
+            </g>
+          ))}
 
           {/* Data points */}
           {points.map((p) => {
@@ -133,12 +162,48 @@ export function HotspotScatter({ report, selectedFile, onSelectFile }: HotspotSc
                 stroke={isSelected ? 'var(--accent-primary)' : categoryColor(p.category, 0.7)}
                 strokeWidth={isSelected ? 2.5 : 1}
                 onClick={() => onSelectFile(p.file)}
+                onMouseEnter={(e) => {
+                  const rect = containerRef.current?.getBoundingClientRect();
+                  if (rect) {
+                    setTooltip({
+                      x: e.clientX - rect.left,
+                      y: e.clientY - rect.top,
+                      point: p,
+                    });
+                  }
+                }}
+                onMouseLeave={() => setTooltip(null)}
                 style={{ cursor: 'pointer' }}
               />
             );
           })}
         </g>
       </svg>
+      {tooltip && (
+        <div
+          style={{
+            position: 'absolute',
+            left: tooltip.x + 12,
+            top: tooltip.y - 8,
+            background: 'var(--surface-elevated)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 4,
+            padding: '6px 10px',
+            fontSize: 10,
+            color: 'var(--text-primary)',
+            pointerEvents: 'none',
+            zIndex: 20,
+            maxWidth: 250,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.point.file}</div>
+          <div style={{ color: 'var(--text-secondary)' }}>
+            Churn: {tooltip.point.churn} commits · LOC: {tooltip.point.loc} · Score:{' '}
+            {tooltip.point.hotspotScore}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

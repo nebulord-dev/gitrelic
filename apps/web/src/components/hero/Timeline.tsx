@@ -75,6 +75,7 @@ export function binCommitsByWeek(commits: RawCommit[]): {
 export function Timeline({ report, selectedContributor, onSelectContributor }: TimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
+  const [hoverWeek, setHoverWeek] = useState<number | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -115,12 +116,15 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
   const plotW = dims.width - PADDING.left - PADDING.right;
   const plotH = dims.height - PADDING.top - PADDING.bottom;
 
-  const paths = useMemo(() => {
-    if (weeks.length === 0) return [];
-
-    const xScale = scaleTime()
+  const xScale = useMemo(() => {
+    if (weeks.length === 0) return null;
+    return scaleTime()
       .domain([weeks[0].weekStart, weeks[weeks.length - 1].weekStart])
       .range([0, plotW]);
+  }, [weeks, plotW]);
+
+  const paths = useMemo(() => {
+    if (weeks.length === 0 || !xScale) return [];
 
     const stacker = stack<Record<string, number | Date>>()
       .keys(stackKeys)
@@ -141,7 +145,7 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
       key: s.key,
       d: areaGen(s as unknown as [number, number][]) ?? '',
     }));
-  }, [weeks, stackKeys, stackData, plotW, plotH]);
+  }, [weeks, xScale, stackKeys, stackData, plotH]);
 
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -149,6 +153,30 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
         <g transform={`translate(${PADDING.left},${PADDING.top})`}>
           {/* X axis line */}
           <line x1={0} y1={plotH} x2={plotW} y2={plotH} stroke="var(--border-primary)" />
+
+          {/* Time axis labels */}
+          {xScale &&
+            xScale.ticks(6).map((date) => {
+              const x = xScale(date);
+              return (
+                <g key={date.toISOString()} transform={`translate(${x},${plotH})`}>
+                  <line y2={4} stroke="var(--border-primary)" />
+                  <text y={16} textAnchor="middle" fontSize={8} fill="var(--text-tertiary)">
+                    {date.toLocaleDateString('en', { month: 'short', year: '2-digit' })}
+                  </text>
+                </g>
+              );
+            })}
+
+          {/* Author color legend */}
+          {displayAuthors.map((email, i) => (
+            <g key={email} transform={`translate(${plotW - 100}, ${i * 14 + 4})`}>
+              <rect width={8} height={8} rx={2} fill={authorColor(email)} fillOpacity={0.5} />
+              <text x={12} y={7} fontSize={8} fill="var(--text-secondary)">
+                {email.split('@')[0]}
+              </text>
+            </g>
+          ))}
 
           {/* Stacked areas */}
           {paths.map(({ key, d }) => {
@@ -173,8 +201,101 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
               />
             );
           })}
+
+          {/* Hover vertical line */}
+          {hoverWeek != null && xScale && (
+            <line
+              x1={xScale(weeks[hoverWeek].weekStart)}
+              y1={0}
+              x2={xScale(weeks[hoverWeek].weekStart)}
+              y2={plotH}
+              stroke="var(--text-tertiary)"
+              strokeWidth={1}
+              strokeDasharray="2,2"
+            />
+          )}
+
+          {/* Mouse tracking overlay — must be last so it's on top */}
+          <rect
+            x={0}
+            y={0}
+            width={plotW}
+            height={plotH}
+            fill="transparent"
+            onMouseMove={(e) => {
+              if (!xScale) return;
+              const rect = containerRef.current?.getBoundingClientRect();
+              if (!rect) return;
+              const mouseX = e.clientX - rect.left - PADDING.left;
+              const date = xScale.invert(mouseX);
+              const idx = weeks.findIndex((w, i) => {
+                const next = weeks[i + 1];
+                return !next || date < next.weekStart;
+              });
+              setHoverWeek(idx >= 0 ? idx : null);
+            }}
+            onMouseLeave={() => setHoverWeek(null)}
+          />
         </g>
       </svg>
+
+      {/* Hover tooltip */}
+      {hoverWeek != null && xScale && (
+        <div
+          style={{
+            position: 'absolute',
+            left: PADDING.left + xScale(weeks[hoverWeek].weekStart) + 12,
+            top: PADDING.top,
+            background: 'var(--surface-elevated)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 4,
+            padding: '6px 10px',
+            fontSize: 10,
+            color: 'var(--text-primary)',
+            pointerEvents: 'none',
+            zIndex: 20,
+          }}
+        >
+          <div style={{ fontWeight: 600, marginBottom: 4 }}>
+            {weeks[hoverWeek].weekStart.toLocaleDateString('en', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </div>
+          {stackKeys
+            .filter(
+              (k) => (weeks[hoverWeek].counts[k] ?? 0) > 0 || (k === '__others__' && hasOthers),
+            )
+            .map((key) => {
+              const count =
+                key === '__others__'
+                  ? authors
+                      .slice(MAX_AUTHORS)
+                      .reduce((sum, a) => sum + (weeks[hoverWeek].counts[a] ?? 0), 0)
+                  : (weeks[hoverWeek].counts[key] ?? 0);
+              if (count === 0) return null;
+              return (
+                <div
+                  key={key}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 1 }}
+                >
+                  <div
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: 3,
+                      background: key === '__others__' ? 'var(--text-tertiary)' : authorColor(key),
+                    }}
+                  />
+                  <span style={{ color: 'var(--text-secondary)' }}>
+                    {key === '__others__' ? 'Others' : key.split('@')[0]}: {count}
+                  </span>
+                </div>
+              );
+            })}
+        </div>
+      )}
     </div>
   );
 }
