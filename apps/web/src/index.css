@@ -1,218 +1,119 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
-/* ── Design Tokens ─────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════
+   GitLore — Semantic Design Tokens (Dark Theme Default)
+   ═══════════════════════════════════════════════════ */
 
 :root {
-  /* Surface */
-  --bg: #F5F2EC;
-  --bg2: #EEEBE4;
-  --bg3: #E6E3DC;
-  --fg: #1A1A18;
-  --fg2: #6B6860;
-  --fg3: #9C9990;
-  --border: #D4D1C8;
-  --border2: #C2BFB6;
+  /* Layer 1: Surface */
+  --surface-primary: #0d1117;
+  --surface-secondary: #161b22;
+  --surface-tertiary: #21262d;
+  --surface-elevated: #2d333b;
 
-  /* Semantic: Red (critical) */
-  --red: #C4503A;
-  --red-bg: #F5E6E2;
-  --red-fg: #8A3122;
+  /* Layer 2: Borders */
+  --border-primary: rgba(255, 255, 255, 0.06);
+  --border-secondary: rgba(255, 255, 255, 0.12);
+  --border-focus: #58a6ff;
 
-  /* Semantic: Amber (warning) */
-  --amber: #B87A1A;
-  --amber-bg: #F5EDD8;
-  --amber-fg: #7A5010;
+  /* Layer 3: Text */
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-tertiary: #484f58;
+  --text-inverse: #0d1117;
 
-  /* Semantic: Teal (healthy) */
-  --teal: #1A8C6A;
-  --teal-bg: #E0F0E8;
-  --teal-fg: #0E5E48;
+  /* Layer 4: Severity */
+  --severity-critical: #f85149;
+  --severity-critical-bg: rgba(248, 81, 73, 0.15);
+  --severity-critical-text: #ffa198;
+  --severity-warning: #d29922;
+  --severity-warning-bg: rgba(210, 153, 34, 0.15);
+  --severity-warning-text: #e0b040;
+  --severity-moderate: #58a6ff;
+  --severity-moderate-bg: rgba(88, 166, 255, 0.12);
+  --severity-moderate-text: #79c0ff;
+  --severity-healthy: #3fb950;
+  --severity-healthy-bg: rgba(63, 185, 80, 0.12);
+  --severity-healthy-text: #56d364;
 
-  /* Semantic: Blue (coupling) */
-  --blue: #2E6CB8;
-  --blue-bg: #E2EDF8;
-  --blue-fg: #1A4478;
+  /* Layer 5: Accent / Domain */
+  --accent-ownership: #a371f7;
+  --accent-ownership-bg: rgba(163, 113, 247, 0.12);
+  --accent-ownership-text: #c9b1f7;
+  --accent-coupling: #58a6ff;
+  --accent-coupling-bg: rgba(88, 166, 255, 0.12);
+  --accent-coupling-text: #79c0ff;
+  --accent-temporal: #39d353;
+  --accent-temporal-bg: rgba(57, 211, 83, 0.12);
+  --accent-temporal-text: #6ee77a;
+  --accent-primary: #58a6ff;
 
-  /* Semantic: Purple (ownership) */
-  --purple: #6B52B0;
-  --purple-bg: #EBE6F5;
-  --purple-fg: #3E2E78;
+  /* Layer 6: Component */
+  --panel-resize-handle: rgba(255, 255, 255, 0.08);
+  --panel-resize-handle-hover: rgba(255, 255, 255, 0.2);
+  --nav-item-active-bg: rgba(88, 166, 255, 0.1);
+  --nav-badge-critical: #da3633;
+  --nav-badge-warning: #9e6a03;
+  --tooltip-bg: #2d333b;
+  --tooltip-text: #e6edf3;
 
   /* Spacing */
-  --space-xs: 0.5rem;    /* 8px */
-  --space-sm: 0.75rem;   /* 12px */
-  --space-md: 1rem;      /* 16px */
-  --space-lg: 1.5rem;    /* 24px */
-  --space-xl: 2rem;      /* 32px */
-
-  /* Border & Radius */
-  --radius-sm: 3px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --border-width: 0.5px;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
 
   /* Typography */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "SF Mono", "Cascadia Code", "Fira Code", "JetBrains Mono", monospace;
+
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Surface */
-    --bg: #1C1B18;
-    --bg2: #252420;
-    --bg3: #2E2D28;
-    --fg: #E4E1D8;
-    --fg2: #9C9990;
-    --fg3: #6B6860;
-    --border: #3A3830;
-    --border2: #4A4840;
+/* ─── Base ─── */
 
-    /* Semantic: Red (critical) */
-    --red: #E06B55;
-    --red-bg: #3A2420;
-    --red-fg: #F0A090;
-
-    /* Semantic: Amber (warning) */
-    --amber: #E0A030;
-    --amber-bg: #3A3018;
-    --amber-fg: #F0C870;
-
-    /* Semantic: Teal (healthy) */
-    --teal: #30B888;
-    --teal-bg: #1A3028;
-    --teal-fg: #80DDB8;
-
-    /* Semantic: Blue (coupling) */
-    --blue: #5090D0;
-    --blue-bg: #1A2838;
-    --blue-fg: #90C0E8;
-
-    /* Semantic: Purple (ownership) */
-    --purple: #9078D0;
-    --purple-bg: #28203A;
-    --purple-fg: #C0B0E8;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
 }
 
-/* ── Base Styles ───────────────────────────────────────────────────── */
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
 
 body {
-  background-color: var(--bg);
-  color: var(--fg);
   font-family: var(--font-sans);
-  line-height: 1.5;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface-primary);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Tooltip ──────────────────────────────────────────────────────── */
+/* ─── Scrollbars (thin, subtle) ─── */
 
-.tooltip-wrap {
-  position: relative;
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
-.tooltip-wrap .tooltip {
-  display: none;
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 20;
-  background: var(--bg2);
-  border: 0.5px solid var(--border2);
-  border-radius: var(--radius-md);
-  padding: 8px 12px;
-  white-space: nowrap;
-  font-size: 11px;
-  line-height: 1.6;
-  color: var(--fg2);
-  pointer-events: none;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
-.tooltip-wrap:hover .tooltip {
-  display: block;
+::-webkit-scrollbar-thumb {
+  background: var(--border-secondary);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
 }
 
-/* ── Responsive Grid Layouts ──────────────────────────────────────── */
+/* ─── Utility ─── */
 
-.grid-stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1px;
-  background: var(--border);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.grid-three {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-lg);
-}
-
-.grid-two {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-lg);
-}
-
-/* Mobile: stacked card layout for hotspot rows */
-.hotspot-header { display: none; }
-
-.hotspot-row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px 12px;
-  border-bottom: 0.5px solid var(--border);
-}
-
-.hotspot-row-stats {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.grid-age {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1px;
-  background: var(--border);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-@media (min-width: 640px) {
-  .grid-age {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  .grid-stats {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .grid-two {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 900px) {
-  .grid-stats {
-    grid-template-columns: repeat(5, 1fr);
-  }
-  .grid-three {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  /* Desktop: switch hotspot rows back to grid layout */
-  .hotspot-header {
-    display: grid;
-    grid-template-columns: 1fr auto 80px 50px 50px auto;
-    gap: 0 16px;
-  }
-  .hotspot-row {
-    display: grid;
-    grid-template-columns: 1fr auto 80px 50px 50px auto;
-    gap: 0 16px;
-    flex-direction: unset;
-    align-items: center;
-    padding: 8px 12px;
-  }
-  .hotspot-row-stats { display: contents; }
+.font-mono {
+  font-family: var(--font-mono);
 }
