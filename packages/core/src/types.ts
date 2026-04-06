@@ -1,5 +1,7 @@
 // ─── Core report shape ────────────────────────────────────────────────────────
 
+import type { RawCommit } from './utils/git.js';
+
 export interface GitloreReport {
   timestamp: string;
   repoPath: string;
@@ -27,6 +29,7 @@ export interface GitloreReport {
   complexityTrend: ComplexityTrendReport;
   commitTiming: CommitTimingReport;
   renameTracking: RenameTrackingReport;
+  commits: RawCommit[];
 }
 
 // ─── Repo metadata ─────────────────────────────────────────────────────────────

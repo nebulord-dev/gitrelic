@@ -178,5 +178,6 @@ export async function runGitlore(options: RunGitloreOptions): Promise<GitloreRep
     complexityTrend,
     commitTiming,
     renameTracking,
+    commits,
   };
 }
