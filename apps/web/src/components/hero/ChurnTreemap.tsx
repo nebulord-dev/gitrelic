@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { hierarchy, treemap, treemapSquarify } from 'd3-hierarchy';
 
+import { categoryColor } from '../../utils/colors';
+
 // apps/web/src/components/hero/ChurnTreemap.tsx
 import type { GitloreReport } from '@gitlore/core';
 
@@ -62,19 +64,6 @@ function buildTree(report: GitloreReport): TreeNode {
   }
 
   return root;
-}
-
-function categoryColor(category: string, opacity: number): string {
-  switch (category) {
-    case 'critical':
-      return `rgba(248, 81, 73, ${opacity})`;
-    case 'warning':
-      return `rgba(210, 153, 34, ${opacity})`;
-    case 'moderate':
-      return `rgba(88, 166, 255, ${opacity})`;
-    default:
-      return `rgba(63, 185, 80, ${opacity})`;
-  }
 }
 
 export function ChurnTreemap({ report, selectedFile, onSelectFile }: ChurnTreemapProps) {
