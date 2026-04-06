@@ -39,6 +39,9 @@ function getNavGroups(report: GitloreReport): NavGroup[] {
           label: "Cursed Files",
           badge: report.cursedFiles.length,
         },
+        { id: "dead-code", label: "Dead Code", badge: report.deadCode.totalDeadFiles },
+        { id: "complexity", label: "Complexity" },
+        { id: "rewrites", label: "Rewrites" },
       ],
     },
     {
@@ -50,19 +53,28 @@ function getNavGroups(report: GitloreReport): NavGroup[] {
           badge: report.busFactors.criticalFiles.length,
         },
         { id: "coupling", label: "Coupling" },
+        { id: "ghost-files", label: "Ghost Files", badge: report.ghostFiles.totalGhostFiles },
+        { id: "knowledge", label: "Knowledge Silos" },
       ],
     },
     {
       label: "Team & Activity",
       items: [
         { id: "contributors", label: "Contributors" },
+        { id: "co-authors", label: "Co-Authors" },
+        { id: "timing", label: "Timing" },
         { id: "parallel-dev", label: "Parallel Dev" },
         { id: "shame", label: "Shame" },
       ],
     },
     {
       label: "Structure",
-      items: [{ id: "age-map", label: "Age Map" }],
+      items: [
+        { id: "age-map", label: "Age Map" },
+        { id: "languages", label: "Languages" },
+        { id: "test-coverage", label: "Test Coverage" },
+        { id: "renames", label: "Renames" },
+      ],
     },
   ];
 }
