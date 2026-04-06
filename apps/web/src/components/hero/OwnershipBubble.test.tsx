@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildOwnershipTree } from './OwnershipBubble';
+import { buildDirectoryBubbles } from './OwnershipBubble';
 
 import type { GitloreReport } from '@gitlore/core';
 
@@ -43,37 +43,89 @@ function makeReport(overrides: Partial<GitloreReport> = {}): GitloreReport {
   } as GitloreReport;
 }
 
-describe('buildOwnershipTree', () => {
-  it('creates hierarchy nodes with dominantAuthor', () => {
+describe('buildDirectoryBubbles', () => {
+  it('aggregates files by directory with dominant author', () => {
     const report = makeReport();
-    const tree = buildOwnershipTree(report);
-    expect(tree.name).toBe('root');
-    expect(tree.children).toBeDefined();
+    const dirs = buildDirectoryBubbles(report);
+    expect(dirs.length).toBeGreaterThan(0);
 
-    const leaves: { name: string; dominantAuthor?: string }[] = [];
-    const walk = (n: typeof tree) => {
-      if (!n.children?.length) leaves.push(n);
-      else n.children.forEach(walk);
-    };
-    walk(tree);
-
-    const app = leaves.find((l) => l.name === 'app.ts');
-    expect(app?.dominantAuthor).toBe('alice@dev.com');
-    const utils = leaves.find((l) => l.name === 'utils.ts');
-    expect(utils?.dominantAuthor).toBe('bob@dev.com');
+    const srcDir = dirs.find((d) => d.dirPath === 'src');
+    expect(srcDir).toBeDefined();
+    expect(srcDir!.totalLoc).toBe(200); // 150 + 50
+    expect(srcDir!.fileCount).toBe(2);
   });
 
-  it('uses LOC as value for bubble sizing', () => {
+  it('identifies dominant author per directory', () => {
     const report = makeReport();
-    const tree = buildOwnershipTree(report);
-    const leaves: { name: string; value?: number }[] = [];
-    const walk = (n: typeof tree) => {
-      if (!n.children?.length) leaves.push(n);
-      else n.children.forEach(walk);
-    };
-    walk(tree);
+    const dirs = buildDirectoryBubbles(report);
+    // Both files in src/ have different authors, but alice owns app.ts (bigger file count = 1 each, so either could be dominant)
+    const srcDir = dirs.find((d) => d.dirPath === 'src');
+    expect(srcDir?.dominantAuthor).toBeDefined();
+    expect(srcDir?.dominantPercent).toBeGreaterThan(0);
+  });
 
-    const app = leaves.find((l) => l.name === 'app.ts');
-    expect(app?.value).toBe(150);
+  it('uses totalLoc as bubble sizing value', () => {
+    const report = makeReport();
+    const dirs = buildDirectoryBubbles(report);
+    const srcDir = dirs.find((d) => d.dirPath === 'src');
+    expect(srcDir?.totalLoc).toBe(200);
+  });
+
+  it('handles files at root level (no directory)', () => {
+    const report = makeReport({
+      loc: {
+        totalFiles: 1,
+        totalLines: 100,
+        files: [{ file: 'README.md', lines: 100, language: 'Markdown' }],
+        languages: [],
+        summary: '',
+      },
+    });
+    const dirs = buildDirectoryBubbles(report);
+    const rootDir = dirs.find((d) => d.dirPath === '.');
+    expect(rootDir).toBeDefined();
+    expect(rootDir!.totalLoc).toBe(100);
+  });
+
+  it('uses 2-level deep key for nested paths', () => {
+    const report = makeReport({
+      loc: {
+        totalFiles: 2,
+        totalLines: 300,
+        files: [
+          { file: 'apps/web/App.tsx', lines: 200, language: 'TypeScript' },
+          { file: 'apps/cli/index.ts', lines: 100, language: 'TypeScript' },
+        ],
+        languages: [],
+        summary: '',
+      },
+      busFactors: {
+        files: [
+          {
+            file: 'apps/web/App.tsx',
+            uniqueAuthors: 1,
+            authors: ['alice@dev.com'],
+            dominantAuthor: 'alice@dev.com',
+            dominantAuthorPercent: 100,
+            risk: 'critical' as const,
+          },
+          {
+            file: 'apps/cli/index.ts',
+            uniqueAuthors: 1,
+            authors: ['bob@dev.com'],
+            dominantAuthor: 'bob@dev.com',
+            dominantAuthorPercent: 100,
+            risk: 'critical' as const,
+          },
+        ],
+        criticalFiles: [],
+        overallBusFactor: 1,
+        summary: '',
+      },
+    });
+    const dirs = buildDirectoryBubbles(report);
+    // 3-part paths → use 2-level key
+    expect(dirs.find((d) => d.dirPath === 'apps/web')).toBeDefined();
+    expect(dirs.find((d) => d.dirPath === 'apps/cli')).toBeDefined();
   });
 });
