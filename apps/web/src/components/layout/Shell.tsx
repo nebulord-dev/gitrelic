@@ -1,5 +1,6 @@
 import { useSelection } from '../../hooks/useSelection';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
+import { OwnershipBubble } from '../hero/OwnershipBubble';
 import { BottomPanel } from './BottomPanel';
 import { InspectorPanel } from './InspectorPanel';
 import { MetricsStrip } from './MetricsStrip';
@@ -121,7 +122,14 @@ export function Shell({ report }: ShellProps) {
                   onSelectFile={selection.selectFile}
                 />
               )}
-              {selection.activeHeroViz !== 'treemap' && (
+              {selection.activeHeroViz === 'ownership' && (
+                <OwnershipBubble
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
+              )}
+              {selection.activeHeroViz !== 'treemap' && selection.activeHeroViz !== 'ownership' && (
                 <div
                   style={{
                     flex: 1,
