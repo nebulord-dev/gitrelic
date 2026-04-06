@@ -54,6 +54,8 @@ Four-panel IDE-style layout with a metrics strip:
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+![alt text](redesign-mock.png)
+
 ### Panel Descriptions
 
 #### Top Bar
@@ -63,16 +65,22 @@ Four-panel IDE-style layout with a metrics strip:
 - Persistent across all views
 
 #### Left Sidebar (~200px)
-Navigation grouped by concern. Clicking a nav item changes the hero viz and auto-selects the relevant bottom panel tab.
+Navigation grouped by concern. The sidebar drives a **category-based tab filtering model**: clicking a group header or individual nav item controls which tabs appear in the bottom panel. Clicking an individual item (e.g., "Dead Code") switches to its parent group AND pre-selects that specific tab.
 
-**Groups:**
-- **Overview**: Dashboard (home), Health Score
+**Groups and their bottom panel tab sets:**
+
+- **Overview**: Dashboard (home), Health Score (T3)
+  - Bottom tabs: Hotspots, Cursed Files, Bus Factor, Churn Velocity, Ghost Files (the "greatest hits" — actionable signals a team developer wants at a glance)
 - **Code Health**: Hotspots, Cursed Files, Dead Code, Complexity, Rewrites
-- **Ownership & Risk**: Bus Factor, Ghost Files, Knowledge Silos, Coupling
+  - Bottom tabs: Hotspots, Cursed Files, Dead Code, Complexity Trend, Rewrite Ratio, Churn Velocity, Blast Radius
+- **Ownership & Risk**: Bus Factor, Coupling, Ghost Files, Knowledge Silos
+  - Bottom tabs: Bus Factor, Coupling, Ghost Files, Knowledge Silos
 - **Team & Activity**: Contributors, Co-Authors, Timing, Parallel Dev, Shame
+  - Bottom tabs: Contributors, Co-Authors, Commit Timing, Parallel Dev, Shame
 - **Structure**: Age Map, Languages, Test Coverage, Renames
+  - Bottom tabs: Age Map, Languages, Test Coverage, Renames
 
-Nav items show count badges for actionable items (e.g., Hotspots: 12, Cursed: 3, Bus Factor: 6).
+Nav items show count badges for actionable items (e.g., Hotspots: 12, Cursed: 3, Bus Factor: 6). Items for T2+ features that are not yet implemented show as disabled/grayed until their tab component exists.
 
 #### Metrics Strip (always visible, below top bar)
 The "should I be worried?" bar. Never changes when navigating.
@@ -407,7 +415,10 @@ Core layout shell + all currently-displayed data sources relocated to the new ar
 ### Tier 2 — Existing Data, Needs Viz
 Data already exists in GitloreReport but has no web visualization yet.
 
-- Bottom panel tabs: Dead Code, Complexity Trend, Rewrite Ratio, Churn Velocity, Blast Radius, Ghost Files, Knowledge Silos, Co-Authors, Commit Timing, Languages, Test Coverage, Renames
+- **Sidebar-driven tab filtering**: Restructure sidebar → bottom panel relationship so clicking a sidebar group controls which tabs are visible in the bottom panel. Add `activeGroup` to `useSelection` hook. Dashboard "greatest hits" default: Hotspots, Cursed Files, Bus Factor, Churn Velocity, Ghost Files.
+- **Sidebar expansion**: Add new nav items for T2 data sources (Dead Code, Complexity, Rewrites under Code Health; Ghost Files, Knowledge under Ownership & Risk; Co-Authors, Timing under Team & Activity; Languages, Test Coverage, Renames under Structure)
+- **12 new bottom panel tabs**: Dead Code, Complexity Trend, Rewrite Ratio, Churn Velocity, Blast Radius, Ghost Files, Knowledge Silos, Co-Authors, Commit Timing, Languages, Test Coverage, Renames
+- **Resize divider**: Draggable vertical resize handle on the bottom panel top edge
 - Inspector Activity tab
 - Light theme
 - Methodology drawer (KAN-79)
