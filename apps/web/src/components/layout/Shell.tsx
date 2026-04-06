@@ -1,5 +1,6 @@
 import { useSelection } from '../../hooks/useSelection';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
+import { CommitGraph } from '../hero/CommitGraph';
 import { ContributorSwimlanes } from '../hero/ContributorSwimlanes';
 import { CouplingGraph } from '../hero/CouplingGraph';
 import { HotspotScatter } from '../hero/HotspotScatter';
@@ -165,25 +166,13 @@ export function Shell({ report }: ShellProps) {
                   onSelectFile={selection.selectFile}
                 />
               )}
-              {selection.activeHeroViz !== 'treemap' &&
-                selection.activeHeroViz !== 'ownership' &&
-                selection.activeHeroViz !== 'scatter' &&
-                selection.activeHeroViz !== 'timeline' &&
-                selection.activeHeroViz !== 'swimlanes' &&
-                selection.activeHeroViz !== 'coupling' && (
-                  <div
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--text-tertiary)',
-                      fontSize: 12,
-                    }}
-                  >
-                    {selection.activeHeroViz} — coming soon
-                  </div>
-                )}
+              {selection.activeHeroViz === 'commit-graph' && (
+                <CommitGraph
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
+              )}
             </div>
           </div>
 
