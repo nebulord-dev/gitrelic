@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/TraceRicochet/gitlore/compare/v1.0.0...v1.1.0) (2026-04-06)
+
+
+### Features
+
+* **web:** IDE-style dashboard redesign (T1 + T2) ([#2](https://github.com/TraceRicochet/gitlore/issues/2)) ([685f9ed](https://github.com/TraceRicochet/gitlore/commit/685f9ed9cc98bc5c08a14a958b03fd599d9d601d))
+
 # 1.0.0 (2026-04-06)
 
 
