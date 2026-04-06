@@ -124,7 +124,7 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
             key={`col-${d}`}
             x={0}
             y={0}
-            transform={`translate(${ROW_LABEL_WIDTH + i * cellSize + cellSize / 2}, 100) rotate(-45)`}
+            transform={`translate(${ROW_LABEL_WIDTH + i * cellSize + cellSize / 2}, 150) rotate(-45)`}
             textAnchor="start"
             fontSize={9}
             fill={selectedDir === d ? 'var(--text-primary)' : 'var(--text-secondary)'}

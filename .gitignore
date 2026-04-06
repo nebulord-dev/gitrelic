@@ -8,7 +8,7 @@ dist/
 *.local
 coverage/
 .superpowers/
-
+.serena
 .claude/projects/
 .sickbay/history.json
 .sickbay/cache/
