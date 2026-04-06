@@ -174,7 +174,7 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
               return (
                 <rect
                   key={colDir}
-                  x={LABEL_SIZE + ci * cellSize}
+                  x={ROW_LABEL_WIDTH + ci * cellSize}
                   y={0}
                   width={cellSize - 1}
                   height={cellSize - 1}
