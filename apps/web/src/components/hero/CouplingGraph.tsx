@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
-import { CouplingChord } from './CouplingChord';
 import { CouplingForceGraph } from './CouplingForceGraph';
+import { CouplingHeatmap } from './CouplingHeatmap';
 
 import type { GitloreReport, CoupledPair } from '@gitlore/core';
 
@@ -34,5 +34,7 @@ export function CouplingGraph({ report, selectedFile, onSelectFile }: CouplingGr
     );
   }
 
-  return <CouplingChord report={report} selectedFile={selectedFile} onSelectFile={onSelectFile} />;
+  return (
+    <CouplingHeatmap report={report} selectedFile={selectedFile} onSelectFile={onSelectFile} />
+  );
 }
