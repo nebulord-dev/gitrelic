@@ -43,7 +43,10 @@ export function CommitBranches({ commits, selectedFile, onSelectFile }: CommitBr
     const sorted = [...byAuthor.entries()].sort((a, b) => b[1].length - a[1].length);
     const dates = commits.map((c) => new Date(c.date).getTime());
     const xScale = scaleTime()
-      .domain([new Date(Math.min(...dates)), new Date(Math.max(...dates))])
+      .domain([
+        new Date(dates.reduce((m, d) => (d < m ? d : m), dates[0])),
+        new Date(dates.reduce((m, d) => (d > m ? d : m), dates[0])),
+      ])
       .range([0, width - LABEL_WIDTH]);
 
     return {

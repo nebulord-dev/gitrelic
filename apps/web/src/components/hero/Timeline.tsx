@@ -9,9 +9,7 @@ import type { GitloreReport, RawCommit } from '@gitlore/core';
 
 interface TimelineProps {
   report: GitloreReport;
-  selectedFile: string | null;
   selectedContributor: string | null;
-  onSelectFile: (file: string) => void;
   onSelectContributor: (email: string) => void;
 }
 
@@ -42,8 +40,8 @@ export function binCommitsByWeek(commits: RawCommit[]): {
 
   // Find date range
   const dates = commits.map((c) => new Date(c.date).getTime());
-  const minDate = new Date(Math.min(...dates));
-  const maxDate = new Date(Math.max(...dates));
+  const minDate = new Date(dates.reduce((m, d) => (d < m ? d : m), dates[0]));
+  const maxDate = new Date(dates.reduce((m, d) => (d > m ? d : m), dates[0]));
 
   // Align to Monday
   const startMonday = new Date(minDate);
@@ -133,7 +131,7 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
 
     const series = stacker(stackData as Record<string, number>[]);
 
-    const maxY = Math.max(...series.flatMap((s) => s.map((d) => d[1])), 1);
+    const maxY = series.reduce((max, s) => s.reduce((m, d) => (d[1] > m ? d[1] : m), max), 1);
     const yScale = scaleLinear().domain([0, maxY]).range([plotH, 0]);
 
     const areaGen = area<[number, number]>()

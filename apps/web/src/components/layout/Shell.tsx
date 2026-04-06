@@ -144,9 +144,7 @@ export function Shell({ report }: ShellProps) {
               {selection.activeHeroViz === 'timeline' && (
                 <Timeline
                   report={report}
-                  selectedFile={selection.selectedFile}
                   selectedContributor={selection.selectedContributor}
-                  onSelectFile={selection.selectFile}
                   onSelectContributor={selection.selectContributor}
                 />
               )}

@@ -6,13 +6,12 @@ import type { RawCommit } from '@gitlore/core';
 
 interface CommitHeatmapProps {
   commits: RawCommit[];
-  selectedFile: string | null;
-  onSelectFile: (file: string) => void;
 }
 
 const ROW_HEIGHT = 24;
 const CELL_GAP = 2;
 const LABEL_WIDTH = 120;
+const MAX_AUTHORS = 15;
 
 export interface HeatmapData {
   grid: number[][];
@@ -31,8 +30,8 @@ export function binCommitsForHeatmap(commits: RawCommit[]): HeatmapData {
   const authorIdx = new Map(authors.map((a, i) => [a, i]));
 
   const dates = commits.map((c) => new Date(c.date).getTime());
-  const minDate = new Date(Math.min(...dates));
-  const maxDate = new Date(Math.max(...dates));
+  const minDate = new Date(dates.reduce((m, d) => (d < m ? d : m), dates[0]));
+  const maxDate = new Date(dates.reduce((m, d) => (d > m ? d : m), dates[0]));
   const startMonday = new Date(minDate);
   startMonday.setUTCDate(startMonday.getUTCDate() - ((startMonday.getUTCDay() + 6) % 7));
   startMonday.setUTCHours(0, 0, 0, 0);
@@ -52,7 +51,11 @@ export function binCommitsForHeatmap(commits: RawCommit[]): HeatmapData {
     if (wi >= 0 && wi < totalWeeks) grid[ai][wi]++;
   }
 
-  return { grid, authors, weeks };
+  return {
+    grid: grid.slice(0, MAX_AUTHORS),
+    authors: authors.slice(0, MAX_AUTHORS),
+    weeks,
+  };
 }
 
 export function CommitHeatmap({ commits }: CommitHeatmapProps) {
@@ -76,7 +79,7 @@ export function CommitHeatmap({ commits }: CommitHeatmapProps) {
   }, []);
 
   const { grid, authors, weeks } = useMemo(() => binCommitsForHeatmap(commits), [commits]);
-  const maxCount = Math.max(...grid.flat(), 1);
+  const maxCount = grid.reduce((max, row) => row.reduce((m, v) => (v > m ? v : m), max), 1);
   const cellW = Math.max((width - LABEL_WIDTH) / (weeks.length || 1), 2);
 
   return (

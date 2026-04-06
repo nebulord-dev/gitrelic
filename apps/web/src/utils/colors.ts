@@ -16,15 +16,16 @@ export function categoryColor(category: string, opacity: number): string {
 }
 
 /**
- * Deterministic author-to-color mapping via simple string hash.
+ * Deterministic string-to-color mapping via simple hash.
+ * Works on any string (emails, directory paths, etc.).
  * Returns an HSL color with fixed saturation/lightness for readability
- * on dark backgrounds. Visually distinct for ~12 authors, degrades
+ * on dark backgrounds. Visually distinct for ~12 values, degrades
  * gracefully beyond that (some hues will be close).
  */
-export function authorColor(email: string): string {
+export function authorColor(value: string): string {
   let hash = 0;
-  for (let i = 0; i < email.length; i++) {
-    hash = (hash * 31 + email.charCodeAt(i)) | 0;
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash * 31 + value.charCodeAt(i)) | 0;
   }
   const hue = ((hash % 360) + 360) % 360;
   return `hsl(${hue}, 65%, 60%)`;

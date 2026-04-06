@@ -5,6 +5,7 @@ import { forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY
 import { categoryColor } from '../../utils/colors';
 
 import type { GitloreReport, CoupledPair } from '@gitlore/core';
+import type { Simulation as D3Simulation } from 'd3-force';
 
 interface CouplingForceGraphProps {
   report: GitloreReport;
@@ -63,6 +64,9 @@ export function CouplingForceGraph({
     new Map(),
   );
   const [tooltip, setTooltip] = useState<{ x: number; y: number; node: GraphNode } | null>(null);
+  const simRef = useRef<D3Simulation<any, any> | null>(null);
+  const dimsRef = useRef(dims);
+  dimsRef.current = dims;
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -76,13 +80,15 @@ export function CouplingForceGraph({
 
   const { nodes, links } = useMemo(() => buildGraph(report.coupling.topPairs, report), [report]);
 
+  // Create simulation when data changes — uses dims from ref, not dependency
   useEffect(() => {
     if (nodes.length === 0) return;
 
+    const { width, height } = dimsRef.current;
     const simNodes = nodes.map((n) => ({
       ...n,
-      x: dims.width / 2 + (Math.random() - 0.5) * dims.width * 0.5,
-      y: dims.height / 2 + (Math.random() - 0.5) * dims.height * 0.5,
+      x: width / 2 + (Math.random() - 0.5) * width * 0.5,
+      y: height / 2 + (Math.random() - 0.5) * height * 0.5,
     }));
     const simLinks = links.map((l) => ({ ...l }));
 
@@ -96,26 +102,39 @@ export function CouplingForceGraph({
           .strength((d: any) => d.strength * 0.5),
       )
       .force('charge', forceManyBody().strength(-200))
-      .force('x', forceX(dims.width / 2).strength(0.1))
-      .force('y', forceY(dims.height / 2).strength(0.1))
+      .force('x', forceX(width / 2).strength(0.1))
+      .force('y', forceY(height / 2).strength(0.1))
       .force('collide', forceCollide().radius(20))
       .velocityDecay(0.3);
 
     sim.on('tick', () => {
+      const { width: w, height: h } = dimsRef.current;
       const positions = new Map<string, { x: number; y: number }>();
       for (const n of simNodes) {
-        // Clamp to SVG bounds
-        n.x = Math.max(padding, Math.min(dims.width - padding, n.x ?? 0));
-        n.y = Math.max(padding, Math.min(dims.height - padding, n.y ?? 0));
+        n.x = Math.max(padding, Math.min(w - padding, n.x ?? 0));
+        n.y = Math.max(padding, Math.min(h - padding, n.y ?? 0));
         positions.set(n.id, { x: n.x, y: n.y });
       }
       setNodePositions(new Map(positions));
     });
 
+    simRef.current = sim;
     return () => {
       sim.stop();
+      simRef.current = null;
     };
-  }, [nodes, links, dims.width, dims.height]);
+  }, [nodes, links]);
+
+  // On resize, nudge center forces — don't restart from scratch
+  useEffect(() => {
+    const sim = simRef.current;
+    if (!sim) return;
+    sim
+      .force('x', forceX(dims.width / 2).strength(0.1))
+      .force('y', forceY(dims.height / 2).strength(0.1))
+      .alpha(0.3)
+      .restart();
+  }, [dims.width, dims.height]);
 
   const rScale = useMemo(() => {
     const maxScore = Math.max(...nodes.map((n) => n.hotspotScore), 1);

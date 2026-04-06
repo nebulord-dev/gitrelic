@@ -105,13 +105,7 @@ export function CommitGraph({ report, selectedFile, onSelectFile }: CommitGraphP
             onSelectFile={onSelectFile}
           />
         )}
-        {mode === 'heatmap' && (
-          <CommitHeatmap
-            commits={commits}
-            selectedFile={selectedFile}
-            onSelectFile={onSelectFile}
-          />
-        )}
+        {mode === 'heatmap' && <CommitHeatmap commits={commits} />}
       </div>
     </div>
   );

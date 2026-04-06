@@ -56,8 +56,8 @@ export function prepareSwimlaneData(report: GitloreReport): SwimLane[] {
   // Date range for weekly binning
   if (commits.length === 0) return [];
   const allDates = commits.map((c) => new Date(c.date).getTime());
-  const minDate = new Date(Math.min(...allDates));
-  const maxDate = new Date(Math.max(...allDates));
+  const minDate = new Date(allDates.reduce((m, d) => (d < m ? d : m), allDates[0]));
+  const maxDate = new Date(allDates.reduce((m, d) => (d > m ? d : m), allDates[0]));
   const startMonday = new Date(minDate);
   startMonday.setUTCDate(startMonday.getUTCDate() - ((startMonday.getUTCDay() + 6) % 7));
   startMonday.setUTCHours(0, 0, 0, 0);
@@ -79,7 +79,12 @@ export function prepareSwimlaneData(report: GitloreReport): SwimLane[] {
     const isGhost = ghostAuthors.has(contrib.email) || !contrib.isActive;
     const lastActiveDate =
       authorCommits.length > 0
-        ? new Date(Math.max(...authorCommits.map((c) => c.date.getTime())))
+        ? new Date(
+            authorCommits.reduce((m, c) => {
+              const t = c.date.getTime();
+              return t > m ? t : m;
+            }, 0),
+          )
         : null;
 
     return {
@@ -124,7 +129,10 @@ export function ContributorSwimlanes({
     const commits = report.commits ?? [];
     if (commits.length === 0) return { min: new Date(), max: new Date() };
     const dates = commits.map((c) => new Date(c.date).getTime());
-    return { min: new Date(Math.min(...dates)), max: new Date(Math.max(...dates)) };
+    return {
+      min: new Date(dates.reduce((m, d) => (d < m ? d : m), dates[0])),
+      max: new Date(dates.reduce((m, d) => (d > m ? d : m), dates[0])),
+    };
   }, [report.commits]);
 
   const trackWidth = width - LABEL_WIDTH;
@@ -156,7 +164,7 @@ export function ContributorSwimlanes({
       {lanes.map((lane) => {
         const isSelected = selectedContributor === lane.email;
         const color = authorColor(lane.email);
-        const maxWeekly = Math.max(...lane.weeklyIntensity, 1);
+        const maxWeekly = lane.weeklyIntensity.reduce((m, v) => (v > m ? v : m), 1);
         const intensityScale = scaleLinear().domain([0, maxWeekly]).range([0.03, 0.8]);
 
         return (
