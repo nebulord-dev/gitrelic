@@ -16,7 +16,8 @@ interface HeatmapCell {
   value: number;
 }
 
-const LABEL_SIZE = 140;
+const ROW_LABEL_WIDTH = 140;
+const COL_HEADER_HEIGHT = 100;
 const MIN_CELL = 24;
 
 function getDirectory(filePath: string): string {
@@ -101,7 +102,7 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
     return { dirs, matrix, maxValue, dirFilesMap };
   }, [report.coupling.topPairs]);
 
-  const gridSize = Math.min(dims.width - LABEL_SIZE, dims.height - LABEL_SIZE);
+  const gridSize = Math.min(dims.width - ROW_LABEL_WIDTH, dims.height - COL_HEADER_HEIGHT);
   const cellSize = Math.max(dirs.length > 0 ? gridSize / dirs.length : MIN_CELL, MIN_CELL);
   const totalSize = cellSize * dirs.length;
 
@@ -113,8 +114,8 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
       style={{ width: '100%', height: '100%', position: 'relative', overflow: 'auto' }}
     >
       <svg
-        width={LABEL_SIZE + totalSize + 10}
-        height={LABEL_SIZE + totalSize + 10}
+        width={ROW_LABEL_WIDTH + totalSize + 10}
+        height={COL_HEADER_HEIGHT + totalSize + 10}
         style={{ display: 'block' }}
       >
         {/* Column headers (rotated) */}
@@ -123,7 +124,7 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
             key={`col-${d}`}
             x={0}
             y={0}
-            transform={`translate(${LABEL_SIZE + i * cellSize + cellSize / 2}, ${LABEL_SIZE - 6}) rotate(-45)`}
+            transform={`translate(${ROW_LABEL_WIDTH + i * cellSize + cellSize / 2}, ${COL_HEADER_HEIGHT - 6}) rotate(-45)`}
             textAnchor="end"
             fontSize={9}
             fill={selectedDir === d ? 'var(--text-primary)' : 'var(--text-secondary)'}
@@ -135,10 +136,10 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
 
         {/* Row headers + cells */}
         {dirs.map((rowDir, ri) => (
-          <g key={`row-${rowDir}`} transform={`translate(0, ${LABEL_SIZE + ri * cellSize})`}>
+          <g key={`row-${rowDir}`} transform={`translate(0, ${COL_HEADER_HEIGHT + ri * cellSize})`}>
             {/* Row label */}
             <text
-              x={LABEL_SIZE - 8}
+              x={ROW_LABEL_WIDTH - 8}
               y={cellSize / 2}
               textAnchor="end"
               dominantBaseline="central"
@@ -157,7 +158,7 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
                 return (
                   <rect
                     key={colDir}
-                    x={LABEL_SIZE + ci * cellSize}
+                    x={ROW_LABEL_WIDTH + ci * cellSize}
                     y={0}
                     width={cellSize - 1}
                     height={cellSize - 1}
