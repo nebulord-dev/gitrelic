@@ -11,8 +11,10 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "d3-force": "^3.0.0",
     "d3-hierarchy": "^3.1.2",
     "d3-scale": "^4.0.2",
+    "d3-shape": "^3.2.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
@@ -21,8 +23,10 @@
     "@tailwindcss/vite": "^4.2.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
+    "@types/d3-force": "^3.0.10",
     "@types/d3-hierarchy": "^3.1.7",
     "@types/d3-scale": "^4.0.9",
+    "@types/d3-shape": "^3.1.8",
     "@types/react": "catalog:",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",

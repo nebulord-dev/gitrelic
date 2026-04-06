@@ -92,6 +92,15 @@ const navToGroupTab: Record<NavItem, { group: SidebarGroup; tab: BottomTab }> = 
 
 export type InspectorTab = 'file' | 'contributors' | 'activity';
 
+export type HeroViz =
+  | 'treemap'
+  | 'ownership'
+  | 'coupling'
+  | 'commit-graph'
+  | 'scatter'
+  | 'timeline'
+  | 'swimlanes';
+
 export interface SelectionState {
   selectedFile: string | null;
   selectedContributor: string | null;
@@ -99,12 +108,14 @@ export interface SelectionState {
   activeGroup: SidebarGroup;
   activeBottomTab: BottomTab;
   activeInspectorTab: InspectorTab;
+  activeHeroViz: HeroViz;
   selectFile: (file: string) => void;
   selectContributor: (email: string) => void;
   clearSelection: () => void;
   navigateTo: (item: NavItem) => void;
   setActiveBottomTab: (tab: BottomTab) => void;
   setActiveInspectorTab: (tab: InspectorTab) => void;
+  setActiveHeroViz: (viz: HeroViz) => void;
 }
 
 export function useSelection(): SelectionState {
@@ -114,6 +125,7 @@ export function useSelection(): SelectionState {
   const [activeGroup, setActiveGroup] = useState<SidebarGroup>('overview');
   const [activeBottomTab, setActiveBottomTab] = useState<BottomTab>('hotspots');
   const [activeInspectorTab, setActiveInspectorTab] = useState<InspectorTab>('file');
+  const [activeHeroViz, setActiveHeroViz] = useState<HeroViz>('treemap');
 
   const selectFile = useCallback((file: string) => {
     setSelectedFile(file);
@@ -152,5 +164,7 @@ export function useSelection(): SelectionState {
     navigateTo,
     setActiveBottomTab,
     setActiveInspectorTab,
+    activeHeroViz,
+    setActiveHeroViz,
   };
 }

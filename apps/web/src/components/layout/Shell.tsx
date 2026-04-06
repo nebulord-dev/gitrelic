@@ -1,12 +1,29 @@
 import { useSelection } from '../../hooks/useSelection';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
+import { CommitGraph } from '../hero/CommitGraph';
+import { ContributorSwimlanes } from '../hero/ContributorSwimlanes';
+import { CouplingGraph } from '../hero/CouplingGraph';
+import { HotspotScatter } from '../hero/HotspotScatter';
+import { OwnershipBubble } from '../hero/OwnershipBubble';
+import { Timeline } from '../hero/Timeline';
 import { BottomPanel } from './BottomPanel';
 import { InspectorPanel } from './InspectorPanel';
 import { MetricsStrip } from './MetricsStrip';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 
+import type { HeroViz } from '../../hooks/useSelection';
 import type { GitloreReport } from '@gitlore/core';
+
+const HERO_VIZZES: { id: HeroViz; label: string }[] = [
+  { id: 'treemap', label: 'Treemap' },
+  { id: 'ownership', label: 'Ownership' },
+  { id: 'coupling', label: 'Coupling' },
+  { id: 'commit-graph', label: 'Graph' },
+  { id: 'scatter', label: 'Scatter' },
+  { id: 'timeline', label: 'Timeline' },
+  { id: 'swimlanes', label: 'Swimlanes' },
+];
 
 interface ShellProps {
   report: GitloreReport;
@@ -78,29 +95,82 @@ export function Shell({ report }: ShellProps) {
                   padding: 2,
                 }}
               >
-                {['Treemap', 'Ownership', 'Coupling', 'Graph'].map((label, i) => (
+                {HERO_VIZZES.map((viz) => (
                   <span
-                    key={label}
+                    key={viz.id}
+                    onClick={() => selection.setActiveHeroViz(viz.id)}
                     style={{
                       padding: '4px 10px',
                       borderRadius: 4,
                       fontSize: 10,
                       cursor: 'pointer',
-                      color: i === 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
-                      background: i === 0 ? 'var(--surface-elevated)' : 'transparent',
+                      color:
+                        selection.activeHeroViz === viz.id
+                          ? 'var(--text-primary)'
+                          : 'var(--text-secondary)',
+                      background:
+                        selection.activeHeroViz === viz.id
+                          ? 'var(--surface-elevated)'
+                          : 'transparent',
                     }}
                   >
-                    {label}
+                    {viz.label}
                   </span>
                 ))}
               </div>
             </div>
             <div style={{ flex: 1, minHeight: 0 }}>
-              <ChurnTreemap
-                report={report}
-                selectedFile={selection.selectedFile}
-                onSelectFile={selection.selectFile}
-              />
+              {selection.activeHeroViz === 'treemap' && (
+                <ChurnTreemap
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
+              )}
+              {selection.activeHeroViz === 'ownership' && (
+                <OwnershipBubble
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
+              )}
+              {selection.activeHeroViz === 'scatter' && (
+                <HotspotScatter
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
+              )}
+              {selection.activeHeroViz === 'timeline' && (
+                <Timeline
+                  report={report}
+                  selectedContributor={selection.selectedContributor}
+                  onSelectContributor={selection.selectContributor}
+                />
+              )}
+              {selection.activeHeroViz === 'swimlanes' && (
+                <ContributorSwimlanes
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  selectedContributor={selection.selectedContributor}
+                  onSelectFile={selection.selectFile}
+                  onSelectContributor={selection.selectContributor}
+                />
+              )}
+              {selection.activeHeroViz === 'coupling' && (
+                <CouplingGraph
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
+              )}
+              {selection.activeHeroViz === 'commit-graph' && (
+                <CommitGraph
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
+              )}
             </div>
           </div>
 

@@ -1,7 +1,7 @@
 export { runGitlore } from './runner.js';
 export { analyzeParallelDev } from './analyzers/parallel-dev.js';
 export { analyzeHotspotClustering } from './analyzers/hotspot-clustering.js';
-export type { FileStats } from './utils/git.js';
+export type { FileStats, RawCommit } from './utils/git.js';
 export type {
   GitloreReport,
   RunGitloreOptions,
