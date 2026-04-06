@@ -12,7 +12,7 @@ export interface RawCommit {
   hash: string;
   authorEmail: string;
   authorName: string;
-  date: string;          // ISO
+  date: string; // ISO
   message: string;
   files: string[];
   fileStats: FileStats[];
@@ -30,14 +30,9 @@ export interface RawCommit {
  */
 export async function getAllCommits(
   repoPath: string,
-  options: { since?: string; branch?: string } = {}
+  options: { since?: string; branch?: string } = {},
 ): Promise<RawCommit[]> {
-  const args = [
-    'log',
-    '--format=COMMIT|%H|%ae|%an|%aI%nMSG|%s',
-    '--numstat',
-    '--no-merges',
-  ];
+  const args = ['log', '--format=COMMIT|%H|%ae|%an|%aI%nMSG|%s', '--numstat', '--no-merges'];
 
   if (options.since) args.push(`--since=${options.since}`);
   if (options.branch) args.push(options.branch);
@@ -54,17 +49,32 @@ export function parseGitLog(raw: string): RawCommit[] {
     if (line.startsWith('COMMIT|')) {
       if (current) commits.push(current);
       const [, hash, authorEmail, authorName, date] = line.split('|');
-      current = { hash, authorEmail, authorName, date, message: '', files: [], fileStats: [], insertions: 0, deletions: 0 };
+      current = {
+        hash,
+        authorEmail,
+        authorName,
+        date,
+        message: '',
+        files: [],
+        fileStats: [],
+        insertions: 0,
+        deletions: 0,
+      };
     } else if (current && line.startsWith('MSG|')) {
-      current.message = line.slice(4);   // everything after "MSG|"
+      current.message = line.slice(4); // everything after "MSG|"
     } else if (current && line.trim()) {
       // numstat lines: "insertions\tdeletions\tfilepath"
       const parts = line.split('\t');
       if (parts.length === 3) {
         const [ins, del, file] = parts;
-        if (file && !file.includes('{')) {   // skip rename noise like "src/{a => b}/file.ts"
+        if (file && !file.includes('{')) {
+          // skip rename noise like "src/{a => b}/file.ts"
           current.files.push(file);
-          current.fileStats.push({ file, insertions: parseInt(ins, 10) || 0, deletions: parseInt(del, 10) || 0 });
+          current.fileStats.push({
+            file,
+            insertions: parseInt(ins, 10) || 0,
+            deletions: parseInt(del, 10) || 0,
+          });
           current.insertions += parseInt(ins, 10) || 0;
           current.deletions += parseInt(del, 10) || 0;
         }
@@ -90,9 +100,19 @@ const IGNORED_PATTERNS = {
     'CLAUDE.md',
   ]),
   extensions: new Set([
-    '.ico', '.png', '.jpg', '.jpeg', '.gif', '.svg',
-    '.woff', '.woff2', '.ttf', '.eot',
-    '.min.js', '.min.css', '.map',
+    '.ico',
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.gif',
+    '.svg',
+    '.woff',
+    '.woff2',
+    '.ttf',
+    '.eot',
+    '.min.js',
+    '.min.css',
+    '.map',
   ]),
   prefixes: ['.next/', 'dist/', 'coverage/', '.claude/', 'docs/'],
 };
@@ -118,7 +138,7 @@ export function isIgnored(file: string): boolean {
  */
 export async function getTrackedFiles(repoPath: string): Promise<string[]> {
   const { stdout } = await execa('git', ['ls-files'], { cwd: repoPath });
-  return stdout.split('\n').filter(f => f && !isIgnored(f));
+  return stdout.split('\n').filter((f) => f && !isIgnored(f));
 }
 
 /**
@@ -147,9 +167,21 @@ export async function getBranches(repoPath: string): Promise<string[]> {
 export function detectPrimaryLanguage(files: string[]): string {
   const extCounts: Record<string, number> = {};
   const langMap: Record<string, string> = {
-    ts: 'TypeScript', tsx: 'TypeScript', js: 'JavaScript', jsx: 'JavaScript',
-    py: 'Python', rb: 'Ruby', go: 'Go', rs: 'Rust', java: 'Java',
-    cs: 'C#', cpp: 'C++', c: 'C', php: 'PHP', swift: 'Swift', kt: 'Kotlin',
+    ts: 'TypeScript',
+    tsx: 'TypeScript',
+    js: 'JavaScript',
+    jsx: 'JavaScript',
+    py: 'Python',
+    rb: 'Ruby',
+    go: 'Go',
+    rs: 'Rust',
+    java: 'Java',
+    cs: 'C#',
+    cpp: 'C++',
+    c: 'C',
+    php: 'PHP',
+    swift: 'Swift',
+    kt: 'Kotlin',
   };
 
   for (const file of files) {

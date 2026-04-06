@@ -21,8 +21,8 @@
  * Files with fewer than 3 active weeks are excluded (insufficient history).
  */
 
-import type { RawCommit } from '../utils/git.js';
 import type { ParallelDevReport, FileParallelDev, ParallelWindow } from '../types.js';
+import type { RawCommit } from '../utils/git.js';
 
 /** Returns the Monday of the ISO week containing the given date, as an ISO string. */
 function getISOWeekMonday(dateStr: string): string {
@@ -69,10 +69,7 @@ function buildWeekMatrix(commits: RawCommit[], trackedSet: Set<string>): WeekMat
 const MIN_ACTIVE_WEEKS = 3;
 const MIN_PARALLEL_SCORE = 20;
 
-function scoreFile(
-  file: string,
-  weeks: Map<string, WeekBucket>
-): FileParallelDev | null {
+function scoreFile(file: string, weeks: Map<string, WeekBucket>): FileParallelDev | null {
   const totalActiveWeeks = weeks.size;
   if (totalActiveWeeks < MIN_ACTIVE_WEEKS) return null;
 
@@ -91,7 +88,8 @@ function scoreFile(
   const baseScore = (parallelWeeks / totalActiveWeeks) * 100;
 
   // Severity: weight by average number of overlapping authors
-  const avgAuthors = parallelEntries.reduce((sum, e) => sum + e.bucket.authors.size, 0) / parallelWeeks;
+  const avgAuthors =
+    parallelEntries.reduce((sum, e) => sum + e.bucket.authors.size, 0) / parallelWeeks;
   const severityMultiplier = Math.max(1.0, Math.min(avgAuthors / 2, 2.0));
 
   const parallelScore = Math.min(Math.round(baseScore * severityMultiplier), 100);
@@ -99,8 +97,9 @@ function scoreFile(
   if (parallelScore < MIN_PARALLEL_SCORE) return null;
 
   // Sort parallel entries by author count desc, then commit count desc
-  parallelEntries.sort((a, b) =>
-    b.bucket.authors.size - a.bucket.authors.size || b.bucket.commitCount - a.bucket.commitCount
+  parallelEntries.sort(
+    (a, b) =>
+      b.bucket.authors.size - a.bucket.authors.size || b.bucket.commitCount - a.bucket.commitCount,
   );
 
   const toWindow = (entry: { weekStart: string; bucket: WeekBucket }): ParallelWindow => ({
@@ -113,7 +112,13 @@ function scoreFile(
   const topWindows = parallelEntries.slice(0, 3).map(toWindow);
   const peakAuthors = peakWindow.authors.length;
 
-  const narrative = buildNarrative(file, parallelScore, parallelWeeks, totalActiveWeeks, peakWindow);
+  const narrative = buildNarrative(
+    file,
+    parallelScore,
+    parallelWeeks,
+    totalActiveWeeks,
+    peakWindow,
+  );
 
   return {
     file,
@@ -164,9 +169,10 @@ export function analyzeParallelDev(
   const hotFiles = files.slice(0, 10);
   const totalParallelFiles = files.length;
 
-  const summary = hotFiles.length === 0
-    ? 'No significant parallel development detected.'
-    : `${totalParallelFiles} file${totalParallelFiles === 1 ? '' : 's'} show${totalParallelFiles === 1 ? 's' : ''} signs of parallel development. ${hotFiles[0].file} is the most contested.`;
+  const summary =
+    hotFiles.length === 0
+      ? 'No significant parallel development detected.'
+      : `${totalParallelFiles} file${totalParallelFiles === 1 ? '' : 's'} show${totalParallelFiles === 1 ? 's' : ''} signs of parallel development. ${hotFiles[0].file} is the most contested.`;
 
   return { files, hotFiles, totalParallelFiles, summary };
 }

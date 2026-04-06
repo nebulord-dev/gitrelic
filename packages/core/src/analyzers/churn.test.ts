@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import type { RawCommit } from '../utils/git.js';
+
 import { analyzeChurn } from './churn.js';
+
+import type { RawCommit } from '../utils/git.js';
 
 function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
   return {
@@ -25,7 +27,7 @@ describe('analyzeChurn', () => {
       makeCommit({ hash: '3', files: ['a.ts'] }),
     ];
     const result = analyzeChurn(commits, ['a.ts', 'b.ts']);
-    const fileA = result.files.find(f => f.file === 'a.ts')!;
+    const fileA = result.files.find((f) => f.file === 'a.ts')!;
     expect(fileA.churnScore).toBe(100);
   });
 
@@ -39,17 +41,15 @@ describe('analyzeChurn', () => {
     commits.push(makeCommit({ hash: 'd0', files: ['d.ts'] }));
 
     const result = analyzeChurn(commits, ['a.ts', 'b.ts', 'c.ts', 'd.ts']);
-    expect(result.files.find(f => f.file === 'a.ts')!.category).toBe('hot');   // 100
-    expect(result.files.find(f => f.file === 'b.ts')!.category).toBe('warm');  // 60
-    expect(result.files.find(f => f.file === 'c.ts')!.category).toBe('cold');  // 20
-    expect(result.files.find(f => f.file === 'd.ts')!.category).toBe('frozen'); // 10
+    expect(result.files.find((f) => f.file === 'a.ts')!.category).toBe('hot'); // 100
+    expect(result.files.find((f) => f.file === 'b.ts')!.category).toBe('warm'); // 60
+    expect(result.files.find((f) => f.file === 'c.ts')!.category).toBe('cold'); // 20
+    expect(result.files.find((f) => f.file === 'd.ts')!.category).toBe('frozen'); // 10
   });
 
   it('limits topFiles to 20', () => {
     const files = Array.from({ length: 25 }, (_, i) => `file${i}.ts`);
-    const commits = files.map((file, i) =>
-      makeCommit({ hash: `h${i}`, files: [file] })
-    );
+    const commits = files.map((file, i) => makeCommit({ hash: `h${i}`, files: [file] }));
     const result = analyzeChurn(commits, files);
     expect(result.topFiles.length).toBe(20);
   });
@@ -57,7 +57,7 @@ describe('analyzeChurn', () => {
   it('ignores files not in tracked set', () => {
     const commits = [makeCommit({ hash: '1', files: ['tracked.ts', 'deleted.ts'] })];
     const result = analyzeChurn(commits, ['tracked.ts']);
-    expect(result.files.map(f => f.file)).toEqual(['tracked.ts']);
+    expect(result.files.map((f) => f.file)).toEqual(['tracked.ts']);
   });
 
   it('counts hotspots (churnScore > 75)', () => {

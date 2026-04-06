@@ -1,16 +1,43 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+
 import type { LocReport, FileLocEntry, LanguageBreakdown } from '../types.js';
 
 const LANG_MAP: Record<string, string> = {
-  ts: 'TypeScript', tsx: 'TypeScript', js: 'JavaScript', jsx: 'JavaScript',
-  py: 'Python', rb: 'Ruby', go: 'Go', rs: 'Rust', java: 'Java',
-  cs: 'C#', cpp: 'C++', c: 'C', php: 'PHP', swift: 'Swift', kt: 'Kotlin',
-  css: 'CSS', scss: 'SCSS', less: 'LESS', html: 'HTML', vue: 'Vue',
-  json: 'JSON', yaml: 'YAML', yml: 'YAML', toml: 'TOML', xml: 'XML',
-  md: 'Markdown', sh: 'Shell', bash: 'Shell', zsh: 'Shell',
-  sql: 'SQL', graphql: 'GraphQL', gql: 'GraphQL',
-  svelte: 'Svelte', astro: 'Astro',
+  ts: 'TypeScript',
+  tsx: 'TypeScript',
+  js: 'JavaScript',
+  jsx: 'JavaScript',
+  py: 'Python',
+  rb: 'Ruby',
+  go: 'Go',
+  rs: 'Rust',
+  java: 'Java',
+  cs: 'C#',
+  cpp: 'C++',
+  c: 'C',
+  php: 'PHP',
+  swift: 'Swift',
+  kt: 'Kotlin',
+  css: 'CSS',
+  scss: 'SCSS',
+  less: 'LESS',
+  html: 'HTML',
+  vue: 'Vue',
+  json: 'JSON',
+  yaml: 'YAML',
+  yml: 'YAML',
+  toml: 'TOML',
+  xml: 'XML',
+  md: 'Markdown',
+  sh: 'Shell',
+  bash: 'Shell',
+  zsh: 'Shell',
+  sql: 'SQL',
+  graphql: 'GraphQL',
+  gql: 'GraphQL',
+  svelte: 'Svelte',
+  astro: 'Astro',
 };
 
 function getLanguage(file: string): string {
@@ -39,14 +66,14 @@ export async function analyzeLoc(trackedFiles: string[], repoPath: string): Prom
         // Unreadable file — skip
       }
       return { file, lines, language: getLanguage(file) };
-    })
+    }),
   );
 
   const totalLines = files.reduce((sum, f) => sum + f.lines, 0);
 
   const langAgg: Record<string, { files: number; lines: number }> = {};
   for (const f of files) {
-    const entry = langAgg[f.language] ??= { files: 0, lines: 0 };
+    const entry = (langAgg[f.language] ??= { files: 0, lines: 0 });
     entry.files++;
     entry.lines += f.lines;
   }
@@ -60,7 +87,10 @@ export async function analyzeLoc(trackedFiles: string[], repoPath: string): Prom
     }))
     .sort((a, b) => b.lines - a.lines);
 
-  const topLangs = languages.slice(0, 2).map(l => `${Math.round(l.percentage)}% ${l.language}`).join(', ');
+  const topLangs = languages
+    .slice(0, 2)
+    .map((l) => `${Math.round(l.percentage)}% ${l.language}`)
+    .join(', ');
   const summary = `${totalLines.toLocaleString()} lines across ${files.length} files (${topLangs})`;
 
   return { totalFiles: files.length, totalLines, files, languages, summary };

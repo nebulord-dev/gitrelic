@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import type { RawCommit } from '../utils/git.js';
+
 import { analyzeForensics } from './forensics.js';
+
+import type { RawCommit } from '../utils/git.js';
 
 function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
   return {
@@ -48,9 +50,7 @@ describe('analyzeForensics', () => {
   });
 
   it('detects mild shame keywords (weight 1)', () => {
-    const commits = [
-      makeCommit({ hash: '1', files: ['a.ts'], message: 'cleanup unused imports' }),
-    ];
+    const commits = [makeCommit({ hash: '1', files: ['a.ts'], message: 'cleanup unused imports' })];
     const result = analyzeForensics(commits, ['a.ts']);
     expect(result.files[0].rawShamePoints).toBe(1);
   });
@@ -83,19 +83,19 @@ describe('analyzeForensics', () => {
     const commitsMany: RawCommit[] = [
       makeCommit({ hash: 'r1', files: ['b.ts'], message: 'revert: bad change' }),
       ...Array.from({ length: 9 }, (_, i) =>
-        makeCommit({ hash: `m${i}`, files: ['b.ts'], message: 'feat: good stuff' })
+        makeCommit({ hash: `m${i}`, files: ['b.ts'], message: 'feat: good stuff' }),
       ),
     ];
     const result = analyzeForensics([...commitsFew, ...commitsMany], ['a.ts', 'b.ts']);
-    const aScore = result.files.find(f => f.file === 'a.ts')!.shameScore;
-    const bScore = result.files.find(f => f.file === 'b.ts')!.shameScore;
+    const aScore = result.files.find((f) => f.file === 'a.ts')!.shameScore;
+    const bScore = result.files.find((f) => f.file === 'b.ts')!.shameScore;
     expect(aScore).toBeGreaterThan(bScore);
   });
 
   it('limits shameLeaderboard to top 10 files', () => {
     const files = Array.from({ length: 15 }, (_, i) => `file${i}.ts`);
     const commits = files.map((file, i) =>
-      makeCommit({ hash: `h${i}`, files: [file], message: 'revert: oops' })
+      makeCommit({ hash: `h${i}`, files: [file], message: 'revert: oops' }),
     );
     const result = analyzeForensics(commits, files);
     expect(result.shameLeaderboard.length).toBe(10);
@@ -114,7 +114,7 @@ describe('analyzeForensics', () => {
 
   it('sorts topShameCommits by shamePoints descending', () => {
     const commits = [
-      makeCommit({ hash: '1', files: ['a.ts'], message: 'fix: minor' }),         // 1 pt
+      makeCommit({ hash: '1', files: ['a.ts'], message: 'fix: minor' }), // 1 pt
       makeCommit({ hash: '2', files: ['a.ts'], message: 'revert: everything' }), // 3 pts
     ];
     const result = analyzeForensics(commits, ['a.ts']);
@@ -122,9 +122,7 @@ describe('analyzeForensics', () => {
   });
 
   it('ignores files not in the tracked set', () => {
-    const commits = [
-      makeCommit({ hash: '1', files: ['untracked.ts'], message: 'revert: bad' }),
-    ];
+    const commits = [makeCommit({ hash: '1', files: ['untracked.ts'], message: 'revert: bad' })];
     const result = analyzeForensics(commits, ['a.ts']);
     expect(result.files).toHaveLength(0);
   });
@@ -139,9 +137,7 @@ describe('analyzeForensics', () => {
 
   it('uses whole-word matching (does not match partial words)', () => {
     // "fixing" should not match "fix" as a whole word
-    const commits = [
-      makeCommit({ hash: '1', files: ['a.ts'], message: 'fixing up the config' }),
-    ];
+    const commits = [makeCommit({ hash: '1', files: ['a.ts'], message: 'fixing up the config' })];
     const result = analyzeForensics(commits, ['a.ts']);
     expect(result.files).toHaveLength(0);
   });

@@ -1,4 +1,10 @@
-import type { ChurnReport, LocReport, HotspotReport, HotspotEntry, HotspotCategory } from '../types.js';
+import type {
+  ChurnReport,
+  LocReport,
+  HotspotReport,
+  HotspotEntry,
+  HotspotCategory,
+} from '../types.js';
 
 function getCategory(score: number): HotspotCategory {
   if (score >= 75) return 'critical';
@@ -23,10 +29,10 @@ export function analyzeHotspots(churnReport: ChurnReport, locReport: LocReport):
     rawEntries.push({ file: churnFile.file, churnScore: churnFile.churnScore, loc, rawScore });
   }
 
-  const maxRaw = Math.max(...rawEntries.map(e => e.rawScore), 1);
+  const maxRaw = Math.max(...rawEntries.map((e) => e.rawScore), 1);
 
   const files: HotspotEntry[] = rawEntries
-    .map(e => {
+    .map((e) => {
       const hotspotScore = Math.round((e.rawScore / maxRaw) * 100);
       return {
         file: e.file,
@@ -40,8 +46,8 @@ export function analyzeHotspots(churnReport: ChurnReport, locReport: LocReport):
 
   const topHotspots = files.slice(0, 20);
 
-  const criticalCount = files.filter(f => f.category === 'critical').length;
-  const warningCount = files.filter(f => f.category === 'warning').length;
+  const criticalCount = files.filter((f) => f.category === 'critical').length;
+  const warningCount = files.filter((f) => f.category === 'warning').length;
   const summary = `${criticalCount} critical hotspot${criticalCount !== 1 ? 's' : ''}, ${warningCount} warning${warningCount !== 1 ? 's' : ''} across ${files.length} files`;
 
   return { files, topHotspots, summary };

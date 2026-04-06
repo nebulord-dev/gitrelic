@@ -1,5 +1,5 @@
-import type { RawCommit } from '../utils/git.js';
 import type { ChurnReport, FileChurn, ChurnCategory } from '../types.js';
+import type { RawCommit } from '../utils/git.js';
 
 /**
  * Analyzes the churn of files based on the provided commits and tracked files.
@@ -34,7 +34,7 @@ export function analyzeChurn(commits: RawCommit[], trackedFiles: string[]): Chur
     .sort((a, b) => b.commitCount - a.commitCount);
 
   const topFiles = files.slice(0, 20);
-  const hotspotCount = files.filter(f => f.churnScore > 75).length;
+  const hotspotCount = files.filter((f) => f.churnScore > 75).length;
 
   const topFile = topFiles[0];
   const totalCommits = commits.length;

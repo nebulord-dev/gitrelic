@@ -1,5 +1,5 @@
-import type { RawCommit } from '../utils/git.js';
 import type { CoAuthorReport, CoAuthorPair, CoAuthorStats } from '../types.js';
+import type { RawCommit } from '../utils/git.js';
 
 const CO_AUTHOR_REGEX = /Co-authored-by:\s*(.+?)\s*<([^>]+)>/gi;
 
@@ -8,7 +8,10 @@ function pairKey(a: string, b: string): string {
 }
 
 export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
-  const pairMap = new Map<string, { authorA: string; authorB: string; commits: number; files: Set<string> }>();
+  const pairMap = new Map<
+    string,
+    { authorA: string; authorB: string; commits: number; files: Set<string> }
+  >();
   const authorCoAuthorCount = new Map<string, number>();
   let totalCoAuthoredCommits = 0;
 
@@ -52,7 +55,7 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
   }
 
   const pairs: CoAuthorPair[] = [...pairMap.values()]
-    .map(p => ({
+    .map((p) => ({
       authorA: p.authorA,
       authorB: p.authorB,
       coAuthoredCommits: p.commits,
@@ -64,7 +67,8 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
   const authorPairCounts = new Map<string, { total: number; partners: Map<string, number> }>();
   for (const pair of pairs) {
     for (const author of [pair.authorA, pair.authorB]) {
-      if (!authorPairCounts.has(author)) authorPairCounts.set(author, { total: 0, partners: new Map() });
+      if (!authorPairCounts.has(author))
+        authorPairCounts.set(author, { total: 0, partners: new Map() });
       const entry = authorPairCounts.get(author)!;
       entry.total += pair.coAuthoredCommits;
       const partner = author === pair.authorA ? pair.authorB : pair.authorA;
@@ -79,16 +83,20 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
       if (pairData) {
         let maxCount = 0;
         for (const [partner, count] of pairData.partners) {
-          if (count > maxCount) { maxCount = count; primaryPartner = partner; }
+          if (count > maxCount) {
+            maxCount = count;
+            primaryPartner = partner;
+          }
         }
       }
       return { author, coAuthoredCommits, primaryPartner };
     })
     .sort((a, b) => b.coAuthoredCommits - a.coAuthoredCommits);
 
-  const summary = totalCoAuthoredCommits > 0
-    ? `${totalCoAuthoredCommits} co-authored commit${totalCoAuthoredCommits !== 1 ? 's' : ''} across ${pairs.length} pair${pairs.length !== 1 ? 's' : ''}`
-    : 'No co-authored commits found';
+  const summary =
+    totalCoAuthoredCommits > 0
+      ? `${totalCoAuthoredCommits} co-authored commit${totalCoAuthoredCommits !== 1 ? 's' : ''} across ${pairs.length} pair${pairs.length !== 1 ? 's' : ''}`
+      : 'No co-authored commits found';
 
   return { pairs, authorStats, totalCoAuthoredCommits, summary };
 }

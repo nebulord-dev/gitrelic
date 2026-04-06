@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import type { GitloreReport } from '@gitlore/core';
+
 import Dashboard from './components/Dashboard.js';
+
+import type { GitloreReport } from '@gitlore/core';
 
 export default function App() {
   const [report, setReport] = useState<GitloreReport | null>(null);
@@ -8,7 +10,7 @@ export default function App() {
 
   useEffect(() => {
     fetch('/gitlore-report.json')
-      .then(r => {
+      .then((r) => {
         if (!r.ok) throw new Error('No report found. Run gitlore --web to generate one.');
         return r.json() as Promise<GitloreReport>;
       })
@@ -22,7 +24,9 @@ export default function App() {
         <div className="text-center">
           <div className="text-6xl mb-4">☠</div>
           <p className="text-red-400 text-lg">{error}</p>
-          <p className="text-gray-500 mt-2 text-sm">Run: <code className="text-purple-400">gitlore --path ./your-repo --web</code></p>
+          <p className="text-gray-500 mt-2 text-sm">
+            Run: <code className="text-purple-400">gitlore --path ./your-repo --web</code>
+          </p>
         </div>
       </div>
     );

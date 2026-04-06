@@ -1,5 +1,5 @@
-import type { RawCommit } from '../utils/git.js';
 import type { BusFactorReport, FileBusFactor, BusFactorRisk } from '../types.js';
+import type { RawCommit } from '../utils/git.js';
 
 /**
  * Analyzes the bus factor of files based on the provided commits and tracked files.
@@ -40,15 +40,15 @@ export function analyzeBusFactor(commits: RawCommit[], trackedFiles: string[]): 
     });
   }
 
-  files.sort((a, b) => a.uniqueAuthors - b.uniqueAuthors || b.dominantAuthorPercent - a.dominantAuthorPercent);
+  files.sort(
+    (a, b) =>
+      a.uniqueAuthors - b.uniqueAuthors || b.dominantAuthorPercent - a.dominantAuthorPercent,
+  );
 
-  const criticalFiles = files.filter(f => f.risk === 'critical');
+  const criticalFiles = files.filter((f) => f.risk === 'critical');
 
   // Overall bus factor: if removed this many people, half of high-churn files become single-author
-  const overallBusFactor = Math.min(
-    ...files.slice(0, 20).map(f => f.uniqueAuthors),
-    999
-  );
+  const overallBusFactor = Math.min(...files.slice(0, 20).map((f) => f.uniqueAuthors), 999);
 
   const worstFile = criticalFiles[0];
   const summary = worstFile

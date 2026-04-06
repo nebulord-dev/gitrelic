@@ -1,14 +1,25 @@
 import { useState, type ReactNode } from 'react';
+
 import type { HotspotClusterReport, ClusterDimension } from '@gitlore/core';
 
 const dimensionBadge: Record<ClusterDimension, string> = {
-  'structural': 'bg-green-950 text-green-400',
-  'ownership': 'bg-blue-950 text-blue-400',
-  'temporal': 'bg-amber-950 text-amber-400',
+  structural: 'bg-green-950 text-green-400',
+  ownership: 'bg-blue-950 text-blue-400',
+  temporal: 'bg-amber-950 text-amber-400',
   'coupling-hub': 'bg-red-950 text-red-400',
 };
 
-function Collapsible({ title, subtitle, defaultOpen = false, children }: { title: string; subtitle?: string; defaultOpen?: boolean; children: ReactNode }) {
+function Collapsible({
+  title,
+  subtitle,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  defaultOpen?: boolean;
+  children: ReactNode;
+}) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="border border-gray-800 rounded-sm overflow-hidden">
@@ -33,21 +44,31 @@ export default function HotspotClusters({ data }: { data: HotspotClusterReport }
   return (
     <div className="space-y-4">
       {data.multiSignalFiles.length > 0 && (
-        <Collapsible title="Multi-Signal Files" subtitle={`${data.multiSignalFiles.length} files flagged across multiple clusters`}>
+        <Collapsible
+          title="Multi-Signal Files"
+          subtitle={`${data.multiSignalFiles.length} files flagged across multiple clusters`}
+        >
           <div className="bg-red-950 p-3">
-            {data.multiSignalFiles.slice(0, 10).map(f => (
+            {data.multiSignalFiles.slice(0, 10).map((f) => (
               <div key={f.file} className="flex items-center gap-2 py-1">
                 <span className="text-red-400 text-sm font-mono truncate flex-1">{f.file}</span>
                 <span className="text-red-500 text-xs">{f.clusterCount} clusters</span>
                 <div className="flex gap-1">
-                  {f.dimensions.map(d => (
-                    <span key={d} className={`text-xs px-1.5 py-0.5 rounded-sm ${dimensionBadge[d]}`}>{d}</span>
+                  {f.dimensions.map((d) => (
+                    <span
+                      key={d}
+                      className={`text-xs px-1.5 py-0.5 rounded-sm ${dimensionBadge[d]}`}
+                    >
+                      {d}
+                    </span>
                   ))}
                 </div>
               </div>
             ))}
             {data.multiSignalFiles.length > 10 && (
-              <p className="text-red-500 text-xs mt-1">+ {data.multiSignalFiles.length - 10} more</p>
+              <p className="text-red-500 text-xs mt-1">
+                + {data.multiSignalFiles.length - 10} more
+              </p>
             )}
           </div>
         </Collapsible>
@@ -55,17 +76,27 @@ export default function HotspotClusters({ data }: { data: HotspotClusterReport }
 
       <Collapsible title="Root Cause Clusters" subtitle={data.summary}>
         <div className="space-y-3 p-4">
-          {data.clusters.slice(0, 20).map(c => (
-            <div key={`${c.dimension}-${c.sharedTrait}`} className="bg-gray-900 border border-gray-800 rounded-sm p-4">
+          {data.clusters.slice(0, 20).map((c) => (
+            <div
+              key={`${c.dimension}-${c.sharedTrait}`}
+              className="bg-gray-900 border border-gray-800 rounded-sm p-4"
+            >
               <div className="flex items-center gap-3 mb-2">
-                <span className={`text-xs px-2 py-1 rounded-sm ${dimensionBadge[c.dimension]}`}>{c.dimension}</span>
+                <span className={`text-xs px-2 py-1 rounded-sm ${dimensionBadge[c.dimension]}`}>
+                  {c.dimension}
+                </span>
                 <span className="text-white font-mono text-sm">{c.label}</span>
-                <span className="text-gray-500 text-xs ml-auto">{c.members.length} hotspots · score {c.clusterScore}</span>
+                <span className="text-gray-500 text-xs ml-auto">
+                  {c.members.length} hotspots · score {c.clusterScore}
+                </span>
               </div>
               <p className="text-gray-400 text-sm italic mb-3">"{c.narrative}"</p>
               <div className="flex flex-wrap gap-2">
-                {c.members.map(m => (
-                  <span key={m.file} className="text-xs font-mono bg-gray-800 text-gray-300 px-2 py-1 rounded-sm">
+                {c.members.map((m) => (
+                  <span
+                    key={m.file}
+                    className="text-xs font-mono bg-gray-800 text-gray-300 px-2 py-1 rounded-sm"
+                  >
                     {m.file} <span className="text-gray-500">({m.hotspotScore})</span>
                   </span>
                 ))}
@@ -73,7 +104,9 @@ export default function HotspotClusters({ data }: { data: HotspotClusterReport }
             </div>
           ))}
           {data.clusters.length > 20 && (
-            <p className="text-gray-500 text-sm text-center py-2">+ {data.clusters.length - 20} more clusters</p>
+            <p className="text-gray-500 text-sm text-center py-2">
+              + {data.clusters.length - 20} more clusters
+            </p>
           )}
         </div>
       </Collapsible>

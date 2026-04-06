@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import type { RawCommit } from '../utils/git.js';
+
 import { analyzeCoupling } from './coupling.js';
+
+import type { RawCommit } from '../utils/git.js';
 
 function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
   return {
@@ -45,9 +47,7 @@ describe('analyzeCoupling', () => {
 
     const result = analyzeCoupling(commits, ['a.ts', 'b.ts', ...bigFiles]);
 
-    const bigFilePair = result.pairs.find(p =>
-      p.fileA === 'file0.ts' || p.fileB === 'file0.ts'
-    );
+    const bigFilePair = result.pairs.find((p) => p.fileA === 'file0.ts' || p.fileB === 'file0.ts');
     expect(bigFilePair).toBeUndefined();
   });
 
@@ -66,7 +66,8 @@ describe('analyzeCoupling', () => {
     const commits: RawCommit[] = [];
     for (let i = 0; i < 10; i++) commits.push(makeCommit({ hash: `a${i}`, files: ['a.ts'] }));
     for (let i = 0; i < 10; i++) commits.push(makeCommit({ hash: `b${i}`, files: ['b.ts'] }));
-    for (let i = 0; i < 3; i++) commits.push(makeCommit({ hash: `ab${i}`, files: ['a.ts', 'b.ts'] }));
+    for (let i = 0; i < 3; i++)
+      commits.push(makeCommit({ hash: `ab${i}`, files: ['a.ts', 'b.ts'] }));
 
     const result = analyzeCoupling(commits, ['a.ts', 'b.ts']);
 
@@ -77,7 +78,8 @@ describe('analyzeCoupling', () => {
     const commits: RawCommit[] = [];
     for (let i = 0; i < 7; i++) commits.push(makeCommit({ hash: `a${i}`, files: ['a.ts'] }));
     for (let i = 0; i < 7; i++) commits.push(makeCommit({ hash: `b${i}`, files: ['b.ts'] }));
-    for (let i = 0; i < 3; i++) commits.push(makeCommit({ hash: `ab${i}`, files: ['a.ts', 'b.ts'] }));
+    for (let i = 0; i < 3; i++)
+      commits.push(makeCommit({ hash: `ab${i}`, files: ['a.ts', 'b.ts'] }));
 
     const result = analyzeCoupling(commits, ['a.ts', 'b.ts']);
 
@@ -113,7 +115,7 @@ describe('analyzeCoupling', () => {
 
     const result = analyzeCoupling(commits, ['a.ts', 'b.ts', 'c.ts']);
 
-    const profileA = result.fileProfiles.find(p => p.file === 'a.ts')!;
+    const profileA = result.fileProfiles.find((p) => p.file === 'a.ts')!;
     expect(profileA.partners).toHaveLength(2);
     expect(profileA.topPartner).toBeTruthy();
     expect(profileA.couplingScore).toBeGreaterThan(0);
@@ -166,7 +168,7 @@ describe('analyzeCoupling', () => {
     const result = analyzeCoupling(commits, ['a.ts', 'b.ts', 'c.ts']);
 
     expect(result.pairs[0].couplingStrength).toBeGreaterThanOrEqual(
-      result.pairs[result.pairs.length - 1].couplingStrength
+      result.pairs[result.pairs.length - 1].couplingStrength,
     );
   });
 

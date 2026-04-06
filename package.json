@@ -1,25 +1,42 @@
 {
   "name": "gitlore",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
     "clean": "turbo run clean && rm -rf node_modules",
-    "lint": "turbo run lint",
-    "lint:fix": "turbo run lint:fix",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
     "typecheck": "turbo run typecheck",
     "gitlore": "node apps/cli/dist/index.js",
     "test": "pnpm -r test",
     "test:coverage": "pnpm -r test:coverage",
     "test:web": "pnpm --filter @gitlore/web test:ui",
     "test:cli": "pnpm --filter @gitlore/cli test:ui",
-    "test:core": "pnpm --filter @gitlore/core test:ui"
+    "test:core": "pnpm --filter @gitlore/core test:ui",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "catalog:",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "oxfmt": "^0.42.0",
+    "oxlint": "^1.58.0",
     "turbo": "^2.8.20",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "lint-staged": {
+    "**/*.{ts,tsx,js,jsx,mjs}": [
+      "oxlint --fix",
+      "oxfmt"
+    ],
+    "**/*.{css,html}": [
+      "oxfmt"
+    ]
   },
   "packageManager": "pnpm@10.30.1"
 }

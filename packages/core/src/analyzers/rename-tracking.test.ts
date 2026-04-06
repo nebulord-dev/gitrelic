@@ -1,13 +1,12 @@
 import { describe, it, expect } from 'vitest';
+
 import { parseRenameLog, buildRenameChains } from './rename-tracking.js';
+
 import type { FileRename } from '../types.js';
 
 describe('parseRenameLog', () => {
   it('correctly parses rename entries with R100', () => {
-    const raw = [
-      'COMMIT|abc123|2025-06-01T00:00:00Z',
-      'R100\tsrc/old.ts\tsrc/new.ts',
-    ].join('\n');
+    const raw = ['COMMIT|abc123|2025-06-01T00:00:00Z', 'R100\tsrc/old.ts\tsrc/new.ts'].join('\n');
 
     const result = parseRenameLog(raw);
     expect(result).toHaveLength(1);
@@ -130,8 +129,8 @@ describe('buildRenameChains', () => {
     const chains = buildRenameChains(renames, ['b.ts', 'y.ts']);
     expect(chains).toHaveLength(2);
 
-    const bChain = chains.find(c => c.currentPath === 'b.ts')!;
-    const yChain = chains.find(c => c.currentPath === 'y.ts')!;
+    const bChain = chains.find((c) => c.currentPath === 'b.ts')!;
+    const yChain = chains.find((c) => c.currentPath === 'y.ts')!;
     expect(bChain.previousNames).toEqual(['a.ts']);
     expect(yChain.previousNames).toEqual(['x.ts']);
   });

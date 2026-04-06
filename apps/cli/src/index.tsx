@@ -1,13 +1,17 @@
+import { readFileSync, existsSync } from 'node:fs';
+import { createServer } from 'node:http';
+import path from 'node:path';
+
+import { useState, useEffect } from 'react';
+
+import { runGitlore } from '@gitlore/core';
 import { program } from 'commander';
 import { render } from 'ink';
-import { useState, useEffect } from 'react';
-import { runGitlore } from '@gitlore/core';
-import type { GitloreReport } from '@gitlore/core';
-import { App } from './components/App.js';
-import path from 'node:path';
-import { createServer } from 'node:http';
-import { readFileSync, existsSync } from 'node:fs';
 import open from 'open';
+
+import { App } from './components/App.js';
+
+import type { GitloreReport } from '@gitlore/core';
 
 program
   .name('gitlore')
@@ -15,7 +19,11 @@ program
   .version('0.1.0')
   .option('-p, --path <path>', 'Path to the git repository', process.cwd())
   .option('-b, --branch <branch>', 'Branch to analyze (default: current branch)')
-  .option('-s, --since <date>', 'Only analyze commits since this date (default: "12 months ago", use "all" for full history)', '12 months ago')
+  .option(
+    '-s, --since <date>',
+    'Only analyze commits since this date (default: "12 months ago", use "all" for full history)',
+    '12 months ago',
+  )
   .option('--web', 'Open web dashboard after analysis')
   .option('--json', 'Output raw JSON report to stdout')
   .option('--shame', 'Show commit message forensics / shame leaderboard panel')
@@ -74,7 +82,15 @@ function GitloreApp() {
       .catch((err: Error) => setError(err.message));
   }, []);
 
-  return <App report={report} progress={progress} error={error} showShame={opts.shame ?? false} showParallel={opts.parallel ?? false} />;
+  return (
+    <App
+      report={report}
+      progress={progress}
+      error={error}
+      showShame={opts.shame ?? false}
+      showParallel={opts.parallel ?? false}
+    />
+  );
 }
 
 render(<GitloreApp />);
@@ -90,15 +106,19 @@ async function serveWebDashboard(report: GitloreReport): Promise<void> {
       return;
     }
 
-    const filePath = req.url === '/' || req.url === ''
-      ? path.join(webDist, 'index.html')
-      : path.join(webDist, req.url ?? '');
+    const filePath =
+      req.url === '/' || req.url === ''
+        ? path.join(webDist, 'index.html')
+        : path.join(webDist, req.url ?? '');
 
     if (existsSync(filePath)) {
       const ext = path.extname(filePath);
       const mimeTypes: Record<string, string> = {
-        '.html': 'text/html', '.js': 'application/javascript',
-        '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml',
+        '.html': 'text/html',
+        '.js': 'application/javascript',
+        '.css': 'text/css',
+        '.json': 'application/json',
+        '.svg': 'image/svg+xml',
       };
       res.writeHead(200, { 'Content-Type': mimeTypes[ext] ?? 'text/plain' });
       res.end(readFileSync(filePath));
@@ -109,6 +129,6 @@ async function serveWebDashboard(report: GitloreReport): Promise<void> {
     }
   });
 
-  await new Promise<void>(resolve => server.listen(port, resolve));
+  await new Promise<void>((resolve) => server.listen(port, resolve));
   await open(`http://localhost:${port}`);
 }

@@ -1,6 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
-import { analyzeLoc } from './loc.js';
 import * as fs from 'node:fs/promises';
+
+import { describe, it, expect, vi } from 'vitest';
+
+import { analyzeLoc } from './loc.js';
 
 vi.mock('node:fs/promises');
 
@@ -34,18 +36,18 @@ describe('analyzeLoc', () => {
   });
 
   it('aggregates language breakdown with percentages', async () => {
-    mockReadFile.mockResolvedValueOnce('a\nb\nc\n');  // 3 lines TS
-    mockReadFile.mockResolvedValueOnce('a\nb\nc\nd\ne\nf\ng\n');  // 7 lines TS
-    mockReadFile.mockResolvedValueOnce('a\n');  // 1 line CSS
+    mockReadFile.mockResolvedValueOnce('a\nb\nc\n'); // 3 lines TS
+    mockReadFile.mockResolvedValueOnce('a\nb\nc\nd\ne\nf\ng\n'); // 7 lines TS
+    mockReadFile.mockResolvedValueOnce('a\n'); // 1 line CSS
 
     const result = await analyzeLoc(['a.ts', 'b.tsx', 'c.css'], '/repo');
 
-    const ts = result.languages.find(l => l.language === 'TypeScript')!;
+    const ts = result.languages.find((l) => l.language === 'TypeScript')!;
     expect(ts.files).toBe(2);
     expect(ts.lines).toBe(10);
     expect(ts.percentage).toBeCloseTo(90.9, 0);
 
-    const css = result.languages.find(l => l.language === 'CSS')!;
+    const css = result.languages.find((l) => l.language === 'CSS')!;
     expect(css.files).toBe(1);
     expect(css.lines).toBe(1);
   });

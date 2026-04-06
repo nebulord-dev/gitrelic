@@ -1,4 +1,10 @@
-import type { ChurnReport, BusFactorReport, AgeMapReport, ForensicsReport, ParallelDevReport } from '../types.js';
+import type {
+  ChurnReport,
+  BusFactorReport,
+  AgeMapReport,
+  ForensicsReport,
+  ParallelDevReport,
+} from '../types.js';
 import type { CursedFile } from '../types.js';
 
 /**
@@ -17,20 +23,20 @@ export function findCursedFiles(
   ageMap: AgeMapReport,
   forensics: ForensicsReport,
   parallelDev: ParallelDevReport,
-  totalCommits: number
+  totalCommits: number,
 ): CursedFile[] {
   // Index the other reports by file for O(1) lookups
-  const churnByFile = new Map(churn.files.map(f => [f.file, f]));
-  const busFactorByFile = new Map(busFactor.files.map(f => [f.file, f]));
-  const ageByFile = new Map(ageMap.files.map(f => [f.file, f]));
-  const forensicsByFile = new Map(forensics.files.map(f => [f.file, f]));
-  const parallelByFile = new Map(parallelDev.files.map(f => [f.file, f]));
+  const churnByFile = new Map(churn.files.map((f) => [f.file, f]));
+  const busFactorByFile = new Map(busFactor.files.map((f) => [f.file, f]));
+  const ageByFile = new Map(ageMap.files.map((f) => [f.file, f]));
+  const forensicsByFile = new Map(forensics.files.map((f) => [f.file, f]));
+  const parallelByFile = new Map(parallelDev.files.map((f) => [f.file, f]));
 
   const candidates = new Set([
-    ...churn.topFiles.map(f => f.file),
-    ...busFactor.criticalFiles.map(f => f.file),
-    ...forensics.shameLeaderboard.map(f => f.file),
-    ...parallelDev.hotFiles.map(f => f.file),
+    ...churn.topFiles.map((f) => f.file),
+    ...busFactor.criticalFiles.map((f) => f.file),
+    ...forensics.shameLeaderboard.map((f) => f.file),
+    ...parallelDev.hotFiles.map((f) => f.file),
   ]);
 
   const cursed: CursedFile[] = [];
@@ -50,7 +56,9 @@ export function findCursedFiles(
 
     // High churn
     if (c.churnScore > 75) {
-      reasons.push(`Modified in ${Math.round((c.commitCount / totalCommits) * 100)}% of all commits`);
+      reasons.push(
+        `Modified in ${Math.round((c.commitCount / totalCommits) * 100)}% of all commits`,
+      );
       curseScore += 35;
     } else if (c.churnScore > 40) {
       reasons.push(`Frequently modified (${c.commitCount} commits)`);
@@ -82,7 +90,7 @@ export function findCursedFiles(
       const topKw = f.dominantKeywords[0];
       if (f.shameScore >= 75) {
         reasons.push(
-          `${f.shameCommitCount} shame commits detected${topKw ? ` ("${topKw}" appears repeatedly)` : ''} — this file keeps breaking`
+          `${f.shameCommitCount} shame commits detected${topKw ? ` ("${topKw}" appears repeatedly)` : ''} — this file keeps breaking`,
         );
         curseScore += 20;
       } else if (f.shameScore >= 50) {
@@ -98,7 +106,9 @@ export function findCursedFiles(
     const pd = parallelByFile.get(file);
     if (pd) {
       if (pd.parallelScore >= 70) {
-        reasons.push(`Heavy parallel development — ${pd.parallelWeeks} weeks of concurrent multi-author work`);
+        reasons.push(
+          `Heavy parallel development — ${pd.parallelWeeks} weeks of concurrent multi-author work`,
+        );
         curseScore += 20;
       } else if (pd.parallelScore >= 40) {
         reasons.push('Notable parallel development activity');
@@ -111,7 +121,13 @@ export function findCursedFiles(
 
     if (curseScore < 50 || reasons.length === 0) continue;
 
-    const narrative = buildNarrative(file, c.commitCount, b?.uniqueAuthors ?? 1, c.churnScore, totalCommits);
+    const narrative = buildNarrative(
+      file,
+      c.commitCount,
+      b?.uniqueAuthors ?? 1,
+      c.churnScore,
+      totalCommits,
+    );
 
     cursed.push({
       file,
@@ -132,7 +148,7 @@ function buildNarrative(
   commits: number,
   authors: number,
   churnScore: number,
-  totalCommits: number
+  totalCommits: number,
 ): string {
   const pct = Math.round((commits / totalCommits) * 100);
 
