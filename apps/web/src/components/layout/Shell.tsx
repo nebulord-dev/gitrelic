@@ -106,6 +106,7 @@ export function Shell({ report }: ShellProps) {
           {/* Bottom panel */}
           <BottomPanel
             report={report}
+            activeGroup={selection.activeGroup}
             activeTab={selection.activeBottomTab}
             onTabChange={selection.setActiveBottomTab}
             selectedFile={selection.selectedFile}

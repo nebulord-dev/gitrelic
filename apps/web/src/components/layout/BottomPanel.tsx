@@ -1,32 +1,59 @@
 import type { GitloreReport } from "@gitlore/core";
-import type { BottomTab } from "../../hooks/useSelection";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { BottomTab, SidebarGroup } from "../../hooks/useSelection";
+import { GROUP_TABS } from "../../hooks/useSelection";
 import { AgeMapTab } from "../tabs/AgeMapTab";
+import { BlastRadiusTab } from "../tabs/BlastRadiusTab";
 import { BusFactorTab } from "../tabs/BusFactorTab";
+import { ChurnVelocityTab } from "../tabs/ChurnVelocityTab";
+import { CoAuthorsTab } from "../tabs/CoAuthorsTab";
+import { CommitTimingTab } from "../tabs/CommitTimingTab";
+import { ComplexityTrendTab } from "../tabs/ComplexityTrendTab";
 import { ContributorsTab } from "../tabs/ContributorsTab";
 import { CouplingTab } from "../tabs/CouplingTab";
 import { CursedFilesTab } from "../tabs/CursedFilesTab";
+import { DeadCodeTab } from "../tabs/DeadCodeTab";
+import { GhostFilesTab } from "../tabs/GhostFilesTab";
 import { HotspotsTab } from "../tabs/HotspotsTab";
+import { KnowledgeSilosTab } from "../tabs/KnowledgeSilosTab";
+import { LanguagesTab } from "../tabs/LanguagesTab";
 import { ParallelDevTab } from "../tabs/ParallelDevTab";
+import { RenamesTab } from "../tabs/RenamesTab";
+import { RewriteRatioTab } from "../tabs/RewriteRatioTab";
 import { ShameTab } from "../tabs/ShameTab";
+import { TestCoverageTab } from "../tabs/TestCoverageTab";
 
 interface BottomPanelProps {
   report: GitloreReport;
+  activeGroup: SidebarGroup;
   activeTab: BottomTab;
   onTabChange: (tab: BottomTab) => void;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
 }
 
-const TABS: { id: BottomTab; label: string }[] = [
-  { id: "hotspots", label: "Hotspots" },
-  { id: "cursed-files", label: "Cursed Files" },
-  { id: "bus-factor", label: "Bus Factor" },
-  { id: "coupling", label: "Coupling" },
-  { id: "contributors", label: "Contributors" },
-  { id: "parallel-dev", label: "Parallel Dev" },
-  { id: "shame", label: "Shame" },
-  { id: "age-map", label: "Age Map" },
-];
+const TAB_LABELS: Record<BottomTab, string> = {
+  hotspots: "Hotspots",
+  "cursed-files": "Cursed Files",
+  "bus-factor": "Bus Factor",
+  coupling: "Coupling",
+  contributors: "Contributors",
+  "parallel-dev": "Parallel Dev",
+  shame: "Shame",
+  "age-map": "Age Map",
+  "dead-code": "Dead Code",
+  "complexity-trend": "Complexity Trend",
+  "rewrite-ratio": "Rewrite Ratio",
+  "churn-velocity": "Churn Velocity",
+  "blast-radius": "Blast Radius",
+  "ghost-files": "Ghost Files",
+  "knowledge-silos": "Knowledge Silos",
+  "co-authors": "Co-Authors",
+  "commit-timing": "Commit Timing",
+  languages: "Languages",
+  "test-coverage": "Test Coverage",
+  renames: "Renames",
+};
 
 function TabContent({
   tab,
@@ -41,13 +68,7 @@ function TabContent({
 }) {
   switch (tab) {
     case "hotspots":
-      return (
-        <HotspotsTab
-          report={report}
-          selectedFile={selectedFile}
-          onSelectFile={onSelectFile}
-        />
-      );
+      return <HotspotsTab report={report} selectedFile={selectedFile} onSelectFile={onSelectFile} />;
     case "cursed-files":
       return <CursedFilesTab report={report} onSelectFile={onSelectFile} />;
     case "bus-factor":
@@ -62,27 +83,106 @@ function TabContent({
       return <ShameTab report={report} onSelectFile={onSelectFile} />;
     case "age-map":
       return <AgeMapTab report={report} onSelectFile={onSelectFile} />;
+    case "dead-code":
+      return <DeadCodeTab report={report} onSelectFile={onSelectFile} />;
+    case "complexity-trend":
+      return <ComplexityTrendTab report={report} onSelectFile={onSelectFile} />;
+    case "rewrite-ratio":
+      return <RewriteRatioTab report={report} onSelectFile={onSelectFile} />;
+    case "churn-velocity":
+      return <ChurnVelocityTab report={report} onSelectFile={onSelectFile} />;
+    case "blast-radius":
+      return <BlastRadiusTab report={report} onSelectFile={onSelectFile} />;
+    case "ghost-files":
+      return <GhostFilesTab report={report} onSelectFile={onSelectFile} />;
+    case "knowledge-silos":
+      return <KnowledgeSilosTab report={report} />;
+    case "co-authors":
+      return <CoAuthorsTab report={report} />;
+    case "commit-timing":
+      return <CommitTimingTab report={report} onSelectFile={onSelectFile} />;
+    case "languages":
+      return <LanguagesTab report={report} />;
+    case "test-coverage":
+      return <TestCoverageTab report={report} />;
+    case "renames":
+      return <RenamesTab report={report} onSelectFile={onSelectFile} />;
   }
 }
 
+const MIN_HEIGHT = 120;
+const MAX_HEIGHT = 600;
+const DEFAULT_HEIGHT = 220;
+
 export function BottomPanel({
   report,
+  activeGroup,
   activeTab,
   onTabChange,
   selectedFile,
   onSelectFile,
 }: BottomPanelProps) {
+  const [height, setHeight] = useState(DEFAULT_HEIGHT);
+  const dragRef = useRef<{ startY: number; startHeight: number } | null>(null);
+
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      dragRef.current = { startY: e.clientY, startHeight: height };
+
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!dragRef.current) return;
+        const delta = dragRef.current.startY - e.clientY;
+        const newHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, dragRef.current.startHeight + delta));
+        setHeight(newHeight);
+      };
+
+      const handleMouseUp = () => {
+        dragRef.current = null;
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    },
+    [height],
+  );
+
+  const visibleTabs = GROUP_TABS[activeGroup];
+
+  useEffect(() => {
+    if (!visibleTabs.includes(activeTab)) {
+      onTabChange(visibleTabs[0]);
+    }
+  }, [activeGroup, activeTab, onTabChange, visibleTabs]);
+
   return (
     <div
       style={{
         borderTop: "1px solid var(--border-primary)",
-        height: 220,
+        height,
         flexShrink: 0,
         display: "flex",
         flexDirection: "column",
         background: "var(--surface-primary)",
+        position: "relative",
       }}
     >
+      {/* Resize handle */}
+      <div
+        onMouseDown={handleMouseDown}
+        style={{
+          position: "absolute",
+          top: -3,
+          left: 0,
+          right: 0,
+          height: 6,
+          cursor: "row-resize",
+          zIndex: 10,
+        }}
+      />
+
       {/* Tab bar */}
       <div
         style={{
@@ -93,10 +193,10 @@ export function BottomPanel({
           flexShrink: 0,
         }}
       >
-        {TABS.map((tab) => (
+        {visibleTabs.map((tabId) => (
           <button
-            key={tab.id}
-            onClick={() => onTabChange(tab.id)}
+            key={tabId}
+            onClick={() => onTabChange(tabId)}
             style={{
               padding: "8px 14px",
               fontSize: 10,
@@ -104,15 +204,15 @@ export function BottomPanel({
               background: "none",
               cursor: "pointer",
               color:
-                activeTab === tab.id
+                activeTab === tabId
                   ? "var(--text-primary)"
                   : "var(--text-tertiary)",
               borderBottom: `2px solid ${
-                activeTab === tab.id ? "var(--accent-primary)" : "transparent"
+                activeTab === tabId ? "var(--accent-primary)" : "transparent"
               }`,
             }}
           >
-            {tab.label}
+            {TAB_LABELS[tabId]}
           </button>
         ))}
       </div>
