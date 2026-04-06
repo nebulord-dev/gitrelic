@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import type { GitloreReport } from '@gitlore/core';
-import Dashboard from './components/Dashboard.js';
+import type { GitloreReport } from "@gitlore/core";
+import { useEffect, useState } from "react";
+import { Shell } from "./components/layout/Shell";
 
 export default function App() {
   const [report, setReport] = useState<GitloreReport | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/gitlore-report.json')
-      .then(r => {
-        if (!r.ok) throw new Error('No report found. Run gitlore --web to generate one.');
+    fetch("/gitlore-report.json")
+      .then((r) => {
+        if (!r.ok)
+          throw new Error(
+            "No report found. Run gitlore --web to generate one.",
+          );
         return r.json() as Promise<GitloreReport>;
       })
       .then(setReport)
@@ -18,28 +21,41 @@ export default function App() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div style={{ fontSize: '3.75rem', marginBottom: '1rem' }}>☠</div>
-          <p style={{ color: 'var(--red)', fontSize: '1.125rem' }}>{error}</p>
-          <p style={{ color: 'var(--fg3)', marginTop: '0.5rem', fontSize: '0.875rem' }}>
-            Run: <code style={{ color: 'var(--purple)' }}>gitlore --path ./your-repo --web</code>
-          </p>
-        </div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+          flexDirection: "column",
+          gap: 12,
+          color: "var(--text-secondary)",
+        }}
+      >
+        <div style={{ fontSize: 32 }}>☠</div>
+        <div>{error}</div>
       </div>
     );
   }
 
   if (!report) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-pulse" style={{ color: 'var(--fg2)', fontSize: '2.25rem', marginBottom: '1rem' }}>◎</div>
-          <p style={{ color: 'var(--fg3)' }}>Excavating git history...</p>
-        </div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+          flexDirection: "column",
+          gap: 12,
+          color: "var(--text-secondary)",
+        }}
+      >
+        <div style={{ fontSize: 18 }}>◌</div>
+        <div style={{ fontSize: 12 }}>Excavating git history...</div>
       </div>
     );
   }
 
-  return <Dashboard report={report} />;
+  return <Shell report={report} />;
 }
