@@ -1,14 +1,14 @@
-import tailwindcss from "@tailwindcss/vite";
-import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [tailwindcss(), react()],
   server: { port: 7777 },
   test: {
-    environment: "happy-dom",
+    environment: 'happy-dom',
     globals: true,
-    setupFiles: ["./src/test-setup.ts"],
-    pool: "vmThreads",
+    setupFiles: ['./src/test-setup.ts'],
+    pool: 'vmThreads',
   },
 });

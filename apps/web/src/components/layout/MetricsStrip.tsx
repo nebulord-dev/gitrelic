@@ -1,5 +1,6 @@
-import type { GitloreReport } from "@gitlore/core";
-import { fmt } from "../theme";
+import { fmt } from '../theme';
+
+import type { GitloreReport } from '@gitlore/core';
 
 interface MetricsStripProps {
   report: GitloreReport;
@@ -12,51 +13,46 @@ interface Metric {
 }
 
 function getMetrics(report: GitloreReport): Metric[] {
-  const criticalCount = report.hotspots.topHotspots.filter(
-    (h) => h.category === "critical",
-  ).length;
+  const criticalCount = report.hotspots.topHotspots.filter((h) => h.category === 'critical').length;
 
   return [
     {
-      label: "Cursed Files",
+      label: 'Cursed Files',
       value: String(report.cursedFiles.length),
-      color:
-        report.cursedFiles.length > 0
-          ? "var(--severity-critical)"
-          : "var(--severity-healthy)",
+      color: report.cursedFiles.length > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
     },
     {
-      label: "Hotspots",
+      label: 'Hotspots',
       value: String(criticalCount),
       color:
         criticalCount > 3
-          ? "var(--severity-critical)"
+          ? 'var(--severity-critical)'
           : criticalCount > 0
-            ? "var(--severity-warning)"
-            : "var(--severity-healthy)",
+            ? 'var(--severity-warning)'
+            : 'var(--severity-healthy)',
     },
     {
-      label: "Bus Factor Risks",
+      label: 'Bus Factor Risks',
       value: String(report.busFactors.criticalFiles.length),
       color:
         report.busFactors.criticalFiles.length > 0
-          ? "var(--severity-warning)"
-          : "var(--severity-healthy)",
+          ? 'var(--severity-warning)'
+          : 'var(--severity-healthy)',
     },
     {
-      label: "Contributors",
+      label: 'Contributors',
       value: String(report.meta.totalAuthors),
-      color: "var(--accent-primary)",
+      color: 'var(--accent-primary)',
     },
     {
-      label: "Repo Age",
+      label: 'Repo Age',
       value: `${(report.meta.ageInDays / 365).toFixed(1)}y`,
-      color: "var(--text-primary)",
+      color: 'var(--text-primary)',
     },
     {
-      label: "Lines of Code",
+      label: 'Lines of Code',
       value: fmt(report.loc.totalLines),
-      color: "var(--text-primary)",
+      color: 'var(--text-primary)',
     },
   ];
 }
@@ -67,10 +63,10 @@ export function MetricsStrip({ report }: MetricsStripProps) {
   return (
     <div
       style={{
-        display: "flex",
+        display: 'flex',
         gap: 1,
-        background: "var(--border-primary)",
-        borderBottom: "1px solid var(--border-primary)",
+        background: 'var(--border-primary)',
+        borderBottom: '1px solid var(--border-primary)',
         flexShrink: 0,
       }}
     >
@@ -79,20 +75,18 @@ export function MetricsStrip({ report }: MetricsStripProps) {
           key={m.label}
           style={{
             flex: 1,
-            padding: "12px 16px",
-            background: "var(--surface-primary)",
-            textAlign: "center",
+            padding: '12px 16px',
+            background: 'var(--surface-primary)',
+            textAlign: 'center',
           }}
         >
-          <div style={{ fontSize: 20, fontWeight: 700, color: m.color }}>
-            {m.value}
-          </div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: m.color }}>{m.value}</div>
           <div
             style={{
               fontSize: 9,
-              textTransform: "uppercase",
+              textTransform: 'uppercase',
               letterSpacing: 1,
-              color: "var(--text-tertiary)",
+              color: 'var(--text-tertiary)',
               marginTop: 2,
             }}
           >

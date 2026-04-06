@@ -1,10 +1,10 @@
-import { type ReactNode, useCallback, useState } from "react";
+import { type ReactNode, useCallback, useState } from 'react';
 
 export interface Column<T> {
   key: string;
   label: string;
   width?: string;
-  align?: "left" | "right" | "center";
+  align?: 'left' | 'right' | 'center';
   render: (item: T) => ReactNode;
   sortValue?: (item: T) => number | string;
 }
@@ -33,15 +33,15 @@ export function SortableTable<T>({
   maxRows = 50,
 }: SortableTableProps<T>) {
   const [sortCol, setSortCol] = useState<string | null>(null);
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const handleSort = useCallback(
     (colKey: string) => {
       if (sortCol === colKey) {
-        setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+        setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
       } else {
         setSortCol(colKey);
-        setSortDir("desc");
+        setSortDir('desc');
       }
     },
     [sortCol],
@@ -56,7 +56,7 @@ export function SortableTable<T>({
         const va = sv(a);
         const vb = sv(b);
         const cmp = va < vb ? -1 : va > vb ? 1 : 0;
-        return sortDir === "asc" ? cmp : -cmp;
+        return sortDir === 'asc' ? cmp : -cmp;
       });
     }
   }
@@ -67,10 +67,10 @@ export function SortableTable<T>({
       {/* Header */}
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          padding: "4px 0",
-          borderBottom: "1px solid var(--border-primary)",
+          display: 'flex',
+          alignItems: 'center',
+          padding: '4px 0',
+          borderBottom: '1px solid var(--border-primary)',
         }}
       >
         {columns.map((col) => (
@@ -81,17 +81,17 @@ export function SortableTable<T>({
               width: col.width,
               flex: col.width ? undefined : 1,
               fontSize: 9,
-              textTransform: "uppercase",
+              textTransform: 'uppercase',
               letterSpacing: 1,
-              color: "var(--text-tertiary)",
-              cursor: col.sortValue ? "pointer" : "default",
-              textAlign: col.align ?? "left",
-              padding: "0 4px",
-              userSelect: "none",
+              color: 'var(--text-tertiary)',
+              cursor: col.sortValue ? 'pointer' : 'default',
+              textAlign: col.align ?? 'left',
+              padding: '0 4px',
+              userSelect: 'none',
             }}
           >
             {col.label}
-            {sortCol === col.key && (sortDir === "asc" ? " ▲" : " ▼")}
+            {sortCol === col.key && (sortDir === 'asc' ? ' ▲' : ' ▼')}
           </div>
         ))}
       </div>
@@ -112,14 +112,12 @@ export function SortableTable<T>({
                 onRowClick?.(item);
               }}
               style={{
-                display: "flex",
-                alignItems: "center",
-                padding: "6px 0",
-                borderBottom: "1px solid var(--border-primary)",
-                cursor: "pointer",
-                background: isSelected
-                  ? "var(--nav-item-active-bg)"
-                  : "transparent",
+                display: 'flex',
+                alignItems: 'center',
+                padding: '6px 0',
+                borderBottom: '1px solid var(--border-primary)',
+                cursor: 'pointer',
+                background: isSelected ? 'var(--nav-item-active-bg)' : 'transparent',
               }}
             >
               {columns.map((col) => (
@@ -129,8 +127,8 @@ export function SortableTable<T>({
                     width: col.width,
                     flex: col.width ? undefined : 1,
                     fontSize: 11,
-                    padding: "0 4px",
-                    textAlign: col.align ?? "left",
+                    padding: '0 4px',
+                    textAlign: col.align ?? 'left',
                     minWidth: 0,
                   }}
                 >
@@ -143,9 +141,9 @@ export function SortableTable<T>({
             {isExpanded && renderExpanded && (
               <div
                 style={{
-                  padding: "8px 12px",
-                  background: "var(--surface-secondary)",
-                  borderBottom: "1px solid var(--border-primary)",
+                  padding: '8px 12px',
+                  background: 'var(--surface-secondary)',
+                  borderBottom: '1px solid var(--border-primary)',
                 }}
               >
                 {renderExpanded(item)}

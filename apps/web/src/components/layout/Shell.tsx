@@ -1,11 +1,12 @@
-import type { GitloreReport } from "@gitlore/core";
-import { useSelection } from "../../hooks/useSelection";
-import { ChurnTreemap } from "../hero/ChurnTreemap";
-import { BottomPanel } from "./BottomPanel";
-import { InspectorPanel } from "./InspectorPanel";
-import { MetricsStrip } from "./MetricsStrip";
-import { Sidebar } from "./Sidebar";
-import { TopBar } from "./TopBar";
+import { useSelection } from '../../hooks/useSelection';
+import { ChurnTreemap } from '../hero/ChurnTreemap';
+import { BottomPanel } from './BottomPanel';
+import { InspectorPanel } from './InspectorPanel';
+import { MetricsStrip } from './MetricsStrip';
+import { Sidebar } from './Sidebar';
+import { TopBar } from './TopBar';
+
+import type { GitloreReport } from '@gitlore/core';
 
 interface ShellProps {
   report: GitloreReport;
@@ -17,17 +18,17 @@ export function Shell({ report }: ShellProps) {
   return (
     <div
       style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        background: "var(--surface-primary)",
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        background: 'var(--surface-primary)',
       }}
     >
       {/* Top bar */}
       <TopBar report={report} />
 
       {/* Body: sidebar + center + inspector */}
-      <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
+      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
         {/* Left sidebar */}
         <Sidebar
           report={report}
@@ -39,8 +40,8 @@ export function Shell({ report }: ShellProps) {
         <div
           style={{
             flex: 1,
-            display: "flex",
-            flexDirection: "column",
+            display: 'flex',
+            flexDirection: 'column',
             minWidth: 0,
           }}
         >
@@ -51,42 +52,42 @@ export function Shell({ report }: ShellProps) {
             style={{
               flex: 1,
               minHeight: 0,
-              padding: "var(--space-md)",
-              display: "flex",
-              flexDirection: "column",
+              padding: 'var(--space-md)',
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
             <div
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
                 marginBottom: 12,
                 flexShrink: 0,
               }}
             >
-              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                 Repository Map
               </span>
               <div
                 style={{
-                  display: "flex",
+                  display: 'flex',
                   gap: 2,
-                  background: "var(--surface-tertiary)",
+                  background: 'var(--surface-tertiary)',
                   borderRadius: 6,
                   padding: 2,
                 }}
               >
-                {["Treemap", "Ownership", "Coupling", "Graph"].map((label, i) => (
+                {['Treemap', 'Ownership', 'Coupling', 'Graph'].map((label, i) => (
                   <span
                     key={label}
                     style={{
-                      padding: "4px 10px",
+                      padding: '4px 10px',
                       borderRadius: 4,
                       fontSize: 10,
-                      cursor: "pointer",
-                      color: i === 0 ? "var(--text-primary)" : "var(--text-secondary)",
-                      background: i === 0 ? "var(--surface-elevated)" : "transparent",
+                      cursor: 'pointer',
+                      color: i === 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      background: i === 0 ? 'var(--surface-elevated)' : 'transparent',
                     }}
                   >
                     {label}

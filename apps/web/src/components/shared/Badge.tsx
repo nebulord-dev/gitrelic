@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
-import { type BadgeVariant, badgeStyles } from "../theme";
+import type { ReactNode } from 'react';
+
+import { type BadgeVariant, badgeStyles } from '../theme';
 
 interface BadgeProps {
   variant: BadgeVariant;
@@ -11,15 +12,15 @@ export default function Badge({ variant, children }: BadgeProps) {
   return (
     <span
       style={{
-        display: "inline-block",
+        display: 'inline-block',
         fontSize: 10,
-        padding: "2px 7px",
+        padding: '2px 7px',
         borderRadius: 3,
         fontWeight: 500,
-        letterSpacing: "0.02em",
+        letterSpacing: '0.02em',
         background: style.bg,
         color: style.fg,
-        whiteSpace: "nowrap",
+        whiteSpace: 'nowrap',
       }}
     >
       {children}

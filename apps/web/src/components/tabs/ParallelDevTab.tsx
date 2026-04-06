@@ -1,7 +1,8 @@
-import type { FileParallelDev, GitloreReport } from "@gitlore/core";
-import Badge from "../shared/Badge";
-import { type Column, SortableTable } from "../shared/SortableTable";
-import { fileName, filePath } from "../theme";
+import Badge from '../shared/Badge';
+import { type Column, SortableTable } from '../shared/SortableTable';
+import { fileName, filePath } from '../theme';
+
+import type { FileParallelDev, GitloreReport } from '@gitlore/core';
 
 interface ParallelDevTabProps {
   report: GitloreReport;
@@ -11,14 +12,14 @@ interface ParallelDevTabProps {
 export function ParallelDevTab({ report, onSelectFile }: ParallelDevTabProps) {
   const columns: Column<FileParallelDev>[] = [
     {
-      key: "file",
-      label: "File",
+      key: 'file',
+      label: 'File',
       render: (f) => (
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: 11 }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
           {fileName(f.file)}
           <span
             style={{
-              color: "var(--text-tertiary)",
+              color: 'var(--text-tertiary)',
               marginLeft: 6,
               fontSize: 10,
             }}
@@ -29,17 +30,17 @@ export function ParallelDevTab({ report, onSelectFile }: ParallelDevTabProps) {
       ),
     },
     {
-      key: "score",
-      label: "Score",
-      width: "80px",
-      align: "right",
+      key: 'score',
+      label: 'Score',
+      width: '80px',
+      align: 'right',
       sortValue: (f) => f.parallelScore,
       render: (f) => (
         <span
           style={{
-            fontFamily: "var(--font-mono)",
+            fontFamily: 'var(--font-mono)',
             fontSize: 11,
-            color: "var(--severity-warning)",
+            color: 'var(--severity-warning)',
             fontWeight: 600,
           }}
         >
@@ -48,17 +49,17 @@ export function ParallelDevTab({ report, onSelectFile }: ParallelDevTabProps) {
       ),
     },
     {
-      key: "weeks",
-      label: "Parallel Weeks",
-      width: "100px",
-      align: "right",
+      key: 'weeks',
+      label: 'Parallel Weeks',
+      width: '100px',
+      align: 'right',
       sortValue: (f) => f.parallelWeeks,
       render: (f) => (
         <span
           style={{
-            fontFamily: "var(--font-mono)",
+            fontFamily: 'var(--font-mono)',
             fontSize: 11,
-            color: "var(--text-secondary)",
+            color: 'var(--text-secondary)',
           }}
         >
           {f.parallelWeeks}/{f.totalActiveWeeks}
@@ -66,14 +67,12 @@ export function ParallelDevTab({ report, onSelectFile }: ParallelDevTabProps) {
       ),
     },
     {
-      key: "peak",
-      label: "Peak Authors",
-      width: "90px",
-      align: "right",
+      key: 'peak',
+      label: 'Peak Authors',
+      width: '90px',
+      align: 'right',
       sortValue: (f) => f.peakAuthors,
-      render: (f) => (
-        <Badge variant="parallel">{f.peakAuthors} authors</Badge>
-      ),
+      render: (f) => <Badge variant="parallel">{f.peakAuthors} authors</Badge>,
     },
   ];
 

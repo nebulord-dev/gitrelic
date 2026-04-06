@@ -1,7 +1,8 @@
-import type { FileBusFactor, GitloreReport } from "@gitlore/core";
-import Badge from "../shared/Badge";
-import { type Column, SortableTable } from "../shared/SortableTable";
-import { fileName, filePath } from "../theme";
+import Badge from '../shared/Badge';
+import { type Column, SortableTable } from '../shared/SortableTable';
+import { fileName, filePath } from '../theme';
+
+import type { FileBusFactor, GitloreReport } from '@gitlore/core';
 
 interface BusFactorTabProps {
   report: GitloreReport;
@@ -11,14 +12,14 @@ interface BusFactorTabProps {
 export function BusFactorTab({ report, onSelectFile }: BusFactorTabProps) {
   const columns: Column<FileBusFactor>[] = [
     {
-      key: "file",
-      label: "File",
+      key: 'file',
+      label: 'File',
       render: (f) => (
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: 11 }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
           {fileName(f.file)}
           <span
             style={{
-              color: "var(--text-tertiary)",
+              color: 'var(--text-tertiary)',
               marginLeft: 6,
               fontSize: 10,
             }}
@@ -29,27 +30,27 @@ export function BusFactorTab({ report, onSelectFile }: BusFactorTabProps) {
       ),
     },
     {
-      key: "dominant",
-      label: "Dominant Author",
-      width: "180px",
+      key: 'dominant',
+      label: 'Dominant Author',
+      width: '180px',
       render: (f) => (
-        <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>
-          {f.dominantAuthor.split("@")[0]} ({f.dominantAuthorPercent}%)
+        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+          {f.dominantAuthor.split('@')[0]} ({f.dominantAuthorPercent}%)
         </span>
       ),
     },
     {
-      key: "authors",
-      label: "Authors",
-      width: "60px",
-      align: "right",
+      key: 'authors',
+      label: 'Authors',
+      width: '60px',
+      align: 'right',
       sortValue: (f) => f.uniqueAuthors,
       render: (f) => (
         <span
           style={{
-            fontFamily: "var(--font-mono)",
+            fontFamily: 'var(--font-mono)',
             fontSize: 11,
-            color: "var(--text-secondary)",
+            color: 'var(--text-secondary)',
           }}
         >
           {f.uniqueAuthors}
@@ -57,20 +58,14 @@ export function BusFactorTab({ report, onSelectFile }: BusFactorTabProps) {
       ),
     },
     {
-      key: "risk",
-      label: "Risk",
-      width: "70px",
-      align: "center",
+      key: 'risk',
+      label: 'Risk',
+      width: '70px',
+      align: 'center',
       sortValue: (f) => f.dominantAuthorPercent,
       render: (f) => (
         <Badge
-          variant={
-            f.risk === "critical"
-              ? "critical"
-              : f.risk === "high"
-                ? "warning"
-                : "moderate"
-          }
+          variant={f.risk === 'critical' ? 'critical' : f.risk === 'high' ? 'warning' : 'moderate'}
         >
           {f.risk}
         </Badge>

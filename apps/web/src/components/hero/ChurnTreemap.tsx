@@ -1,7 +1,9 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { hierarchy, treemap, treemapSquarify } from 'd3-hierarchy';
+
 // apps/web/src/components/hero/ChurnTreemap.tsx
-import type { GitloreReport } from "@gitlore/core";
-import { hierarchy, treemap, treemapSquarify } from "d3-hierarchy";
-import { useEffect, useMemo, useRef, useState } from "react";
+import type { GitloreReport } from '@gitlore/core';
 
 interface ChurnTreemapProps {
   report: GitloreReport;
@@ -19,7 +21,7 @@ interface TreeNode {
 }
 
 function buildTree(report: GitloreReport): TreeNode {
-  const root: TreeNode = { name: "root", children: [] };
+  const root: TreeNode = { name: 'root', children: [] };
   const dirMap = new Map<string, TreeNode>();
 
   // Only include files that appear in hotspot or LOC data
@@ -29,18 +31,18 @@ function buildTree(report: GitloreReport): TreeNode {
     fileSet.set(f.file, {
       loc: f.lines,
       score: hotspot?.hotspotScore ?? 0,
-      category: hotspot?.category ?? "low",
+      category: hotspot?.category ?? 'low',
     });
   }
 
   for (const [filePath, data] of fileSet) {
-    const parts = filePath.split("/");
+    const parts = filePath.split('/');
     const fName = parts.pop()!;
 
     // Ensure parent directories exist
     let current = root;
     for (const part of parts) {
-      const key = parts.slice(0, parts.indexOf(part) + 1).join("/");
+      const key = parts.slice(0, parts.indexOf(part) + 1).join('/');
       if (!dirMap.has(key)) {
         const node: TreeNode = { name: part, children: [] };
         dirMap.set(key, node);
@@ -63,11 +65,11 @@ function buildTree(report: GitloreReport): TreeNode {
 
 function categoryColor(category: string, opacity: number): string {
   switch (category) {
-    case "critical":
+    case 'critical':
       return `rgba(248, 81, 73, ${opacity})`;
-    case "warning":
+    case 'warning':
       return `rgba(210, 153, 34, ${opacity})`;
-    case "moderate":
+    case 'moderate':
       return `rgba(88, 166, 255, ${opacity})`;
     default:
       return `rgba(63, 185, 80, ${opacity})`;
@@ -104,7 +106,7 @@ export function ChurnTreemap({ report, selectedFile, onSelectFile }: ChurnTreema
   }, [report, dims.width, dims.height]);
 
   return (
-    <div ref={containerRef} style={{ width: "100%", height: "100%", position: "relative" }}>
+    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
       <svg width={dims.width} height={dims.height}>
         {leaves.map((leaf) => {
           const d = leaf.data;
@@ -120,18 +122,16 @@ export function ChurnTreemap({ report, selectedFile, onSelectFile }: ChurnTreema
             <g
               key={d.fullPath}
               onClick={() => onSelectFile(d.fullPath!)}
-              style={{ cursor: "pointer" }}
+              style={{ cursor: 'pointer' }}
             >
               <rect
                 x={leaf.x0}
                 y={leaf.y0}
                 width={w}
                 height={h}
-                fill={categoryColor(d.category ?? "low", 0.35)}
+                fill={categoryColor(d.category ?? 'low', 0.35)}
                 stroke={
-                  isSelected
-                    ? "var(--accent-primary)"
-                    : categoryColor(d.category ?? "low", 0.3)
+                  isSelected ? 'var(--accent-primary)' : categoryColor(d.category ?? 'low', 0.3)
                 }
                 strokeWidth={isSelected ? 2 : 1}
                 rx={2}
@@ -142,7 +142,7 @@ export function ChurnTreemap({ report, selectedFile, onSelectFile }: ChurnTreema
                   y={(leaf.y0 ?? 0) + 12}
                   fontSize={9}
                   fill="rgba(255,255,255,0.7)"
-                  style={{ pointerEvents: "none" }}
+                  style={{ pointerEvents: 'none' }}
                 >
                   {d.name}
                 </text>
@@ -153,7 +153,7 @@ export function ChurnTreemap({ report, selectedFile, onSelectFile }: ChurnTreema
                   y={(leaf.y0 ?? 0) + 23}
                   fontSize={8}
                   fill="rgba(255,255,255,0.4)"
-                  style={{ pointerEvents: "none" }}
+                  style={{ pointerEvents: 'none' }}
                 >
                   {d.hotspotScore}
                 </text>

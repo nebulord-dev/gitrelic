@@ -1,18 +1,17 @@
-import type { GitloreReport } from "@gitlore/core";
-import { useEffect, useState } from "react";
-import { Shell } from "./components/layout/Shell";
+import { useEffect, useState } from 'react';
+
+import { Shell } from './components/layout/Shell';
+
+import type { GitloreReport } from '@gitlore/core';
 
 export default function App() {
   const [report, setReport] = useState<GitloreReport | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/gitlore-report.json")
+    fetch('/gitlore-report.json')
       .then((r) => {
-        if (!r.ok)
-          throw new Error(
-            "No report found. Run gitlore --web to generate one.",
-          );
+        if (!r.ok) throw new Error('No report found. Run gitlore --web to generate one.');
         return r.json() as Promise<GitloreReport>;
       })
       .then(setReport)
@@ -23,13 +22,13 @@ export default function App() {
     return (
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100vh",
-          flexDirection: "column",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          flexDirection: 'column',
           gap: 12,
-          color: "var(--text-secondary)",
+          color: 'var(--text-secondary)',
         }}
       >
         <div style={{ fontSize: 32 }}>☠</div>
@@ -42,13 +41,13 @@ export default function App() {
     return (
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100vh",
-          flexDirection: "column",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          flexDirection: 'column',
           gap: 12,
-          color: "var(--text-secondary)",
+          color: 'var(--text-secondary)',
         }}
       >
         <div style={{ fontSize: 18 }}>◌</div>

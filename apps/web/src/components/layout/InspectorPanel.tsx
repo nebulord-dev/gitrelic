@@ -1,10 +1,12 @@
-import type { GitloreReport } from "@gitlore/core";
-import { useState } from "react";
-import type { InspectorTab } from "../../hooks/useSelection";
-import { ActivityInspector } from "../inspector/ActivityInspector";
-import { ContributorsInspector } from "../inspector/ContributorsInspector";
-import { FileInspector } from "../inspector/FileInspector";
-import { GuidePanel } from "../inspector/GuidePanel";
+import { useState } from 'react';
+
+import { ActivityInspector } from '../inspector/ActivityInspector';
+import { ContributorsInspector } from '../inspector/ContributorsInspector';
+import { FileInspector } from '../inspector/FileInspector';
+import { GuidePanel } from '../inspector/GuidePanel';
+
+import type { InspectorTab } from '../../hooks/useSelection';
+import type { GitloreReport } from '@gitlore/core';
 
 interface InspectorPanelProps {
   report: GitloreReport;
@@ -17,29 +19,29 @@ interface InspectorPanelProps {
 }
 
 const CONTEXT_TABS: { id: InspectorTab; label: string }[] = [
-  { id: "file", label: "Inspector" },
-  { id: "contributors", label: "Contributors" },
-  { id: "activity", label: "Activity" },
+  { id: 'file', label: 'Inspector' },
+  { id: 'contributors', label: 'Contributors' },
+  { id: 'activity', label: 'Activity' },
 ];
 
-type UtilityTab = "guide" | "narrative" | "refactor";
+type UtilityTab = 'guide' | 'narrative' | 'refactor';
 
 const UTILITY_TABS: { id: UtilityTab; label: string }[] = [
-  { id: "guide", label: "Guide" },
-  { id: "narrative", label: "Narrative" },
-  { id: "refactor", label: "Refactor" },
+  { id: 'guide', label: 'Guide' },
+  { id: 'narrative', label: 'Narrative' },
+  { id: 'refactor', label: 'Refactor' },
 ];
 
 const tabButtonStyle = (isActive: boolean): React.CSSProperties => ({
   flex: 1,
-  textAlign: "center",
-  padding: "8px 4px",
+  textAlign: 'center',
+  padding: '8px 4px',
   fontSize: 10,
-  border: "none",
-  background: "none",
-  cursor: "pointer",
-  color: isActive ? "var(--text-primary)" : "var(--text-tertiary)",
-  borderBottom: `2px solid ${isActive ? "var(--accent-primary)" : "transparent"}`,
+  border: 'none',
+  background: 'none',
+  cursor: 'pointer',
+  color: isActive ? 'var(--text-primary)' : 'var(--text-tertiary)',
+  borderBottom: `2px solid ${isActive ? 'var(--accent-primary)' : 'transparent'}`,
 });
 
 export function InspectorPanel({
@@ -52,25 +54,25 @@ export function InspectorPanel({
   onSelectContributor,
 }: InspectorPanelProps) {
   const hasSelection = selectedFile != null || selectedContributor != null;
-  const [utilityTab, setUtilityTab] = useState<UtilityTab>("guide");
+  const [utilityTab, setUtilityTab] = useState<UtilityTab>('guide');
 
   return (
     <div
       style={{
         width: 260,
         minWidth: 260,
-        borderLeft: "1px solid var(--border-primary)",
-        background: "var(--surface-primary)",
-        display: "flex",
-        flexDirection: "column",
+        borderLeft: '1px solid var(--border-primary)',
+        background: 'var(--surface-primary)',
+        display: 'flex',
+        flexDirection: 'column',
         flexShrink: 0,
       }}
     >
       {/* ─── Top: Context tabs ─── */}
       <div
         style={{
-          display: "flex",
-          borderBottom: "1px solid var(--border-primary)",
+          display: 'flex',
+          borderBottom: '1px solid var(--border-primary)',
           flexShrink: 0,
         }}
       >
@@ -86,42 +88,39 @@ export function InspectorPanel({
       </div>
 
       {/* Top content */}
-      <div style={{ flex: 1, overflow: "auto", padding: 12, minHeight: 0 }}>
+      <div style={{ flex: 1, overflow: 'auto', padding: 12, minHeight: 0 }}>
         {!hasSelection ? (
           <div
             style={{
-              color: "var(--text-tertiary)",
+              color: 'var(--text-tertiary)',
               fontSize: 11,
-              textAlign: "center",
+              textAlign: 'center',
               marginTop: 40,
             }}
           >
             Select a file or contributor to inspect
           </div>
-        ) : activeTab === "file" && selectedFile ? (
+        ) : activeTab === 'file' && selectedFile ? (
           <FileInspector
             report={report}
             file={selectedFile}
             onSelectContributor={onSelectContributor}
           />
-        ) : activeTab === "contributors" ? (
+        ) : activeTab === 'contributors' ? (
           <ContributorsInspector
             report={report}
             file={selectedFile}
             contributor={selectedContributor}
             onSelectFile={onSelectFile}
           />
-        ) : activeTab === "activity" && selectedFile ? (
-          <ActivityInspector
-            report={report}
-            file={selectedFile}
-          />
+        ) : activeTab === 'activity' && selectedFile ? (
+          <ActivityInspector report={report} file={selectedFile} />
         ) : (
           <div
             style={{
-              color: "var(--text-tertiary)",
+              color: 'var(--text-tertiary)',
               fontSize: 11,
-              textAlign: "center",
+              textAlign: 'center',
               marginTop: 40,
             }}
           >
@@ -133,18 +132,18 @@ export function InspectorPanel({
       {/* ─── Bottom: Utility tabs ─── */}
       <div
         style={{
-          borderTop: "1px solid var(--border-primary)",
-          display: "flex",
-          flexDirection: "column",
-          height: "40%",
+          borderTop: '1px solid var(--border-primary)',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '40%',
           minHeight: 120,
           flexShrink: 0,
         }}
       >
         <div
           style={{
-            display: "flex",
-            borderBottom: "1px solid var(--border-primary)",
+            display: 'flex',
+            borderBottom: '1px solid var(--border-primary)',
             flexShrink: 0,
           }}
         >
@@ -159,19 +158,21 @@ export function InspectorPanel({
           ))}
         </div>
 
-        <div style={{ flex: 1, overflow: "auto", padding: 12 }}>
-          {utilityTab === "guide" ? (
+        <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
+          {utilityTab === 'guide' ? (
             <GuidePanel report={report} />
           ) : (
             <div
               style={{
-                color: "var(--text-tertiary)",
+                color: 'var(--text-tertiary)',
                 fontSize: 11,
-                textAlign: "center",
+                textAlign: 'center',
                 marginTop: 20,
               }}
             >
-              {utilityTab === "narrative" ? "AI Narrative \u2014 coming soon" : "Refactor Brief \u2014 coming soon"}
+              {utilityTab === 'narrative'
+                ? 'AI Narrative \u2014 coming soon'
+                : 'Refactor Brief \u2014 coming soon'}
             </div>
           )}
         </div>
