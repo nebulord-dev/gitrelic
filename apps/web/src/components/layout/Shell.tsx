@@ -1,6 +1,7 @@
 import { useSelection } from '../../hooks/useSelection';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
 import { ContributorSwimlanes } from '../hero/ContributorSwimlanes';
+import { CouplingGraph } from '../hero/CouplingGraph';
 import { HotspotScatter } from '../hero/HotspotScatter';
 import { OwnershipBubble } from '../hero/OwnershipBubble';
 import { Timeline } from '../hero/Timeline';
@@ -157,11 +158,19 @@ export function Shell({ report }: ShellProps) {
                   onSelectContributor={selection.selectContributor}
                 />
               )}
+              {selection.activeHeroViz === 'coupling' && (
+                <CouplingGraph
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
+              )}
               {selection.activeHeroViz !== 'treemap' &&
                 selection.activeHeroViz !== 'ownership' &&
                 selection.activeHeroViz !== 'scatter' &&
                 selection.activeHeroViz !== 'timeline' &&
-                selection.activeHeroViz !== 'swimlanes' && (
+                selection.activeHeroViz !== 'swimlanes' &&
+                selection.activeHeroViz !== 'coupling' && (
                   <div
                     style={{
                       flex: 1,
