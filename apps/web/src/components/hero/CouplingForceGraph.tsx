@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { forceCenter, forceLink, forceManyBody, forceSimulation } from 'd3-force';
+import { forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation } from 'd3-force';
 
 import { categoryColor } from '../../utils/colors';
 
@@ -78,7 +78,11 @@ export function CouplingForceGraph({
   useEffect(() => {
     if (nodes.length === 0) return;
 
-    const simNodes = nodes.map((n) => ({ ...n, x: dims.width / 2, y: dims.height / 2 }));
+    const simNodes = nodes.map((n) => ({
+      ...n,
+      x: dims.width / 2 + (Math.random() - 0.5) * dims.width * 0.5,
+      y: dims.height / 2 + (Math.random() - 0.5) * dims.height * 0.5,
+    }));
     const simLinks = links.map((l) => ({ ...l }));
 
     const sim = forceSimulation(simNodes)
@@ -86,11 +90,13 @@ export function CouplingForceGraph({
         'link',
         forceLink(simLinks)
           .id((d: any) => d.id)
-          .distance(80)
-          .strength((d: any) => d.strength),
+          .distance(100)
+          .strength((d: any) => d.strength * 0.5),
       )
-      .force('charge', forceManyBody().strength(-120))
-      .force('center', forceCenter(dims.width / 2, dims.height / 2));
+      .force('charge', forceManyBody().strength(-200))
+      .force('center', forceCenter(dims.width / 2, dims.height / 2))
+      .force('collide', forceCollide().radius(20))
+      .velocityDecay(0.3);
 
     sim.on('tick', () => {
       const positions = new Map<string, { x: number; y: number }>();
