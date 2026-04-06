@@ -148,7 +148,7 @@ describe('summary generation', () => {
     const chains = buildRenameChains(renames, ['c.ts', 'y.ts']);
     const totalRenames = renames.length;
     const filesWithRenames = chains.length;
-    const summary = `${filesWithRenames} file${filesWithRenames !== 1 ? 's' : ''} have been renamed ${totalRenames} time${totalRenames !== 1 ? 's' : ''} total`;
+    const summary = `${filesWithRenames} file${filesWithRenames !== 1 ? 's' : ''} ${filesWithRenames === 1 ? 'has' : 'have'} been renamed ${totalRenames} time${totalRenames !== 1 ? 's' : ''} total`;
 
     expect(summary).toBe('2 files have been renamed 3 times total');
   });
@@ -161,8 +161,8 @@ describe('summary generation', () => {
     const chains = buildRenameChains(renames, ['b.ts']);
     const totalRenames = renames.length;
     const filesWithRenames = chains.length;
-    const summary = `${filesWithRenames} file${filesWithRenames !== 1 ? 's' : ''} have been renamed ${totalRenames} time${totalRenames !== 1 ? 's' : ''} total`;
+    const summary = `${filesWithRenames} file${filesWithRenames !== 1 ? 's' : ''} ${filesWithRenames === 1 ? 'has' : 'have'} been renamed ${totalRenames} time${totalRenames !== 1 ? 's' : ''} total`;
 
-    expect(summary).toBe('1 file have been renamed 1 time total');
+    expect(summary).toBe('1 file has been renamed 1 time total');
   });
 });

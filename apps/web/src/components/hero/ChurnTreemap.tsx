@@ -41,8 +41,9 @@ function buildTree(report: GitloreReport): TreeNode {
 
     // Ensure parent directories exist
     let current = root;
-    for (const part of parts) {
-      const key = parts.slice(0, parts.indexOf(part) + 1).join('/');
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      const key = parts.slice(0, i + 1).join('/');
       if (!dirMap.has(key)) {
         const node: TreeNode = { name: part, children: [] };
         dirMap.set(key, node);

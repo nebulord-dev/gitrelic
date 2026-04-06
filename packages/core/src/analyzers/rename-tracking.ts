@@ -126,7 +126,7 @@ export async function analyzeRenameTracking(
   const totalRenames = renames.length;
   const filesWithRenames = chains.length;
 
-  const summary = `${filesWithRenames} file${filesWithRenames !== 1 ? 's' : ''} have been renamed ${totalRenames} time${totalRenames !== 1 ? 's' : ''} total`;
+  const summary = `${filesWithRenames} file${filesWithRenames !== 1 ? 's' : ''} ${filesWithRenames === 1 ? 'has' : 'have'} been renamed ${totalRenames} time${totalRenames !== 1 ? 's' : ''} total`;
 
   return {
     renames,

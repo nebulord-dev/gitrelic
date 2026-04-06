@@ -80,8 +80,8 @@ export function findCursedFiles(
     }
 
     // Age paradox: old but still churning
-    if (a && a.ageInDays < 30 && c.churnScore > 60) {
-      reasons.push('Still actively changing despite being a core file');
+    if (a && a.ageInDays > 180 && c.churnScore > 60) {
+      reasons.push('Still actively changing despite being a stale file');
       curseScore += 10;
     }
 
