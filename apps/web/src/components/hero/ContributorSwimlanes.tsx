@@ -102,6 +102,12 @@ export function ContributorSwimlanes({
 }: ContributorSwimlanesProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(800);
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    commit: SwimCommit;
+    author: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -129,6 +135,24 @@ export function ContributorSwimlanes({
       ref={containerRef}
       style={{ width: '100%', height: '100%', overflow: 'auto', position: 'relative' }}
     >
+      {/* Time axis */}
+      <div style={{ display: 'flex', height: 20, marginBottom: 4, flexShrink: 0 }}>
+        <div style={{ width: LABEL_WIDTH, flexShrink: 0 }} />
+        <svg style={{ flex: 1 }} height={20}>
+          {xScale.ticks(8).map((date) => (
+            <text
+              key={date.toISOString()}
+              x={xScale(date)}
+              y={14}
+              textAnchor="middle"
+              fontSize={8}
+              fill="var(--text-tertiary)"
+            >
+              {date.toLocaleDateString('en', { month: 'short', year: '2-digit' })}
+            </text>
+          ))}
+        </svg>
+      </div>
       {lanes.map((lane) => {
         const isSelected = selectedContributor === lane.email;
         const color = authorColor(lane.email);
@@ -238,6 +262,18 @@ export function ContributorSwimlanes({
                         e.stopPropagation();
                         if (c.files.length > 0) onSelectFile(c.files[0]);
                       }}
+                      onMouseEnter={(e) => {
+                        const rect = containerRef.current?.getBoundingClientRect();
+                        if (rect) {
+                          setTooltip({
+                            x: e.clientX - rect.left,
+                            y: e.clientY - rect.top,
+                            commit: c,
+                            author: lane.name,
+                          });
+                        }
+                      }}
+                      onMouseLeave={() => setTooltip(null)}
                     />
                   );
                 })}
@@ -298,6 +334,40 @@ export function ContributorSwimlanes({
           </div>
         );
       })}
+      {tooltip && (
+        <div
+          style={{
+            position: 'absolute',
+            left: tooltip.x + 12,
+            top: tooltip.y - 8,
+            background: 'var(--surface-elevated)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 4,
+            padding: '6px 10px',
+            fontSize: 10,
+            color: 'var(--text-primary)',
+            pointerEvents: 'none',
+            zIndex: 20,
+            maxWidth: 300,
+          }}
+        >
+          <div style={{ fontWeight: 600, marginBottom: 2 }}>
+            {tooltip.commit.files[0] ?? 'no files'}
+            {tooltip.commit.isHotspot && (
+              <span style={{ color: 'rgba(248,81,73,0.9)', marginLeft: 4 }}>hotspot</span>
+            )}
+          </div>
+          <div style={{ color: 'var(--text-secondary)' }}>
+            {tooltip.author} ·{' '}
+            {tooltip.commit.date.toLocaleDateString('en', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })}{' '}
+            · {tooltip.commit.files.length} files
+          </div>
+        </div>
+      )}
     </div>
   );
 }

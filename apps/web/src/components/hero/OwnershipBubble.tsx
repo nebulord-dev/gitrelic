@@ -81,6 +81,7 @@ export function buildDirectoryBubbles(report: GitloreReport): DirBubble[] {
 export function OwnershipBubble({ report, selectedFile, onSelectFile }: OwnershipBubbleProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; dir: DirBubble } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -143,6 +144,17 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
               key={d.dirPath}
               onClick={() => onSelectFile(firstFile)}
               style={{ cursor: 'pointer' }}
+              onMouseEnter={(e) => {
+                const rect = containerRef.current?.getBoundingClientRect();
+                if (rect) {
+                  setTooltip({
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top,
+                    dir: d,
+                  });
+                }
+              }}
+              onMouseLeave={() => setTooltip(null)}
             >
               <circle
                 cx={leaf.x}
@@ -197,6 +209,31 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
           </g>
         ))}
       </svg>
+      {tooltip && (
+        <div
+          style={{
+            position: 'absolute',
+            left: tooltip.x + 12,
+            top: tooltip.y - 8,
+            background: 'var(--surface-elevated)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 4,
+            padding: '6px 10px',
+            fontSize: 10,
+            color: 'var(--text-primary)',
+            pointerEvents: 'none',
+            zIndex: 20,
+          }}
+        >
+          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.dir.dirPath}/</div>
+          <div style={{ color: 'var(--text-secondary)' }}>
+            {tooltip.dir.totalLoc.toLocaleString()} LOC · {tooltip.dir.fileCount} files
+          </div>
+          <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>
+            Owner: {tooltip.dir.dominantAuthor.split('@')[0]} ({tooltip.dir.dominantPercent}%)
+          </div>
+        </div>
+      )}
     </div>
   );
 }
