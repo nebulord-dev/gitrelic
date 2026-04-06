@@ -17,7 +17,8 @@ interface CouplingChordProps {
 function getDirectory(filePath: string): string {
   const parts = filePath.split('/');
   if (parts.length <= 1) return '.';
-  return parts.slice(0, -1).join('/');
+  // Aggregate at 2 levels deep to avoid dozens of thin arcs on large repos
+  return parts.length > 2 ? parts.slice(0, 2).join('/') : parts[0];
 }
 
 export function CouplingChord({ report, selectedFile, onSelectFile }: CouplingChordProps) {
@@ -63,13 +64,28 @@ export function CouplingChord({ report, selectedFile, onSelectFile }: CouplingCh
       }
     }
 
+    // Apply square root scaling to compress the range —
+    // without this, dominant pairs (hundreds of co-commits)
+    // produce chords so wide they fill the entire circle
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        matrix[i][j] = Math.sqrt(matrix[i][j]);
+      }
+    }
+
     return { matrix, dirs, dirFiles: dirFilesMap };
   }, [report.coupling.topPairs]);
 
   const radius = Math.min(dims.width, dims.height) / 2 - 40;
   const innerRadius = radius - 20;
 
-  const chordLayout = useMemo(() => chord().padAngle(0.04)(matrix), [matrix]);
+  const chordLayout = useMemo(
+    () =>
+      chord()
+        .padAngle(0.06)
+        .sortSubgroups((a, b) => b - a)(matrix),
+    [matrix],
+  );
 
   const arcGen = arc<any>().innerRadius(innerRadius).outerRadius(radius);
   const ribbonGen = ribbon<any, any>().radius(innerRadius);
