@@ -131,7 +131,7 @@ const METRIC_GROUPS: MetricGroup[] = [
   },
 ];
 
-export function GuidePanel({ report }: GuidePanelProps) {
+export function GuidePanel() {
   return (
     <div>
       {METRIC_GROUPS.map((group) => (
