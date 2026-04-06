@@ -1,5 +1,6 @@
 import type { GitloreReport } from "@gitlore/core";
 import type { InspectorTab } from "../../hooks/useSelection";
+import { ActivityInspector } from "../inspector/ActivityInspector";
 import { ContributorsInspector } from "../inspector/ContributorsInspector";
 import { FileInspector } from "../inspector/FileInspector";
 
@@ -102,6 +103,11 @@ export function InspectorPanel({
             contributor={selectedContributor}
             onSelectFile={onSelectFile}
           />
+        ) : activeTab === "activity" && selectedFile ? (
+          <ActivityInspector
+            report={report}
+            file={selectedFile}
+          />
         ) : (
           <div
             style={{
@@ -111,7 +117,7 @@ export function InspectorPanel({
               marginTop: 40,
             }}
           >
-            Activity tab — Tier 2
+            Select a file to view activity
           </div>
         )}
       </div>
