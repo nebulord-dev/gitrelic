@@ -34,7 +34,7 @@
       "oxlint --fix",
       "oxfmt"
     ],
-    "**/*.{css,html}": [
+    "**/*.{css,html,json,jsonc}": [
       "oxfmt"
     ]
   },
