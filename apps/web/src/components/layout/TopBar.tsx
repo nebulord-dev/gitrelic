@@ -1,4 +1,5 @@
 import type { GitloreReport } from "@gitlore/core";
+import { useCallback, useState } from "react";
 import { fmt } from "../theme";
 
 interface TopBarProps {
@@ -7,6 +8,20 @@ interface TopBarProps {
 
 export function TopBar({ report }: TopBarProps) {
   const { meta, repoName } = report;
+  const [theme, setTheme] = useState<"dark" | "light">(
+    () => (document.documentElement.dataset.theme as "light") || "dark",
+  );
+
+  const toggleTheme = useCallback(() => {
+    const next = theme === "dark" ? "light" : "dark";
+    if (next === "dark") {
+      delete document.documentElement.dataset.theme;
+    } else {
+      document.documentElement.dataset.theme = next;
+    }
+    setTheme(next);
+  }, [theme]);
+
   return (
     <div
       style={{
@@ -49,6 +64,21 @@ export function TopBar({ report }: TopBarProps) {
           }}
         >
           ?
+        </button>
+        <button
+          onClick={toggleTheme}
+          style={{
+            fontSize: 14,
+            color: "var(--text-secondary)",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "2px 4px",
+            borderRadius: 4,
+          }}
+          title={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+        >
+          {theme === "dark" ? "☀" : "☽"}
         </button>
       </div>
     </div>

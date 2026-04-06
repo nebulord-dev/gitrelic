@@ -71,6 +71,66 @@
   color-scheme: dark;
 }
 
+/* ═══════════════════════════════════════════════════
+   Light Theme
+   ═══════════════════════════════════════════════════ */
+
+[data-theme="light"] {
+  /* Layer 1: Surface */
+  --surface-primary: #ffffff;
+  --surface-secondary: #f6f8fa;
+  --surface-tertiary: #eef1f5;
+  --surface-elevated: #ffffff;
+
+  /* Layer 2: Borders */
+  --border-primary: #d0d7de;
+  --border-secondary: #afb8c1;
+  --border-focus: #0969da;
+
+  /* Layer 3: Text */
+  --text-primary: #1f2328;
+  --text-secondary: #656d76;
+  --text-tertiary: #8b949e;
+  --text-inverse: #ffffff;
+
+  /* Layer 4: Severity */
+  --severity-critical: #cf222e;
+  --severity-critical-bg: rgba(207, 34, 46, 0.1);
+  --severity-critical-text: #a40e26;
+  --severity-warning: #9a6700;
+  --severity-warning-bg: rgba(154, 103, 0, 0.1);
+  --severity-warning-text: #7d5600;
+  --severity-moderate: #0969da;
+  --severity-moderate-bg: rgba(9, 105, 218, 0.1);
+  --severity-moderate-text: #0550ae;
+  --severity-healthy: #1a7f37;
+  --severity-healthy-bg: rgba(26, 127, 55, 0.1);
+  --severity-healthy-text: #116329;
+
+  /* Layer 5: Accent / Domain */
+  --accent-ownership: #8250df;
+  --accent-ownership-bg: rgba(130, 80, 223, 0.1);
+  --accent-ownership-text: #6639ba;
+  --accent-coupling: #0969da;
+  --accent-coupling-bg: rgba(9, 105, 218, 0.1);
+  --accent-coupling-text: #0550ae;
+  --accent-temporal: #1a7f37;
+  --accent-temporal-bg: rgba(26, 127, 55, 0.1);
+  --accent-temporal-text: #116329;
+  --accent-primary: #0969da;
+
+  /* Layer 6: Component */
+  --panel-resize-handle: rgba(0, 0, 0, 0.06);
+  --panel-resize-handle-hover: rgba(0, 0, 0, 0.15);
+  --nav-item-active-bg: rgba(9, 105, 218, 0.08);
+  --nav-badge-critical: #cf222e;
+  --nav-badge-warning: #9a6700;
+  --tooltip-bg: #1f2328;
+  --tooltip-text: #ffffff;
+
+  color-scheme: light;
+}
+
 /* ─── Base ─── */
 
 *,
@@ -110,6 +170,12 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-tertiary);
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #d0d7de;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #afb8c1;
 }
 
 /* ─── Utility ─── */
