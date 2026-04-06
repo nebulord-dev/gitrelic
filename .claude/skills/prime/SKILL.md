@@ -1,4 +1,5 @@
 ---
+name: prime
 description: Prime agent with codebase understanding
 ---
 
