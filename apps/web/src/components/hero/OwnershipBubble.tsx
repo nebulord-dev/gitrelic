@@ -47,8 +47,10 @@ export function buildDirectoryBubbles(report: GitloreReport): DirBubble[] {
     stats.loc += f.lines;
     stats.fileCount++;
 
-    const author = busFactorMap.get(f.file) ?? 'unknown';
-    stats.authors.set(author, (stats.authors.get(author) ?? 0) + 1);
+    const author = busFactorMap.get(f.file);
+    if (author) {
+      stats.authors.set(author, (stats.authors.get(author) ?? 0) + 1);
+    }
   }
 
   // Convert to bubbles
