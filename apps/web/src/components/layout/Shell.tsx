@@ -2,6 +2,7 @@ import { useSelection } from '../../hooks/useSelection';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
 import { HotspotScatter } from '../hero/HotspotScatter';
 import { OwnershipBubble } from '../hero/OwnershipBubble';
+import { Timeline } from '../hero/Timeline';
 import { BottomPanel } from './BottomPanel';
 import { InspectorPanel } from './InspectorPanel';
 import { MetricsStrip } from './MetricsStrip';
@@ -137,9 +138,19 @@ export function Shell({ report }: ShellProps) {
                   onSelectFile={selection.selectFile}
                 />
               )}
+              {selection.activeHeroViz === 'timeline' && (
+                <Timeline
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  selectedContributor={selection.selectedContributor}
+                  onSelectFile={selection.selectFile}
+                  onSelectContributor={selection.selectContributor}
+                />
+              )}
               {selection.activeHeroViz !== 'treemap' &&
                 selection.activeHeroViz !== 'ownership' &&
-                selection.activeHeroViz !== 'scatter' && (
+                selection.activeHeroViz !== 'scatter' &&
+                selection.activeHeroViz !== 'timeline' && (
                   <div
                     style={{
                       flex: 1,
