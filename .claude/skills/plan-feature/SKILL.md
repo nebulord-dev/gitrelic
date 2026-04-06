@@ -20,11 +20,11 @@ Transform a feature request into a **comprehensive implementation plan** through
 
 ## Planning Process
 
-### Phase 1: Orient to the Kanban
+### Phase 1: Orient to the Task Board
 
 Before anything else:
 
-- Read `.claude/kanban.md` — confirm the feature is in the backlog, check if it's blocked by upstream work
+- Check Jira (project KAN, epic KAN-6) — confirm the feature is in the backlog, check if it's blocked by upstream work
 - If the feature is blocked, stop and report why rather than producing a plan for something that can't be built yet
 - Note any related tasks already in progress that could conflict or overlap
 

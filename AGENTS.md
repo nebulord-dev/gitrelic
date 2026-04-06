@@ -57,9 +57,9 @@ pnpm workspace + Turbo. Strict dependency order:
 
 Everything comes from `git log` and `git ls-files`. No external tool dependencies — pure git.
 
-## Kanban / Task Board
+## Task Management
 
-When the user mentions "kanban", "task", "backlog", or "add a task", they are referring to `.claude/kanban.md`. This is the project's task board — read and edit it directly when managing tasks.
+Tasks are tracked in **Jira** (nebulord.atlassian.net, project KAN, epic KAN-6 for GitLore). Use the Atlassian MCP tools to read and update tasks. Do not create or edit local task files.
 
 ## Build Commands
 

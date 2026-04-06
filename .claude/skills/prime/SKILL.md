@@ -23,7 +23,7 @@ Show directory structure:
 Read in this order — each builds on the previous:
 
 - `CLAUDE.md` — project rules, architecture overview, file navigation guide
-- `.claude/kanban.md` — current task board (Backlog → In Progress → Done)
+- Jira project KAN (nebulord.atlassian.net) — current task board, epic KAN-6 for GitLore
 
 List available design docs:
 !`ls .claude/plans/ 2>/dev/null || echo "No plans directory yet"`
@@ -68,8 +68,8 @@ Provide a concise summary covering:
 ### Project Overview
 
 - Purpose and current phase of development
-- What's actively being worked on (from kanban In Progress)
-- What's coming next (from kanban Backlog)
+- What's actively being worked on (from Jira In Progress)
+- What's coming next (from Jira To Do)
 
 ### Architecture
 
@@ -100,7 +100,7 @@ Stack drift to watch:
 ### Current State
 
 - Active branch and recent commits
-- Kanban status: what's in progress, what's blocked
+- Jira status: what's in progress, what's blocked
 - Immediate next actions
 
 **Make this summary easy to scan — use bullet points and clear headers.**
