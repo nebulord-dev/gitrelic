@@ -1,19 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { authorColor } from '../../utils/colors';
-
 import type { GitloreReport } from '@gitlore/core';
 
 interface CouplingHeatmapProps {
   report: GitloreReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
-}
-
-interface HeatmapCell {
-  row: number;
-  col: number;
-  value: number;
 }
 
 const ROW_LABEL_WIDTH = 140;

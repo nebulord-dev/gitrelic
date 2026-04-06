@@ -1,9 +1,3 @@
-import type { GitloreReport } from '@gitlore/core';
-
-interface GuidePanelProps {
-  report: GitloreReport;
-}
-
 interface MetricEntry {
   name: string;
   description: string;
