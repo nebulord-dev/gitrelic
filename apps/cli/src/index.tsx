@@ -106,10 +106,18 @@ async function serveWebDashboard(report: GitloreReport): Promise<void> {
       return;
     }
 
-    const filePath =
+    const resolved =
       req.url === '/' || req.url === ''
         ? path.join(webDist, 'index.html')
-        : path.join(webDist, req.url ?? '');
+        : path.resolve(webDist, (req.url ?? '').replace(/^\//, ''));
+
+    if (!resolved.startsWith(webDist + path.sep) && resolved !== webDist) {
+      res.writeHead(403);
+      res.end();
+      return;
+    }
+
+    const filePath = resolved;
 
     if (existsSync(filePath)) {
       const ext = path.extname(filePath);

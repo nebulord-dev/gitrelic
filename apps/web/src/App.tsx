@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import Dashboard from './components/Dashboard.js';
+import { Shell } from './components/layout/Shell';
 
 import type { GitloreReport } from '@gitlore/core';
 
@@ -20,28 +20,41 @@ export default function App() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="text-6xl mb-4">☠</div>
-          <p className="text-red-400 text-lg">{error}</p>
-          <p className="text-gray-500 mt-2 text-sm">
-            Run: <code className="text-purple-400">gitlore --path ./your-repo --web</code>
-          </p>
-        </div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          flexDirection: 'column',
+          gap: 12,
+          color: 'var(--text-secondary)',
+        }}
+      >
+        <div style={{ fontSize: 32 }}>☠</div>
+        <div>{error}</div>
       </div>
     );
   }
 
   if (!report) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="text-purple-400 text-4xl mb-4 animate-pulse">◎</div>
-          <p className="text-gray-400">Excavating git history...</p>
-        </div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          flexDirection: 'column',
+          gap: 12,
+          color: 'var(--text-secondary)',
+        }}
+      >
+        <div style={{ fontSize: 18 }}>◌</div>
+        <div style={{ fontSize: 12 }}>Excavating git history...</div>
       </div>
     );
   }
 
-  return <Dashboard report={report} />;
+  return <Shell report={report} />;
 }

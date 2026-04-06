@@ -1,25 +1,185 @@
 @import 'tailwindcss';
 
-/*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
+/* ═══════════════════════════════════════════════════
+   GitLore — Semantic Design Tokens (Dark Theme Default)
+   ═══════════════════════════════════════════════════ */
 
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
-  }
+:root {
+  /* Layer 1: Surface */
+  --surface-primary: #0d1117;
+  --surface-secondary: #161b22;
+  --surface-tertiary: #21262d;
+  --surface-elevated: #2d333b;
+
+  /* Layer 2: Borders */
+  --border-primary: rgba(255, 255, 255, 0.06);
+  --border-secondary: rgba(255, 255, 255, 0.12);
+  --border-focus: #58a6ff;
+
+  /* Layer 3: Text */
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-tertiary: #484f58;
+  --text-inverse: #0d1117;
+
+  /* Layer 4: Severity */
+  --severity-critical: #f85149;
+  --severity-critical-bg: rgba(248, 81, 73, 0.15);
+  --severity-critical-text: #ffa198;
+  --severity-warning: #d29922;
+  --severity-warning-bg: rgba(210, 153, 34, 0.15);
+  --severity-warning-text: #e0b040;
+  --severity-moderate: #58a6ff;
+  --severity-moderate-bg: rgba(88, 166, 255, 0.12);
+  --severity-moderate-text: #79c0ff;
+  --severity-healthy: #3fb950;
+  --severity-healthy-bg: rgba(63, 185, 80, 0.12);
+  --severity-healthy-text: #56d364;
+
+  /* Layer 5: Accent / Domain */
+  --accent-ownership: #a371f7;
+  --accent-ownership-bg: rgba(163, 113, 247, 0.12);
+  --accent-ownership-text: #c9b1f7;
+  --accent-coupling: #58a6ff;
+  --accent-coupling-bg: rgba(88, 166, 255, 0.12);
+  --accent-coupling-text: #79c0ff;
+  --accent-temporal: #39d353;
+  --accent-temporal-bg: rgba(57, 211, 83, 0.12);
+  --accent-temporal-text: #6ee77a;
+  --accent-primary: #58a6ff;
+
+  /* Layer 6: Component */
+  --panel-resize-handle: rgba(255, 255, 255, 0.08);
+  --panel-resize-handle-hover: rgba(255, 255, 255, 0.2);
+  --nav-item-active-bg: rgba(88, 166, 255, 0.1);
+  --nav-badge-critical: #da3633;
+  --nav-badge-warning: #9e6a03;
+  --tooltip-bg: #2d333b;
+  --tooltip-text: #e6edf3;
+
+  /* Spacing */
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+
+  color-scheme: dark;
+}
+
+/* ═══════════════════════════════════════════════════
+   Light Theme
+   ═══════════════════════════════════════════════════ */
+
+[data-theme='light'] {
+  /* Layer 1: Surface */
+  --surface-primary: #ffffff;
+  --surface-secondary: #f6f8fa;
+  --surface-tertiary: #eef1f5;
+  --surface-elevated: #ffffff;
+
+  /* Layer 2: Borders */
+  --border-primary: #d0d7de;
+  --border-secondary: #afb8c1;
+  --border-focus: #0969da;
+
+  /* Layer 3: Text */
+  --text-primary: #1f2328;
+  --text-secondary: #656d76;
+  --text-tertiary: #8b949e;
+  --text-inverse: #ffffff;
+
+  /* Layer 4: Severity */
+  --severity-critical: #cf222e;
+  --severity-critical-bg: rgba(207, 34, 46, 0.1);
+  --severity-critical-text: #a40e26;
+  --severity-warning: #9a6700;
+  --severity-warning-bg: rgba(154, 103, 0, 0.1);
+  --severity-warning-text: #7d5600;
+  --severity-moderate: #0969da;
+  --severity-moderate-bg: rgba(9, 105, 218, 0.1);
+  --severity-moderate-text: #0550ae;
+  --severity-healthy: #1a7f37;
+  --severity-healthy-bg: rgba(26, 127, 55, 0.1);
+  --severity-healthy-text: #116329;
+
+  /* Layer 5: Accent / Domain */
+  --accent-ownership: #8250df;
+  --accent-ownership-bg: rgba(130, 80, 223, 0.1);
+  --accent-ownership-text: #6639ba;
+  --accent-coupling: #0969da;
+  --accent-coupling-bg: rgba(9, 105, 218, 0.1);
+  --accent-coupling-text: #0550ae;
+  --accent-temporal: #1a7f37;
+  --accent-temporal-bg: rgba(26, 127, 55, 0.1);
+  --accent-temporal-text: #116329;
+  --accent-primary: #0969da;
+
+  /* Layer 6: Component */
+  --panel-resize-handle: rgba(0, 0, 0, 0.06);
+  --panel-resize-handle-hover: rgba(0, 0, 0, 0.15);
+  --nav-item-active-bg: rgba(9, 105, 218, 0.08);
+  --nav-badge-critical: #cf222e;
+  --nav-badge-warning: #9a6700;
+  --tooltip-bg: #1f2328;
+  --tooltip-text: #ffffff;
+
+  color-scheme: light;
+}
+
+/* ─── Base ─── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
-  background-color: #0a0a0f;
-  color: #e2e8f0;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Scrollbars (thin, subtle) ─── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-secondary);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+[data-theme='light'] ::-webkit-scrollbar-thumb {
+  background: #d0d7de;
+}
+[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
+  background: #afb8c1;
+}
+
+/* ─── Utility ─── */
+
+.font-mono {
+  font-family: var(--font-mono);
 }
