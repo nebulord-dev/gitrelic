@@ -16,8 +16,10 @@
     "test:core": "pnpm --filter @gitlore/core test:ui"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "catalog:",
     "turbo": "^2.8.20",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "packageManager": "pnpm@10.30.1"
 }

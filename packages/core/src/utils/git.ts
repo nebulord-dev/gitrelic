@@ -86,7 +86,6 @@ const IGNORED_PATTERNS = {
     'bun.lockb',
     'next-env.d.ts',
     'vite-env.d.ts',
-    'AGENTS.md',
     'CONTRIBUTING.md',
     'CLAUDE.md',
   ]),

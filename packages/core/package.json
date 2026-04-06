@@ -26,10 +26,10 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@vitest/coverage-v8": "^4.1.0",
-    "@vitest/ui": "^4.1.0",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vitest": "^4.1.0"
+    "vitest": "catalog:"
   }
 }
