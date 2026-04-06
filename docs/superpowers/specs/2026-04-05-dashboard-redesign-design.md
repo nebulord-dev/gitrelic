@@ -369,28 +369,10 @@ These are sidebar items that combine multiple data sources into purpose-built vi
 
 ## Responsive Strategy
 
-### Desktop (1440px+)
-Full four-panel layout as designed. All panels visible simultaneously.
+**Desktop-only.** The information density is the feature — this dashboard is designed for real monitors (1280px+). Responsive breakpoints are deliberately deferred. If smaller screens ever need support, it would be a separate simplified view, not a responsive squeeze of the full layout.
 
-### Laptop (1280px–1440px)
-- Right inspector panel collapses to a narrower width (~220px)
-- Bottom panel default height slightly reduced
-- All panels still visible
-
-### Small Laptop (1024px–1280px)
-- Right inspector becomes a slide-over panel (hidden by default, slides in on file selection)
-- Left sidebar collapses to icon-only mode (expandable on hover)
-- Hero viz and bottom panel get full width
-
-### Tablet (768px–1024px)
-- Left sidebar becomes a hamburger menu drawer
-- Right inspector becomes a full-screen modal on file selection
-- Bottom panel tabs become scrollable
-- Hero viz gets full width
-- Metrics strip wraps to 2 rows
-
-### Below 768px
-Not supported. Show a message suggesting desktop use.
+### Below 1280px
+Not officially supported. The layout will still render but panels may feel cramped. No active adaptation.
 
 ---
 
@@ -419,16 +401,17 @@ Data already exists in GitloreReport but has no web visualization yet.
 - **Sidebar expansion**: Add new nav items for T2 data sources (Dead Code, Complexity, Rewrites under Code Health; Ghost Files, Knowledge under Ownership & Risk; Co-Authors, Timing under Team & Activity; Languages, Test Coverage, Renames under Structure)
 - **12 new bottom panel tabs**: Dead Code, Complexity Trend, Rewrite Ratio, Churn Velocity, Blast Radius, Ghost Files, Knowledge Silos, Co-Authors, Commit Timing, Languages, Test Coverage, Renames
 - **Resize divider**: Draggable vertical resize handle on the bottom panel top edge
-- Inspector Activity tab
-- Light theme
-- Methodology drawer (KAN-79)
-- Responsive breakpoints (laptop, tablet)
+- **Inspector Activity tab**: Signal summary (churn, velocity, ownership, shame commits) for selected file
+- **Light theme**: Full token set on `[data-theme="light"]` selector with toggle in top bar
+- **Split inspector panel**: Top section (context tabs: Inspector/Contributors/Activity) + bottom section (utility tabs: Guide/Narrative/Refactor). Guide panel has metric glossary. Narrative and Refactor are placeholders for T3 AI features.
+- ~~Methodology drawer (KAN-79)~~ — replaced by Guide tab in inspector utility section
+- ~~Responsive breakpoints~~ — deferred indefinitely; desktop-only by design
 
 ### Tier 3 — Planned Features
 Requires new analyzers, AI integration, or complex visualizations.
 
 - Hero vizzes: Ownership Map, Coupling Graph, Commit Graph, Hotspot Scatter, Timeline, Contributor Swimlanes
-- Inspector AI tabs: Narrative (KAN-55), Refactor Brief (KAN-56)
+- Inspector AI tabs: Narrative (KAN-55), Refactor Brief (KAN-56) — utility tab placeholders already exist in inspector panel
 - Sidebar composite views: Risk Dashboard (KAN-75), Tech Debt Workbench (KAN-76), Repo Health (KAN-77)
 - Health Score composite metric
 - File drill-down full history view (KAN-74)
