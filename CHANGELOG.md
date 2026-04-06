@@ -1,0 +1,67 @@
+# 1.0.0 (2026-04-06)
+
+
+### Bug Fixes
+
+* add forensics placeholder to runner return, document shame-only file behavior ([08d414c](https://github.com/TraceRicochet/gitlore/commit/08d414cdc7df2ca57cac3a8f83e319b4a4893681))
+* add missing beforeEach import in test files, add test suite docs ([5a33664](https://github.com/TraceRicochet/gitlore/commit/5a336648b0daec48d8e88e82c0b50e1221008f72))
+* **cli:** fix narrative truncation splitting on email dots ([d8af357](https://github.com/TraceRicochet/gitlore/commit/d8af357048397d13dcb9576a7d3ac685b52aef94))
+* **core:** add minimum floors to active/ghost contributor windows ([db54500](https://github.com/TraceRicochet/gitlore/commit/db54500f3b6aab0c049a91b7350d147abfdf9188))
+* **core:** exclude .claude/ and project meta files from analysis ([67c3160](https://github.com/TraceRicochet/gitlore/commit/67c3160881b295802baf5167b5de3b6cfc2c7e43))
+* deduplicate multi-signal dimensions and cap display lists ([7ef8422](https://github.com/TraceRicochet/gitlore/commit/7ef8422a87fe5bb2eda7979028043fbbe0f5d9a8))
+* pre-compile shame regexes, deduplicate totalShameCommits, avoid in-place sort ([a25e11a](https://github.com/TraceRicochet/gitlore/commit/a25e11a30aac989e884be485bfdf42b53bc8ff2b))
+* remove scaffolding comment, align forensics section ruler width ([928caed](https://github.com/TraceRicochet/gitlore/commit/928caedb50ba83f016ce6e8446a0b97c4bf26b84))
+* remove unnecessary blank line in runLore function documentation ([a35ba75](https://github.com/TraceRicochet/gitlore/commit/a35ba759dff1686e77fc0dbfb9c3b3038ae0b6e1))
+* resolve some sickbay issue findings around index as key and other things ([5adf8f7](https://github.com/TraceRicochet/gitlore/commit/5adf8f76a11a5818eb5bd57a1d6aec486b90c605))
+* update getAllCommits JSDoc, restore authorEmail/Name assertions in test ([6706776](https://github.com/TraceRicochet/gitlore/commit/6706776c7d7063cee670260ea44f3f7af10ef9df))
+
+
+### Features
+
+* add --shame flag and ShamePanel to CLI ([36b1911](https://github.com/TraceRicochet/gitlore/commit/36b1911ecea647b57a2bed939d9a81a1bdc57050))
+* add forensics analyzer with weighted shame scoring ([cdb023f](https://github.com/TraceRicochet/gitlore/commit/cdb023faa89e99c5342ef8197c8d208c59f65674))
+* add ForensicsReport types to LoreReport ([5623040](https://github.com/TraceRicochet/gitlore/commit/5623040e33d4d546c7fa5d9ecf26aedf26df3e2f))
+* add message field to RawCommit, extend git log format ([a6522fa](https://github.com/TraceRicochet/gitlore/commit/a6522faadbfa70df393a40eddd6416e0103ee3a8))
+* call analyzeForensics in runner, include forensics in LoreReport ([3210bd2](https://github.com/TraceRicochet/gitlore/commit/3210bd252c501a9f5f6e1ea19783727fe590fbf1))
+* **cli:** add hotspot and coupling panels ([25904af](https://github.com/TraceRicochet/gitlore/commit/25904af846cd25b0f854c4beb6321e129b8643e3))
+* **cli:** add hotspot health sentiment — narrative, entry colors, all-clear state ([45a6bc7](https://github.com/TraceRicochet/gitlore/commit/45a6bc77d2640182ba15aada24ec5e2f8844039e))
+* **cli:** add hotspot root cause clustering panel ([4aa51d3](https://github.com/TraceRicochet/gitlore/commit/4aa51d3a92cba68a39e644ff6daffafd5284ddf3))
+* **cli:** add test coverage, ghost files, knowledge, co-author panels ([135b382](https://github.com/TraceRicochet/gitlore/commit/135b38212e47630bb4c3ad4d791afea5346bbdbf))
+* **cli:** add velocity, rewrite, blast radius, and dead code panels ([ac81820](https://github.com/TraceRicochet/gitlore/commit/ac81820311c63c5142ae33770976be40ac8eea02))
+* **core:** add batch 2 types and extend RawCommit with per-file stats ([9915bc0](https://github.com/TraceRicochet/gitlore/commit/9915bc01e03d2aafe9f32560a11c72a75abb2dc4))
+* **core:** add churn velocity, rewrite ratio, blast radius, dead code analyzers ([8da8258](https://github.com/TraceRicochet/gitlore/commit/8da825897a6746678daaf4c9e7d6285e056833f7))
+* **core:** add complexity trend analyzer with tests ([0c502c3](https://github.com/TraceRicochet/gitlore/commit/0c502c3149508c733f4ff04481c7c606566425ea))
+* **core:** add complexity trend types ([3e05bfc](https://github.com/TraceRicochet/gitlore/commit/3e05bfcdb2cb94e399f8d9cadd1a1f6ad4d4b723))
+* **core:** add coupling hub detection dimension ([9a6ad0c](https://github.com/TraceRicochet/gitlore/commit/9a6ad0c2c20767d24195e4fe9228e5bfe551af26))
+* **core:** add hotspot clustering types ([ae7fa78](https://github.com/TraceRicochet/gitlore/commit/ae7fa7840234cb0b2e1ddd2c23e1c866a1ca5757))
+* **core:** add LOC, hotspot, and coupling analyzers ([bbf2921](https://github.com/TraceRicochet/gitlore/commit/bbf29215f955cb50be85d2fd43d5dac8cc559e16))
+* **core:** add LOC, hotspot, and coupling report types ([37fc8d6](https://github.com/TraceRicochet/gitlore/commit/37fc8d666d50d4b0a2407577679164537c94b003))
+* **core:** add ownership clustering dimension ([53861e0](https://github.com/TraceRicochet/gitlore/commit/53861e08df8b4f18ec9b0236c7fca1fb37a7292d))
+* **core:** add parallel development types ([419692d](https://github.com/TraceRicochet/gitlore/commit/419692d489b59a3bd0a4035be327329e50d70403))
+* **core:** add rename tracking and commit timing forensics analyzers ([edf9c80](https://github.com/TraceRicochet/gitlore/commit/edf9c80cba167c26c2af36d723f6f1aecfa951f8))
+* **core:** add structural clustering dimension + assembly ([0708876](https://github.com/TraceRicochet/gitlore/commit/070887612299ff9159632bac2c68a82bb35c809d))
+* **core:** add temporal clustering dimension with inflection detection ([a8f215f](https://github.com/TraceRicochet/gitlore/commit/a8f215fc218a700641f1a63436807be8117ea3e1))
+* **core:** add test coverage proxy, ghost files, knowledge concentration, co-author analyzers ([c49891c](https://github.com/TraceRicochet/gitlore/commit/c49891c29a4b65330e2e023147c64c24d4470eb6))
+* **core:** add test coverage, ghost files, knowledge concentration, co-author types ([68e75b0](https://github.com/TraceRicochet/gitlore/commit/68e75b0ffc6bc445e0ed5d4fa863ae35cb7165d5))
+* **core:** implement parallel development analyzer ([2995e00](https://github.com/TraceRicochet/gitlore/commit/2995e0008739f92f1d30a728fe4691e7cec78708))
+* **core:** integrate complexity trend into runner and exports ([af736eb](https://github.com/TraceRicochet/gitlore/commit/af736eb60ff3738daa579fee8fffdcd03d2b70f2))
+* **core:** integrate parallel development into cursed file scoring ([82232d8](https://github.com/TraceRicochet/gitlore/commit/82232d8fd9a605b64b139aa4f84a7de96e5bae0f))
+* **core:** wire churn velocity, rewrite ratio, blast radius, dead code into runner ([4a7d972](https://github.com/TraceRicochet/gitlore/commit/4a7d972a3fec8819754a8095ed29fa356a97827f))
+* **core:** wire hotspot clustering into runner and exports ([642a955](https://github.com/TraceRicochet/gitlore/commit/642a9555d2104789095ae2de3e217b2118886110))
+* **core:** wire LOC, hotspot, and coupling analyzers into runner ([d11941c](https://github.com/TraceRicochet/gitlore/commit/d11941ce348023e579231ed0dffa5c9ff3b44bef))
+* **core:** wire parallel development analyzer into runner ([100640c](https://github.com/TraceRicochet/gitlore/commit/100640cc4d60f69caece1e695efe7478d4870e4c))
+* **core:** wire test coverage, ghost files, knowledge concentration, co-authors into runner ([d275b3e](https://github.com/TraceRicochet/gitlore/commit/d275b3e43bd378e67ed08907697f2ea65ddddc9c))
+* **dashboard:** add hotspot health sentiment — narrative, entry colors, all-clear state ([dd4c7d7](https://github.com/TraceRicochet/gitlore/commit/dd4c7d791c436385a1b7fbb750f6e531d51d982c))
+* **dashboard:** add hotspot root cause clusters to Hotspots tab ([2dc030a](https://github.com/TraceRicochet/gitlore/commit/2dc030aa9251ce934d4ee4f659263fa343191cbb))
+* **dashboard:** add parallel dev tab and hotspot leaderboard tab ([d765f43](https://github.com/TraceRicochet/gitlore/commit/d765f43cf54c0c9c36198fdc719c48e22fae1b5e))
+* **dashboard:** add shame tab with forensics leaderboard and detail view ([7a9bd1f](https://github.com/TraceRicochet/gitlore/commit/7a9bd1f79d76ff0dffe5d51feaaa6134933b97cf))
+* **dashboard:** collapsible hotspot sections, merge leaderboard, exclude docs/ ([846b02b](https://github.com/TraceRicochet/gitlore/commit/846b02bceb8bdcc72c3b3c2536f3cdf68c9436c8))
+* **dashboard:** enhance cursed files display with author tooltips and improved layout ([50b8b88](https://github.com/TraceRicochet/gitlore/commit/50b8b88bcab89bad3e7ba6fb077a0a1f63bfb0ae))
+* **kanban:** update project name references from Lore to Fossick ([21ce578](https://github.com/TraceRicochet/gitlore/commit/21ce578c713c07198ca64444ee02cc195b2540e3))
+* update kanban and skill documentation with new metrics and integrations; fix package.json test filters for lore packages ([347b25a](https://github.com/TraceRicochet/gitlore/commit/347b25a96f7146d7464e9d0d95fd844c52de3ce8))
+* **web:** update hotspots tab and add coupling tab to dashboard ([7de879e](https://github.com/TraceRicochet/gitlore/commit/7de879e2e34431e3a78028ab6ada4624e5ea8e55))
+* wire forensics shame score into cursed file scoring (+20 max bonus) ([cd77870](https://github.com/TraceRicochet/gitlore/commit/cd77870d2717fb0f0ed922c08bb02186a17b541b))
+
+# Changelog
+
+All notable changes to this project will be automatically documented here by [semantic-release](https://github.com/semantic-release/semantic-release).

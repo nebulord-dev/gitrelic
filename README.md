@@ -7,12 +7,35 @@ Git archaeology — understand the history and health of your codebase.
 
 Run `gitlore` in any git repository and get a narrative health report on the codebase's *history* — not just its current state.
 
+**Churn & Complexity**
 - **Churn analysis** — which files change the most, and what that means
+- **Churn velocity** — accelerating vs decelerating change over time
+- **Hotspot scoring** — churn × LOC composite risk
+- **Hotspot clustering** — multi-dimensional grouping across structural, ownership, temporal, and coupling signals
+- **Complexity trend** — monthly file growth curves
+- **Rewrite ratio** — insertion/deletion balance per file
+
+**Ownership & Risk**
 - **Bus factor** — who owns what, where you're exposed if someone leaves
+- **Knowledge concentration** — single-author file ratio across the repo
+- **Ghost files** — files owned by authors who've gone inactive
+- **Contributor profiles** — who built what, who's still active, who's a ghost
+- **Co-authorship** — collaboration pair analysis from Co-authored-by trailers
+
+**History & Patterns**
 - **Age map** — what's fresh, what's stale, what nobody dares touch
-- **Contributor stories** — who built what, who's still active, who's a ghost
+- **Dead code candidates** — ancient, untouched files
+- **Blast radius** — how many files typically change alongside each file
+- **Coupling map** — co-change frequency between file pairs
+- **Parallel development** — multi-author overlap detection per week
+- **Rename tracking** — file rename chain detection
+- **Commit timing** — late-night and weekend stress patterns
+
+**Diagnostics**
 - **Cursed files** — the intersection of all of the above: high churn + concentrated ownership + age paradoxes
 - **Shame score** — commit message forensics: files with repeated reverts, hotfixes, and hacks
+- **Test coverage proxy** — test file proximity per directory
+- **LOC & language breakdown** — lines of code with language detection
 
 ## Usage
 
@@ -75,7 +98,7 @@ cd apps/cli && pnpm link --global
 
 pnpm monorepo + Turbo:
 
-- `packages/core` — git analysis engine (churn, bus factor, age, contributors, cursed files)
+- `packages/core` — git analysis engine (22 analyzers covering churn, ownership, history, and diagnostics)
 - `apps/cli` — Ink terminal UI + Commander
 - `apps/web` — Vite + React + Tailwind dashboard (served via `--web`)
 
@@ -91,3 +114,9 @@ gitlore/
 ├── turbo.json
 └── pnpm-workspace.yaml
 ```
+
+## Contributing
+
+PRs must use [conventional commit](https://www.conventionalcommits.org/) format in the title (e.g. `feat: add X`, `fix: resolve Y`). CI enforces this automatically.
+
+Pre-commit hooks run oxlint and oxfmt on staged files. Releases are automated via [semantic-release](https://github.com/semantic-release/semantic-release) — version bumps, changelogs, and GitHub releases happen on merge to main.

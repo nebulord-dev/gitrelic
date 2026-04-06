@@ -1,12 +1,21 @@
 import { describe, it, expect } from 'vitest';
-import type { RawCommit } from '../utils/git.js';
+
 import { analyzeCommitTiming } from './commit-timing.js';
+
+import type { RawCommit } from '../utils/git.js';
 
 function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
   return {
-    hash: 'abc', authorEmail: 'a@b.com', authorName: 'A',
-    date: '2025-06-01T00:00:00Z', message: '', files: [],
-    fileStats: [], insertions: 0, deletions: 0, ...overrides,
+    hash: 'abc',
+    authorEmail: 'a@b.com',
+    authorName: 'A',
+    date: '2025-06-01T00:00:00Z',
+    message: '',
+    files: [],
+    fileStats: [],
+    insertions: 0,
+    deletions: 0,
+    ...overrides,
   };
 }
 
@@ -86,7 +95,7 @@ describe('analyzeCommitTiming', () => {
       makeCommit({ hash: '3', date: '2025-06-04T10:00:00Z', files: ['a.ts', 'deleted.ts'] }),
     ];
     const result = analyzeCommitTiming(commits, ['a.ts']);
-    expect(result.files.map(f => f.file)).toEqual(['a.ts']);
+    expect(result.files.map((f) => f.file)).toEqual(['a.ts']);
   });
 
   it('empty commits returns sensible defaults', () => {

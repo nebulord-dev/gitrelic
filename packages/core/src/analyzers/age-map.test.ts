@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { RawCommit } from '../utils/git.js';
+
 import { analyzeAgeMap } from './age-map.js';
+
+import type { RawCommit } from '../utils/git.js';
 
 const FAKE_NOW = new Date('2026-03-08T12:00:00Z').getTime();
 
@@ -43,10 +45,10 @@ describe('analyzeAgeMap', () => {
     const tracked = ['fresh.ts', 'aging.ts', 'stale.ts', 'ancient.ts'];
     const result = analyzeAgeMap(commits, tracked, 365);
 
-    expect(result.files.find(f => f.file === 'fresh.ts')!.status).toBe('fresh');
-    expect(result.files.find(f => f.file === 'aging.ts')!.status).toBe('aging');
-    expect(result.files.find(f => f.file === 'stale.ts')!.status).toBe('stale');
-    expect(result.files.find(f => f.file === 'ancient.ts')!.status).toBe('ancient');
+    expect(result.files.find((f) => f.file === 'fresh.ts')!.status).toBe('fresh');
+    expect(result.files.find((f) => f.file === 'aging.ts')!.status).toBe('aging');
+    expect(result.files.find((f) => f.file === 'stale.ts')!.status).toBe('stale');
+    expect(result.files.find((f) => f.file === 'ancient.ts')!.status).toBe('ancient');
   });
 
   it('scales thresholds for 90-day repo', () => {
@@ -60,10 +62,10 @@ describe('analyzeAgeMap', () => {
     const tracked = ['fresh.ts', 'aging.ts', 'stale.ts', 'ancient.ts'];
     const result = analyzeAgeMap(commits, tracked, 90);
 
-    expect(result.files.find(f => f.file === 'fresh.ts')!.status).toBe('fresh');
-    expect(result.files.find(f => f.file === 'aging.ts')!.status).toBe('aging');
-    expect(result.files.find(f => f.file === 'stale.ts')!.status).toBe('stale');
-    expect(result.files.find(f => f.file === 'ancient.ts')!.status).toBe('ancient');
+    expect(result.files.find((f) => f.file === 'fresh.ts')!.status).toBe('fresh');
+    expect(result.files.find((f) => f.file === 'aging.ts')!.status).toBe('aging');
+    expect(result.files.find((f) => f.file === 'stale.ts')!.status).toBe('stale');
+    expect(result.files.find((f) => f.file === 'ancient.ts')!.status).toBe('ancient');
   });
 
   it('counts stale and ancient files', () => {
@@ -99,9 +101,7 @@ describe('analyzeAgeMap', () => {
   });
 
   it('produces summary mentioning ancient files', () => {
-    const commits = [
-      makeCommit({ hash: '1', files: ['old.ts'], date: daysAgo(300) }),
-    ];
+    const commits = [makeCommit({ hash: '1', files: ['old.ts'], date: daysAgo(300) })];
     const result = analyzeAgeMap(commits, ['old.ts'], 365);
     expect(result.summary).toContain('1 file');
   });

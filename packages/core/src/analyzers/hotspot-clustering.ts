@@ -1,8 +1,15 @@
-import type { RawCommit } from '../utils/git.js';
 import type {
-  HotspotReport, BusFactorReport, CouplingReport, ContributorReport,
-  HotspotClusterReport, HotspotCluster, ClusterMember, MultiSignalFile, ClusterDimension,
+  HotspotReport,
+  BusFactorReport,
+  CouplingReport,
+  ContributorReport,
+  HotspotClusterReport,
+  HotspotCluster,
+  ClusterMember,
+  MultiSignalFile,
+  ClusterDimension,
 } from '../types.js';
+import type { RawCommit } from '../utils/git.js';
 
 export function analyzeHotspotClustering(
   hotspots: HotspotReport,
@@ -12,7 +19,7 @@ export function analyzeHotspotClustering(
   commits: RawCommit[],
   trackedFiles: string[],
 ): HotspotClusterReport {
-  const top = hotspots.topHotspots.map(h => ({ file: h.file, hotspotScore: h.hotspotScore }));
+  const top = hotspots.topHotspots.map((h) => ({ file: h.file, hotspotScore: h.hotspotScore }));
 
   const allClusters: HotspotCluster[] = [
     ...clusterByStructure(top, trackedFiles),
@@ -75,7 +82,7 @@ function clusterByOwnership(
 ): HotspotCluster[] {
   if (contributors.contributors.length <= 1) return [];
 
-  const busFactorByFile = new Map(busFactor.files.map(f => [f.file, f]));
+  const busFactorByFile = new Map(busFactor.files.map((f) => [f.file, f]));
   const groups = new Map<string, { members: ClusterMember[]; percents: number[] }>();
 
   for (const h of hotspots) {
@@ -136,7 +143,7 @@ function findInflectionMonth(timestamps: string[]): string | null {
 }
 
 function clusterByTemporal(hotspots: ClusterMember[], commits: RawCommit[]): HotspotCluster[] {
-  const hotspotSet = new Set(hotspots.map(h => h.file));
+  const hotspotSet = new Set(hotspots.map((h) => h.file));
 
   // Collect per-file commit dates
   const fileDates = new Map<string, string[]>();
@@ -156,7 +163,7 @@ function clusterByTemporal(hotspots: ClusterMember[], commits: RawCommit[]): Hot
   if (allMonths.size < 3) return [];
 
   // Find inflection month per file
-  const scoreByFile = new Map(hotspots.map(h => [h.file, h.hotspotScore]));
+  const scoreByFile = new Map(hotspots.map((h) => [h.file, h.hotspotScore]));
   const inflections = new Map<string, ClusterMember[]>();
   for (const [file, dates] of fileDates) {
     const month = findInflectionMonth(dates);
@@ -172,7 +179,10 @@ function clusterByTemporal(hotspots: ClusterMember[], commits: RawCommit[]): Hot
     const avgScore = Math.round(members.reduce((s, m) => s + m.hotspotScore, 0) / members.length);
     const [year, mo] = month.split('-');
     // Use UTC date to avoid timezone shifting the month
-    const monthName = new Date(Date.UTC(Number(year), Number(mo) - 1)).toLocaleString('en', { month: 'short', timeZone: 'UTC' });
+    const monthName = new Date(Date.UTC(Number(year), Number(mo) - 1)).toLocaleString('en', {
+      month: 'short',
+      timeZone: 'UTC',
+    });
     const label = `${monthName} ${year} inflection`;
 
     clusters.push({
@@ -190,11 +200,14 @@ function clusterByTemporal(hotspots: ClusterMember[], commits: RawCommit[]): Hot
 
 // ─── Coupling Hub ─────────────────────────────────────────────────────────────
 
-function clusterByCouplingHub(hotspots: ClusterMember[], coupling: CouplingReport): HotspotCluster[] {
+function clusterByCouplingHub(
+  hotspots: ClusterMember[],
+  coupling: CouplingReport,
+): HotspotCluster[] {
   if (coupling.pairs.length === 0) return [];
 
-  const hotspotSet = new Set(hotspots.map(h => h.file));
-  const scoreByFile = new Map(hotspots.map(h => [h.file, h.hotspotScore]));
+  const hotspotSet = new Set(hotspots.map((h) => h.file));
+  const scoreByFile = new Map(hotspots.map((h) => [h.file, h.hotspotScore]));
 
   // For each pair, if one side is a hotspot and the other isn't, record the non-hotspot as a potential hub
   const hubToHotspots = new Map<string, Set<string>>();
@@ -216,7 +229,7 @@ function clusterByCouplingHub(hotspots: ClusterMember[], coupling: CouplingRepor
   for (const [hub, hotspotFiles] of hubToHotspots) {
     if (hotspotFiles.size < 2) continue;
 
-    const members: ClusterMember[] = [...hotspotFiles].map(f => ({
+    const members: ClusterMember[] = [...hotspotFiles].map((f) => ({
       file: f,
       hotspotScore: scoreByFile.get(f)!,
     }));
@@ -252,16 +265,24 @@ function assembleReport(clusters: HotspotCluster[]): HotspotClusterReport {
   for (const [file, dimensions] of fileClusters) {
     if (dimensions.length >= 2) {
       const uniqueDimensions = [...new Set(dimensions)];
-      multiSignalFiles.push({ file, clusterCount: dimensions.length, dimensions: uniqueDimensions });
+      multiSignalFiles.push({
+        file,
+        clusterCount: dimensions.length,
+        dimensions: uniqueDimensions,
+      });
     }
   }
   multiSignalFiles.sort((a, b) => b.clusterCount - a.clusterCount);
 
   if (clusters.length === 0) {
-    return { clusters, multiSignalFiles, summary: 'No root cause patterns detected — hotspots appear independent.' };
+    return {
+      clusters,
+      multiSignalFiles,
+      summary: 'No root cause patterns detected — hotspots appear independent.',
+    };
   }
 
-  const dimensionCount = new Set(clusters.map(c => c.dimension)).size;
+  const dimensionCount = new Set(clusters.map((c) => c.dimension)).size;
   const top = clusters[0];
   let summary = `${clusters.length} root cause cluster${clusters.length !== 1 ? 's' : ''} found across ${dimensionCount} dimension${dimensionCount !== 1 ? 's' : ''}. \`${top.label}\` (${top.dimension}) explains the most hotspots.`;
 

@@ -1,4 +1,5 @@
 ---
+name: prime
 description: Prime agent with codebase understanding
 ---
 
@@ -23,10 +24,10 @@ Show directory structure:
 Read in this order — each builds on the previous:
 
 - `CLAUDE.md` — project rules, architecture overview, file navigation guide
-- `.claude/kanban.md` — current task board (Backlog → In Progress → Done)
+- Jira project KAN (nebulord.atlassian.net) — current task board, epic KAN-6 for GitLore
 
 List available design docs:
-!`ls .claude/plans/ 2>/dev/null || echo "No plans directory yet"`
+!`ls docs/plans/ docs/superpowers/plans/ docs/superpowers/specs/ 2>/dev/null || echo "No plans directory yet"`
 
 Read any plan docs relevant to the current task.
 
@@ -35,6 +36,7 @@ Read any plan docs relevant to the current task.
 Read based on the task at hand:
 
 **If working on analyzers or report data:**
+
 - `packages/core/src/types.ts` — core interfaces (`GitloreReport`, `ChurnReport`, `CursedFile`, etc.)
 - `packages/core/src/runner.ts` — orchestrator that calls all analyzers, entry point is `runGitlore()`
 - `packages/core/src/utils/git.ts` — raw git primitives (`getAllCommits`, `getTrackedFiles`, `RawCommit`)
@@ -46,12 +48,15 @@ Read based on the task at hand:
   - `cursed-files.ts` — cross-analyzer risk scoring
 
 **If working on terminal UI:**
+
 - `apps/cli/src/index.tsx` — CLI entry, Commander setup, `--web` server
 - `apps/cli/src/components/App.tsx` — root Ink component (loading → results)
 
 **If working on web dashboard:**
+
 - `apps/web/src/App.tsx` — loads `/gitlore-report.json`, passes to Dashboard
-- `apps/web/src/components/Dashboard.tsx` — tabbed layout (Overview, Hotspots, Contributors, Cursed Files, Age Map)
+- `apps/web/src/components/Dashboard.tsx` — tabbed layout (Overview, Hotspots, Contributors, Cursed Files, Age Map, Shame)
+- `apps/web/src/components/HotspotClusters.tsx` — hotspot cluster visualization component
 
 ### 4. Understand Current State
 
@@ -68,8 +73,8 @@ Provide a concise summary covering:
 ### Project Overview
 
 - Purpose and current phase of development
-- What's actively being worked on (from kanban In Progress)
-- What's coming next (from kanban Backlog)
+- What's actively being worked on (from Jira In Progress)
+- What's coming next (from Jira To Do)
 
 ### Architecture
 
@@ -79,28 +84,25 @@ Provide a concise summary covering:
 
 ### Tech Stack
 
-- TypeScript throughout; Ink (React for terminals) in CLI; Vite + React + Tailwind in web
+- TypeScript throughout; Ink (React for terminals) in CLI; Vite + React 19 + Tailwind in web
 - pnpm workspaces + Turbo for build orchestration
 - tsup for bundling core/cli; Vite for web
+- oxlint + oxfmt for linting/formatting; husky + lint-staged for pre-commit hooks
 
-### Sister Project: Vitals
+### Sister Project: Sickbay
 
-GitLore's sister project lives at `/Users/danteel/Desktop/dev/vitals`. Both share the same stack and are built by the same developer. **Keep them aligned.**
+GitLore's sister project lives at `/Users/danteel/Desktop/nebulord/sickbay`. Both share the same stack and are built by the same developer. **Keep them aligned.**
 
-Key libraries Vitals has that GitLore will need as features grow:
+Key libraries Sickbay has that GitLore will need as features grow:
+
 - `@xyflow/react` + `dagre` — graph visualization, already used for dependency graph. Port to GitLore when building the commit graph or coupling map.
 - `react-syntax-highlighter` — code display with syntax highlighting. Port when building file drill-down.
 - `madge` — static import/dependency analysis with circular dep detection. Port to GitLore `@gitlore/core` when building the dependency graph analyzer.
 
-Stack drift to watch:
-- Vitals is on React 19; GitLore is on React 18 — upgrade GitLore when convenient
-- Vitals Turbo `2.8.14`; GitLore `2.3.3` — upgrade GitLore root devDependency
-- Vitals has full ESLint config; GitLore lint scripts exist but ESLint not yet wired up
-
 ### Current State
 
 - Active branch and recent commits
-- Kanban status: what's in progress, what's blocked
+- Jira status: what's in progress, what's blocked
 - Immediate next actions
 
 **Make this summary easy to scan — use bullet points and clear headers.**

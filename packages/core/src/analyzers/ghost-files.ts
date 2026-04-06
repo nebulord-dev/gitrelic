@@ -1,4 +1,10 @@
-import type { BusFactorReport, ContributorReport, LocReport, GhostFilesReport, GhostFile } from '../types.js';
+import type {
+  BusFactorReport,
+  ContributorReport,
+  LocReport,
+  GhostFilesReport,
+  GhostFile,
+} from '../types.js';
 
 const GHOST_OWNERSHIP_THRESHOLD = 70;
 
@@ -7,12 +13,8 @@ export function analyzeGhostFiles(
   contributorReport: ContributorReport,
   locReport: LocReport,
 ): GhostFilesReport {
-  const contributorMap = new Map(
-    contributorReport.contributors.map(c => [c.email, c])
-  );
-  const locMap = new Map(
-    locReport.files.map(f => [f.file, f.lines])
-  );
+  const contributorMap = new Map(contributorReport.contributors.map((c) => [c.email, c]));
+  const locMap = new Map(locReport.files.map((f) => [f.file, f.lines]));
 
   const files: GhostFile[] = [];
 
@@ -28,7 +30,7 @@ export function analyzeGhostFiles(
       dominantAuthorPercent: fileBus.dominantAuthorPercent,
       lastAuthorCommitDate: author.lastCommit,
       authorInactiveDays: Math.floor(
-        (Date.now() - new Date(author.lastCommit).getTime()) / 86_400_000
+        (Date.now() - new Date(author.lastCommit).getTime()) / 86_400_000,
       ),
       loc: locMap.get(fileBus.file) ?? 0,
     });
@@ -37,9 +39,10 @@ export function analyzeGhostFiles(
   files.sort((a, b) => b.dominantAuthorPercent - a.dominantAuthorPercent);
 
   const totalGhostFiles = files.length;
-  const summary = totalGhostFiles > 0
-    ? `${totalGhostFiles} file${totalGhostFiles !== 1 ? 's' : ''} owned by inactive contributors — knowledge may be lost`
-    : 'No ghost files detected';
+  const summary =
+    totalGhostFiles > 0
+      ? `${totalGhostFiles} file${totalGhostFiles !== 1 ? 's' : ''} owned by inactive contributors — knowledge may be lost`
+      : 'No ghost files detected';
 
   return { files, totalGhostFiles, summary };
 }

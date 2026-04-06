@@ -1,31 +1,47 @@
 import { describe, it, expect } from 'vitest';
-import type { RawCommit } from '../utils/git.js';
-import type { AgeMapReport, LocReport } from '../types.js';
+
 import { analyzeDeadCode } from './dead-code.js';
+
+import type { AgeMapReport, LocReport } from '../types.js';
+import type { RawCommit } from '../utils/git.js';
 
 function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
   return {
-    hash: 'abc', authorEmail: 'a@b.com', authorName: 'A',
-    date: '2025-06-01T00:00:00Z', message: '', files: [],
-    fileStats: [], insertions: 0, deletions: 0, ...overrides,
+    hash: 'abc',
+    authorEmail: 'a@b.com',
+    authorName: 'A',
+    date: '2025-06-01T00:00:00Z',
+    message: '',
+    files: [],
+    fileStats: [],
+    insertions: 0,
+    deletions: 0,
+    ...overrides,
   };
 }
 
 function makeAgeMap(files: { file: string; ageInDays: number }[]): AgeMapReport {
   return {
-    files: files.map(f => ({
-      file: f.file, lastCommitDate: '2025-01-01T00:00:00Z',
-      ageInDays: f.ageInDays, status: 'stale' as const,
+    files: files.map((f) => ({
+      file: f.file,
+      lastCommitDate: '2025-01-01T00:00:00Z',
+      ageInDays: f.ageInDays,
+      status: 'stale' as const,
     })),
-    staleFiles: [], ancientFiles: [], medianAgeDays: 0, summary: '',
+    staleFiles: [],
+    ancientFiles: [],
+    medianAgeDays: 0,
+    summary: '',
   };
 }
 
 function makeLocReport(files: { file: string; lines: number }[]): LocReport {
   return {
-    totalFiles: files.length, totalLines: 0,
-    files: files.map(f => ({ file: f.file, lines: f.lines, language: 'TypeScript' })),
-    languages: [], summary: '',
+    totalFiles: files.length,
+    totalLines: 0,
+    files: files.map((f) => ({ file: f.file, lines: f.lines, language: 'TypeScript' })),
+    languages: [],
+    summary: '',
   };
 }
 
@@ -50,8 +66,14 @@ describe('analyzeDeadCode', () => {
 
   it('returns empty when all files have commits', () => {
     const commits = [makeCommit({ hash: '1', files: ['a.ts', 'b.ts'] })];
-    const ageMap = makeAgeMap([{ file: 'a.ts', ageInDays: 5 }, { file: 'b.ts', ageInDays: 5 }]);
-    const loc = makeLocReport([{ file: 'a.ts', lines: 100 }, { file: 'b.ts', lines: 100 }]);
+    const ageMap = makeAgeMap([
+      { file: 'a.ts', ageInDays: 5 },
+      { file: 'b.ts', ageInDays: 5 },
+    ]);
+    const loc = makeLocReport([
+      { file: 'a.ts', lines: 100 },
+      { file: 'b.ts', lines: 100 },
+    ]);
     const result = analyzeDeadCode(commits, ['a.ts', 'b.ts'], ageMap, loc);
     expect(result.candidates).toHaveLength(0);
   });
@@ -93,9 +115,11 @@ describe('analyzeDeadCode', () => {
   });
 
   it('produces a summary', () => {
-    const result = analyzeDeadCode([], ['dead.ts'],
+    const result = analyzeDeadCode(
+      [],
+      ['dead.ts'],
       makeAgeMap([{ file: 'dead.ts', ageInDays: 100 }]),
-      makeLocReport([{ file: 'dead.ts', lines: 50 }])
+      makeLocReport([{ file: 'dead.ts', lines: 50 }]),
     );
     expect(result.summary).toBeTruthy();
   });

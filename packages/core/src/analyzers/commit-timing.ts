@@ -1,5 +1,5 @@
-import type { RawCommit } from '../utils/git.js';
 import type { CommitTimingReport, FileTimingProfile } from '../types.js';
+import type { RawCommit } from '../utils/git.js';
 
 /**
  * Parses an ISO date string and returns the hour (0-23) and day-of-week (0-6, Sun=0)
@@ -35,7 +35,10 @@ function isWeekend(day: number): boolean {
   return day === 0 || day === 6; // Sunday or Saturday
 }
 
-export function analyzeCommitTiming(commits: RawCommit[], trackedFiles: string[]): CommitTimingReport {
+export function analyzeCommitTiming(
+  commits: RawCommit[],
+  trackedFiles: string[],
+): CommitTimingReport {
   if (commits.length === 0) {
     return {
       files: [],
@@ -49,7 +52,16 @@ export function analyzeCommitTiming(commits: RawCommit[], trackedFiles: string[]
   const trackedSet = new Set(trackedFiles);
 
   // Per-file accumulators
-  const fileData = new Map<string, { hours: number[]; totalCommits: number; lateNight: number; weekend: number; dayCount: number[] }>();
+  const fileData = new Map<
+    string,
+    {
+      hours: number[];
+      totalCommits: number;
+      lateNight: number;
+      weekend: number;
+      dayCount: number[];
+    }
+  >();
 
   // Repo-wide counters
   let repoTotal = 0;
@@ -69,7 +81,13 @@ export function analyzeCommitTiming(commits: RawCommit[], trackedFiles: string[]
       if (!trackedSet.has(file)) continue;
 
       if (!fileData.has(file)) {
-        fileData.set(file, { hours: new Array(24).fill(0), totalCommits: 0, lateNight: 0, weekend: 0, dayCount: new Array(7).fill(0) });
+        fileData.set(file, {
+          hours: new Array(24).fill(0),
+          totalCommits: 0,
+          lateNight: 0,
+          weekend: 0,
+          dayCount: new Array(7).fill(0),
+        });
       }
       const data = fileData.get(file)!;
       data.hours[hour]++;
@@ -89,7 +107,10 @@ export function analyzeCommitTiming(commits: RawCommit[], trackedFiles: string[]
     const weekendPercent = Math.round((data.weekend / data.totalCommits) * 100);
     const peakHour = data.hours.indexOf(Math.max(...data.hours));
     const peakDay = data.dayCount.indexOf(Math.max(...data.dayCount));
-    const stressScore = Math.min(100, Math.max(0, Math.round(lateNightPercent * 0.6 + weekendPercent * 0.4)));
+    const stressScore = Math.min(
+      100,
+      Math.max(0, Math.round(lateNightPercent * 0.6 + weekendPercent * 0.4)),
+    );
 
     files.push({
       file,

@@ -1,5 +1,5 @@
-import type { RawCommit } from '../utils/git.js';
 import type { AgeMapReport, FileAge, AgeStatus } from '../types.js';
+import type { RawCommit } from '../utils/git.js';
 
 /**
  * Analyzes the age of files based on the provided commits, tracked files, and repository age in days.
@@ -8,7 +8,11 @@ import type { AgeMapReport, FileAge, AgeStatus } from '../types.js';
  * @param repoAgeDays - The age of the repository in days.
  * @Returns a report with the top 20 files by age, the number of stale files, and a summary.
  */
-export function analyzeAgeMap(commits: RawCommit[], trackedFiles: string[], repoAgeDays: number): AgeMapReport {
+export function analyzeAgeMap(
+  commits: RawCommit[],
+  trackedFiles: string[],
+  repoAgeDays: number,
+): AgeMapReport {
   // Map: file → most recent commit date
   const fileLastCommit: Map<string, string> = new Map();
   const trackedSet = new Set(trackedFiles);
@@ -25,22 +29,25 @@ export function analyzeAgeMap(commits: RawCommit[], trackedFiles: string[], repo
 
   const now = Date.now();
 
-  const files: FileAge[] = Array.from(fileLastCommit.entries()).map(([file, lastCommitDate]) => {
-    const ageInDays = Math.floor((now - new Date(lastCommitDate).getTime()) / 86_400_000);
-    return { file, lastCommitDate, ageInDays, status: getAgeStatus(ageInDays, repoAgeDays) };
-  }).sort((a, b) => b.ageInDays - a.ageInDays);
+  const files: FileAge[] = Array.from(fileLastCommit.entries())
+    .map(([file, lastCommitDate]) => {
+      const ageInDays = Math.floor((now - new Date(lastCommitDate).getTime()) / 86_400_000);
+      return { file, lastCommitDate, ageInDays, status: getAgeStatus(ageInDays, repoAgeDays) };
+    })
+    .sort((a, b) => b.ageInDays - a.ageInDays);
 
-  const staleFiles = files.filter(f => f.status === 'stale');
-  const ancientFiles = files.filter(f => f.status === 'ancient');
+  const staleFiles = files.filter((f) => f.status === 'stale');
+  const ancientFiles = files.filter((f) => f.status === 'ancient');
 
-  const ages = files.map(f => f.ageInDays).sort((a, b) => a - b);
+  const ages = files.map((f) => f.ageInDays).sort((a, b) => a - b);
   const medianAgeDays = ages[Math.floor(ages.length / 2)] ?? 0;
 
-  const summary = ancientFiles.length > 0
-    ? `${ancientFiles.length} files haven't been touched in over ${Math.round(repoAgeDays * 0.66)} days — they may be dead weight or critical infrastructure nobody dares touch`
-    : staleFiles.length > 0
-    ? `${staleFiles.length} files are going stale (no commits in ${Math.round(repoAgeDays * 0.33)}+ days)`
-    : 'The codebase is actively maintained across most files';
+  const summary =
+    ancientFiles.length > 0
+      ? `${ancientFiles.length} files haven't been touched in over ${Math.round(repoAgeDays * 0.66)} days — they may be dead weight or critical infrastructure nobody dares touch`
+      : staleFiles.length > 0
+        ? `${staleFiles.length} files are going stale (no commits in ${Math.round(repoAgeDays * 0.33)}+ days)`
+        : 'The codebase is actively maintained across most files';
 
   return { files, staleFiles, ancientFiles, medianAgeDays, summary };
 }

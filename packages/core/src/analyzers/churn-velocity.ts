@@ -1,5 +1,5 @@
-import type { RawCommit } from '../utils/git.js';
 import type { ChurnVelocityReport, FileChurnVelocity, ChurnTrend } from '../types.js';
+import type { RawCommit } from '../utils/git.js';
 
 function getTrend(score: number): ChurnTrend {
   if (score > 60) return 'accelerating';
@@ -7,13 +7,16 @@ function getTrend(score: number): ChurnTrend {
   return 'stable';
 }
 
-export function analyzeChurnVelocity(commits: RawCommit[], trackedFiles: string[]): ChurnVelocityReport {
+export function analyzeChurnVelocity(
+  commits: RawCommit[],
+  trackedFiles: string[],
+): ChurnVelocityReport {
   if (commits.length === 0) {
     return { files: [], acceleratingFiles: [], summary: 'No commits to analyze' };
   }
 
   const trackedSet = new Set(trackedFiles);
-  const dates = commits.map(c => new Date(c.date).getTime());
+  const dates = commits.map((c) => new Date(c.date).getTime());
   const minDate = Math.min(...dates);
   const maxDate = Math.max(...dates);
   const midpoint = minDate + (maxDate - minDate) / 2;
@@ -31,17 +34,24 @@ export function analyzeChurnVelocity(commits: RawCommit[], trackedFiles: string[
   const files: FileChurnVelocity[] = [];
   for (const [file, timestamps] of fileCommitDates) {
     if (timestamps.length < 2) continue;
-    const recentCommits = timestamps.filter(t => t >= midpoint).length;
-    const olderCommits = timestamps.filter(t => t < midpoint).length;
+    const recentCommits = timestamps.filter((t) => t >= midpoint).length;
+    const olderCommits = timestamps.filter((t) => t < midpoint).length;
     const total = recentCommits + olderCommits;
     const velocityScore = Math.round((recentCommits / total) * 100);
-    files.push({ file, velocityScore, trend: getTrend(velocityScore), recentCommits, olderCommits, totalCommits: total });
+    files.push({
+      file,
+      velocityScore,
+      trend: getTrend(velocityScore),
+      recentCommits,
+      olderCommits,
+      totalCommits: total,
+    });
   }
 
   files.sort((a, b) => b.velocityScore - a.velocityScore);
-  const acceleratingFiles = files.filter(f => f.trend === 'accelerating').slice(0, 10);
-  const accCount = files.filter(f => f.trend === 'accelerating').length;
-  const decCount = files.filter(f => f.trend === 'decelerating').length;
+  const acceleratingFiles = files.filter((f) => f.trend === 'accelerating').slice(0, 10);
+  const accCount = files.filter((f) => f.trend === 'accelerating').length;
+  const decCount = files.filter((f) => f.trend === 'decelerating').length;
   const summary = `${accCount} file${accCount !== 1 ? 's' : ''} accelerating, ${decCount} decelerating`;
 
   return { files, acceleratingFiles, summary };

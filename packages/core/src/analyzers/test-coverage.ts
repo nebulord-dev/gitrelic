@@ -1,10 +1,26 @@
 import path from 'node:path';
+
 import type { TestCoverageProxyReport, DirectoryCoverage } from '../types.js';
 
 const CODE_EXTENSIONS = new Set([
-  '.ts', '.tsx', '.js', '.jsx', '.py', '.rb', '.go', '.rs',
-  '.java', '.cs', '.cpp', '.c', '.php', '.swift', '.kt',
-  '.vue', '.svelte', '.astro',
+  '.ts',
+  '.tsx',
+  '.js',
+  '.jsx',
+  '.py',
+  '.rb',
+  '.go',
+  '.rs',
+  '.java',
+  '.cs',
+  '.cpp',
+  '.c',
+  '.php',
+  '.swift',
+  '.kt',
+  '.vue',
+  '.svelte',
+  '.astro',
 ]);
 
 function isTestFile(file: string): boolean {
@@ -42,15 +58,18 @@ export function analyzeTestCoverage(trackedFiles: string[]): TestCoverageProxyRe
     }))
     .sort((a, b) => a.coverageRatio - b.coverageRatio);
 
-  const uncoveredDirectories = directories.filter(d => !d.hasTests && d.sourceFiles > 0);
+  const uncoveredDirectories = directories.filter((d) => !d.hasTests && d.sourceFiles > 0);
 
   const totalSource = directories.reduce((s, d) => s + d.sourceFiles, 0);
   const totalTest = directories.reduce((s, d) => s + d.testFiles, 0);
   const overallRatio = totalSource > 0 ? Math.round((totalTest / totalSource) * 100) / 100 : 0;
 
-  const summary = uncoveredDirectories.length > 0
-    ? `${uncoveredDirectories.length} director${uncoveredDirectories.length !== 1 ? 'ies' : 'y'} with source files but no tests`
-    : totalSource > 0 ? 'All directories with source files have tests' : 'No source files found';
+  const summary =
+    uncoveredDirectories.length > 0
+      ? `${uncoveredDirectories.length} director${uncoveredDirectories.length !== 1 ? 'ies' : 'y'} with source files but no tests`
+      : totalSource > 0
+        ? 'All directories with source files have tests'
+        : 'No source files found';
 
   return { directories, uncoveredDirectories, overallRatio, summary };
 }

@@ -1,15 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import type { BusFactorReport } from '../types.js';
+
 import { analyzeKnowledgeConcentration } from './knowledge-concentration.js';
+
+import type { BusFactorReport } from '../types.js';
 
 function makeBusReport(files: { file: string; dominantAuthorPercent: number }[]): BusFactorReport {
   return {
-    files: files.map(f => ({
-      file: f.file, dominantAuthorPercent: f.dominantAuthorPercent,
-      uniqueAuthors: 1, authors: ['a@b.com'], dominantAuthor: 'a@b.com',
-      risk: f.dominantAuthorPercent > 80 ? 'critical' as const : 'low' as const,
+    files: files.map((f) => ({
+      file: f.file,
+      dominantAuthorPercent: f.dominantAuthorPercent,
+      uniqueAuthors: 1,
+      authors: ['a@b.com'],
+      dominantAuthor: 'a@b.com',
+      risk: f.dominantAuthorPercent > 80 ? ('critical' as const) : ('low' as const),
     })),
-    criticalFiles: [], overallBusFactor: 1, summary: '',
+    criticalFiles: [],
+    overallBusFactor: 1,
+    summary: '',
   };
 }
 

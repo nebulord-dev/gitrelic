@@ -1,5 +1,5 @@
-import type { RawCommit } from '../utils/git.js';
 import type { AgeMapReport, LocReport, DeadCodeReport, DeadCodeCandidate } from '../types.js';
+import type { RawCommit } from '../utils/git.js';
 
 export function analyzeDeadCode(
   commits: RawCommit[],
@@ -14,8 +14,8 @@ export function analyzeDeadCode(
     }
   }
 
-  const ageByFile = new Map(ageMap.files.map(f => [f.file, f]));
-  const locByFile = new Map(locReport.files.map(f => [f.file, f]));
+  const ageByFile = new Map(ageMap.files.map((f) => [f.file, f]));
+  const locByFile = new Map(locReport.files.map((f) => [f.file, f]));
 
   const candidates: DeadCodeCandidate[] = [];
   for (const file of trackedFiles) {
@@ -34,9 +34,10 @@ export function analyzeDeadCode(
   candidates.sort((a, b) => b.ageInDays - a.ageInDays);
   const totalDeadFiles = candidates.length;
   const totalDeadLines = candidates.reduce((s, c) => s + c.loc, 0);
-  const summary = totalDeadFiles > 0
-    ? `${totalDeadFiles} file${totalDeadFiles !== 1 ? 's' : ''} (${totalDeadLines.toLocaleString()} lines) with no commits in the analysis window`
-    : 'No dead code candidates found';
+  const summary =
+    totalDeadFiles > 0
+      ? `${totalDeadFiles} file${totalDeadFiles !== 1 ? 's' : ''} (${totalDeadLines.toLocaleString()} lines) with no commits in the analysis window`
+      : 'No dead code candidates found';
 
   return { candidates, totalDeadFiles, totalDeadLines, summary };
 }

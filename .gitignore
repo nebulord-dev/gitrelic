@@ -2,10 +2,13 @@ node_modules/
 dist/
 .turbo/
 *.tsbuildinfo
+*.log
 .DS_Store
 .env
-.env.local
-coverage
+*.local
+coverage/
 .superpowers/
 
 .claude/projects/
+.sickbay/history.json
+.sickbay/cache/

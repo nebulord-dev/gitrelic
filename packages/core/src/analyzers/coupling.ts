@@ -1,5 +1,5 @@
-import type { RawCommit } from '../utils/git.js';
 import type { CouplingReport, CoupledPair, FileCouplingProfile } from '../types.js';
+import type { RawCommit } from '../utils/git.js';
 
 const MAX_FILES_PER_COMMIT = 30;
 const MIN_CO_OCCURRENCES = 3;
@@ -15,7 +15,7 @@ export function analyzeCoupling(commits: RawCommit[], trackedFiles: string[]): C
   const fileTotalCommits = new Map<string, number>();
 
   for (const commit of commits) {
-    const files = commit.files.filter(f => trackedSet.has(f));
+    const files = commit.files.filter((f) => trackedSet.has(f));
 
     if (files.length >= MAX_FILES_PER_COMMIT) continue;
 
@@ -62,19 +62,23 @@ export function analyzeCoupling(commits: RawCommit[], trackedFiles: string[]): C
     .map(([file, partners]) => {
       const sorted = [...partners].sort((a, b) => b.couplingStrength - a.couplingStrength);
       const topPartner = sorted[0]
-        ? (sorted[0].fileA === file ? sorted[0].fileB : sorted[0].fileA)
+        ? sorted[0].fileA === file
+          ? sorted[0].fileB
+          : sorted[0].fileA
         : null;
-      const couplingScore = sorted.length > 0
-        ? Math.round(sorted.reduce((s, p) => s + p.couplingStrength, 0) / sorted.length)
-        : 0;
+      const couplingScore =
+        sorted.length > 0
+          ? Math.round(sorted.reduce((s, p) => s + p.couplingStrength, 0) / sorted.length)
+          : 0;
       return { file, partners: sorted, topPartner, couplingScore };
     })
     .sort((a, b) => b.couplingScore - a.couplingScore);
 
   const strongest = topPairs[0];
-  const summary = pairs.length > 0 && strongest
-    ? `${pairs.length} coupled pair${pairs.length !== 1 ? 's' : ''} found, strongest: ${strongest.fileA} ↔ ${strongest.fileB} (${strongest.couplingStrength}%)`
-    : 'No temporal coupling detected';
+  const summary =
+    pairs.length > 0 && strongest
+      ? `${pairs.length} coupled pair${pairs.length !== 1 ? 's' : ''} found, strongest: ${strongest.fileA} ↔ ${strongest.fileB} (${strongest.couplingStrength}%)`
+      : 'No temporal coupling detected';
 
   return { pairs, fileProfiles, topPairs, summary };
 }

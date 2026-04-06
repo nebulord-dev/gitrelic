@@ -1,4 +1,5 @@
 import { execa } from 'execa';
+
 import type { RenameTrackingReport, FileRename, FileRenameChain } from '../types.js';
 
 /**
@@ -32,9 +33,10 @@ export function parseRenameLog(raw: string): FileRename[] {
  * Builds rename chains for currently tracked files by walking backwards
  * through rename history.
  */
-export function buildRenameChains(renames: FileRename[], trackedFiles: string[]): FileRenameChain[] {
-  const trackedSet = new Set(trackedFiles);
-
+export function buildRenameChains(
+  renames: FileRename[],
+  trackedFiles: string[],
+): FileRenameChain[] {
   // Build a reverse map: newPath → { oldPath, date }
   // Sort renames by date so we process them in chronological order
   const sorted = [...renames].sort((a, b) => a.date.localeCompare(b.date));
@@ -45,7 +47,9 @@ export function buildRenameChains(renames: FileRename[], trackedFiles: string[])
   const reverseMap = new Map<string, { oldPath: string; commitHash: string; date: string }[]>();
   for (const rename of sorted) {
     if (!reverseMap.has(rename.newPath)) reverseMap.set(rename.newPath, []);
-    reverseMap.get(rename.newPath)!.push({ oldPath: rename.oldPath, commitHash: rename.commitHash, date: rename.date });
+    reverseMap
+      .get(rename.newPath)!
+      .push({ oldPath: rename.oldPath, commitHash: rename.commitHash, date: rename.date });
   }
 
   const chains: FileRenameChain[] = [];

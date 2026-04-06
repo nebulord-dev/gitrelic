@@ -39,7 +39,7 @@ For each changed file or area, determine what kind of change it is:
 | Git primitives changed (`utils/git.ts`) | `CLAUDE.md` (data source section) |
 | Ignore list / filter logic added | `CLAUDE.md` (key concepts), `README.md` |
 | Build/tooling change | `CLAUDE.md` (build commands), `README.md` |
-| New kanban tasks added | No doc update needed — kanban is self-documenting |
+| New Jira tasks added | No doc update needed — Jira is self-documenting |
 
 ### Step 3: Read the Potentially Affected Docs
 
@@ -49,7 +49,7 @@ Docs to check (read only the ones relevant to what changed):
 
 - `CLAUDE.md` — AI navigation guide: architecture overview, package breakdown, key concepts, build commands
 - `README.md` — root README: features list, usage, what GitLore analyzes
-- `.claude/kanban.md` — task board (only update if tasks were completed or new ones discovered)
+- Jira project KAN — task board (check via Atlassian MCP tools if tasks were completed or new ones discovered)
 
 ### Step 4: Evaluate Each Doc
 
@@ -82,7 +82,7 @@ Present a clear summary before touching anything:
 - **What**: ...
 
 ### Docs That Look Fine
-- `.claude/kanban.md` — already updated during session
+- Jira — already updated during session
 - (etc.)
 
 ### Proposed Actions

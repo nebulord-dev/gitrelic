@@ -35,8 +35,8 @@ export interface RepoMeta {
   totalCommits: number;
   totalFiles: number;
   totalAuthors: number;
-  firstCommit: string;       // ISO date
-  lastCommit: string;        // ISO date
+  firstCommit: string; // ISO date
+  lastCommit: string; // ISO date
   ageInDays: number;
   primaryLanguage: string;
   branches: string[];
@@ -46,8 +46,8 @@ export interface RepoMeta {
 
 export interface FileChurn {
   file: string;
-  commitCount: number;       // how many commits touched this file
-  churnScore: number;        // 0–100 relative to repo max
+  commitCount: number; // how many commits touched this file
+  churnScore: number; // 0–100 relative to repo max
   category: ChurnCategory;
 }
 
@@ -55,9 +55,9 @@ export type ChurnCategory = 'hot' | 'warm' | 'cold' | 'frozen';
 
 export interface ChurnReport {
   files: FileChurn[];
-  topFiles: FileChurn[];     // top 20 by commit count
-  hotspotCount: number;      // files with churnScore > 75
-  summary: string;           // e.g. "auth.ts has been modified in 34% of all commits"
+  topFiles: FileChurn[]; // top 20 by commit count
+  hotspotCount: number; // files with churnScore > 75
+  summary: string; // e.g. "auth.ts has been modified in 34% of all commits"
 }
 
 // ─── Bus factor ────────────────────────────────────────────────────────────────
@@ -65,8 +65,8 @@ export interface ChurnReport {
 export interface FileBusFactor {
   file: string;
   uniqueAuthors: number;
-  authors: string[];         // email list
-  dominantAuthor: string;    // author with most commits to this file
+  authors: string[]; // email list
+  dominantAuthor: string; // author with most commits to this file
   dominantAuthorPercent: number;
   risk: BusFactorRisk;
 }
@@ -75,8 +75,8 @@ export type BusFactorRisk = 'critical' | 'high' | 'medium' | 'low';
 
 export interface BusFactorReport {
   files: FileBusFactor[];
-  criticalFiles: FileBusFactor[];   // single author owns >80% of commits
-  overallBusFactor: number;          // min unique authors across top files
+  criticalFiles: FileBusFactor[]; // single author owns >80% of commits
+  overallBusFactor: number; // min unique authors across top files
   summary: string;
 }
 
@@ -84,7 +84,7 @@ export interface BusFactorReport {
 
 export interface FileAge {
   file: string;
-  lastCommitDate: string;    // ISO date
+  lastCommitDate: string; // ISO date
   ageInDays: number;
   status: AgeStatus;
 }
@@ -93,8 +93,8 @@ export type AgeStatus = 'fresh' | 'aging' | 'stale' | 'ancient';
 
 export interface AgeMapReport {
   files: FileAge[];
-  staleFiles: FileAge[];     // not touched in >180 days
-  ancientFiles: FileAge[];   // not touched in >365 days
+  staleFiles: FileAge[]; // not touched in >180 days
+  ancientFiles: FileAge[]; // not touched in >365 days
   medianAgeDays: number;
   summary: string;
 }
@@ -107,17 +107,17 @@ export interface Contributor {
   commitCount: number;
   firstCommit: string;
   lastCommit: string;
-  filesOwned: number;        // files where they are dominant author
+  filesOwned: number; // files where they are dominant author
   linesChanged: number;
   activeDays: number;
-  focusAreas: string[];      // top directories they work in
-  isActive: boolean;         // committed in last 90 days
+  focusAreas: string[]; // top directories they work in
+  isActive: boolean; // committed in last 90 days
 }
 
 export interface ContributorReport {
   contributors: Contributor[];
   activeContributors: Contributor[];
-  ghostContributors: Contributor[];  // committed but no activity in >6 months
+  ghostContributors: Contributor[]; // committed but no activity in >6 months
   topContributor: Contributor;
   summary: string;
 }
@@ -126,12 +126,12 @@ export interface ContributorReport {
 
 export interface CursedFile {
   file: string;
-  curseScore: number;        // 0–100
-  reasons: string[];         // human-readable explanations
+  curseScore: number; // 0–100
+  reasons: string[]; // human-readable explanations
   churn: number;
   authors: number;
   ageDays: number;
-  narrative: string;         // e.g. "This file has been touched by 7 authors in 89 commits — it's either the heart of the codebase or a ticking time bomb."
+  narrative: string; // e.g. "This file has been touched by 7 authors in 89 commits — it's either the heart of the codebase or a ticking time bomb."
 }
 
 // ─── Forensics (commit message shame scoring) ──────────────────────────────────
@@ -140,22 +140,22 @@ export interface ShamefulCommit {
   hash: string;
   message: string;
   date: string;
-  shamePoints: number;   // weighted score from this commit's keywords
-  keywords: string[];    // which keywords fired
+  shamePoints: number; // weighted score from this commit's keywords
+  keywords: string[]; // which keywords fired
 }
 
 export interface FileForensics {
   file: string;
-  shameScore: number;          // 0–100 normalized ratio
-  rawShamePoints: number;      // absolute weighted sum across all commits
-  shameCommitCount: number;    // how many commits had shame keywords
-  topShameCommits: ShamefulCommit[];   // top 3 by shamePoints
-  dominantKeywords: string[];          // most frequent shame keywords for this file
+  shameScore: number; // 0–100 normalized ratio
+  rawShamePoints: number; // absolute weighted sum across all commits
+  shameCommitCount: number; // how many commits had shame keywords
+  topShameCommits: ShamefulCommit[]; // top 3 by shamePoints
+  dominantKeywords: string[]; // most frequent shame keywords for this file
 }
 
 export interface ForensicsReport {
   files: FileForensics[];
-  shameLeaderboard: FileForensics[];  // top 10 most shameful files
+  shameLeaderboard: FileForensics[]; // top 10 most shameful files
   totalShameCommits: number;
   summary: string;
 }
@@ -163,26 +163,26 @@ export interface ForensicsReport {
 // ─── Parallel development ─────────────────────────────────────────────────────
 
 export interface ParallelWindow {
-  weekStart: string;           // ISO date of the Monday starting this week
-  authors: string[];           // distinct authors who committed that week
-  commitCount: number;         // total commits from all authors that week
+  weekStart: string; // ISO date of the Monday starting this week
+  authors: string[]; // distinct authors who committed that week
+  commitCount: number; // total commits from all authors that week
 }
 
 export interface FileParallelDev {
   file: string;
-  parallelScore: number;       // 0–100
-  totalActiveWeeks: number;    // weeks where any commit happened
-  parallelWeeks: number;       // weeks where 2+ distinct authors committed
-  peakAuthors: number;         // max distinct authors in a single week
-  peakWindow: ParallelWindow;  // the week with the most author overlap
-  topWindows: ParallelWindow[];// top 3 parallel windows by author count
-  narrative: string;           // human-readable summary
+  parallelScore: number; // 0–100
+  totalActiveWeeks: number; // weeks where any commit happened
+  parallelWeeks: number; // weeks where 2+ distinct authors committed
+  peakAuthors: number; // max distinct authors in a single week
+  peakWindow: ParallelWindow; // the week with the most author overlap
+  topWindows: ParallelWindow[]; // top 3 parallel windows by author count
+  narrative: string; // human-readable summary
 }
 
 export interface ParallelDevReport {
   files: FileParallelDev[];
   hotFiles: FileParallelDev[]; // top 10 by parallelScore
-  totalParallelFiles: number;  // files with any parallel activity
+  totalParallelFiles: number; // files with any parallel activity
   summary: string;
 }
 
@@ -326,14 +326,14 @@ export interface DirectoryCoverage {
   directory: string;
   sourceFiles: number;
   testFiles: number;
-  coverageRatio: number;        // testFiles / sourceFiles, 0-1
+  coverageRatio: number; // testFiles / sourceFiles, 0-1
   hasTests: boolean;
 }
 
 export interface TestCoverageProxyReport {
   directories: DirectoryCoverage[];
-  uncoveredDirectories: DirectoryCoverage[];  // directories with 0 test files
-  overallRatio: number;                        // repo-wide test/source ratio
+  uncoveredDirectories: DirectoryCoverage[]; // directories with 0 test files
+  overallRatio: number; // repo-wide test/source ratio
   summary: string;
 }
 
@@ -343,7 +343,7 @@ export interface GhostFile {
   file: string;
   dominantAuthor: string;
   dominantAuthorPercent: number;
-  lastAuthorCommitDate: string;  // ISO date of dominant author's last commit anywhere
+  lastAuthorCommitDate: string; // ISO date of dominant author's last commit anywhere
   authorInactiveDays: number;
   loc: number;
 }
@@ -357,9 +357,9 @@ export interface GhostFilesReport {
 // ─── Knowledge concentration ────────────────────────────────────────────────
 
 export interface KnowledgeConcentrationReport {
-  singleAuthorFiles: number;     // files where one author has >80% of commits
+  singleAuthorFiles: number; // files where one author has >80% of commits
   totalFiles: number;
-  concentrationIndex: number;    // singleAuthorFiles / totalFiles × 100
+  concentrationIndex: number; // singleAuthorFiles / totalFiles × 100
   summary: string;
 }
 
@@ -369,12 +369,12 @@ export interface CoAuthorPair {
   authorA: string;
   authorB: string;
   coAuthoredCommits: number;
-  files: string[];               // files they co-authored together
+  files: string[]; // files they co-authored together
 }
 
 export interface CoAuthorStats {
   author: string;
-  coAuthoredCommits: number;     // commits where this author was a co-author
+  coAuthoredCommits: number; // commits where this author was a co-author
   primaryPartner: string | null;
 }
 
@@ -418,16 +418,16 @@ export interface MultiSignalFile {
 // ─── Complexity trend ─────────────────────────────────────────────────
 
 export interface FileGrowthBucket {
-  month: string;        // "2025-06"
-  netLines: number;     // insertions - deletions that month
-  cumulative: number;   // running total of net lines within the analysis window (not absolute file size)
+  month: string; // "2025-06"
+  netLines: number; // insertions - deletions that month
+  cumulative: number; // running total of net lines within the analysis window (not absolute file size)
 }
 
 export interface FileComplexityTrend {
   file: string;
   buckets: FileGrowthBucket[];
-  totalNetLines: number;          // sum of all net lines across all buckets
-  recentGrowthRate: number;       // avg net lines/month over last 3 active months
+  totalNetLines: number; // sum of all net lines across all buckets
+  recentGrowthRate: number; // avg net lines/month over last 3 active months
   trend: GrowthTrend;
 }
 
@@ -435,7 +435,7 @@ export type GrowthTrend = 'growing' | 'shrinking' | 'stable';
 
 export interface ComplexityTrendReport {
   files: FileComplexityTrend[];
-  growingFiles: FileComplexityTrend[];   // top 10 growers by recentGrowthRate
+  growingFiles: FileComplexityTrend[]; // top 10 growers by recentGrowthRate
   shrinkingFiles: FileComplexityTrend[]; // top 10 shrinkers
   summary: string;
 }
@@ -448,19 +448,19 @@ export type DayType = 'weekday' | 'weekend';
 export interface FileTimingProfile {
   file: string;
   totalCommits: number;
-  lateNightPercent: number;      // commits between 11pm–5am as percentage
-  weekendPercent: number;         // Saturday + Sunday commits as percentage
-  peakHour: number;               // 0-23, hour with most commits
-  peakDay: number;                // 0-6 (Sun=0), day with most commits
-  hourDistribution: number[];     // 24 entries, commit count per hour
-  stressScore: number;            // 0–100, weighted from late-night + weekend frequency
+  lateNightPercent: number; // commits between 11pm–5am as percentage
+  weekendPercent: number; // Saturday + Sunday commits as percentage
+  peakHour: number; // 0-23, hour with most commits
+  peakDay: number; // 0-6 (Sun=0), day with most commits
+  hourDistribution: number[]; // 24 entries, commit count per hour
+  stressScore: number; // 0–100, weighted from late-night + weekend frequency
 }
 
 export interface CommitTimingReport {
   files: FileTimingProfile[];
-  stressFiles: FileTimingProfile[];   // top 10 by stressScore
-  repoLateNightPercent: number;       // repo-wide late night commit percentage
-  repoWeekendPercent: number;         // repo-wide weekend commit percentage
+  stressFiles: FileTimingProfile[]; // top 10 by stressScore
+  repoLateNightPercent: number; // repo-wide late night commit percentage
+  repoWeekendPercent: number; // repo-wide weekend commit percentage
   summary: string;
 }
 
@@ -470,20 +470,20 @@ export interface FileRename {
   oldPath: string;
   newPath: string;
   commitHash: string;
-  date: string;           // ISO date of the rename commit
+  date: string; // ISO date of the rename commit
 }
 
 export interface FileRenameChain {
   currentPath: string;
-  previousNames: string[];     // ordered oldest → newest (not including currentPath)
+  previousNames: string[]; // ordered oldest → newest (not including currentPath)
   renameCount: number;
 }
 
 export interface RenameTrackingReport {
   renames: FileRename[];
-  chains: FileRenameChain[];            // files with rename history
+  chains: FileRenameChain[]; // files with rename history
   totalRenames: number;
-  filesWithRenames: number;             // how many current files have been renamed at least once
+  filesWithRenames: number; // how many current files have been renamed at least once
   summary: string;
 }
 
@@ -492,7 +492,7 @@ export interface RenameTrackingReport {
 export interface RunGitloreOptions {
   repoPath: string;
   branch?: string;
-  since?: string;            // e.g. "6 months ago", "2023-01-01"
-  maxFiles?: number;         // limit analysis to top N churned files
+  since?: string; // e.g. "6 months ago", "2023-01-01"
+  maxFiles?: number; // limit analysis to top N churned files
   onProgress?: (step: string) => void;
 }
