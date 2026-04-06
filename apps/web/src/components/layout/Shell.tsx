@@ -1,5 +1,6 @@
 import { useSelection } from '../../hooks/useSelection';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
+import { ContributorSwimlanes } from '../hero/ContributorSwimlanes';
 import { HotspotScatter } from '../hero/HotspotScatter';
 import { OwnershipBubble } from '../hero/OwnershipBubble';
 import { Timeline } from '../hero/Timeline';
@@ -147,10 +148,20 @@ export function Shell({ report }: ShellProps) {
                   onSelectContributor={selection.selectContributor}
                 />
               )}
+              {selection.activeHeroViz === 'swimlanes' && (
+                <ContributorSwimlanes
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  selectedContributor={selection.selectedContributor}
+                  onSelectFile={selection.selectFile}
+                  onSelectContributor={selection.selectContributor}
+                />
+              )}
               {selection.activeHeroViz !== 'treemap' &&
                 selection.activeHeroViz !== 'ownership' &&
                 selection.activeHeroViz !== 'scatter' &&
-                selection.activeHeroViz !== 'timeline' && (
+                selection.activeHeroViz !== 'timeline' &&
+                selection.activeHeroViz !== 'swimlanes' && (
                   <div
                     style={{
                       flex: 1,
