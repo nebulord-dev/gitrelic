@@ -1,384 +1,464 @@
-# GitLore — Web Dashboard Design Spec
+# GitLore Web Dashboard Redesign — Design Spec
 
-> Reference document for Claude Code. Drop this in your project root or link it in your Claude Code session so it informs all frontend work.
+> Supersedes the original dashboard design spec. This document defines the IDE-style mission control layout, theming system, information architecture, and interaction model for the GitLore web dashboard.
 
 ---
 
-## Design philosophy
+## Design Philosophy
 
-Minimal, warm, and elegant. Think "thoughtful developer tool" — not corporate SaaS. The aesthetic draws from editorial design and retro computing, with generous whitespace, thin borders, and a muted earthy palette. Every element earns its place. No decoration for decoration's sake.
+**IDE-style mission control for git archaeology.** Dense, cross-linked, and always-on — every panel is a lens on the same data. The layout draws from developer tools (VS Code, Dataform, Figma) rather than traditional SaaS dashboards. Information density is a feature, not a bug.
 
 **Key principles:**
 
-- Information density over chrome — show data, not containers
-- Synthesize signals, don't silo them — one file row should tell its full story
-- Progressive disclosure — dashboard first, drill-downs on click
-- Light/dark theme support as a first-class concern
+- **Dense by default** — show as much as possible without requiring navigation
+- **Cross-linked, not siloed** — clicking anything updates all panels contextually
+- **Progressive depth** — compressed widgets → expandable rows → full inspector
+- **Themeable from day one** — CSS token system, not hardcoded colors
+- **Desktop-first** — optimized for real monitors, passable on tablets, no mobile
 
 ---
 
-## Color palette
+## Target Audience
 
-### Light theme
-
-```css
-:root {
-  --bg:       #F5F2EC;   /* warm off-white page background */
-  --bg2:      #EEEBE4;   /* surface/card background */
-  --bg3:      #E6E3DC;   /* subtle emphasis, hover states */
-  --fg:       #1A1A18;   /* primary text */
-  --fg2:      #6B6860;   /* secondary text */
-  --fg3:      #9C9990;   /* tertiary/muted text, labels */
-  --border:   #D4D1C8;   /* primary borders */
-  --border2:  #C2BFB6;   /* emphasized borders */
-
-  /* Semantic accent colors — retro, muted, not neon */
-  --red:       #C4503A;
-  --red-bg:    #F5E6E2;
-  --red-fg:    #8A3122;
-
-  --amber:     #B87A1A;
-  --amber-bg:  #F5EDD8;
-  --amber-fg:  #7A5010;
-
-  --teal:      #1A8C6A;
-  --teal-bg:   #E0F0E8;
-  --teal-fg:   #0E5E48;
-
-  --blue:      #2E6CB8;
-  --blue-bg:   #E2EDF8;
-  --blue-fg:   #1A4478;
-
-  --purple:    #6B52B0;
-  --purple-bg: #EBE6F5;
-  --purple-fg: #3E2E78;
-}
-```
-
-### Dark theme
-
-```css
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg:       #1C1B18;
-    --bg2:      #252420;
-    --bg3:      #2E2D28;
-    --fg:       #E4E1D8;
-    --fg2:      #9C9990;
-    --fg3:      #6B6860;
-    --border:   #3A3830;
-    --border2:  #4A4840;
-
-    --red:       #E06B55;
-    --red-bg:    #3A2420;
-    --red-fg:    #F0A090;
-
-    --amber:     #E0A030;
-    --amber-bg:  #3A3018;
-    --amber-fg:  #F0C870;
-
-    --teal:      #30B888;
-    --teal-bg:   #1A3028;
-    --teal-fg:   #80DDB8;
-
-    --blue:      #5090D0;
-    --blue-bg:   #1A2838;
-    --blue-fg:   #90C0E8;
-
-    --purple:    #9078D0;
-    --purple-bg: #28203A;
-    --purple-fg: #C0B0E8;
-  }
-}
-```
-
-### Color usage rules
-
-- **Red** → critical severity, high-risk signals
-- **Amber** → warnings, medium severity, temporal signals
-- **Teal** → healthy/fresh, positive signals, ok status
-- **Blue** → coupling relationships, structural signals
-- **Purple** → ownership, contributor-related signals
-- **Gray tones (fg, fg2, fg3)** → all neutral text hierarchy
-- Badge text always uses the `*-fg` variant on the `*-bg` background — never raw black/white on colored backgrounds
+Developers on a team, collectively understanding their codebase's health and individual impact. Optimized for actionable insight over managerial reporting.
 
 ---
 
-## Typography
+## Layout Architecture
 
-### Font stack
+Four-panel IDE-style layout with a metrics strip:
 
-```css
-/* Primary — system sans-serif, clean and neutral */
-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-
-/* Monospace — for file paths, scores, numbers, code */
---mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Top Bar: GITLORE logo │ repo name │ branch │ meta │ ? │ ⚙ │ 🌓  │
+├────────┬───────────────────────────────────────────────┬────────────┤
+│        │  Metrics Strip (always visible)               │            │
+│        │  [Cursed] [Hotspots] [Bus Factor] [Health]... │            │
+│        ├───────────────────────────────────────────────┤            │
+│  Left  │                                               │   Right    │
+│  Side  │  Hero Visualization (switchable)              │  Inspector │
+│  bar   │  ┌─────────────────────────────────────────┐  │  Panel     │
+│        │  │ Treemap │ Ownership │ Coupling │ Graph  │  │            │
+│  Nav   │  │                                         │  │  [File]    │
+│        │  │         (large interactive viz)          │  │  [People]  │
+│        │  │                                         │  │  [Activity]│
+│        │  └─────────────────────────────────────────┘  │            │
+│        ├───────────────────────────────────────────────┤            │
+│        │  Bottom Panel (tabbed data tables, resizable) │            │
+│        │  [Hotspots│Cursed│BusFactor│Blast│Velocity..] │            │
+│        │  ┌─────────────────────────────────────────┐  │            │
+│        │  │ expandable rows with inline detail      │  │            │
+│        │  └─────────────────────────────────────────┘  │            │
+├────────┴───────────────────────────────────────────────┴────────────┤
+│  (Methodology drawer slides from right when ? is clicked)          │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Scale
+### Panel Descriptions
 
-| Element              | Size   | Weight | Color    | Font  |
-|----------------------|--------|--------|----------|-------|
-| Page title (repo)    | 18px   | 500    | --fg     | sans  |
-| Section labels       | 11px   | 400    | --fg3    | sans, uppercase, letter-spacing: 0.08em |
-| Table headers        | 11px   | 400    | --fg3    | sans, uppercase, letter-spacing: 0.06em |
-| Body text            | 13px   | 400    | --fg     | sans  |
-| Secondary text       | 12px   | 400    | --fg2    | sans  |
-| File names           | 12px   | 400    | --fg     | mono  |
-| File paths           | 11px   | 400    | --fg3    | sans  |
-| Stat numbers         | 22px   | 500    | varies   | sans, letter-spacing: -0.03em |
-| Badge text           | 10px   | 500    | *-fg     | sans  |
-| Scores/numbers       | 12px   | 400    | --fg     | mono  |
-| Subtitle (git arch.) | 13px   | 400    | --fg3    | mono  |
+#### Top Bar
+- GITLORE wordmark (left)
+- Repository name, branch, commit count, author count, age
+- Right side: Export button, Settings, `?` methodology button, theme toggle (🌓)
+- Persistent across all views
 
-### Rules
+#### Left Sidebar (~200px)
+Navigation grouped by concern. Clicking a nav item changes the hero viz and auto-selects the relevant bottom panel tab.
 
-- No bold in body text — weight 500 only for headings, stat numbers, and badge text
-- Monospace for anything that could be copy-pasted: file paths, scores, commit counts
-- Uppercase + letter-spacing for section labels and table headers only
-- Negative letter-spacing on large numbers for tighter feel
+**Groups:**
+- **Overview**: Dashboard (home), Health Score
+- **Code Health**: Hotspots, Cursed Files, Dead Code, Complexity, Rewrites
+- **Ownership & Risk**: Bus Factor, Ghost Files, Knowledge Silos, Coupling
+- **Team & Activity**: Contributors, Co-Authors, Timing, Parallel Dev, Shame
+- **Structure**: Age Map, Languages, Test Coverage, Renames
+
+Nav items show count badges for actionable items (e.g., Hotspots: 12, Cursed: 3, Bus Factor: 6).
+
+#### Metrics Strip (always visible, below top bar)
+The "should I be worried?" bar. Never changes when navigating.
+
+| Metric | Source | Color Logic |
+|--------|--------|-------------|
+| Cursed Files | cursedFiles.length | Red if > 0 |
+| Critical Hotspots | hotspots count where severity = critical | Red/amber/green by count |
+| Bus Factor Risks | busFactors.criticalFiles.length | Amber if > 0 |
+| Contributors | contributors.length | Neutral |
+| Health Score | Composite (derived) | Green/amber/red by value |
+| Repo Age | First commit date | Neutral |
+| Lines of Code | loc.totalLines | Neutral |
+
+#### Hero Visualization (center, switchable)
+Large interactive visualization area. A toolbar at the top lets users switch between viz modes. Only one is shown at a time.
+
+| Viz | Description | Tier |
+|-----|-------------|------|
+| Churn Treemap | Directory tree sized by LOC, colored by hotspot severity | T1 |
+| Ownership Map | Treemap colored by dominant author (Tornhill-style) | T3 |
+| Coupling Graph | Force-directed temporal co-change graph | T3 |
+| Commit Graph | DAG with hotspot coloring | T3 |
+| Hotspot Scatter | Churn × complexity scatter plot | T3 |
+| Timeline | Commits over time stacked by contributor | T3 |
+| Contributor Swimlanes | Horizontal per-person timelines | T3 |
+
+Clicking a node/cell in the hero viz selects that file → bottom panel highlights row → inspector updates.
+
+#### Bottom Panel (tabbed, resizable)
+IDE "terminal" zone. Each tab is a ranked list or data table for one analysis dimension. The panel is resizable vertically (drag the top edge).
+
+**Tabs organized by sidebar groups:**
+
+Code Health tabs:
+| Tab | Data Source | Tier |
+|-----|-------------|------|
+| Hotspots | hotspots.topHotspots | T1 |
+| Cursed Files | cursedFiles | T1 |
+| Dead Code | deadCode.candidates | T2 |
+| Complexity Trend | complexityTrend.growingFiles | T2 |
+| Rewrite Ratio | rewriteRatio.topRewriters | T2 |
+| Churn Velocity | churnVelocity.acceleratingFiles | T2 |
+| Blast Radius | blastRadius.topBlasters | T2 |
+
+Ownership & Risk tabs:
+| Tab | Data Source | Tier |
+|-----|-------------|------|
+| Bus Factor | busFactors.criticalFiles | T1 |
+| Ghost Files | ghostFiles.files | T2 |
+| Knowledge Silos | knowledgeConcentration | T2 |
+| Coupling | coupling.topPairs | T1 |
+
+Team & Activity tabs:
+| Tab | Data Source | Tier |
+|-----|-------------|------|
+| Contributors | contributors.contributors | T1 |
+| Co-Authors | coAuthors.pairs | T2 |
+| Commit Timing | commitTiming.stressFiles | T2 |
+| Parallel Dev | parallelDev.hotFiles | T1 |
+| Shame | forensics.topShameFiles | T1 |
+
+Structure tabs:
+| Tab | Data Source | Tier |
+|-----|-------------|------|
+| Age Map | ageMap.files | T1 |
+| Languages | loc.languages | T2 |
+| Test Coverage | testCoverage.directories | T2 |
+| Renames | renameTracking.chains | T2 |
+
+#### Right Inspector Panel (~260px)
+Context-sensitive detail panel. Shows full information about the currently selected file or contributor. Has its own tab set.
+
+| Tab | Content | Tier |
+|-----|---------|------|
+| Inspector | All signals for selected file: hotspot score, churn, LOC, bus factor, blast radius, coupling partners, curse score, rewrite ratio, shame score, age, rename history | T1 |
+| Contributors | For file: who contributes, ownership %, commits. For person: their files, focus areas, timing | T1 |
+| Activity | Recent commits for selected entity, shame keywords highlighted, mini timeline | T2 |
+| AI Narrative | "What happened here?" Claude-generated per-file explanation (KAN-55), per-contributor story (KAN-59) | T3 |
+| Refactor Brief | AI refactoring suggestions for cursed/hotspot files (KAN-56) | T3 |
+
+#### Methodology Drawer
+A global slide-out panel triggered by the `?` button in the top bar. Slides from the right edge, overlaying the inspector panel (inspector state is preserved underneath and restored when the drawer closes).
+
+- Contains explanations for every metric, score, and concept in GitLore
+- Has its own internal navigation / table of contents
+- Auto-scrolls to the relevant section based on what the user is currently viewing
+- Always accessible from the same location — one place for "what does this mean?"
+- KAN-79
 
 ---
 
-## Layout & spacing
+## Interaction Model
 
-### Page structure
+### Cross-Linked Selection
+
+Everything is bidirectional. Any panel can drive selection:
+
+- **Hero viz click** (treemap cell, graph node) → selects file → bottom panel highlights row → inspector shows file detail
+- **Bottom panel row click** → selects file → inspector updates → hero viz highlights that file
+- **Inspector contributor click** → switches to contributor-focused view across all panels
+- **Sidebar click** → changes hero viz mode + auto-selects relevant bottom tab
+
+### Expandable Bottom Panel Rows
+
+Bottom panel table rows support **inline expansion** (click to expand):
 
 ```
-┌─────────────────────────────────────┐
-│  Header: repo name, subtitle, meta  │
-├─────────────────────────────────────┤
-│  Nav: Dashboard | Coupling | Age    │
-├─────────────────────────────────────┤
-│  Stats bar: 4 metric cells          │
-├─────────────────────────────────────┤
-│  Hotspot table (ranked files)       │
-├─────────────────────────────────────┤
-│  Two-col: Contributors | Clusters   │
-├─────────────────────────────────────┤
-│  Age distribution bar               │
-├─────────────────────────────────────┤
-│  Footer: methodology note           │
-└─────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────┐
+│ ▸ App.tsx  [critical] [coupling hub] [3 authors]  Score: 100  ... │
+├────────────────────────────────────────────────────────────────────┤
+│ ▾ App.tsx  [critical] [coupling hub] [3 authors]  Score: 100  ... │
+│  ┌──────────────┬──────────────┬──────────────┬──────────────┐    │
+│  │ OWNERSHIP    │ COUPLED WITH │ SHAME (7)    │ ACTIVITY     │    │
+│  │ 2 authors    │ 100% index.. │ "fix(cli):.. │ 14 commits   │    │
+│  │ dominant:    │  30% index.. │ fix          │ 602 lines    │    │
+│  │ Trace (64%)  │              │              │ score: 100   │    │
+│  └──────────────┴──────────────┴──────────────┴──────────────┘    │
+└────────────────────────────────────────────────────────────────────┘
 ```
 
-### Three pages total
+- **Click row** → expands inline with ownership, coupling, shame, activity summary
+- **Double-click or arrow icon** → selects file and loads full detail into right inspector
+- Expanded row shows a 4-column grid: Ownership, Coupled With, Shame, Activity
+- Only one row expanded at a time (accordion behavior)
 
-1. **Dashboard** (main) — synthesized view of all signals
-2. **Coupling graph** — interactive force-directed or arc diagram of file coupling relationships
-3. **Age map** — full file list grouped by freshness category
+### Signal Badges on Rows
 
-### Spacing tokens
+Each bottom panel row shows inline signal badges explaining why a file is flagged:
 
-```css
-/* Vertical rhythm */
---space-xs:  0.5rem;   /* 8px — tight internal gaps */
---space-sm:  0.75rem;  /* 12px — between related items */
---space-md:  1rem;     /* 16px — standard padding */
---space-lg:  1.5rem;   /* 24px — section gaps */
---space-xl:  2rem;     /* 32px — major section breaks */
+| Badge | Color | Examples |
+|-------|-------|----------|
+| Severity | Red/Amber | "critical", "warning" |
+| Ownership | Purple | "3 authors", "single owner" |
+| Coupling | Blue | "coupling hub", "24 clusters" |
+| Temporal | Teal | "accelerating", "stale" |
+| Process | Amber | "parallel dev", "fix churn" |
 
-/* Component internal */
-padding-card:    14px 16px;
-padding-badge:   2px 7px;
-padding-cell:    10px 0;       /* table cells — vertical only, no horizontal */
-```
+### Tooltips & Hover States
 
-### Borders
+Anything truncated or compressed gets a tooltip with the full story:
 
-```css
-/* All borders are thin and muted */
-border-width: 0.5px;
-border-color: var(--border);
-border-style: solid;
+- **File cells** — full path, hotspot score, dominant author, last modified
+- **Author avatars/names** — all contributors with ownership percentages
+- **Severity badges** — threshold explanation ("Critical: score > 80")
+- **Metrics strip numbers** — breakdown (hovering "12 Hotspots" → "4 critical, 5 warning, 3 moderate")
+- **Coupling bars** — file pair, co-commit count, strength percentage
+- **Score bars** — exact numeric value and percentile
 
-/* Dividers between sections */
-hr {
-  border: none;
-  border-top: 0.5px solid var(--border);
-  margin: 1.5rem 0;
-}
-```
+### Sortable Tables
 
-### Corners
-
-```css
-border-radius: 8px;   /* stats grid, cards, age grid */
-border-radius: 6px;   /* cluster cards, inner elements */
-border-radius: 3px;   /* badges */
-```
+All bottom panel tables are sortable by clicking column headers. Default sort order per tab:
+- Hotspots: by score descending
+- Bus Factor: by ownership concentration descending
+- Age Map: by age descending
+- Contributors: by commit count descending
 
 ---
 
-## Components
+## Theming System
 
-### Stats bar
+### Token Architecture
 
-A 4-cell grid showing top-level metrics. Cells separated by 1px borders (using background color trick on grid gap).
-
-```
-┌──────────┬──────────┬──────────┬──────────┐
-│ CRITICAL │ WARNINGS │  CURSED  │ BUS RISK │
-│ HOTSPOTS │          │  FILES   │          │
-│    2     │    3     │   259    │  1,853   │
-└──────────┴──────────┴──────────┴──────────┘
-```
-
-- Grid: `repeat(4, 1fr)`, gap: 1px, background: var(--border)
-- Each cell: background: var(--bg), padding: 14px 16px
-- Label: 11px uppercase, --fg3
-- Value: 22px weight 500, colored by severity (--red for critical, --amber for warning, --teal for ok)
-
-### File table (main hotspot ranking)
-
-The centerpiece. Each row shows one file with ALL its signals inline.
-
-| Column      | Width | Content                                    |
-|-------------|-------|--------------------------------------------|
-| File        | ~50%  | filename (mono) + path below (muted)       |
-| Signals     | flex  | inline badges showing why it's flagged     |
-| Score       | 80px  | horizontal bar + number                    |
-| Churn       | 50px  | mono number                                |
-| LOC         | 50px  | mono number                                |
-
-- No zebra striping — rows separated by 0.5px bottom borders
-- Score column has a tiny colored bar (4px tall) proportional to score, plus the number
-- Bar color: --red for critical (80+), --amber for warning (50-79), --teal for moderate (<50)
-
-### Badges (signal tags)
-
-Small inline pills that explain WHY a file is flagged.
+All visual values go through CSS custom properties organized into semantic layers. Swapping a theme = swapping a set of variable values.
 
 ```css
-.badge {
-  display: inline-block;
-  font-size: 10px;
-  padding: 2px 7px;
-  border-radius: 3px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-}
+/* Layer 1: Surface */
+--surface-primary     /* main background */
+--surface-secondary   /* cards, panels */
+--surface-tertiary    /* hover states, subtle emphasis */
+--surface-elevated    /* overlays, drawers, tooltips */
+
+/* Layer 2: Borders */
+--border-primary      /* default borders */
+--border-secondary    /* emphasized borders */
+--border-focus        /* focus rings */
+
+/* Layer 3: Text */
+--text-primary        /* main body text */
+--text-secondary      /* supporting text */
+--text-tertiary       /* labels, muted text */
+--text-inverse        /* text on colored backgrounds */
+
+/* Layer 4: Severity / Semantic */
+--severity-critical        /* red — critical risk */
+--severity-critical-bg
+--severity-critical-text
+--severity-warning         /* amber — warnings */
+--severity-warning-bg
+--severity-warning-text
+--severity-moderate        /* blue — moderate */
+--severity-moderate-bg
+--severity-moderate-text
+--severity-healthy         /* green — healthy/fresh */
+--severity-healthy-bg
+--severity-healthy-text
+
+/* Layer 5: Accent / Domain */
+--accent-ownership         /* purple — contributor/ownership signals */
+--accent-ownership-bg
+--accent-coupling          /* blue — structural relationships */
+--accent-coupling-bg
+--accent-temporal          /* teal — time-based signals */
+--accent-temporal-bg
+--accent-primary           /* brand accent for active states, links */
+
+/* Layer 6: Component-specific */
+--panel-resize-handle
+--nav-item-active-bg
+--nav-badge-bg
+--tooltip-bg
+--tooltip-text
 ```
 
-Badge types and their colors:
+### Default Dark Theme
 
-| Badge           | Background   | Text color   | Example text          |
-|-----------------|--------------|--------------|-----------------------|
-| Critical        | --red-bg     | --red-fg     | "critical"            |
-| Warning         | --amber-bg   | --amber-fg   | "warning"             |
-| Ownership       | --purple-bg  | --purple-fg  | "7 authors", "ownership" |
-| Coupling        | --blue-bg    | --blue-fg    | "coupling hub", "24 clusters" |
-| Temporal        | --teal-bg    | --teal-fg    | "jun 2025"            |
-| Shame           | --red-bg     | --red-fg     | "fix churn"           |
-| Parallel dev    | --amber-bg   | --amber-fg   | "parallel dev"        |
-| Stale           | --bg3        | --fg3        | "stale"               |
+Ship with a clean blue-black base. Professional, readable, not trying too hard.
 
-### Contributor rows
+- Surface: `#0d1117` → `#161b22` → `#21262d` (GitHub-adjacent blue-blacks)
+- Borders: `rgba(255,255,255,0.06)` → `rgba(255,255,255,0.12)`
+- Text: `#e6edf3` → `#8b949e` → `#484f58`
+- Severity: standard red/amber/blue/green with muted backgrounds
 
-Horizontal layout with avatar circle, name, and stats.
+### Default Light Theme
 
-```
-[SM]  Sebastian Markbåge    353 · 339 files · 56% hotspot ownership
-```
+Designed from the same token set. Clean, warm, readable.
 
-- Avatar: 24px circle, colored background from accent palette, 10px initials
-- Name: 13px regular
-- Stats: 11px mono, --fg3
-- Highlight dangerous stats in --red (e.g., "56% hotspot ownership")
+- Surface: `#ffffff` → `#f6f8fa` → `#eef1f5`
+- Borders: `#d0d7de` → `#afb8c1`
+- Text: `#1f2328` → `#656d76` → `#8b949e`
+- Severity: same hues, adjusted for light backgrounds
 
-### Root cause cluster cards
+### Extensibility
 
-```css
-.cluster-card {
-  background: var(--bg2);
-  border-radius: 6px;
-  padding: 12px 14px;
-  margin-bottom: 8px;
-}
-```
-
-Each card has:
-- A badge + label line (e.g., `[ownership] sebastian@calyptus.eu — 12 hotspots`)
-- A 1-line description in --fg2
-- A flex-wrap row of tiny file chips (mono 10px, --bg background, 3px radius)
-
-### Age distribution bar
-
-4-cell grid, same technique as stats bar.
-
-```
-┌──────────┬──────────┬──────────┬──────────┐
-│   124    │  1,111   │   883    │   717    │
-│  FRESH   │  AGING   │  STALE   │ ANCIENT  │
-└──────────┴──────────┴──────────┴──────────┘
-```
-
-Numbers colored: fresh=--teal, aging=--amber, stale=--red, ancient=--fg3
-
-### Navigation
-
-Minimal tab bar. No pill/button styles — just text links with a bottom border on active.
-
-```css
-.nav a {
-  font-size: 13px;
-  color: var(--fg3);
-  padding: 8px 16px;
-  border-bottom: 1.5px solid transparent;
-}
-.nav a.active {
-  color: var(--fg);
-  border-bottom-color: var(--fg);
-}
-```
+The token system is designed so alternative themes (Gruvbox, green-on-black, etc.) are just new sets of variable values. A theme file is a single CSS file or JSON object that maps token names to values. No component changes required.
 
 ---
 
-## Interaction patterns
+## Sidebar Navigation Detail
 
-### Click-through on file rows
+### Nav Groups and Items
 
-Clicking a file name in the hotspot table should expand an inline detail panel OR navigate to a file detail view showing:
-- Full commit timeline
-- Author breakdown pie
-- All signal details with explanations
-- Coupling connections for this file
+```
+OVERVIEW
+  ◎ Dashboard              (home view)
+  ⚡ Health Score           (T3 — KAN-75)
 
-### Expandable cluster cards
+CODE HEALTH
+  🔥 Hotspots              [12]
+  ☠ Cursed Files           [3]
+  💀 Dead Code             (T2)
+  📈 Complexity            (T2)
+  🔄 Rewrites              (T2)
 
-Root cause clusters should be collapsible — show label + score by default, expand to show file list on click.
+OWNERSHIP & RISK
+  ⚠ Bus Factor             [6]
+  👻 Ghost Files            (T2)
+  🧠 Knowledge Silos       (T2)
+  🔗 Coupling              (T1)
 
-### Sortable table
+TEAM & ACTIVITY
+  👥 Contributors           (T1)
+  🤝 Co-Authors            (T2)
+  ⏰ Timing                (T2)
+  ⚡ Parallel Dev           (T1)
+  😬 Shame                 (T1)
 
-The hotspot table should be sortable by Score, Churn, or LOC columns.
+STRUCTURE
+  ⏳ Age Map               (T1)
+  📊 Languages             (T2)
+  🧪 Test Coverage         (T2)
+  📎 Renames               (T2)
+```
+
+Badges appear on nav items with actionable counts (items that need attention). Items without data or not yet implemented show as disabled/grayed.
+
+### Planned Composite Views (Tier 3)
+
+These are sidebar items that combine multiple data sources into purpose-built views:
+
+- **Risk Dashboard** (KAN-75): Bus factor + ghost files + knowledge silos as a unified risk view
+- **Tech Debt Workbench** (KAN-76): Cursed files + hotspots + complexity trends as an actionable work queue
+- **Repo Health** (KAN-77): git-sizer metrics + age map + test coverage with green/amber/red indicators
 
 ---
 
-## What NOT to do
+## Responsive Strategy
 
-- No gradients, shadows, or glow effects
-- No card borders with rounded corners AND shadows together
-- No corporate blue as primary color
-- No heavy card containers — let the data breathe
-- No icons or emojis in the interface (except sparingly in badges if needed)
-- No dark backgrounds on the default light theme
-- No more than 3 navigation items at the top level
-- No separate pages for Contributors, Shame, Parallel Dev — fold them into the dashboard
+### Desktop (1440px+)
+Full four-panel layout as designed. All panels visible simultaneously.
+
+### Laptop (1280px–1440px)
+- Right inspector panel collapses to a narrower width (~220px)
+- Bottom panel default height slightly reduced
+- All panels still visible
+
+### Small Laptop (1024px–1280px)
+- Right inspector becomes a slide-over panel (hidden by default, slides in on file selection)
+- Left sidebar collapses to icon-only mode (expandable on hover)
+- Hero viz and bottom panel get full width
+
+### Tablet (768px–1024px)
+- Left sidebar becomes a hamburger menu drawer
+- Right inspector becomes a full-screen modal on file selection
+- Bottom panel tabs become scrollable
+- Hero viz gets full width
+- Metrics strip wraps to 2 rows
+
+### Below 768px
+Not supported. Show a message suggesting desktop use.
 
 ---
 
-## Implementation notes
+## Build Tiers
 
-- This is a static HTML report generated by the CLI (`gitlore --web`)
-- All data comes from a pre-computed JSON report (`GitloreReport`)
-- No server required — the HTML file is self-contained
-- Use CSS custom properties for theming — `prefers-color-scheme` media query for auto dark mode
-- Framework: whatever the existing GitLore web stack uses (likely React/Ink for TUI, vanilla or React for web)
-- The coupling graph page will likely need d3-force or a similar library for the interactive network visualization
+### Tier 1 — Ship First
+Core layout shell + all currently-displayed data sources relocated to the new architecture.
+
+- Four-panel layout skeleton (sidebar, hero, bottom, inspector)
+- Metrics strip with 7 metrics
+- Churn treemap as default hero viz
+- Bottom panel with tabs: Hotspots, Cursed Files, Bus Factor, Coupling, Contributors, Parallel Dev, Shame, Age Map
+- Expandable rows in bottom panel
+- Right inspector with File and Contributors tabs
+- Signal badges on rows
+- Cross-linked selection model
+- Theme token system + dark theme default
+- Sortable tables
+- Tooltips on truncated content
+- Top bar with repo info and theme toggle
+
+### Tier 2 — Existing Data, Needs Viz
+Data already exists in GitloreReport but has no web visualization yet.
+
+- Bottom panel tabs: Dead Code, Complexity Trend, Rewrite Ratio, Churn Velocity, Blast Radius, Ghost Files, Knowledge Silos, Co-Authors, Commit Timing, Languages, Test Coverage, Renames
+- Inspector Activity tab
+- Light theme
+- Methodology drawer (KAN-79)
+- Responsive breakpoints (laptop, tablet)
+
+### Tier 3 — Planned Features
+Requires new analyzers, AI integration, or complex visualizations.
+
+- Hero vizzes: Ownership Map, Coupling Graph, Commit Graph, Hotspot Scatter, Timeline, Contributor Swimlanes
+- Inspector AI tabs: Narrative (KAN-55), Refactor Brief (KAN-56)
+- Sidebar composite views: Risk Dashboard (KAN-75), Tech Debt Workbench (KAN-76), Repo Health (KAN-77)
+- Health Score composite metric
+- File drill-down full history view (KAN-74)
+- Alternative themes (Gruvbox, etc.)
+- AI codebase summary narrative (KAN-54)
 
 ---
 
-## Reference mockup
+## What NOT to Do
 
-The visual mockup was created in this conversation and shows the full dashboard layout with real React codebase data. It demonstrates the stats bar, file table with inline signal badges, two-column contributors/clusters section, and age distribution — all on a single scrollable page.
+- No tab bar as primary navigation — sidebar handles routing
+- No separate full-page views per analyzer — everything lives in the panel layout
+- No gradients, drop shadows, or glow effects
+- No emojis in the rendered UI (icons from a consistent icon set instead)
+- No heavy card containers with borders AND shadows — let data breathe
+- No mobile-first design — this is a desktop developer tool
+- No hardcoded colors — everything through theme tokens
+- No tooltip libraries with heavy dependencies — native CSS/lightweight custom tooltips
+
+---
+
+## Jira Ticket Mapping
+
+| Feature | Jira | Tier |
+|---------|------|------|
+| Dashboard redesign (this spec) | KAN-145 | — |
+| Commit graph visualization | KAN-67 | T3 |
+| Hotspot scatter plot | KAN-68 | T3 |
+| Knowledge map (ownership treemap) | KAN-69 | T3 |
+| Directory treemap (churn/curse) | KAN-70 | T1 |
+| Coupling graph (force-directed) | KAN-71 | T3 |
+| Contributor timeline swimlanes | KAN-72 | T3 |
+| Timeline chart (commits over time) | KAN-73 | T3 |
+| File drill-down | KAN-74 | T3 |
+| Risk & learning curve dashboard | KAN-75 | T3 |
+| Technical debt workbench | KAN-76 | T3 |
+| Repo health tab | KAN-77 | T3 |
+| Language breakdown panel | KAN-78 | T2 |
+| Methodology slideout drawer | KAN-79 | T2 |
+| Light theme | KAN-124 | T2 |
+| AI codebase narrative | KAN-54 | T3 |
+| AI per-file narrative | KAN-55 | T3 |
+| AI refactor brief | KAN-56 | T3 |
+| AI team narrative | KAN-59 | T3 |
