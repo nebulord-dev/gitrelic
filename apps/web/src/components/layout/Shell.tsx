@@ -5,6 +5,7 @@ import { ContributorSwimlanes } from '../hero/ContributorSwimlanes';
 import { CouplingGraph } from '../hero/CouplingGraph';
 import { HotspotScatter } from '../hero/HotspotScatter';
 import { OwnershipBubble } from '../hero/OwnershipBubble';
+import { RiskHeatmap } from '../hero/RiskHeatmap';
 import { Timeline } from '../hero/Timeline';
 import { BottomPanel } from './BottomPanel';
 import { InspectorPanel } from './InspectorPanel';
@@ -190,9 +191,11 @@ export function Shell({ report }: ShellProps) {
                 />
               )}
               {selection.activeHeroViz === 'risk-heatmap' && (
-                <div style={{ color: 'var(--text-tertiary)', padding: 20 }}>
-                  Risk Heatmap (coming soon)
-                </div>
+                <RiskHeatmap
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
               )}
               {selection.activeHeroViz === 'ownership-sunburst' && (
                 <div style={{ color: 'var(--text-tertiary)', padding: 20 }}>
