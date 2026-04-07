@@ -103,7 +103,13 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
   return (
     <div
       ref={containerRef}
-      style={{ width: '100%', height: '100%', position: 'relative', overflow: 'auto' }}
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        overflow: 'auto',
+        marginTop: '-35px',
+      }}
     >
       <svg
         width={ROW_LABEL_WIDTH + totalSize + 10}
