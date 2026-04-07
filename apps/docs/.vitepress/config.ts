@@ -1,0 +1,63 @@
+import { defineConfig } from 'vitepress';
+
+export default defineConfig({
+  title: 'GitLore',
+  description:
+    'Git archaeology for your repository — churn, bus factor, hotspots, and cursed files.',
+  base: '/gitlore/',
+  appearance: 'dark',
+  lastUpdated: true,
+
+  themeConfig: {
+    nav: [
+      {
+        text: 'Changelog',
+        link: 'https://github.com/nebulord-dev/gitlore/blob/main/CHANGELOG.md',
+      },
+      {
+        text: 'Contributing',
+        link: 'https://github.com/nebulord-dev/gitlore/blob/main/CONTRIBUTING.md',
+      },
+    ],
+
+    sidebar: [
+      {
+        text: 'Getting Started',
+        collapsed: false,
+        items: [{ text: 'Introduction', link: '/guide/introduction' }],
+      },
+      {
+        text: 'Guide',
+        collapsed: false,
+        items: [{ text: 'Core Concepts', link: '/guide/concepts' }],
+      },
+      {
+        text: 'Analyzers',
+        collapsed: false,
+        items: [{ text: 'Overview', link: '/analyzers/' }],
+      },
+      {
+        text: 'Web Dashboard',
+        collapsed: false,
+        items: [{ text: 'Overview', link: '/dashboard/' }],
+      },
+      {
+        text: 'Advanced',
+        collapsed: false,
+        items: [{ text: 'Overview', link: '/advanced/' }],
+      },
+    ],
+
+    // No socialLinks — repo is private, would 404 for outsiders
+    // Add { icon: 'github', link: '...' } when going public
+
+    search: {
+      provider: 'local',
+    },
+
+    footer: {
+      message: 'Released under the MIT License.',
+      copyright: 'Copyright 2026-present Nebulord',
+    },
+  },
+});
