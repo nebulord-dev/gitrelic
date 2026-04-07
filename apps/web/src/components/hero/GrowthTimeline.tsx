@@ -142,10 +142,8 @@ export function GrowthTimeline({ report, selectedFile, onSelectFile }: GrowthTim
           {files.map((file, i) => {
             const color = SERIES_COLORS[i % SERIES_COLORS.length];
             const isHovered = hoveredSeries === file.file;
-            const isSelected = selectedFile === file.file;
-            const hasActiveState = hoveredSeries !== null || selectedFile !== null;
-            const isActive = isHovered || isSelected;
-            const areaOpacity = hasActiveState ? (isActive ? 0.25 : 0.04) : 0.12;
+            const dimOthers = hoveredSeries !== null;
+            const areaOpacity = dimOthers ? (isHovered ? 0.25 : 0.04) : 0.12;
             const areaPath = areaGen(file.buckets);
             if (!areaPath) return null;
             return (
@@ -164,10 +162,9 @@ export function GrowthTimeline({ report, selectedFile, onSelectFile }: GrowthTim
             const color = SERIES_COLORS[i % SERIES_COLORS.length];
             const isHovered = hoveredSeries === file.file;
             const isSelected = selectedFile === file.file;
-            const hasActiveState = hoveredSeries !== null || selectedFile !== null;
-            const isActive = isHovered || isSelected;
-            const strokeOpacity = hasActiveState ? (isActive ? 1 : 0.2) : 0.85;
-            const strokeWidth = isActive ? 2.5 : 1.5;
+            const dimOthers = hoveredSeries !== null;
+            const strokeOpacity = dimOthers ? (isHovered ? 1 : 0.2) : 0.85;
+            const strokeWidth = isHovered || isSelected ? 2.5 : 1.5;
             const linePath = lineGen(file.buckets);
             if (!linePath) return null;
             return (
