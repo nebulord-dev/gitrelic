@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/TraceRicochet/gitlore/compare/v1.3.0...v1.3.1) (2026-04-07)
+
+
+### Bug Fixes
+
+* add clarity to the coupleing heatmap and fix the badge labels in the cursed files table ([6413c59](https://github.com/TraceRicochet/gitlore/commit/6413c59ecfa93912dba7e76e00bd53caa8a3b9a9))
+
 # [1.3.0](https://github.com/TraceRicochet/gitlore/compare/v1.2.0...v1.3.0) (2026-04-07)
 
 
