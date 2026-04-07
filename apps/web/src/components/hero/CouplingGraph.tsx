@@ -23,17 +23,6 @@ export function countUniqueFiles(pairs: CoupledPair[]): number {
 }
 
 export function CouplingGraph({ report, selectedFile, onSelectFile }: CouplingGraphProps) {
-  const uniqueCount = useMemo(
-    () => countUniqueFiles(report.coupling.topPairs),
-    [report.coupling.topPairs],
-  );
-
-  if (uniqueCount <= COUPLING_THRESHOLD) {
-    return (
-      <CouplingForceGraph report={report} selectedFile={selectedFile} onSelectFile={onSelectFile} />
-    );
-  }
-
   return (
     <CouplingHeatmap report={report} selectedFile={selectedFile} onSelectFile={onSelectFile} />
   );
