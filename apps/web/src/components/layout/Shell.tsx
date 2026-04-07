@@ -5,6 +5,7 @@ import { ContributorSwimlanes } from '../hero/ContributorSwimlanes';
 import { CouplingGraph } from '../hero/CouplingGraph';
 import { HotspotScatter } from '../hero/HotspotScatter';
 import { OwnershipBubble } from '../hero/OwnershipBubble';
+import { OwnershipSunburst } from '../hero/OwnershipSunburst';
 import { RiskHeatmap } from '../hero/RiskHeatmap';
 import { Timeline } from '../hero/Timeline';
 import { BottomPanel } from './BottomPanel';
@@ -198,9 +199,13 @@ export function Shell({ report }: ShellProps) {
                 />
               )}
               {selection.activeHeroViz === 'ownership-sunburst' && (
-                <div style={{ color: 'var(--text-tertiary)', padding: 20 }}>
-                  Ownership Sunburst (coming soon)
-                </div>
+                <OwnershipSunburst
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  selectedContributor={selection.selectedContributor}
+                  onSelectFile={selection.selectFile}
+                  onSelectContributor={selection.selectContributor}
+                />
               )}
               {selection.activeHeroViz === 'growth-timeline' && (
                 <div style={{ color: 'var(--text-tertiary)', padding: 20 }}>

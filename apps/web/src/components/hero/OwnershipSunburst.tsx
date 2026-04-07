@@ -1,0 +1,300 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { hierarchy, partition } from 'd3-hierarchy';
+import { arc } from 'd3-shape';
+
+import { authorColor } from '../../utils/colors';
+
+import type { GitloreReport } from '@gitlore/core';
+import type { HierarchyRectangularNode } from 'd3-hierarchy';
+
+interface OwnershipSunburstProps {
+  report: GitloreReport;
+  selectedFile: string | null;
+  selectedContributor: string | null;
+  onSelectFile: (file: string) => void;
+  onSelectContributor: (email: string) => void;
+}
+
+interface SunburstNode {
+  name: string;
+  email?: string;
+  file?: string;
+  risk?: string;
+  value?: number;
+  children?: SunburstNode[];
+}
+
+function riskColor(risk: string, opacity: number): string {
+  switch (risk) {
+    case 'critical':
+      return `rgba(248, 81, 73, ${opacity})`;
+    case 'high':
+      return `rgba(210, 153, 34, ${opacity})`;
+    case 'medium':
+      return `rgba(88, 166, 255, ${opacity})`;
+    default:
+      return `rgba(63, 185, 80, ${opacity})`;
+  }
+}
+
+type TooltipState =
+  | { kind: 'author'; x: number; y: number; name: string; email: string; fileCount: number }
+  | { kind: 'file'; x: number; y: number; file: string; risk: string };
+
+export function OwnershipSunburst({
+  report,
+  selectedFile,
+  selectedContributor,
+  onSelectFile,
+  onSelectContributor,
+}: OwnershipSunburstProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dims, setDims] = useState({ width: 600, height: 400 });
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      setDims({ width, height });
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const radius = Math.min(dims.width, dims.height) / 2;
+
+  // Build the hierarchy data
+  const treeData = useMemo((): SunburstNode => {
+    const locMap = new Map<string, number>();
+    for (const f of report.loc.files) {
+      locMap.set(f.file, f.lines);
+    }
+
+    // Group files by dominantAuthor
+    const authorMap = new Map<
+      string,
+      { files: Array<{ file: string; risk: string; loc: number }> }
+    >();
+
+    for (const f of report.busFactors.files) {
+      const author = f.dominantAuthor;
+      if (!authorMap.has(author)) {
+        authorMap.set(author, { files: [] });
+      }
+      authorMap.get(author)!.files.push({
+        file: f.file,
+        risk: f.risk,
+        loc: locMap.get(f.file) ?? 1,
+      });
+    }
+
+    const authorNodes: SunburstNode[] = [];
+    for (const [email, data] of authorMap) {
+      authorNodes.push({
+        name: email.split('@')[0],
+        email,
+        children: data.files.map((f) => ({
+          name: f.file.split('/').pop() ?? f.file,
+          file: f.file,
+          risk: f.risk,
+          value: Math.max(f.loc, 1),
+        })),
+      });
+    }
+
+    return { name: 'root', children: authorNodes };
+  }, [report]);
+
+  // Build layout
+  const { nodes, authorNames } = useMemo(() => {
+    const root = hierarchy<SunburstNode>(treeData)
+      .sum((d) => d.value ?? 0)
+      .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+
+    const layout = partition<SunburstNode>().size([2 * Math.PI, radius]);
+    layout(root);
+
+    const allNodes = (root as HierarchyRectangularNode<SunburstNode>).descendants().slice(1);
+
+    const names: string[] = [];
+    for (const node of allNodes) {
+      if (node.depth === 1 && node.data.email) {
+        names.push(node.data.email);
+      }
+    }
+
+    return { nodes: allNodes, authorNames: names };
+  }, [treeData, radius]);
+
+  // Arc generator — partition produces x0/x1 as angles, y0/y1 as radii
+  const arcGen = useMemo(
+    () =>
+      arc<HierarchyRectangularNode<SunburstNode>>()
+        .startAngle((d) => d.x0)
+        .endAngle((d) => d.x1)
+        .innerRadius((d) => d.y0)
+        .outerRadius((d) => d.y1)
+        .padAngle(0.005),
+    [],
+  );
+
+  const cx = dims.width / 2;
+  const cy = dims.height / 2;
+
+  return (
+    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <svg width={dims.width} height={dims.height}>
+        <g transform={`translate(${cx}, ${cy})`}>
+          {nodes.map((node, i) => {
+            const d = node.data;
+            const isAuthor = node.depth === 1;
+            const isFile = node.depth === 2;
+
+            const fill = isAuthor
+              ? authorColor(d.email ?? d.name)
+              : riskColor(d.risk ?? 'low', 0.75);
+
+            const isSelectedAuthor = isAuthor && d.email === selectedContributor;
+            const isSelectedFile = isFile && d.file === selectedFile;
+            const isSelected = isSelectedAuthor || isSelectedFile;
+
+            const pathD = arcGen(node) ?? undefined;
+
+            return (
+              <path
+                key={i}
+                d={pathD}
+                fill={fill}
+                fillOpacity={isAuthor ? 0.85 : 0.75}
+                stroke={isSelected ? 'var(--accent-primary)' : 'var(--surface-primary)'}
+                strokeWidth={isSelected ? 2 : 0.5}
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  if (isAuthor && d.email) {
+                    onSelectContributor(d.email);
+                  } else if (isFile && d.file) {
+                    onSelectFile(d.file);
+                  }
+                }}
+                onMouseEnter={(e) => {
+                  const rect = containerRef.current?.getBoundingClientRect();
+                  if (!rect) return;
+                  const x = e.clientX - rect.left;
+                  const y = e.clientY - rect.top;
+                  if (isAuthor && d.email) {
+                    setTooltip({
+                      kind: 'author',
+                      x,
+                      y,
+                      name: d.name,
+                      email: d.email,
+                      fileCount: node.children?.length ?? 0,
+                    });
+                  } else if (isFile && d.file) {
+                    setTooltip({ kind: 'file', x, y, file: d.file, risk: d.risk ?? 'low' });
+                  }
+                }}
+                onMouseLeave={() => setTooltip(null)}
+              />
+            );
+          })}
+        </g>
+
+        {/* Center label */}
+        <text
+          x={cx}
+          y={cy - 8}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={11}
+          fontWeight={600}
+          fill="var(--text-primary)"
+          style={{ pointerEvents: 'none' }}
+        >
+          Ownership
+        </text>
+        <text
+          x={cx}
+          y={cy + 8}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={9}
+          fill="var(--text-secondary)"
+          style={{ pointerEvents: 'none' }}
+        >
+          {report.busFactors.files.length} files
+        </text>
+
+        {/* Risk legend */}
+        {(['critical', 'high', 'medium', 'low'] as const).map((risk, i) => (
+          <g key={risk} transform={`translate(10, ${dims.height - 80 + i * 17})`}>
+            <rect width={10} height={10} rx={2} fill={riskColor(risk, 0.75)} />
+            <text x={16} y={9} fontSize={9} fill="var(--text-secondary)">
+              {risk.charAt(0).toUpperCase() + risk.slice(1)} risk
+            </text>
+          </g>
+        ))}
+
+        {/* Author legend */}
+        {authorNames.slice(0, 8).map((email, i) => (
+          <g
+            key={email}
+            transform={`translate(${dims.width - 110}, ${dims.height - Math.min(authorNames.length, 8) * 16 + i * 16})`}
+          >
+            <circle cx={5} cy={4} r={5} fill={authorColor(email)} fillOpacity={0.85} />
+            <text x={14} y={8} fontSize={9} fill="var(--text-secondary)">
+              {email.split('@')[0]}
+            </text>
+          </g>
+        ))}
+      </svg>
+
+      {tooltip && (
+        <div
+          style={{
+            position: 'absolute',
+            left: tooltip.x + 14,
+            top: tooltip.y - 8,
+            background: 'var(--surface-elevated)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 4,
+            padding: '6px 10px',
+            fontSize: 10,
+            color: 'var(--text-primary)',
+            pointerEvents: 'none',
+            zIndex: 20,
+            maxWidth: 260,
+            wordBreak: 'break-all',
+          }}
+        >
+          {tooltip.kind === 'author' ? (
+            <>
+              <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.name}</div>
+              <div style={{ color: 'var(--text-secondary)' }}>{tooltip.email}</div>
+              <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>
+                {tooltip.fileCount} file{tooltip.fileCount !== 1 ? 's' : ''} owned
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontWeight: 600, marginBottom: 2, wordBreak: 'break-all' }}>
+                {tooltip.file}
+              </div>
+              <div
+                style={{
+                  color: riskColor(tooltip.risk, 1),
+                  marginTop: 2,
+                  textTransform: 'capitalize',
+                }}
+              >
+                {tooltip.risk} risk
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
