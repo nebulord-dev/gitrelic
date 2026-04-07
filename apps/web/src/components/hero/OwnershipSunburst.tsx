@@ -265,7 +265,7 @@ export function OwnershipSunburst({
             color: 'var(--text-primary)',
             pointerEvents: 'none',
             zIndex: 20,
-            maxWidth: 260,
+            maxWidth: 320,
             wordBreak: 'break-all',
           }}
         >

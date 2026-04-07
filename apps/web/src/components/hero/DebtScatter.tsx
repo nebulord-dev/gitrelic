@@ -270,11 +270,19 @@ export function DebtScatter({ report, selectedFile, onSelectFile }: DebtScatterP
             color: 'var(--text-primary)',
             pointerEvents: 'none',
             zIndex: 20,
-            maxWidth: 280,
-            whiteSpace: 'nowrap',
+            maxWidth: 320,
           }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.point.file}</div>
+          <div
+            style={{
+              fontWeight: 600,
+              marginBottom: 2,
+              wordBreak: 'break-all',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            {tooltip.point.file}
+          </div>
           <div style={{ color: 'var(--text-secondary)' }}>
             Age: {tooltip.point.ageDays}d · Rewrite: {tooltip.point.rewriteScore} · LOC:{' '}
             {tooltip.point.loc} · Trend: {tooltip.point.churnTrend}

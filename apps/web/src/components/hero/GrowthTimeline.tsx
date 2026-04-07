@@ -292,11 +292,17 @@ export function GrowthTimeline({ report, selectedFile, onSelectFile }: GrowthTim
             color: 'var(--text-primary)',
             pointerEvents: 'none',
             zIndex: 20,
-            maxWidth: 280,
-            whiteSpace: 'nowrap',
+            maxWidth: 320,
           }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2, fontFamily: 'monospace' }}>
+          <div
+            style={{
+              fontWeight: 600,
+              marginBottom: 2,
+              fontFamily: 'var(--font-mono)',
+              wordBreak: 'break-all',
+            }}
+          >
             {tooltip.file}
           </div>
           <div style={{ color: 'var(--text-secondary)' }}>
