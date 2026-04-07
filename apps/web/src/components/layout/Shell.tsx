@@ -12,18 +12,33 @@ import { MetricsStrip } from './MetricsStrip';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 
-import type { HeroViz } from '../../hooks/useSelection';
+import type { DashboardMode, HeroViz } from '../../hooks/useSelection';
 import type { GitloreReport } from '@gitlore/core';
 
-const HERO_VIZZES: { id: HeroViz; label: string }[] = [
-  { id: 'treemap', label: 'Treemap' },
-  { id: 'ownership', label: 'Ownership' },
-  { id: 'coupling', label: 'Coupling' },
-  { id: 'commit-graph', label: 'Graph' },
-  { id: 'scatter', label: 'Scatter' },
-  { id: 'timeline', label: 'Timeline' },
-  { id: 'swimlanes', label: 'Swimlanes' },
-];
+function getHeroVizzes(mode: DashboardMode): { id: HeroViz; label: string }[] {
+  switch (mode) {
+    case 'risk':
+      return [
+        { id: 'risk-heatmap', label: 'Heatmap' },
+        { id: 'ownership-sunburst', label: 'Sunburst' },
+      ];
+    case 'tech-debt':
+      return [
+        { id: 'growth-timeline', label: 'Timeline' },
+        { id: 'debt-scatter', label: 'Scatter' },
+      ];
+    default:
+      return [
+        { id: 'treemap', label: 'Treemap' },
+        { id: 'ownership', label: 'Ownership' },
+        { id: 'coupling', label: 'Coupling' },
+        { id: 'commit-graph', label: 'Graph' },
+        { id: 'scatter', label: 'Scatter' },
+        { id: 'timeline', label: 'Timeline' },
+        { id: 'swimlanes', label: 'Swimlanes' },
+      ];
+  }
+}
 
 interface ShellProps {
   report: GitloreReport;
@@ -31,6 +46,7 @@ interface ShellProps {
 
 export function Shell({ report }: ShellProps) {
   const selection = useSelection();
+  const heroVizzes = getHeroVizzes(selection.dashboardMode);
 
   return (
     <div
@@ -50,7 +66,9 @@ export function Shell({ report }: ShellProps) {
         <Sidebar
           report={report}
           activeItem={selection.activeNavItem}
+          dashboardMode={selection.dashboardMode}
           onNavigate={selection.navigateTo}
+          onDashboardMode={selection.setDashboardMode}
         />
 
         {/* Center area: metrics + hero + bottom */}
@@ -62,7 +80,7 @@ export function Shell({ report }: ShellProps) {
             minWidth: 0,
           }}
         >
-          <MetricsStrip report={report} />
+          <MetricsStrip report={report} dashboardMode={selection.dashboardMode} />
 
           {/* Hero visualization */}
           <div
@@ -95,7 +113,7 @@ export function Shell({ report }: ShellProps) {
                   padding: 2,
                 }}
               >
-                {HERO_VIZZES.map((viz) => (
+                {heroVizzes.map((viz) => (
                   <span
                     key={viz.id}
                     onClick={() => selection.setActiveHeroViz(viz.id)}
@@ -170,6 +188,26 @@ export function Shell({ report }: ShellProps) {
                   selectedFile={selection.selectedFile}
                   onSelectFile={selection.selectFile}
                 />
+              )}
+              {selection.activeHeroViz === 'risk-heatmap' && (
+                <div style={{ color: 'var(--text-tertiary)', padding: 20 }}>
+                  Risk Heatmap (coming soon)
+                </div>
+              )}
+              {selection.activeHeroViz === 'ownership-sunburst' && (
+                <div style={{ color: 'var(--text-tertiary)', padding: 20 }}>
+                  Ownership Sunburst (coming soon)
+                </div>
+              )}
+              {selection.activeHeroViz === 'growth-timeline' && (
+                <div style={{ color: 'var(--text-tertiary)', padding: 20 }}>
+                  Growth Timeline (coming soon)
+                </div>
+              )}
+              {selection.activeHeroViz === 'debt-scatter' && (
+                <div style={{ color: 'var(--text-tertiary)', padding: 20 }}>
+                  Debt Scatter (coming soon)
+                </div>
               )}
             </div>
           </div>
