@@ -33,7 +33,7 @@ function makeReport(): GitloreReport {
       topHotspots: [],
       summary: '',
     },
-  } as GitloreReport;
+  } as Partial<GitloreReport> as GitloreReport;
 }
 
 describe('prepareScatterData', () => {

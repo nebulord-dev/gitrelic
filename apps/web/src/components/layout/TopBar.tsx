@@ -55,17 +55,6 @@ export function TopBar({ report }: TopBarProps) {
       </div>
       <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
         <button
-          style={{
-            fontSize: 10,
-            color: 'var(--text-tertiary)',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          ?
-        </button>
-        <button
           onClick={toggleTheme}
           style={{
             fontSize: 14,

@@ -1,5 +1,6 @@
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
+import { Tooltip } from '../shared/Tooltip';
 import { fileName, filePath, fmt } from '../theme';
 
 import type { CursedFile, GitloreReport } from '@gitlore/core';
@@ -18,6 +19,11 @@ function reasonVariant(
   if (reason.includes('coupling') || reason.includes('coordination')) return 'coupling';
   if (reason.includes('parallel')) return 'parallel';
   return 'warning';
+}
+
+function getAuthors(file: string, report: GitloreReport): string[] | undefined {
+  const bf = report.busFactors.files.find((f) => f.file === file);
+  return bf ? bf.authors : undefined;
 }
 
 export function CursedFilesTab({ report, onSelectFile }: CursedFilesTabProps) {
@@ -103,17 +109,34 @@ export function CursedFilesTab({ report, onSelectFile }: CursedFilesTabProps) {
       width: '60px',
       align: 'right',
       sortValue: (c) => c.authors,
-      render: (c) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--text-secondary)',
-          }}
-        >
-          {c.authors}
-        </span>
-      ),
+      render: (c) => {
+        const authors = getAuthors(c.file, report);
+        const span = (
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              color: 'var(--text-secondary)',
+            }}
+          >
+            {c.authors}
+          </span>
+        );
+        if (!authors) return span;
+        return (
+          <Tooltip
+            content={
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {authors.map((a) => (
+                  <span key={a}>{a.split('@')[0]}</span>
+                ))}
+              </div>
+            }
+          >
+            {span}
+          </Tooltip>
+        );
+      },
     },
   ];
 

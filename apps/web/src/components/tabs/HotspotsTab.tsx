@@ -12,32 +12,45 @@ interface HotspotsTabProps {
   onSelectFile: (file: string) => void;
 }
 
-function getSignals(file: string, report: GitloreReport): string[] {
-  const signals: string[] = [];
+interface Signal {
+  label: string;
+  title?: string;
+}
+
+function getSignals(file: string, report: GitloreReport): Signal[] {
+  const signals: Signal[] = [];
   const hotspot = report.hotspots.topHotspots.find((h) => h.file === file);
-  if (hotspot?.category === 'critical') signals.push('critical');
-  else if (hotspot?.category === 'warning') signals.push('warning');
+  if (hotspot?.category === 'critical') signals.push({ label: 'critical' });
+  else if (hotspot?.category === 'warning') signals.push({ label: 'warning' });
 
   const bf = report.busFactors.files.find((f) => f.file === file);
-  if (bf && bf.uniqueAuthors > 1) signals.push(`${bf.uniqueAuthors} authors`);
-  else if (bf && bf.uniqueAuthors === 1) signals.push('single owner');
+  if (bf && bf.uniqueAuthors > 1)
+    signals.push({
+      label: `${bf.uniqueAuthors} authors`,
+      title: bf.authors.map((a) => a.split('@')[0]).join(', '),
+    });
+  else if (bf && bf.uniqueAuthors === 1)
+    signals.push({
+      label: 'single owner',
+      title: bf.authors[0]?.split('@')[0],
+    });
 
   const cp = report.coupling.fileProfiles.find((f) => f.file === file);
-  if (cp && cp.partners.length > 2) signals.push('coupling hub');
+  if (cp && cp.partners.length > 2) signals.push({ label: 'coupling hub' });
 
   const pd = report.parallelDev.hotFiles.find((f) => f.file === file);
-  if (pd) signals.push('parallel dev');
+  if (pd) signals.push({ label: 'parallel dev' });
 
   return signals;
 }
 
 function signalVariant(
-  signal: string,
+  label: string,
 ): 'critical' | 'warning' | 'ownership' | 'coupling' | 'parallel' {
-  if (signal === 'critical') return 'critical';
-  if (signal === 'warning') return 'warning';
-  if (signal.includes('author') || signal === 'single owner') return 'ownership';
-  if (signal === 'coupling hub') return 'coupling';
+  if (label === 'critical') return 'critical';
+  if (label === 'warning') return 'warning';
+  if (label.includes('author') || label === 'single owner') return 'ownership';
+  if (label === 'coupling hub') return 'coupling';
   return 'parallel';
 }
 
@@ -155,8 +168,8 @@ export function HotspotsTab({ report, selectedFile, onSelectFile }: HotspotsTabP
       render: (h) => (
         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
           {getSignals(h.file, report).map((s) => (
-            <Badge key={s} variant={signalVariant(s)}>
-              {s}
+            <Badge key={s.label} variant={signalVariant(s.label)} title={s.title}>
+              {s.label}
             </Badge>
           ))}
         </div>

@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
+
 import { useSelection } from '../../hooks/useSelection';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
 import { CommitGraph } from '../hero/CommitGraph';
 import { ContributorSwimlanes } from '../hero/ContributorSwimlanes';
-import { CouplingGraph } from '../hero/CouplingGraph';
+import { CouplingHeatmap } from '../hero/CouplingHeatmap';
 import { DebtScatter } from '../hero/DebtScatter';
 import { GrowthTimeline } from '../hero/GrowthTimeline';
 import { HotspotScatter } from '../hero/HotspotScatter';
@@ -51,6 +53,13 @@ interface ShellProps {
 export function Shell({ report }: ShellProps) {
   const selection = useSelection();
   const heroVizzes = getHeroVizzes(selection.dashboardMode);
+
+  useEffect(() => {
+    const top = report.hotspots.topHotspots[0];
+    if (top) {
+      selection.selectFile(top.file);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div
@@ -180,7 +189,7 @@ export function Shell({ report }: ShellProps) {
                 />
               )}
               {selection.activeHeroViz === 'coupling' && (
-                <CouplingGraph
+                <CouplingHeatmap
                   report={report}
                   selectedFile={selection.selectedFile}
                   onSelectFile={selection.selectFile}

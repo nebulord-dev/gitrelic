@@ -124,7 +124,7 @@ function TabContent({
 
 const MIN_HEIGHT = 120;
 const MAX_HEIGHT = 600;
-const DEFAULT_HEIGHT = 220;
+const DEFAULT_HEIGHT = 320;
 
 export function BottomPanel({
   report,

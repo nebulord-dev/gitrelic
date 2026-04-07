@@ -160,7 +160,7 @@ export function InspectorPanel({
 
         <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
           {utilityTab === 'guide' ? (
-            <GuidePanel report={report} />
+            <GuidePanel />
           ) : (
             <div
               style={{

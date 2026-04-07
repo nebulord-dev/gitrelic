@@ -114,7 +114,7 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
       <svg
         width={ROW_LABEL_WIDTH + totalSize + 10}
         height={COL_HEADER_HEIGHT + totalSize + 10}
-        style={{ display: 'block' }}
+        style={{ display: 'block', margin: '0 auto' }}
       >
         {/* Column headers (rotated) */}
         {dirs.map((d, i) => (

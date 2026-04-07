@@ -72,7 +72,14 @@ export function ParallelDevTab({ report, onSelectFile }: ParallelDevTabProps) {
       width: '90px',
       align: 'right',
       sortValue: (f) => f.peakAuthors,
-      render: (f) => <Badge variant="parallel">{f.peakAuthors} authors</Badge>,
+      render: (f) => (
+        <Badge
+          variant="parallel"
+          title={f.peakWindow.authors.map((a) => a.split('@')[0]).join(', ')}
+        >
+          {f.peakAuthors} authors
+        </Badge>
+      ),
     },
   ];
 

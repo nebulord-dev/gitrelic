@@ -5,6 +5,7 @@ import { hierarchy, pack } from 'd3-hierarchy';
 import { authorColor } from '../../utils/colors';
 
 import type { GitloreReport } from '@gitlore/core';
+import type { HierarchyCircularNode } from 'd3-hierarchy';
 
 interface OwnershipBubbleProps {
   report: GitloreReport;
@@ -111,13 +112,12 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
 
   const packData = useMemo(() => {
     const dirs = buildDirectoryBubbles(report);
-    const root = hierarchy({ name: 'root', children: dirs })
-      .sum((d: any) => d.totalLoc ?? 0)
+    const root = hierarchy<DirBubble>({ children: dirs } as any)
+      .sum((d) => d.totalLoc ?? 0)
       .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
-    const layout = pack<any>().size([dims.width, dims.height]).padding(8);
-    layout(root);
-    return root.leaves();
+    const layout = pack<DirBubble>().size([dims.width, dims.height]).padding(8);
+    return layout(root).leaves() as HierarchyCircularNode<DirBubble>[];
   }, [report, dims.width, dims.height]);
 
   const uniqueAuthors = useMemo(() => {
@@ -132,7 +132,7 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
     <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
       <svg width={dims.width} height={dims.height}>
         {packData.map((leaf) => {
-          const d = leaf.data as DirBubble;
+          const d = leaf.data;
           if (!leaf.r) return null;
 
           const firstFile = dirFirstFileMap.get(d.dirPath) ?? d.dirPath;

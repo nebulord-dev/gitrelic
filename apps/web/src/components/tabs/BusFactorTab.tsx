@@ -1,5 +1,6 @@
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
+import { Tooltip } from '../shared/Tooltip';
 import { fileName, filePath } from '../theme';
 
 import type { FileBusFactor, GitloreReport } from '@gitlore/core';
@@ -46,15 +47,25 @@ export function BusFactorTab({ report, onSelectFile }: BusFactorTabProps) {
       align: 'right',
       sortValue: (f) => f.uniqueAuthors,
       render: (f) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--text-secondary)',
-          }}
+        <Tooltip
+          content={
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {f.authors.map((a) => (
+                <span key={a}>{a.split('@')[0]}</span>
+              ))}
+            </div>
+          }
         >
-          {f.uniqueAuthors}
-        </span>
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              color: 'var(--text-secondary)',
+            }}
+          >
+            {f.uniqueAuthors}
+          </span>
+        </Tooltip>
       ),
     },
     {

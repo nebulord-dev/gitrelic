@@ -4,8 +4,8 @@ import { hierarchy, treemap, treemapSquarify } from 'd3-hierarchy';
 
 import { categoryColor } from '../../utils/colors';
 
-// apps/web/src/components/hero/ChurnTreemap.tsx
 import type { GitloreReport } from '@gitlore/core';
+import type { HierarchyRectangularNode } from 'd3-hierarchy';
 
 interface ChurnTreemapProps {
   report: GitloreReport;
@@ -91,8 +91,7 @@ export function ChurnTreemap({ report, selectedFile, onSelectFile }: ChurnTreema
       .padding(2)
       .tile(treemapSquarify);
 
-    layout(root);
-    return root.leaves();
+    return layout(root).leaves() as HierarchyRectangularNode<TreeNode>[];
   }, [report, dims.width, dims.height]);
 
   return (
@@ -101,8 +100,8 @@ export function ChurnTreemap({ report, selectedFile, onSelectFile }: ChurnTreema
         {leaves.map((leaf) => {
           const d = leaf.data;
           if (!d.fullPath) return null;
-          const w = (leaf.x1 ?? 0) - (leaf.x0 ?? 0);
-          const h = (leaf.y1 ?? 0) - (leaf.y0 ?? 0);
+          const w = leaf.x1 - leaf.x0;
+          const h = leaf.y1 - leaf.y0;
           if (w < 2 || h < 2) return null;
 
           const isSelected = selectedFile === d.fullPath;
@@ -128,8 +127,8 @@ export function ChurnTreemap({ report, selectedFile, onSelectFile }: ChurnTreema
               />
               {showLabel && (
                 <text
-                  x={(leaf.x0 ?? 0) + 4}
-                  y={(leaf.y0 ?? 0) + 12}
+                  x={leaf.x0 + 4}
+                  y={leaf.y0 + 12}
                   fontSize={9}
                   fill="rgba(255,255,255,0.7)"
                   style={{ pointerEvents: 'none' }}
@@ -139,8 +138,8 @@ export function ChurnTreemap({ report, selectedFile, onSelectFile }: ChurnTreema
               )}
               {showLabel && h > 28 && (
                 <text
-                  x={(leaf.x0 ?? 0) + 4}
-                  y={(leaf.y0 ?? 0) + 23}
+                  x={leaf.x0 + 4}
+                  y={leaf.y0 + 23}
                   fontSize={8}
                   fill="rgba(255,255,255,0.4)"
                   style={{ pointerEvents: 'none' }}

@@ -61,7 +61,7 @@ function makeReport(commits: RawCommit[]): GitloreReport {
       topContributor: {} as any,
       summary: '',
     },
-  } as GitloreReport;
+  } as Partial<GitloreReport> as GitloreReport;
 }
 
 describe('prepareSwimlaneData', () => {
