@@ -22,7 +22,7 @@ pnpm workspace + Turbo. Strict dependency order:
 - `src/runner.ts` — orchestrates all analyzers, entry point is `runGitlore()`
 - `src/types.ts` — all TypeScript interfaces (`GitloreReport`, `ChurnReport`, etc.)
 - `src/utils/git.ts` — raw git primitives (parsing `git log`, `git ls-files`)
-- `src/analyzers/` — 21 analyzers, each with a corresponding `.test.ts`:
+- `src/analyzers/` — 22 analyzers, each with a corresponding `.test.ts`:
   - `churn.ts` — file churn frequency analysis
   - `bus-factor.ts` — ownership concentration per file
   - `age-map.ts` — last-commit age per file
@@ -71,6 +71,15 @@ pnpm workspace + Turbo. Strict dependency order:
 2. Export a function `analyzeX(commits, trackedFiles): XReport`
 3. Add result to `GitloreReport` in `types.ts`
 4. Call it in `runner.ts` and include in return value
+
+### Architectural review
+
+After cross-package changes (new analyzers, new web visualizations, refactors touching multiple packages), invoke the **monorepo-architect** agent (`.claude/agents/monorepo-architect.md`) to validate:
+
+- Dependency direction (core → cli/web, never the reverse)
+- Web imports from core are `import type` only (no value imports — they'd bundle Node.js into the browser)
+- Git commands are centralized in `utils/git.ts`, not scattered in analyzers (exec-discipline)
+- New analyzers are wired into `runner.ts`, typed in `types.ts`, and exported from `index.ts`
 
 ### Data source
 

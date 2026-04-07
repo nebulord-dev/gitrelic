@@ -7,7 +7,8 @@ Git archaeology — understand the history and health of your codebase.
 
 Run `gitlore` in any git repository and get a narrative health report on the codebase's *history* — not just its current state.
 
-**Churn & Complexity**
+### Churn & Complexity
+
 - **Churn analysis** — which files change the most, and what that means
 - **Churn velocity** — accelerating vs decelerating change over time
 - **Hotspot scoring** — churn × LOC composite risk
@@ -15,14 +16,16 @@ Run `gitlore` in any git repository and get a narrative health report on the cod
 - **Complexity trend** — monthly file growth curves
 - **Rewrite ratio** — insertion/deletion balance per file
 
-**Ownership & Risk**
+### Ownership & Risk
+
 - **Bus factor** — who owns what, where you're exposed if someone leaves
 - **Knowledge concentration** — single-author file ratio across the repo
 - **Ghost files** — files owned by authors who've gone inactive
 - **Contributor profiles** — who built what, who's still active, who's a ghost
 - **Co-authorship** — collaboration pair analysis from Co-authored-by trailers
 
-**History & Patterns**
+### History & Patterns
+
 - **Age map** — what's fresh, what's stale, what nobody dares touch
 - **Dead code candidates** — ancient, untouched files
 - **Blast radius** — how many files typically change alongside each file
@@ -31,7 +34,8 @@ Run `gitlore` in any git repository and get a narrative health report on the cod
 - **Rename tracking** — file rename chain detection
 - **Commit timing** — late-night and weekend stress patterns
 
-**Diagnostics**
+### Diagnostics
+
 - **Cursed files** — the intersection of all of the above: high churn + concentrated ownership + age paradoxes
 - **Shame score** — commit message forensics: files with repeated reverts, hotfixes, and hacks
 - **Test coverage proxy** — test file proximity per directory
@@ -57,6 +61,9 @@ gitlore --path ~/projects/my-app --json > gitlore-report.json
 
 # Show commit message shame leaderboard
 gitlore --path ~/projects/my-app --shame
+
+# Show parallel development panel
+gitlore --path ~/projects/my-app --parallel
 ```
 
 ## How GitLore scores files
@@ -64,14 +71,17 @@ gitlore --path ~/projects/my-app --shame
 GitLore uses three scoring systems, each 0–100:
 
 ### Churn score
+
 How often a file has been modified relative to the most-committed file in the repo.
 A score of 100 means this file is the most-modified file in the repo. Lower scores are proportional — a score of 50 means this file was modified half as often as the top file.
 
 ### Shame score (`--shame`)
+
 Based on commit message sentiment. Each commit touching a file is scanned for keywords:
 
 | Weight | Keywords |
 |--------|----------|
+
 | 3 — Critical | `revert`, `hotfix`, `oops`, `fixup`, `broke` |
 | 2 — Moderate | `hack`, `workaround`, `temporary`, `temp`, `kludge`, `band-aid` |
 | 1 — Mild | `fix`, `bug`, `wrong`, `mistake`, `typo`, `cleanup` |
@@ -81,6 +91,7 @@ Based on commit message sentiment. Each commit touching a file is scanned for ke
 Ratio-based: a file with 1 revert in 2 commits scores higher than 1 revert in 100 commits.
 
 ### Curse score
+
 A composite of churn, bus factor risk, age anomalies, and shame. Files scoring ≥ 50 appear
 in the Cursed Files panel. Shame contributes up to +20 points to the curse score.
 
@@ -104,7 +115,7 @@ pnpm monorepo + Turbo:
 
 ## Monorepo
 
-```
+```text
 gitlore/
 ├── packages/
 │   └── core/           # Analysis engine
