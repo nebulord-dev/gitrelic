@@ -92,7 +92,10 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
 
   const displayAuthors = authors.slice(0, MAX_AUTHORS);
   const hasOthers = authors.length > MAX_AUTHORS;
-  const stackKeys = hasOthers ? [...displayAuthors, '__others__'] : displayAuthors;
+  const stackKeys = useMemo(
+    () => (hasOthers ? [...displayAuthors, '__others__'] : displayAuthors),
+    [displayAuthors, hasOthers],
+  );
 
   const stackData = useMemo(() => {
     return weeks.map((w) => {
