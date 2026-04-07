@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/TraceRicochet/gitlore/compare/v1.1.0...v1.2.0) (2026-04-06)
+
+
+### Features
+
+* T1-T3 dashboard redesign with IDE-style layout and 7 hero visualizations ([#4](https://github.com/TraceRicochet/gitlore/issues/4)) ([9072d00](https://github.com/TraceRicochet/gitlore/commit/9072d0009722a9f95c2133f8fa1c9daa76d44540)), closes [#2](https://github.com/TraceRicochet/gitlore/issues/2)
+
 # [1.1.0](https://github.com/TraceRicochet/gitlore/compare/v1.0.0...v1.1.0) (2026-04-06)
 
 
