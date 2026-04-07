@@ -135,7 +135,7 @@ export function InspectorPanel({
           borderTop: '1px solid var(--border-primary)',
           display: 'flex',
           flexDirection: 'column',
-          height: '40%',
+          height: '50%',
           minHeight: 120,
           flexShrink: 0,
         }}
