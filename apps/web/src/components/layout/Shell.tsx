@@ -3,6 +3,7 @@ import { ChurnTreemap } from '../hero/ChurnTreemap';
 import { CommitGraph } from '../hero/CommitGraph';
 import { ContributorSwimlanes } from '../hero/ContributorSwimlanes';
 import { CouplingGraph } from '../hero/CouplingGraph';
+import { GrowthTimeline } from '../hero/GrowthTimeline';
 import { HotspotScatter } from '../hero/HotspotScatter';
 import { OwnershipBubble } from '../hero/OwnershipBubble';
 import { OwnershipSunburst } from '../hero/OwnershipSunburst';
@@ -208,9 +209,11 @@ export function Shell({ report }: ShellProps) {
                 />
               )}
               {selection.activeHeroViz === 'growth-timeline' && (
-                <div style={{ color: 'var(--text-tertiary)', padding: 20 }}>
-                  Growth Timeline (coming soon)
-                </div>
+                <GrowthTimeline
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
               )}
               {selection.activeHeroViz === 'debt-scatter' && (
                 <div style={{ color: 'var(--text-tertiary)', padding: 20 }}>
