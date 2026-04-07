@@ -48,7 +48,10 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
     const dirFilesMap = new Map<string, Set<string>>();
     const pairMap = new Map<string, number>();
 
-    for (const p of report.coupling.topPairs) {
+    // Aggregate from the full pairs list (not topPairs) so the directory-level
+    // view has enough data to show meaningful cross-package coupling. The table
+    // below uses topPairs and operates at file level — different scope, same source.
+    for (const p of report.coupling.pairs) {
       const dA = getDirectory(p.fileA);
       const dB = getDirectory(p.fileB);
 
@@ -92,7 +95,7 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
     }
 
     return { dirs, matrix, maxValue, dirFilesMap };
-  }, [report.coupling.topPairs]);
+  }, [report.coupling.pairs]);
 
   const gridSize = Math.min(dims.width - ROW_LABEL_WIDTH, dims.height - COL_HEADER_HEIGHT);
   const cellSize = Math.max(dirs.length > 0 ? gridSize / dirs.length : MIN_CELL, MIN_CELL);
@@ -111,6 +114,21 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
         marginTop: '-15px',
       }}
     >
+      <div
+        style={{
+          position: 'absolute',
+          top: 4,
+          left: 8,
+          fontSize: 9,
+          textTransform: 'uppercase',
+          letterSpacing: 1,
+          color: 'var(--text-tertiary)',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      >
+        Cross-directory coupling · same-dir pairs in table below
+      </div>
       <svg
         width={ROW_LABEL_WIDTH + totalSize + 10}
         height={COL_HEADER_HEIGHT + totalSize + 10}

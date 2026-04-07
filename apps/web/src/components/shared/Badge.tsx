@@ -22,7 +22,8 @@ export default function Badge({ variant, children, title }: BadgeProps) {
         letterSpacing: '0.02em',
         background: style.bg,
         color: style.fg,
-        whiteSpace: 'nowrap',
+        whiteSpace: 'normal',
+        wordBreak: 'break-word',
       }}
     >
       {children}
