@@ -3,8 +3,12 @@ import { ChurnTreemap } from '../hero/ChurnTreemap';
 import { CommitGraph } from '../hero/CommitGraph';
 import { ContributorSwimlanes } from '../hero/ContributorSwimlanes';
 import { CouplingGraph } from '../hero/CouplingGraph';
+import { DebtScatter } from '../hero/DebtScatter';
+import { GrowthTimeline } from '../hero/GrowthTimeline';
 import { HotspotScatter } from '../hero/HotspotScatter';
 import { OwnershipBubble } from '../hero/OwnershipBubble';
+import { OwnershipSunburst } from '../hero/OwnershipSunburst';
+import { RiskHeatmap } from '../hero/RiskHeatmap';
 import { Timeline } from '../hero/Timeline';
 import { BottomPanel } from './BottomPanel';
 import { InspectorPanel } from './InspectorPanel';
@@ -12,18 +16,33 @@ import { MetricsStrip } from './MetricsStrip';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 
-import type { HeroViz } from '../../hooks/useSelection';
+import type { DashboardMode, HeroViz } from '../../hooks/useSelection';
 import type { GitloreReport } from '@gitlore/core';
 
-const HERO_VIZZES: { id: HeroViz; label: string }[] = [
-  { id: 'treemap', label: 'Treemap' },
-  { id: 'ownership', label: 'Ownership' },
-  { id: 'coupling', label: 'Coupling' },
-  { id: 'commit-graph', label: 'Graph' },
-  { id: 'scatter', label: 'Scatter' },
-  { id: 'timeline', label: 'Timeline' },
-  { id: 'swimlanes', label: 'Swimlanes' },
-];
+function getHeroVizzes(mode: DashboardMode): { id: HeroViz; label: string }[] {
+  switch (mode) {
+    case 'risk':
+      return [
+        { id: 'risk-heatmap', label: 'Heatmap' },
+        { id: 'ownership-sunburst', label: 'Sunburst' },
+      ];
+    case 'tech-debt':
+      return [
+        { id: 'growth-timeline', label: 'Timeline' },
+        { id: 'debt-scatter', label: 'Scatter' },
+      ];
+    default:
+      return [
+        { id: 'treemap', label: 'Treemap' },
+        { id: 'ownership', label: 'Ownership' },
+        { id: 'coupling', label: 'Coupling' },
+        { id: 'commit-graph', label: 'Graph' },
+        { id: 'scatter', label: 'Scatter' },
+        { id: 'timeline', label: 'Timeline' },
+        { id: 'swimlanes', label: 'Swimlanes' },
+      ];
+  }
+}
 
 interface ShellProps {
   report: GitloreReport;
@@ -31,6 +50,7 @@ interface ShellProps {
 
 export function Shell({ report }: ShellProps) {
   const selection = useSelection();
+  const heroVizzes = getHeroVizzes(selection.dashboardMode);
 
   return (
     <div
@@ -50,7 +70,9 @@ export function Shell({ report }: ShellProps) {
         <Sidebar
           report={report}
           activeItem={selection.activeNavItem}
+          dashboardMode={selection.dashboardMode}
           onNavigate={selection.navigateTo}
+          onDashboardMode={selection.setDashboardMode}
         />
 
         {/* Center area: metrics + hero + bottom */}
@@ -62,7 +84,7 @@ export function Shell({ report }: ShellProps) {
             minWidth: 0,
           }}
         >
-          <MetricsStrip report={report} />
+          <MetricsStrip report={report} dashboardMode={selection.dashboardMode} />
 
           {/* Hero visualization */}
           <div
@@ -95,7 +117,7 @@ export function Shell({ report }: ShellProps) {
                   padding: 2,
                 }}
               >
-                {HERO_VIZZES.map((viz) => (
+                {heroVizzes.map((viz) => (
                   <span
                     key={viz.id}
                     onClick={() => selection.setActiveHeroViz(viz.id)}
@@ -166,6 +188,36 @@ export function Shell({ report }: ShellProps) {
               )}
               {selection.activeHeroViz === 'commit-graph' && (
                 <CommitGraph
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
+              )}
+              {selection.activeHeroViz === 'risk-heatmap' && (
+                <RiskHeatmap
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
+              )}
+              {selection.activeHeroViz === 'ownership-sunburst' && (
+                <OwnershipSunburst
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  selectedContributor={selection.selectedContributor}
+                  onSelectFile={selection.selectFile}
+                  onSelectContributor={selection.selectContributor}
+                />
+              )}
+              {selection.activeHeroViz === 'growth-timeline' && (
+                <GrowthTimeline
+                  report={report}
+                  selectedFile={selection.selectedFile}
+                  onSelectFile={selection.selectFile}
+                />
+              )}
+              {selection.activeHeroViz === 'debt-scatter' && (
+                <DebtScatter
                   report={report}
                   selectedFile={selection.selectedFile}
                   onSelectFile={selection.selectFile}

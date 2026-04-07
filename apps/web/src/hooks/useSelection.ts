@@ -42,14 +42,18 @@ export type BottomTab =
   | 'commit-timing'
   | 'languages'
   | 'test-coverage'
-  | 'renames';
+  | 'renames'
+  | 'risk-register'
+  | 'debt-inventory';
 
 export type SidebarGroup =
   | 'overview'
   | 'code-health'
   | 'ownership-risk'
   | 'team-activity'
-  | 'structure';
+  | 'structure'
+  | 'risk'
+  | 'tech-debt';
 
 export const GROUP_TABS: Record<SidebarGroup, BottomTab[]> = {
   overview: ['hotspots', 'cursed-files', 'bus-factor', 'churn-velocity', 'ghost-files'],
@@ -65,6 +69,14 @@ export const GROUP_TABS: Record<SidebarGroup, BottomTab[]> = {
   'ownership-risk': ['bus-factor', 'coupling', 'ghost-files', 'knowledge-silos'],
   'team-activity': ['contributors', 'co-authors', 'commit-timing', 'parallel-dev', 'shame'],
   structure: ['age-map', 'languages', 'test-coverage', 'renames'],
+  risk: ['risk-register', 'bus-factor', 'ghost-files', 'knowledge-silos'],
+  'tech-debt': [
+    'debt-inventory',
+    'dead-code',
+    'complexity-trend',
+    'rewrite-ratio',
+    'churn-velocity',
+  ],
 };
 
 const navToGroupTab: Record<NavItem, { group: SidebarGroup; tab: BottomTab }> = {
@@ -99,7 +111,13 @@ export type HeroViz =
   | 'commit-graph'
   | 'scatter'
   | 'timeline'
-  | 'swimlanes';
+  | 'swimlanes'
+  | 'risk-heatmap'
+  | 'ownership-sunburst'
+  | 'growth-timeline'
+  | 'debt-scatter';
+
+export type DashboardMode = 'overview' | 'risk' | 'tech-debt';
 
 export interface SelectionState {
   selectedFile: string | null;
@@ -109,6 +127,7 @@ export interface SelectionState {
   activeBottomTab: BottomTab;
   activeInspectorTab: InspectorTab;
   activeHeroViz: HeroViz;
+  dashboardMode: DashboardMode;
   selectFile: (file: string) => void;
   selectContributor: (email: string) => void;
   clearSelection: () => void;
@@ -116,6 +135,7 @@ export interface SelectionState {
   setActiveBottomTab: (tab: BottomTab) => void;
   setActiveInspectorTab: (tab: InspectorTab) => void;
   setActiveHeroViz: (viz: HeroViz) => void;
+  setDashboardMode: (mode: DashboardMode) => void;
 }
 
 export function useSelection(): SelectionState {
@@ -126,6 +146,7 @@ export function useSelection(): SelectionState {
   const [activeBottomTab, setActiveBottomTab] = useState<BottomTab>('hotspots');
   const [activeInspectorTab, setActiveInspectorTab] = useState<InspectorTab>('file');
   const [activeHeroViz, setActiveHeroViz] = useState<HeroViz>('treemap');
+  const [dashboardMode, setDashboardMode] = useState<DashboardMode>('overview');
 
   const selectFile = useCallback((file: string) => {
     setSelectedFile(file);
@@ -146,9 +167,35 @@ export function useSelection(): SelectionState {
 
   const navigateTo = useCallback((item: NavItem) => {
     setActiveNavItem(item);
+    if (item !== 'dashboard') {
+      setDashboardMode('overview');
+    }
     const { group, tab } = navToGroupTab[item];
     setActiveGroup(group);
     setActiveBottomTab(tab);
+  }, []);
+
+  const handleSetDashboardMode = useCallback((mode: DashboardMode) => {
+    setDashboardMode(mode);
+    setActiveNavItem('dashboard');
+    const groupMap: Record<DashboardMode, SidebarGroup> = {
+      overview: 'overview',
+      risk: 'risk',
+      'tech-debt': 'tech-debt',
+    };
+    const tabMap: Record<DashboardMode, BottomTab> = {
+      overview: 'hotspots',
+      risk: 'risk-register',
+      'tech-debt': 'debt-inventory',
+    };
+    const vizMap: Record<DashboardMode, HeroViz> = {
+      overview: 'treemap',
+      risk: 'risk-heatmap',
+      'tech-debt': 'growth-timeline',
+    };
+    setActiveGroup(groupMap[mode]);
+    setActiveBottomTab(tabMap[mode]);
+    setActiveHeroViz(vizMap[mode]);
   }, []);
 
   return {
@@ -166,5 +213,7 @@ export function useSelection(): SelectionState {
     setActiveInspectorTab,
     activeHeroViz,
     setActiveHeroViz,
+    dashboardMode,
+    setDashboardMode: handleSetDashboardMode,
   };
 }

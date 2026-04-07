@@ -1,9 +1,11 @@
 import { fmt } from '../theme';
 
+import type { DashboardMode } from '../../hooks/useSelection';
 import type { GitloreReport } from '@gitlore/core';
 
 interface MetricsStripProps {
   report: GitloreReport;
+  dashboardMode: DashboardMode;
 }
 
 interface Metric {
@@ -12,7 +14,7 @@ interface Metric {
   color: string;
 }
 
-function getMetrics(report: GitloreReport): Metric[] {
+function getOverviewMetrics(report: GitloreReport): Metric[] {
   const criticalCount = report.hotspots.topHotspots.filter((h) => h.category === 'critical').length;
 
   return [
@@ -57,8 +59,112 @@ function getMetrics(report: GitloreReport): Metric[] {
   ];
 }
 
-export function MetricsStrip({ report }: MetricsStripProps) {
-  const metrics = getMetrics(report);
+function getRiskMetrics(report: GitloreReport): Metric[] {
+  const criticalBusFactor = report.busFactors.criticalFiles.length;
+  const ghostFiles = report.ghostFiles.totalGhostFiles;
+  const concentrationIndex = Math.round(report.knowledgeConcentration.concentrationIndex);
+  const highBlastRadius = report.blastRadius.files.filter((f) => f.blastScore > 70).length;
+
+  const locMap = new Map<string, number>();
+  for (const entry of report.loc.files) {
+    locMap.set(entry.file, entry.lines);
+  }
+  const atRiskLoc = report.busFactors.criticalFiles.reduce(
+    (sum, f) => sum + (locMap.get(f.file) ?? 0),
+    0,
+  );
+
+  return [
+    {
+      label: 'Critical Bus Factor',
+      value: String(criticalBusFactor),
+      color: criticalBusFactor > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
+    },
+    {
+      label: 'Ghost Files',
+      value: String(ghostFiles),
+      color: ghostFiles > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+    },
+    {
+      label: 'Knowledge Concentration',
+      value: `${concentrationIndex}%`,
+      color: concentrationIndex > 60 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+    },
+    {
+      label: 'High Blast Radius',
+      value: String(highBlastRadius),
+      color: highBlastRadius > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+    },
+    {
+      label: 'At-Risk LOC',
+      value: fmt(atRiskLoc),
+      color: atRiskLoc > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
+    },
+  ];
+}
+
+function getTechDebtMetrics(report: GitloreReport): Metric[] {
+  const deadFiles = report.deadCode.totalDeadFiles;
+  const growingFiles = report.complexityTrend.growingFiles.length;
+  const highRewrite = report.rewriteRatio.topRewriters.length;
+  const acceleratingChurn = report.churnVelocity.acceleratingFiles.length;
+
+  const locMap = new Map<string, number>();
+  for (const entry of report.loc.files) {
+    locMap.set(entry.file, entry.lines);
+  }
+
+  const debtFileSet = new Set<string>();
+  for (const f of report.deadCode.candidates) {
+    debtFileSet.add(f.file);
+  }
+  for (const f of report.rewriteRatio.topRewriters) {
+    debtFileSet.add(f.file);
+  }
+  const debtLoc = Array.from(debtFileSet).reduce((sum, file) => sum + (locMap.get(file) ?? 0), 0);
+
+  return [
+    {
+      label: 'Dead Files',
+      value: String(deadFiles),
+      color: deadFiles > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+    },
+    {
+      label: 'Growing Files',
+      value: String(growingFiles),
+      color: growingFiles > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
+    },
+    {
+      label: 'High Rewrite',
+      value: String(highRewrite),
+      color: highRewrite > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+    },
+    {
+      label: 'Accelerating Churn',
+      value: String(acceleratingChurn),
+      color: acceleratingChurn > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+    },
+    {
+      label: 'Debt LOC',
+      value: fmt(debtLoc),
+      color: debtLoc > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
+    },
+  ];
+}
+
+function getMetrics(report: GitloreReport, mode: DashboardMode): Metric[] {
+  switch (mode) {
+    case 'risk':
+      return getRiskMetrics(report);
+    case 'tech-debt':
+      return getTechDebtMetrics(report);
+    default:
+      return getOverviewMetrics(report);
+  }
+}
+
+export function MetricsStrip({ report, dashboardMode }: MetricsStripProps) {
+  const metrics = getMetrics(report, dashboardMode);
 
   return (
     <div

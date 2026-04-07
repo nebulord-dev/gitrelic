@@ -12,6 +12,7 @@ import { ContributorsTab } from '../tabs/ContributorsTab';
 import { CouplingTab } from '../tabs/CouplingTab';
 import { CursedFilesTab } from '../tabs/CursedFilesTab';
 import { DeadCodeTab } from '../tabs/DeadCodeTab';
+import { DebtInventoryTab } from '../tabs/DebtInventoryTab';
 import { GhostFilesTab } from '../tabs/GhostFilesTab';
 import { HotspotsTab } from '../tabs/HotspotsTab';
 import { KnowledgeSilosTab } from '../tabs/KnowledgeSilosTab';
@@ -19,6 +20,7 @@ import { LanguagesTab } from '../tabs/LanguagesTab';
 import { ParallelDevTab } from '../tabs/ParallelDevTab';
 import { RenamesTab } from '../tabs/RenamesTab';
 import { RewriteRatioTab } from '../tabs/RewriteRatioTab';
+import { RiskRegisterTab } from '../tabs/RiskRegisterTab';
 import { ShameTab } from '../tabs/ShameTab';
 import { TestCoverageTab } from '../tabs/TestCoverageTab';
 
@@ -55,6 +57,8 @@ const TAB_LABELS: Record<BottomTab, string> = {
   languages: 'Languages',
   'test-coverage': 'Test Coverage',
   renames: 'Renames',
+  'risk-register': 'Risk Register',
+  'debt-inventory': 'Debt Inventory',
 };
 
 function TabContent({
@@ -111,6 +115,10 @@ function TabContent({
       return <TestCoverageTab report={report} />;
     case 'renames':
       return <RenamesTab report={report} onSelectFile={onSelectFile} />;
+    case 'risk-register':
+      return <RiskRegisterTab report={report} onSelectFile={onSelectFile} />;
+    case 'debt-inventory':
+      return <DebtInventoryTab report={report} onSelectFile={onSelectFile} />;
   }
 }
 
