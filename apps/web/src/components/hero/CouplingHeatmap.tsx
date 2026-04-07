@@ -108,7 +108,7 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
         height: '100%',
         position: 'relative',
         overflow: 'auto',
-        marginTop: '-35px',
+        marginTop: '-15px',
       }}
     >
       <svg
