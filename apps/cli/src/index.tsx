@@ -126,9 +126,9 @@ async function serveWebDashboard(report: GitloreReport): Promise<void> {
       return;
     }
 
-    // Decode the URL before resolving so that percent-encoded traversal
-    // sequences like `/%2e%2e/etc/passwd` are normalized to `..` and caught
-    // by the boundary check below. Strip the query string first.
+    // Decode the URL and strip the query string. decodeURIComponent handles
+    // percent-encoded traversal sequences (e.g. `/%2e%2e/etc/passwd`) so the
+    // explicit `..` / null-byte check below sees them in normalized form.
     let decoded: string;
     try {
       const rawUrl = (req.url ?? '/').split('?')[0];
@@ -139,22 +139,39 @@ async function serveWebDashboard(report: GitloreReport): Promise<void> {
       return;
     }
 
-    const resolved =
-      decoded === '/' || decoded === ''
-        ? path.join(webDist, 'index.html')
-        : path.resolve(webDist, decoded.replace(/^\//, ''));
+    // Hard-reject any traversal indicator or null byte before touching the
+    // filesystem. This is the primary sanitizer — `path.resolve` + boundary
+    // check below is defense-in-depth.
+    if (decoded.includes('..') || decoded.includes('\0')) {
+      res.writeHead(400);
+      res.end();
+      return;
+    }
 
-    // Allow webDist itself and anything strictly inside it. Using path.sep on
-    // both sides keeps this correct on Windows.
+    // Collapse to a safe relative segment, then join (not resolve) under the
+    // dist root. `path.basename`-per-segment normalization ensures every
+    // segment is a simple filename — no '.', no '..', no absolute anchors.
+    const rel = decoded.replace(/^\/+/, '');
+    const safeSegments = rel
+      .split('/')
+      .filter((seg) => seg.length > 0)
+      .map((seg) => path.basename(seg));
+    const safeRel = safeSegments.join('/');
+    const candidate =
+      safeRel === '' ? path.join(webDist, 'index.html') : path.join(webDist, safeRel);
+
+    // Belt-and-braces boundary check. With the explicit rejections above this
+    // should be unreachable, but keeping it protects against any future change
+    // that relaxes the input validation.
     const boundary = webDist.endsWith(path.sep) ? webDist : webDist + path.sep;
-    if (!resolved.startsWith(boundary) && resolved !== webDist) {
+    if (!candidate.startsWith(boundary) && candidate !== webDist) {
       res.writeHead(403);
       res.end();
       return;
     }
 
-    if (existsSync(resolved)) {
-      const ext = path.extname(resolved);
+    if (existsSync(candidate)) {
+      const ext = path.extname(candidate);
       const mimeTypes: Record<string, string> = {
         '.html': 'text/html',
         '.js': 'application/javascript',
@@ -168,7 +185,7 @@ async function serveWebDashboard(report: GitloreReport): Promise<void> {
         '.wasm': 'application/wasm',
       };
       res.writeHead(200, { 'Content-Type': mimeTypes[ext] ?? 'text/plain' });
-      res.end(readFileSync(resolved));
+      res.end(readFileSync(candidate));
     } else {
       // SPA fallback
       res.writeHead(200, { 'Content-Type': 'text/html' });
