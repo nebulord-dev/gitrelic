@@ -116,7 +116,12 @@ function GitloreApp() {
 const inkInstance = render(<GitloreApp />);
 
 async function serveWebDashboard(report: GitloreReport): Promise<void> {
-  const webDist = new URL('../../web/dist', import.meta.url).pathname;
+  // The web dashboard is copied into the cli's own dist/web/ at build time
+  // (see scripts/copy-web-dist.mjs) so it ships inside the published package
+  // and resolves identically in the monorepo and in node_modules installs.
+  // `import.meta.url` points at `.../dist/index.js`, so `./web` resolves to
+  // `.../dist/web/`.
+  const webDist = new URL('./web', import.meta.url).pathname;
   const port = 7777;
 
   const server = createServer((req, res) => {

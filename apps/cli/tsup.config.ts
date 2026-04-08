@@ -12,4 +12,9 @@ export default defineConfig({
   banner: {
     js: '#!/usr/bin/env node',
   },
+  // Copy the built web dashboard into dist/web/ so it ships inside the
+  // published package (apps/cli/package.json files: ["dist"]). Without this
+  // step the `--web` flag crashes at runtime because `../../web/dist` only
+  // resolves inside the monorepo. See scripts/copy-web-dist.mjs for detail.
+  onSuccess: 'node scripts/copy-web-dist.mjs',
 });

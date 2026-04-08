@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "@gitlore/core": "workspace:*",
+    "@gitlore/web": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "tsup": "catalog:",

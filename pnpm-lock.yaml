@@ -93,6 +93,9 @@ importers:
       '@gitlore/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@gitlore/web':
+        specifier: workspace:*
+        version: link:../web
       '@types/node':
         specifier: 'catalog:'
         version: 25.5.0
