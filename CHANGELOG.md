@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/nebulord-dev/gitlore/compare/v1.4.0...v1.4.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* bundle @gitlore/core into cli to fix broken npm install ([e3bec69](https://github.com/nebulord-dev/gitlore/commit/e3bec69ac7df9ed2422fa69b62ea7da206bb0584))
+
 # [1.4.0](https://github.com/nebulord-dev/gitlore/compare/v1.3.1...v1.4.0) (2026-04-08)
 
 
