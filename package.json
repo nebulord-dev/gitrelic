@@ -19,7 +19,8 @@
     "test:web": "pnpm --filter @gitlore/web test:ui",
     "test:cli": "pnpm --filter @gitlore/cli test:ui",
     "test:core": "pnpm --filter @gitlore/core test:ui",
-    "prepare": "husky"
+    "prepare": "husky",
+    "all-checks": "pnpm build && pnpm test && pnpm lint && pnpm format"
   },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",

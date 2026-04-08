@@ -13,4 +13,12 @@ export default defineConfig({
     'react-hooks/exhaustive-deps': 'warn',
     'react/react-in-jsx-scope': 'off',
   },
+  overrides: [
+    {
+      files: ['*.test.ts', '*.test.tsx'],
+      rules: {
+        'typescript/no-explicit-any': 'off',
+      },
+    },
+  ],
 });
