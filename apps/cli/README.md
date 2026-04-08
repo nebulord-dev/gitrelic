@@ -7,7 +7,7 @@ Built on the methodology from Adam Tornhill's *Your Code as a Crime Scene* and *
 ## Install
 
 ```bash
-npm install -g gitlore
+npx gitlore --web
 ```
 
 ## Quick Start
