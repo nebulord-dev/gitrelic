@@ -1,11 +1,25 @@
 {
-  "name": "@gitlore/cli",
+  "name": "gitlore",
   "version": "1.3.1",
-  "private": true,
+  "description": "Git archaeology CLI — surface churn, bus factor, hotspots, and cursed files from your repo's git history",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nebulord-dev/gitlore"
+  },
   "bin": {
     "gitlore": "./dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
