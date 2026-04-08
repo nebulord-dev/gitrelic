@@ -43,6 +43,7 @@
     ".sickbay/**",
     ".claude/**",
     "pnpm-lock.yaml",
-    "**/*.md"
+    "**/*.md",
+    "**/*.yml"
   ]
 }
