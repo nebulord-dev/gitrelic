@@ -71,12 +71,29 @@ export function analyzeContributors(commits: RawCommit[], repoAgeDays: number): 
   const ghostContributors = contributors.filter(
     (c) => !c.isActive && new Date(c.lastCommit).getTime() < ghostCutoff,
   );
-  const topContributor = contributors[0];
+
+  // Guard against an empty commit list when called as a library — the runner
+  // rejects zero-commit repos earlier, but analyzeContributors is exported
+  // and shouldn't return an invalid `topContributor: undefined` shape.
+  const topContributor: Contributor = contributors[0] ?? {
+    email: '',
+    name: '',
+    commitCount: 0,
+    firstCommit: '',
+    lastCommit: '',
+    filesOwned: 0,
+    linesChanged: 0,
+    activeDays: 0,
+    focusAreas: [],
+    isActive: false,
+  };
 
   const summary =
-    ghostContributors.length > 0
-      ? `${contributors.length} contributors total — ${activeContributors.length} active, ${ghostContributors.length} ghosts who haven't committed in ${ghostWindowDays}+ days`
-      : `${contributors.length} contributors — ${activeContributors.length} actively committing`;
+    contributors.length === 0
+      ? 'No contributors found'
+      : ghostContributors.length > 0
+        ? `${contributors.length} contributors total — ${activeContributors.length} active, ${ghostContributors.length} ghosts who haven't committed in ${ghostWindowDays}+ days`
+        : `${contributors.length} contributors — ${activeContributors.length} actively committing`;
 
   return { contributors, activeContributors, ghostContributors, topContributor, summary };
 }

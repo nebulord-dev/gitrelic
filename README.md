@@ -81,7 +81,6 @@ Based on commit message sentiment. Each commit touching a file is scanned for ke
 
 | Weight | Keywords |
 |--------|----------|
-
 | 3 — Critical | `revert`, `hotfix`, `oops`, `fixup`, `broke` |
 | 2 — Moderate | `hack`, `workaround`, `temporary`, `temp`, `kludge`, `band-aid` |
 | 1 — Mild | `fix`, `bug`, `wrong`, `mistake`, `typo`, `cleanup` |

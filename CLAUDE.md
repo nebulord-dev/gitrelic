@@ -53,9 +53,15 @@ pnpm workspace + Turbo. Strict dependency order:
 
 ### `apps/web` — Web Dashboard
 
-- `src/App.tsx` — loads `/gitlore-report.json`, passes to Dashboard
-- `src/components/Dashboard.tsx` — tabbed layout (Overview, Hotspots, Contributors, Cursed Files, Age Map, Shame)
-- `src/components/HotspotClusters.tsx` — hotspot cluster visualization component
+- `src/App.tsx` — loads `/gitlore-report.json`, normalizes missing fields via `utils/normalizeReport.ts`, then renders `Shell`
+- `src/utils/normalizeReport.ts` — fills empty defaults for analyzer fields missing from older reports so tabs don't crash
+- `src/components/layout/Shell.tsx` — top-level layout (sidebar + top bar + main pane + bottom panel + inspector)
+- `src/components/layout/Sidebar.tsx` — left nav, switches between overview and tab modes
+- `src/components/layout/BottomPanel.tsx` — routes to the 22 tab components under `components/tabs/`
+- `src/components/layout/InspectorPanel.tsx` — drill-down panel for the selected file/contributor/activity
+- `src/components/hero/` — D3 visualizations (commit graph, swimlanes, treemaps, force graphs, etc.). Biggest XSS surface — must only use `.text()`, never `.html()`
+- `src/components/tabs/` — 22 deep-dive tabs, one per analyzer
+- Critical rule: only `import type` from `@gitlore/core`. Value imports bundle Node.js modules into the browser build and break Vite.
 
 ## Key Concepts
 
@@ -80,6 +86,17 @@ After cross-package changes (new analyzers, new web visualizations, refactors to
 - Web imports from core are `import type` only (no value imports — they'd bundle Node.js into the browser)
 - Git commands are centralized in `utils/git.ts`, not scattered in analyzers (exec-discipline)
 - New analyzers are wired into `runner.ts`, typed in `types.ts`, and exported from `index.ts`
+
+### Audit skills
+
+For deeper, package-scoped audits use the `audit-*` skills under `.claude/skills/`. Each one has a targeted checklist and dispatches an appropriate reviewer agent:
+
+- `audit-architecture` — monorepo boundaries, publishing invariant, exec discipline, dependency direction
+- `audit-core` — analyzer correctness, runner orchestration, edge cases, cross-platform paths
+- `audit-cli` — packaging, Commander flag validation, web server security, Ink patterns
+- `audit-web` — import discipline, D3 XSS surface, report loading, large-report performance
+
+Run these before merging large feature branches or when onboarding to a specific package. The `exec-discipline` skill documents the rule that all git subprocess calls must live in `utils/git.ts`.
 
 ### Data source
 

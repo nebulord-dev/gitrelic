@@ -16,9 +16,15 @@ export function analyzeChurnVelocity(
   }
 
   const trackedSet = new Set(trackedFiles);
-  const dates = commits.map((c) => new Date(c.date).getTime());
-  const minDate = Math.min(...dates);
-  const maxDate = Math.max(...dates);
+  // Avoid Math.min/max(...dates) — the spread overflows the JS call stack
+  // on repos with ~125k+ commits. Scan in a single pass instead.
+  let minDate = Infinity;
+  let maxDate = -Infinity;
+  for (const commit of commits) {
+    const ts = new Date(commit.date).getTime();
+    if (ts < minDate) minDate = ts;
+    if (ts > maxDate) maxDate = ts;
+  }
   const midpoint = minDate + (maxDate - minDate) / 2;
 
   const fileCommitDates = new Map<string, number[]>();

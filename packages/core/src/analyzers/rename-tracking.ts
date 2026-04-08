@@ -1,4 +1,4 @@
-import { execa } from 'execa';
+import { getRenameLog } from '../utils/git.js';
 
 import type { RenameTrackingReport, FileRename, FileRenameChain } from '../types.js';
 
@@ -94,23 +94,9 @@ export async function analyzeRenameTracking(
   trackedFiles: string[],
   options?: { since?: string },
 ): Promise<RenameTrackingReport> {
-  const args = [
-    'log',
-    '--diff-filter=R',
-    '--find-renames',
-    '--name-status',
-    '--format=COMMIT|%H|%aI',
-    '--no-merges',
-  ];
+  const raw = await getRenameLog(repoPath, { since: options?.since });
 
-  if (options?.since) args.push(`--since=${options.since}`);
-
-  let raw = '';
-  try {
-    const result = await execa('git', args, { cwd: repoPath });
-    raw = result.stdout;
-  } catch {
-    // If git command fails, return empty report
+  if (!raw) {
     return {
       renames: [],
       chains: [],

@@ -99,6 +99,8 @@ const IGNORED_PATTERNS = {
     'CONTRIBUTING.md',
     'CLAUDE.md',
   ]),
+  // Binary / generated / vendored extensions that would pollute LOC counts
+  // and churn analysis if treated as source.
   extensions: new Set([
     '.ico',
     '.png',
@@ -106,6 +108,10 @@ const IGNORED_PATTERNS = {
     '.jpeg',
     '.gif',
     '.svg',
+    '.webp',
+    '.avif',
+    '.pdf',
+    '.wasm',
     '.woff',
     '.woff2',
     '.ttf',
@@ -114,7 +120,10 @@ const IGNORED_PATTERNS = {
     '.min.css',
     '.map',
   ]),
-  prefixes: ['.next/', 'dist/', 'coverage/', '.claude/', 'docs/'],
+  // Note: `docs/` is deliberately NOT filtered. Many projects keep real,
+  // actively-maintained source under docs/ (MDX, generated API references,
+  // ADRs) and silently excluding those skews every analyzer.
+  prefixes: ['.next/', 'dist/', 'coverage/', '.claude/'],
 };
 
 export function isIgnored(file: string): boolean {
@@ -159,6 +168,33 @@ export async function getCurrentBranch(repoPath: string): Promise<string> {
 export async function getBranches(repoPath: string): Promise<string[]> {
   const { stdout } = await execa('git', ['branch', '--format=%(refname:short)'], { cwd: repoPath });
   return stdout.split('\n').filter(Boolean);
+}
+
+/**
+ * Fetches the raw rename log for a repo. Returns an empty string if git fails,
+ * so the rename-tracking analyzer can degrade gracefully.
+ */
+export async function getRenameLog(
+  repoPath: string,
+  options: { since?: string } = {},
+): Promise<string> {
+  const args = [
+    'log',
+    '--diff-filter=R',
+    '--find-renames',
+    '--name-status',
+    '--format=COMMIT|%H|%aI',
+    '--no-merges',
+  ];
+
+  if (options.since) args.push(`--since=${options.since}`);
+
+  try {
+    const { stdout } = await execa('git', args, { cwd: repoPath });
+    return stdout;
+  } catch {
+    return '';
+  }
 }
 
 /**
