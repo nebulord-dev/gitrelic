@@ -126,6 +126,29 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Verify core runtime deps are a subset of cli runtime deps
+        # @gitlore/core is bundled into the cli at build time (noExternal), so
+        # every runtime dep of core must ALSO be declared as a runtime dep of
+        # cli — otherwise the bundled `require('...')` calls will fail at
+        # install time. The smoke test below catches this for the common case,
+        # but only if the missing dep isn't accidentally satisfied as a
+        # transitive of something cli already declares. Do an explicit
+        # subset check so drift is caught loudly, not silently.
+        run: |
+          CORE_DEPS=$(jq -r '.dependencies // {} | keys[]' packages/core/package.json | sort)
+          CLI_DEPS=$(jq -r '.dependencies // {} | keys[]' apps/cli/package.json | sort)
+          MISSING=$(comm -23 <(echo "$CORE_DEPS") <(echo "$CLI_DEPS") || true)
+          if [ -n "$MISSING" ]; then
+            echo "❌ apps/cli is missing runtime deps that @gitlore/core declares:"
+            echo "$MISSING" | sed 's/^/    - /'
+            echo ""
+            echo "These need to be added to apps/cli/package.json dependencies"
+            echo "because core's source is bundled inline and will require()"
+            echo "them against cli's own node_modules at runtime."
+            exit 1
+          fi
+          echo "✓ All core runtime deps are declared in cli"
+
       - name: Build
         run: pnpm build
 
@@ -135,23 +158,43 @@ jobs:
 
       - name: Install tarball in clean dir with npm
         run: |
+          # Assert exactly one gitlore-*.tgz exists. A bare glob that matches
+          # nothing would expand to the literal string and `npm install` with
+          # no package spec succeeds vacuously — a silent failure mode if the
+          # package is ever renamed or scoped.
+          shopt -s nullglob
+          TARBALLS=("$GITHUB_WORKSPACE"/apps/cli/gitlore-*.tgz)
+          if [ ${#TARBALLS[@]} -ne 1 ]; then
+            echo "❌ Expected exactly one gitlore-*.tgz, found ${#TARBALLS[@]}:"
+            printf '    %s\n' "${TARBALLS[@]}"
+            echo "If the package was renamed or scoped, update this glob."
+            exit 1
+          fi
+          echo "✓ Found tarball: ${TARBALLS[0]}"
           mkdir -p /tmp/smoke && cd /tmp/smoke
           npm init -y >/dev/null
-          npm install "$GITHUB_WORKSPACE/apps/cli/gitlore-"*.tgz
+          npm install "${TARBALLS[0]}"
 
       - name: Run installed cli against this repo
         run: |
           cd /tmp/smoke
           ./node_modules/.bin/gitlore --path "$GITHUB_WORKSPACE" --json > report.json
-          # Sanity check: report must parse, have a repoName, and include
-          # all major analyzer outputs. If core wasn't bundled, any of
-          # these will be missing or the process will crash.
+          # Sanity check: report must parse, have repoName + totalCommits, and
+          # include every top-level field that runner.ts returns. If core wasn't
+          # bundled, any of these will be missing or the process will crash.
+          # Keep this list exhaustive — silent drift (e.g. a new analyzer
+          # returning undefined) should fail CI.
           node -e '
             const r = JSON.parse(require("fs").readFileSync("report.json", "utf8"));
-            const required = ["churn", "busFactors", "ageMap", "contributors",
-                              "cursedFiles", "forensics", "hotspots", "coupling",
-                              "loc", "commits"];
-            const missing = required.filter((k) => !r[k]);
+            const required = [
+              "churn", "busFactors", "ageMap", "contributors", "cursedFiles",
+              "forensics", "parallelDev", "loc", "hotspots", "coupling",
+              "churnVelocity", "rewriteRatio", "blastRadius", "deadCode",
+              "testCoverage", "ghostFiles", "knowledgeConcentration",
+              "coAuthors", "hotspotClusters", "complexityTrend",
+              "commitTiming", "renameTracking", "commits"
+            ];
+            const missing = required.filter((k) => r[k] === undefined || r[k] === null);
             if (missing.length) {
               console.error("Missing analyzer output:", missing);
               process.exit(1);
@@ -160,5 +203,6 @@ jobs:
               console.error("Report missing repoName or meta.totalCommits");
               process.exit(1);
             }
-            console.log("OK:", r.repoName, r.meta.totalCommits, "commits");
+            console.log("OK:", r.repoName, r.meta.totalCommits, "commits,",
+                        required.length, "analyzer fields populated");
           '
