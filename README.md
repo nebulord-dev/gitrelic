@@ -94,8 +94,6 @@ Ratio-based: a file with 1 revert in 2 commits scores higher than 1 revert in 10
 A composite of churn, bus factor risk, age anomalies, and shame. Files scoring ≥ 50 appear
 in the Cursed Files panel. Shame contributes up to +20 points to the curse score.
 
-For the full flag reference, tips by repo type, and example workflows, see **[docs/USAGE.md](docs/USAGE.md)**.
-
 ## Setup
 
 ```bash

@@ -9,8 +9,10 @@ dist/
 coverage/
 .superpowers/
 .serena
+.worktrees/
+docs/
 .claude/projects/
 .sickbay/history.json
+.sickbay/dep-tree.json
 .sickbay/cache/
-
 T4-ideas.txt
