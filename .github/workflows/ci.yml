@@ -102,3 +102,63 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+  install-smoke:
+    name: Install Smoke Test
+    # Packs the cli into a tarball and installs it with plain `npm install`
+    # in a clean directory — catches broken publishes before they happen.
+    # Specifically catches the `workspace:*` protocol leak that broke 1.4.0.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Pack cli tarball
+        working-directory: apps/cli
+        run: pnpm pack
+
+      - name: Install tarball in clean dir with npm
+        run: |
+          mkdir -p /tmp/smoke && cd /tmp/smoke
+          npm init -y >/dev/null
+          npm install "$GITHUB_WORKSPACE/apps/cli/gitlore-"*.tgz
+
+      - name: Run installed cli against this repo
+        run: |
+          cd /tmp/smoke
+          ./node_modules/.bin/gitlore --path "$GITHUB_WORKSPACE" --json > report.json
+          # Sanity check: report must parse, have a repoName, and include
+          # all major analyzer outputs. If core wasn't bundled, any of
+          # these will be missing or the process will crash.
+          node -e '
+            const r = JSON.parse(require("fs").readFileSync("report.json", "utf8"));
+            const required = ["churn", "busFactors", "ageMap", "contributors",
+                              "cursedFiles", "forensics", "hotspots", "coupling",
+                              "loc", "commits"];
+            const missing = required.filter((k) => !r[k]);
+            if (missing.length) {
+              console.error("Missing analyzer output:", missing);
+              process.exit(1);
+            }
+            if (!r.repoName || !r.meta || !r.meta.totalCommits) {
+              console.error("Report missing repoName or meta.totalCommits");
+              process.exit(1);
+            }
+            console.log("OK:", r.repoName, r.meta.totalCommits, "commits");
+          '
