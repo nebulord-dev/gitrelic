@@ -1,4 +1,4 @@
-# GitLore
+# Gitlore
 
 Git archaeology — surface churn patterns, bus factor risks, hotspots, and cursed files from your repo's git history.
 
@@ -7,7 +7,11 @@ Built on the methodology from Adam Tornhill's *Your Code as a Crime Scene* and *
 ## Install
 
 ```bash
+# npx
 npx gitlore --web
+
+# global
+npm install -g gitlore
 ```
 
 ## Quick Start
