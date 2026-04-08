@@ -40,6 +40,7 @@
     ".turbo/**",
     "coverage/**",
     "build/**",
+    "docs/**",
     ".sickbay/**",
     ".claude/**",
     "pnpm-lock.yaml",
