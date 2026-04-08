@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/nebulord-dev/gitlore/compare/v1.3.1...v1.4.0) (2026-04-08)
+
+
+### Features
+
+* prepare gitlore for npm publishing ([3f037bc](https://github.com/nebulord-dev/gitlore/commit/3f037bc7cd5cf0555f5ef20a793b3af7dcc04a14))
+
 ## [1.3.1](https://github.com/TraceRicochet/gitlore/compare/v1.3.0...v1.3.1) (2026-04-07)
 
 
