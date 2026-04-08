@@ -6,7 +6,9 @@ updates:
     directory: '/'
     schedule:
       interval: 'weekly'
-    open-pull-requests-limit: 10
+    # Keep this low so PRs can't pile up. Security updates are exempt from
+    # this limit, so critical fixes still come through.
+    open-pull-requests-limit: 3
     labels:
       - 'dependencies'
     ignore:
@@ -16,12 +18,20 @@ updates:
       - dependency-name: '*'
         update-types:
           - 'version-update:semver-patch'
+      # Major bumps get researched and applied on a human schedule, not
+      # Dependabot's weekly cadence. Each major release needs its own
+      # breaking-change review — bundling them into PRs we won't read
+      # until later is worse than not having the PR at all. Run
+      # `pnpm update --latest` manually when you're ready to take majors.
+      # Security updates remain exempt.
+      - dependency-name: '*'
+        update-types:
+          - 'version-update:semver-major'
     groups:
       # All dev tooling bumps land in one PR per week.
       dev-dependencies:
         dependency-type: 'development'
-      # Group runtime minor bumps too — major bumps still come as
-      # individual PRs since those need careful review.
+      # Group runtime minor bumps too.
       production-minor:
         dependency-type: 'production'
         update-types:
