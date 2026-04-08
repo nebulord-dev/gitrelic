@@ -1,0 +1,60 @@
+# GitLore
+
+Git archaeology — surface churn patterns, bus factor risks, hotspots, and cursed files from your repo's git history.
+
+Built on the methodology from Adam Tornhill's *Your Code as a Crime Scene* and *Software Design X-Rays*. Zero external dependencies — everything comes from `git log` and `git ls-files`.
+
+## Install
+
+```bash
+npm install -g gitlore
+```
+
+## Quick Start
+
+```bash
+# Analyze current directory
+gitlore
+
+# Analyze a specific repo
+gitlore --path ~/projects/my-app
+
+# Open web dashboard
+gitlore --path ~/projects/my-app --web
+
+# Analyze only the last 6 months
+gitlore --path ~/projects/my-app --since "6 months ago"
+
+# Output JSON for piping
+gitlore --path ~/projects/my-app --json > report.json
+```
+
+## What You Get
+
+### Churn & Complexity
+Churn analysis, churn velocity, hotspot scoring and clustering, complexity trends, and rewrite ratios.
+
+### Ownership & Risk
+Bus factor, knowledge concentration, ghost files (owned by inactive authors), contributor profiles, and co-authorship analysis.
+
+### History & Patterns
+Age maps, dead code candidates, blast radius, coupling maps, parallel development detection, rename tracking, and commit timing stress patterns.
+
+### Diagnostics
+Cursed files (high churn + concentrated ownership + age paradoxes), shame scores (commit message forensics), test coverage proximity, and LOC/language breakdown.
+
+## 22 Analyzers
+
+All analysis comes from pure git history — no language-specific tooling, no external wrappers.
+
+## Terminal & Web
+
+Rich Ink-powered terminal UI for quick scans, plus a full web dashboard with hero visualizations and 23 deep-dive tabs via `--web`.
+
+## Documentation
+
+Full docs at [nebulord-dev.github.io/gitlore](https://nebulord-dev.github.io/gitlore/)
+
+## License
+
+MIT
