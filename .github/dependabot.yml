@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # Main workspace — apps/* and packages/* are picked up via the root
+  # pnpm-lock.yaml, so a single entry covers the whole monorepo.
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 10
+    labels:
+      - 'dependencies'
+    ignore:
+      # Patch-level bumps are pure noise — kill the constant `^4.17.20 →
+      # ^4.17.21` PRs. Security patches still come through Dependabot's
+      # security-updates feature, which is independent of this rule.
+      - dependency-name: '*'
+        update-types:
+          - 'version-update:semver-patch'
+    groups:
+      # All dev tooling bumps land in one PR per week.
+      dev-dependencies:
+        dependency-type: 'development'
+      # Group runtime minor bumps too — major bumps still come as
+      # individual PRs since those need careful review.
+      production-minor:
+        dependency-type: 'production'
+        update-types:
+          - 'minor'
