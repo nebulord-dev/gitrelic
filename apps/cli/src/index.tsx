@@ -43,6 +43,17 @@ const opts = program.opts<{
 const repoPath = path.resolve(opts.path);
 const since = opts.since === 'all' ? undefined : opts.since;
 
+// Validate the repo path up front so we can fail with a clean message instead
+// of a buried git stderr trace from deep inside the analyzer stack.
+if (!existsSync(repoPath)) {
+  process.stderr.write(`Error: path does not exist: ${repoPath}\n`);
+  process.exit(1);
+}
+if (!existsSync(path.join(repoPath, '.git'))) {
+  process.stderr.write(`Error: not a git repository: ${repoPath}\n`);
+  process.exit(1);
+}
+
 if (opts.json) {
   // Non-interactive JSON mode
   try {
@@ -59,7 +70,7 @@ if (opts.json) {
   }
 }
 
-// Interactive Ink mode
+// Interactive Ink mode.
 function GitloreApp() {
   const [report, setReport] = useState<GitloreReport | null>(null);
   const [progress, setProgress] = useState('');
@@ -79,7 +90,15 @@ function GitloreApp() {
           await serveWebDashboard(result);
         }
       })
-      .catch((err: Error) => setError(err.message));
+      .catch((err: Error) => {
+        setError(err.message);
+        // Render the error frame, then tear down Ink and exit non-zero so
+        // shell consumers (CI, scripts) see the failure instead of a hang.
+        setTimeout(() => {
+          inkInstance.unmount();
+          process.exit(1);
+        }, 50);
+      });
   }, []);
 
   return (
@@ -93,7 +112,8 @@ function GitloreApp() {
   );
 }
 
-render(<GitloreApp />);
+// Capture the render instance so the error path can unmount cleanly.
+const inkInstance = render(<GitloreApp />);
 
 async function serveWebDashboard(report: GitloreReport): Promise<void> {
   const webDist = new URL('../../web/dist', import.meta.url).pathname;
@@ -106,30 +126,49 @@ async function serveWebDashboard(report: GitloreReport): Promise<void> {
       return;
     }
 
-    const resolved =
-      req.url === '/' || req.url === ''
-        ? path.join(webDist, 'index.html')
-        : path.resolve(webDist, (req.url ?? '').replace(/^\//, ''));
+    // Decode the URL before resolving so that percent-encoded traversal
+    // sequences like `/%2e%2e/etc/passwd` are normalized to `..` and caught
+    // by the boundary check below. Strip the query string first.
+    let decoded: string;
+    try {
+      const rawUrl = (req.url ?? '/').split('?')[0];
+      decoded = decodeURIComponent(rawUrl);
+    } catch {
+      res.writeHead(400);
+      res.end();
+      return;
+    }
 
-    if (!resolved.startsWith(webDist + path.sep) && resolved !== webDist) {
+    const resolved =
+      decoded === '/' || decoded === ''
+        ? path.join(webDist, 'index.html')
+        : path.resolve(webDist, decoded.replace(/^\//, ''));
+
+    // Allow webDist itself and anything strictly inside it. Using path.sep on
+    // both sides keeps this correct on Windows.
+    const boundary = webDist.endsWith(path.sep) ? webDist : webDist + path.sep;
+    if (!resolved.startsWith(boundary) && resolved !== webDist) {
       res.writeHead(403);
       res.end();
       return;
     }
 
-    const filePath = resolved;
-
-    if (existsSync(filePath)) {
-      const ext = path.extname(filePath);
+    if (existsSync(resolved)) {
+      const ext = path.extname(resolved);
       const mimeTypes: Record<string, string> = {
         '.html': 'text/html',
         '.js': 'application/javascript',
         '.css': 'text/css',
         '.json': 'application/json',
         '.svg': 'image/svg+xml',
+        '.woff': 'font/woff',
+        '.woff2': 'font/woff2',
+        '.ttf': 'font/ttf',
+        '.map': 'application/json',
+        '.wasm': 'application/wasm',
       };
       res.writeHead(200, { 'Content-Type': mimeTypes[ext] ?? 'text/plain' });
-      res.end(readFileSync(filePath));
+      res.end(readFileSync(resolved));
     } else {
       // SPA fallback
       res.writeHead(200, { 'Content-Type': 'text/html' });
@@ -137,6 +176,19 @@ async function serveWebDashboard(report: GitloreReport): Promise<void> {
     }
   });
 
-  await new Promise<void>((resolve) => server.listen(port, resolve));
+  // Surface listen errors (most commonly EADDRINUSE) with a clean message
+  // instead of an uncaught exception stack trace.
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', (err: NodeJS.ErrnoException) => {
+      if (err.code === 'EADDRINUSE') {
+        reject(
+          new Error(`Port ${port} is already in use. Stop the other process or try again later.`),
+        );
+      } else {
+        reject(err);
+      }
+    });
+    server.listen(port, () => resolve());
+  });
   await open(`http://localhost:${port}`);
 }

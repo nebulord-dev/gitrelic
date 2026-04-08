@@ -27,7 +27,10 @@ Read in this order — each builds on the previous:
 - Jira project KAN (nebulord.atlassian.net) — current task board, epic KAN-6 for GitLore
 
 List available design docs:
-!`ls docs/plans/ docs/superpowers/plans/ docs/superpowers/specs/ 2>/dev/null || echo "No plans directory yet"`
+!`ls docs/superpowers/plans/ docs/superpowers/specs/ 2>/dev/null || echo "No plans directory yet"`
+
+List available skills:
+!`ls .claude/skills/ 2>/dev/null`
 
 Read any plan docs relevant to the current task.
 
@@ -54,9 +57,22 @@ Read based on the task at hand:
 
 **If working on web dashboard:**
 
-- `apps/web/src/App.tsx` — loads `/gitlore-report.json`, passes to Dashboard
-- `apps/web/src/components/Dashboard.tsx` — tabbed layout (Overview, Hotspots, Contributors, Cursed Files, Age Map, Shame)
-- `apps/web/src/components/HotspotClusters.tsx` — hotspot cluster visualization component
+- `apps/web/src/App.tsx` — fetches `/gitlore-report.json`, normalizes via `utils/normalizeReport.ts`, renders `Shell`
+- `apps/web/src/utils/normalizeReport.ts` — fills empty defaults for analyzer fields missing from older reports
+- `apps/web/src/components/layout/Shell.tsx` — top-level layout (sidebar + top bar + main pane + bottom panel + inspector)
+- `apps/web/src/components/layout/BottomPanel.tsx` — routes the active tab mode to one of 22 tab components under `components/tabs/`
+- `apps/web/src/components/layout/InspectorPanel.tsx` — drill-down panel for selected file/contributor/activity
+- `apps/web/src/components/hero/` — D3 hero visualizations. Biggest XSS surface — must only use `.text()`, never `.html()`
+- `apps/web/src/components/tabs/` — 22 tabs, one per analyzer
+- Critical rule: only `import type` from `@gitlore/core`. Value imports leak Node.js modules into the browser bundle.
+
+**For package-scoped audits:**
+
+- `.claude/skills/audit-architecture/` — monorepo boundaries, publishing invariant, exec discipline
+- `.claude/skills/audit-core/` — analyzer correctness, runner orchestration, edge cases
+- `.claude/skills/audit-cli/` — packaging, Commander validation, web server security, Ink patterns
+- `.claude/skills/audit-web/` — import discipline, D3 XSS surface, report loading, perf
+- `.claude/skills/exec-discipline/` — the rule that all git subprocess calls must live in `packages/core/src/utils/git.ts`
 
 ### 4. Understand Current State
 
@@ -91,7 +107,7 @@ Provide a concise summary covering:
 
 ### Sister Project: Sickbay
 
-GitLore's sister project lives at `/Users/danteel/Desktop/nebulord/sickbay`. Both share the same stack and are built by the same developer. **Keep them aligned.**
+GitLore's sister project lives at `/Users/tracericochet/Desktop/nebulord/sickbay`. Both share the same stack and are built by the same developer. **Keep them aligned.**
 
 Key libraries Sickbay has that GitLore will need as features grow:
 

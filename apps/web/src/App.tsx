@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { Shell } from './components/layout/Shell';
+import { normalizeReport } from './utils/normalizeReport';
 
 import type { GitloreReport } from '@gitlore/core';
 
@@ -12,9 +13,9 @@ export default function App() {
     fetch('/gitlore-report.json')
       .then((r) => {
         if (!r.ok) throw new Error('No report found. Run gitlore --web to generate one.');
-        return r.json() as Promise<GitloreReport>;
+        return r.json() as Promise<Partial<GitloreReport>>;
       })
-      .then(setReport)
+      .then((raw) => setReport(normalizeReport(raw)))
       .catch((err: Error) => setError(err.message));
   }, []);
 

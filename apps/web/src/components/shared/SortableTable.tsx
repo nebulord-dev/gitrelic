@@ -60,7 +60,9 @@ export function SortableTable<T>({
       });
     }
   }
+  const totalRows = sorted.length;
   sorted = sorted.slice(0, maxRows);
+  const truncated = totalRows > maxRows;
 
   return (
     <div>
@@ -152,6 +154,20 @@ export function SortableTable<T>({
           </div>
         );
       })}
+
+      {truncated && (
+        <div
+          style={{
+            padding: '6px 4px',
+            fontSize: 10,
+            color: 'var(--text-tertiary)',
+            textAlign: 'right',
+            fontStyle: 'italic',
+          }}
+        >
+          Showing {maxRows} of {totalRows.toLocaleString()} rows
+        </div>
+      )}
     </div>
   );
 }
