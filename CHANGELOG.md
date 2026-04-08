@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/nebulord-dev/gitlore/compare/v1.4.1...v1.4.2) (2026-04-08)
+
+
+### Bug Fixes
+
+* address audit findings across core, cli, and web ([#13](https://github.com/nebulord-dev/gitlore/issues/13)) ([3c87570](https://github.com/nebulord-dev/gitlore/commit/3c8757091b469d314ca8ac96ad4fdae0c0eb3811))
+
 ## [1.4.1](https://github.com/nebulord-dev/gitlore/compare/v1.4.0...v1.4.1) (2026-04-08)
 
 
