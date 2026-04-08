@@ -107,7 +107,7 @@ Provide a concise summary covering:
 
 ### Sister Project: Sickbay
 
-GitLore's sister project lives at `/Users/tracericochet/Desktop/nebulord/sickbay`. Both share the same stack and are built by the same developer. **Keep them aligned.**
+GitLore's sister project lives at `/Desktop/nebulord/sickbay`. Both share the same stack and are built by the same developer. **Keep them aligned.**
 
 Key libraries Sickbay has that GitLore will need as features grow:
 
