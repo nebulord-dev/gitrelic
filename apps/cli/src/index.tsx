@@ -127,7 +127,7 @@ async function serveWebDashboard(report: GitloreReport): Promise<void> {
   // `/C:/Users/...` with a leading slash before the drive letter, which the
   // fs module can't open. fileURLToPath normalizes it to a real OS path.
   const webDist = fileURLToPath(new URL('./web', import.meta.url));
-  const port = 7777;
+  const port = await getFreePort(7777);
 
   const server = createServer((req, res) => {
     if (req.url === '/gitlore-report.json') {
@@ -203,19 +203,37 @@ async function serveWebDashboard(report: GitloreReport): Promise<void> {
     }
   });
 
-  // Surface listen errors (most commonly EADDRINUSE) with a clean message
-  // instead of an uncaught exception stack trace.
+  // Surface any unexpected listen errors with a clean message. Port conflicts
+  // are already handled upstream by getFreePort, which walks forward until it
+  // finds a free port.
   await new Promise<void>((resolve, reject) => {
-    server.once('error', (err: NodeJS.ErrnoException) => {
+    server.once('error', reject);
+    server.listen(port, '127.0.0.1', () => resolve());
+  });
+  await open(`http://localhost:${port}`);
+}
+
+async function getFreePort(preferred: number, attempts = 0): Promise<number> {
+  if (attempts >= 10) {
+    throw new Error(
+      `No free port found after 10 attempts starting from port ${preferred - attempts}`,
+    );
+  }
+  return new Promise((resolve, reject) => {
+    const probe = createServer();
+    // Probe must bind to the same host as the real server (127.0.0.1), otherwise
+    // Node defaults to `::` and we can miss an IPv4-loopback-only conflict —
+    // the probe says "free", then the real listen crashes with EADDRINUSE.
+    probe.listen(preferred, '127.0.0.1', () => {
+      const addr = probe.address() as { port: number };
+      probe.close(() => resolve(addr.port));
+    });
+    probe.on('error', (err: NodeJS.ErrnoException) => {
       if (err.code === 'EADDRINUSE') {
-        reject(
-          new Error(`Port ${port} is already in use. Stop the other process or try again later.`),
-        );
+        resolve(getFreePort(preferred + 1, attempts + 1));
       } else {
         reject(err);
       }
     });
-    server.listen(port, () => resolve());
   });
-  await open(`http://localhost:${port}`);
 }
