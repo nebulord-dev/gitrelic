@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { createServer } from 'node:http';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { useState, useEffect } from 'react';
 
@@ -121,7 +122,11 @@ async function serveWebDashboard(report: GitloreReport): Promise<void> {
   // and resolves identically in the monorepo and in node_modules installs.
   // `import.meta.url` points at `.../dist/index.js`, so `./web` resolves to
   // `.../dist/web/`.
-  const webDist = new URL('./web', import.meta.url).pathname;
+  //
+  // Use fileURLToPath rather than URL#pathname: on Windows, pathname returns
+  // `/C:/Users/...` with a leading slash before the drive letter, which the
+  // fs module can't open. fileURLToPath normalizes it to a real OS path.
+  const webDist = fileURLToPath(new URL('./web', import.meta.url));
   const port = 7777;
 
   const server = createServer((req, res) => {
