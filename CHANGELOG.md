@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/nebulord-dev/gitlore/compare/v1.4.3...v1.5.0) (2026-04-09)
+
+
+### Features
+
+* **cli:** simplify the TUI displays and add the dashboard URL. ([20590c2](https://github.com/nebulord-dev/gitlore/commit/20590c22e75c66382290f33dd545b661fea1814f))
+
 ## [1.4.3](https://github.com/nebulord-dev/gitlore/compare/v1.4.2...v1.4.3) (2026-04-09)
 
 
