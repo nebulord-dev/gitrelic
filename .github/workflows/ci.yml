@@ -206,3 +206,58 @@ jobs:
             console.log("OK:", r.repoName, r.meta.totalCommits, "commits,",
                         required.length, "analyzer fields populated");
           '
+
+      - name: Verify --web serves the dashboard from the installed tarball
+        # Starts the installed CLI with --web, waits for the HTTP server to
+        # come up, and asserts that the root serves HTML and the report
+        # endpoint serves JSON. Catches the regression where dist/web was
+        # missing from the published package — the cli appeared to work for
+        # --json but crashed with ENOENT on --web.
+        # All inputs are GitHub-provided env vars ($GITHUB_WORKSPACE) or
+        # literal strings — no untrusted event data is interpolated.
+        run: |
+          cd /tmp/smoke
+          if [ ! -f node_modules/gitlore/dist/web/index.html ]; then
+            echo "dist/web/index.html is missing from the installed tarball"
+            exit 1
+          fi
+          echo "OK: dist/web/index.html present"
+
+          ./node_modules/.bin/gitlore \
+            --path "$GITHUB_WORKSPACE" \
+            --since "1 month ago" \
+            --web > web.log 2>&1 &
+          CLI_PID=$!
+
+          for i in $(seq 1 20); do
+            if curl -sf -o /dev/null http://localhost:7777/; then
+              break
+            fi
+            sleep 1
+          done
+
+          ROOT_CODE=$(curl -s -o /tmp/root.html -w "%{http_code}" http://localhost:7777/)
+          REPORT_CODE=$(curl -s -o /tmp/report.json -w "%{http_code}" http://localhost:7777/gitlore-report.json)
+
+          kill "$CLI_PID" 2>/dev/null || true
+
+          if [ "$ROOT_CODE" != "200" ]; then
+            echo "GET / returned $ROOT_CODE, expected 200"
+            cat web.log
+            exit 1
+          fi
+          if ! grep -qi "<!doctype html>" /tmp/root.html; then
+            echo "GET / did not return HTML"
+            head -20 /tmp/root.html
+            exit 1
+          fi
+          if [ "$REPORT_CODE" != "200" ]; then
+            echo "GET /gitlore-report.json returned $REPORT_CODE, expected 200"
+            cat web.log
+            exit 1
+          fi
+          if ! node -e 'JSON.parse(require("fs").readFileSync("/tmp/report.json","utf8"))'; then
+            echo "/gitlore-report.json did not return valid JSON"
+            exit 1
+          fi
+          echo "OK: --web served dashboard HTML + valid report JSON"
