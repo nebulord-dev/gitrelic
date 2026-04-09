@@ -1,6 +1,6 @@
 {
   "name": "gitlore",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Git archaeology CLI — surface churn, bus factor, hotspots, and cursed files from your repo's git history",
   "license": "MIT",
   "repository": {

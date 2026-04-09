@@ -1,3 +1,10 @@
+## [1.4.3](https://github.com/nebulord-dev/gitlore/compare/v1.4.2...v1.4.3) (2026-04-09)
+
+
+### Bug Fixes
+
+* **cli:** ship web dashboard inside the published package ([#15](https://github.com/nebulord-dev/gitlore/issues/15)) ([60cdd03](https://github.com/nebulord-dev/gitlore/commit/60cdd03259d51665e9d48f137b1470d24cf415bf))
+
 ## [1.4.2](https://github.com/nebulord-dev/gitlore/compare/v1.4.1...v1.4.2) (2026-04-08)
 
 
