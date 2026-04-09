@@ -39,6 +39,8 @@ The `--web` flag starts an HTTP server on port 7777 serving `apps/web/dist` + th
   - On Windows, `path.sep` is `\` — does `webDist` include a trailing separator mismatch?
   - What about `req.url` containing encoded `%2e%2e` sequences? `path.resolve` will decode them, but the URL parser may not
   - Symlinks inside `webDist` that escape the directory — `path.resolve` won't catch these
+  - Static analysis (CodeQL `js/path-injection`) does not recognize post-resolve `startsWith` checks as sanitizers. The current code sanitizes input by rejecting `..` and null bytes explicitly before `path.join` — verify that rejection is still the first thing the handler does
+- **`URL#pathname` vs `fileURLToPath`** — grep `src/` for `.pathname` on any `new URL(..., import.meta.url)`. On Windows, `pathname` returns `/C:/Users/...` with a leading slash before the drive letter, which `node:fs` can't open. Every such site must use `fileURLToPath(new URL(..., import.meta.url))` instead. This is the kind of bug that will pass every macOS/Linux smoke test and only surface when a Windows user files an issue.
 - **Port 7777 hardcoded** — if the port is in use, `server.listen(7777)` throws. No fallback to the next free port. At minimum, the error message should be helpful
 - **Server shutdown** — there is no SIGINT/SIGTERM handler. Pressing Ctrl+C leaves the server orphaned (Ink may swallow the signal). Verify the process actually dies
 - **Report endpoint** — `GET /gitlore-report.json` serves the in-memory `GitloreReport`. Verify `Content-Type` is set and no other data (e.g. env vars, stack traces) can leak
@@ -70,6 +72,20 @@ Verify:
 - After Ink renders results, does the process exit cleanly? Ink can leave stdin in raw mode if not shut down properly
 - Any stray `console.log` or `process.stdout.write` from core analyzers will corrupt the Ink UI — grep `packages/core/src` for any stdout writes
 
+### 7. Published-Package Runtime Parity
+
+The monorepo layout and the published tarball layout are **not the same**. Anything the CLI reads at runtime from a path relative to its own `dist/index.js` must exist in both layouts, or it'll work in development and crash on `npx gitlore`. This is the class of bug that caused `--web` to throw `ENOENT: node_modules/web/dist/index.html` on every published version up through 1.4.2 — the CI smoke test only exercised `--json` and missed it entirely.
+
+Verify on every audit:
+
+- **`files` field in `apps/cli/package.json`** — does it include everything the runtime touches? Currently `["dist"]`. If the CLI reads anything outside `dist/` at runtime (web assets, templates, config defaults, etc.), it's a ticking bomb. Grep `src/` for `readFileSync`, `existsSync`, `createReadStream`, `import()`, and any `new URL(..., import.meta.url)` — every resolved path must land under `dist/` after build.
+- **Every `new URL(..., import.meta.url)` in `src/`** — trace the resolved path in **both** the monorepo layout (`apps/cli/dist/index.js`) and the published layout (`node_modules/gitlore/dist/index.js`). If they differ, the referenced asset must be bundled into `dist/` at build time via a tsup `onSuccess` hook or similar.
+- **tsup `onSuccess` copy hooks** — any script that stages assets into `dist/` must **fail loudly** when its source is missing, not silently skip. Check that each hook (currently `scripts/copy-web-dist.mjs`) has an `existsSync` guard followed by `process.exit(1)` with a helpful message that mentions the fix (e.g., "run `pnpm --filter @gitlore/web build` first, or use `pnpm build` at the repo root").
+- **Turbo build ordering via workspace deps** — if the CLI's build depends on another workspace package's output being copied in, that package must be declared as a workspace dependency of the CLI (even if only a `devDependency`), otherwise turbo runs the builds in parallel and you get flaky/broken CLI tarballs. Check `apps/cli/package.json` — any workspace package whose output ends up inside `apps/cli/dist/` must appear in `devDependencies` as `workspace:*`.
+- **`fileURLToPath` vs `URL#pathname`** — any runtime path derived from `import.meta.url` must go through `fileURLToPath`. See the bullet in §3 for the Windows rationale. This check belongs here too because the failure mode is cross-platform parity, not just web-server-specific.
+- **Install smoke test coverage** — the CI `install-smoke` job packs the tarball and installs it cleanly. It should exercise **every** user-facing code path the CLI supports, not just the happy path. Current coverage as of 1.4.3: `--json` (report shape assertions) and `--web` (HTTP probes). Flag any newly-added flag or mode that isn't covered.
+- **Pack-and-diff manually** — when in doubt, run `cd apps/cli && pnpm pack && tar -tzf gitlore-*.tgz | sort > /tmp/tarball.txt` and compare against what `src/` expects at runtime. Any `src/` file reference that isn't in the tarball is a latent crash.
+
 ## Key Files
 
 ```
@@ -84,4 +100,6 @@ apps/cli/
 
 ## How to Run
 
-Dispatch a `feature-dev:code-reviewer` agent. Start with the packaging invariant (§1), then web server security (§3), then Commander flag validation (§2). Skip style issues entirely.
+Dispatch a `feature-dev:code-reviewer` agent. Start with the packaging invariant (§1), then published-package runtime parity (§7), then web server security (§3), then Commander flag validation (§2). Skip style issues entirely.
+
+When §7 flags anything that changes what ships in the tarball, verify the fix with a real pack-and-install cycle: `cd apps/cli && pnpm pack && (in a clean /tmp dir) npm install /path/to/gitlore-*.tgz && ./node_modules/.bin/gitlore --path /some/repo --web`. Don't trust the monorepo build alone — it's precisely the layouts-are-different bugs that §7 exists to catch.
