@@ -9,7 +9,7 @@ dist/
 coverage/
 .superpowers/
 .serena
-.worktrees/
+.claude/worktrees/
 docs/
 .claude/projects/
 .sickbay/history.json
