@@ -4,11 +4,11 @@ import { hierarchy, treemap, treemapSquarify } from 'd3-hierarchy';
 
 import { categoryColor } from '../../utils/colors';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 import type { HierarchyRectangularNode } from 'd3-hierarchy';
 
 interface ChurnTreemapProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
 }
@@ -22,7 +22,7 @@ interface TreeNode {
   children?: TreeNode[];
 }
 
-function buildTree(report: GitloreReport): TreeNode {
+function buildTree(report: GitrelicReport): TreeNode {
   const root: TreeNode = { name: 'root', children: [] };
   const dirMap = new Map<string, TreeNode>();
 

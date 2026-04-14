@@ -1,10 +1,10 @@
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath, fmt } from '../theme';
 
-import type { FileBlastRadius, GitloreReport } from '@gitlore/core';
+import type { FileBlastRadius, GitrelicReport } from '@gitrelic/core';
 
 interface BlastRadiusTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   onSelectFile: (file: string) => void;
 }
 

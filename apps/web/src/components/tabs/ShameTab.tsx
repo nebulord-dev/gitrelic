@@ -2,10 +2,10 @@ import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath } from '../theme';
 
-import type { FileForensics, GitloreReport } from '@gitlore/core';
+import type { FileForensics, GitrelicReport } from '@gitrelic/core';
 
 interface ShameTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   onSelectFile: (file: string) => void;
 }
 

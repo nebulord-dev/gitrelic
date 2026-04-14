@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface RiskHeatmapProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
 }
@@ -51,7 +51,7 @@ const RISK_SCORE: Record<string, number> = {
   low: 25,
 };
 
-export function prepareRiskRows(report: GitloreReport): RiskRow[] {
+export function prepareRiskRows(report: GitrelicReport): RiskRow[] {
   const ghostSet = new Set(report.ghostFiles.files.map((g) => g.file));
   const blastMap = new Map(report.blastRadius.files.map((b) => [b.file, b.blastScore]));
 

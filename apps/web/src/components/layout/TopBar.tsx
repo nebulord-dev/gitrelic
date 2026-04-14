@@ -2,10 +2,10 @@ import { useCallback, useState } from 'react';
 
 import { fmt } from '../theme';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface TopBarProps {
-  report: GitloreReport;
+  report: GitrelicReport;
 }
 
 export function TopBar({ report }: TopBarProps) {
@@ -45,7 +45,7 @@ export function TopBar({ report }: TopBarProps) {
             color: 'var(--text-primary)',
           }}
         >
-          GITLORE
+          GITRELIC
         </span>
         <span style={{ color: 'var(--accent-primary)', fontSize: 12 }}>{repoName}</span>
         <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>

@@ -2,10 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { scaleLinear } from 'd3-scale';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface DebtScatterProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
 }
@@ -33,7 +33,7 @@ function trendColor(trend: string, opacity: number): string {
   }
 }
 
-function prepareDebtData(report: GitloreReport): DebtPoint[] {
+function prepareDebtData(report: GitrelicReport): DebtPoint[] {
   const ageMap = new Map<string, number>();
   for (const f of report.ageMap.files) {
     ageMap.set(f.file, f.ageInDays);

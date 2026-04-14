@@ -1,10 +1,10 @@
 import Badge from '../shared/Badge';
 import { fileName } from '../theme';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface ActivityInspectorProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   file: string;
 }
 

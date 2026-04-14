@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Builds a deterministic git fixture repository for gitlore snapshot tests.
+# Builds a deterministic git fixture repository for gitrelic snapshot tests.
 #
 # Every author identity, date, and message is pinned so commit hashes and
 # analyzer outputs remain stable across runs and machines. The resulting
@@ -84,7 +84,7 @@ EOF
 cat > README.md <<'EOF'
 # sample
 
-A deterministic gitlore fixture.
+A deterministic gitrelic fixture.
 EOF
 
 cat > package.json <<'EOF'

@@ -1,26 +1,26 @@
-# GitLore — Claude Code Guide
+# GitRelic — Claude Code Guide
 
 ## Project Overview
 
-**GitLore** is a git archaeology CLI. It analyzes a git repository's _history_ to surface churn patterns, bus factor risks, file age, contributor profiles, and "cursed files" — files at the intersection of high churn, concentrated ownership, and age anomalies.
+**GitRelic** is a git archaeology CLI. It analyzes a git repository's _history_ to surface churn patterns, bus factor risks, file age, contributor profiles, and "cursed files" — files at the intersection of high churn, concentrated ownership, and age anomalies.
 
 ## Monorepo Architecture
 
 pnpm workspace + Turbo. Strict dependency order:
 
 ```
-@gitlore/core (foundation)
+@gitrelic/core (foundation)
     ↓
-@gitlore/cli (depends on core)
-@gitlore/web (independent, served by CLI --web flag)
+@gitrelic/cli (depends on core)
+@gitrelic/web (independent, served by CLI --web flag)
 ```
 
 ## Package Breakdown
 
 ### `packages/core` — Analysis Engine
 
-- `src/runner.ts` — orchestrates all analyzers, entry point is `runGitlore()`
-- `src/types.ts` — all TypeScript interfaces (`GitloreReport`, `ChurnReport`, etc.)
+- `src/runner.ts` — orchestrates all analyzers, entry point is `runGitrelic()`
+- `src/types.ts` — all TypeScript interfaces (`GitrelicReport`, `ChurnReport`, etc.)
 - `src/utils/git.ts` — raw git primitives (parsing `git log`, `git ls-files`)
 - `src/analyzers/` — 22 analyzers, each with a corresponding `.test.ts`:
   - `churn.ts` — file churn frequency analysis
@@ -53,7 +53,7 @@ pnpm workspace + Turbo. Strict dependency order:
 
 ### `apps/web` — Web Dashboard
 
-- `src/App.tsx` — loads `/gitlore-report.json`, normalizes missing fields via `utils/normalizeReport.ts`, then renders `Shell`
+- `src/App.tsx` — loads `/gitrelic-report.json`, normalizes missing fields via `utils/normalizeReport.ts`, then renders `Shell`
 - `src/utils/normalizeReport.ts` — fills empty defaults for analyzer fields missing from older reports so tabs don't crash
 - `src/components/layout/Shell.tsx` — top-level layout (sidebar + top bar + main pane + bottom panel + inspector)
 - `src/components/layout/Sidebar.tsx` — left nav, switches between overview and tab modes
@@ -61,21 +61,21 @@ pnpm workspace + Turbo. Strict dependency order:
 - `src/components/layout/InspectorPanel.tsx` — drill-down panel for the selected file/contributor/activity
 - `src/components/hero/` — D3 visualizations (commit graph, swimlanes, treemaps, force graphs, etc.). Biggest XSS surface — must only use `.text()`, never `.html()`
 - `src/components/tabs/` — 22 deep-dive tabs, one per analyzer
-- Critical rule: only `import type` from `@gitlore/core`. Value imports bundle Node.js modules into the browser build and break Vite.
+- Critical rule: only `import type` from `@gitrelic/core`. Value imports bundle Node.js modules into the browser build and break Vite.
 
 ## Key Concepts
 
 ### Report flow
 
-1. `runGitlore()` in core runs all analyzers
-2. CLI receives `GitloreReport` and renders Ink UI
-3. With `--web`: CLI starts HTTP server, serves web/dist + `/gitlore-report.json`
+1. `runGitrelic()` in core runs all analyzers
+2. CLI receives `GitrelicReport` and renders Ink UI
+3. With `--web`: CLI starts HTTP server, serves web/dist + `/gitrelic-report.json`
 
 ### Adding a new analyzer
 
 1. Create `packages/core/src/analyzers/my-analyzer.ts`
 2. Export a function `analyzeX(commits, trackedFiles): XReport`
-3. Add result to `GitloreReport` in `types.ts`
+3. Add result to `GitrelicReport` in `types.ts`
 4. Call it in `runner.ts` and include in return value
 
 ### Architectural review
@@ -104,15 +104,15 @@ Everything comes from `git log` and `git ls-files`. No external tool dependencie
 
 ## Task Management
 
-Tasks are tracked in **Jira** (nebulord.atlassian.net, project KAN, epic KAN-6 for GitLore). Use the Atlassian MCP tools to read and update tasks. Do not create or edit local task files.
+Tasks are tracked in **Jira** (nebulord.atlassian.net, project KAN, epic KAN-6 for GitRelic). Use the Atlassian MCP tools to read and update tasks. Do not create or edit local task files.
 
 ## Build Commands
 
 ```bash
 pnpm build                          # all packages
-pnpm --filter @gitlore/core build
-pnpm --filter @gitlore/cli build
-pnpm --filter @gitlore/web build
+pnpm --filter @gitrelic/core build
+pnpm --filter @gitrelic/cli build
+pnpm --filter @gitrelic/web build
 pnpm dev                            # watch all
 ```
 

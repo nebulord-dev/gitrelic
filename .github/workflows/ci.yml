@@ -127,7 +127,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Verify core runtime deps are a subset of cli runtime deps
-        # @gitlore/core is bundled into the cli at build time (noExternal), so
+        # @gitrelic/core is bundled into the cli at build time (noExternal), so
         # every runtime dep of core must ALSO be declared as a runtime dep of
         # cli — otherwise the bundled `require('...')` calls will fail at
         # install time. The smoke test below catches this for the common case,
@@ -139,7 +139,7 @@ jobs:
           CLI_DEPS=$(jq -r '.dependencies // {} | keys[]' apps/cli/package.json | sort)
           MISSING=$(comm -23 <(echo "$CORE_DEPS") <(echo "$CLI_DEPS") || true)
           if [ -n "$MISSING" ]; then
-            echo "❌ apps/cli is missing runtime deps that @gitlore/core declares:"
+            echo "❌ apps/cli is missing runtime deps that @gitrelic/core declares:"
             echo "$MISSING" | sed 's/^/    - /'
             echo ""
             echo "These need to be added to apps/cli/package.json dependencies"
@@ -158,14 +158,14 @@ jobs:
 
       - name: Install tarball in clean dir with npm
         run: |
-          # Assert exactly one gitlore-*.tgz exists. A bare glob that matches
+          # Assert exactly one gitrelic-*.tgz exists. A bare glob that matches
           # nothing would expand to the literal string and `npm install` with
           # no package spec succeeds vacuously — a silent failure mode if the
           # package is ever renamed or scoped.
           shopt -s nullglob
-          TARBALLS=("$GITHUB_WORKSPACE"/apps/cli/gitlore-*.tgz)
+          TARBALLS=("$GITHUB_WORKSPACE"/apps/cli/gitrelic-*.tgz)
           if [ ${#TARBALLS[@]} -ne 1 ]; then
-            echo "❌ Expected exactly one gitlore-*.tgz, found ${#TARBALLS[@]}:"
+            echo "❌ Expected exactly one gitrelic-*.tgz, found ${#TARBALLS[@]}:"
             printf '    %s\n' "${TARBALLS[@]}"
             echo "If the package was renamed or scoped, update this glob."
             exit 1
@@ -178,7 +178,7 @@ jobs:
       - name: Run installed cli against this repo
         run: |
           cd /tmp/smoke
-          ./node_modules/.bin/gitlore --path "$GITHUB_WORKSPACE" --json > report.json
+          ./node_modules/.bin/gitrelic --path "$GITHUB_WORKSPACE" --json > report.json
           # Sanity check: report must parse, have repoName + totalCommits, and
           # include every top-level field that runner.ts returns. If core wasn't
           # bundled, any of these will be missing or the process will crash.
@@ -217,13 +217,13 @@ jobs:
         # literal strings — no untrusted event data is interpolated.
         run: |
           cd /tmp/smoke
-          if [ ! -f node_modules/gitlore/dist/web/index.html ]; then
+          if [ ! -f node_modules/gitrelic/dist/web/index.html ]; then
             echo "dist/web/index.html is missing from the installed tarball"
             exit 1
           fi
           echo "OK: dist/web/index.html present"
 
-          ./node_modules/.bin/gitlore \
+          ./node_modules/.bin/gitrelic \
             --path "$GITHUB_WORKSPACE" \
             --since "1 month ago" \
             --web > web.log 2>&1 &
@@ -237,7 +237,7 @@ jobs:
           done
 
           ROOT_CODE=$(curl -s -o /tmp/root.html -w "%{http_code}" http://localhost:7777/)
-          REPORT_CODE=$(curl -s -o /tmp/report.json -w "%{http_code}" http://localhost:7777/gitlore-report.json)
+          REPORT_CODE=$(curl -s -o /tmp/report.json -w "%{http_code}" http://localhost:7777/gitrelic-report.json)
 
           kill "$CLI_PID" 2>/dev/null || true
 
@@ -252,12 +252,12 @@ jobs:
             exit 1
           fi
           if [ "$REPORT_CODE" != "200" ]; then
-            echo "GET /gitlore-report.json returned $REPORT_CODE, expected 200"
+            echo "GET /gitrelic-report.json returned $REPORT_CODE, expected 200"
             cat web.log
             exit 1
           fi
           if ! node -e 'JSON.parse(require("fs").readFileSync("/tmp/report.json","utf8"))'; then
-            echo "/gitlore-report.json did not return valid JSON"
+            echo "/gitrelic-report.json did not return valid JSON"
             exit 1
           fi
           echo "OK: --web served dashboard HTML + valid report JSON"

@@ -1,4 +1,4 @@
-# Contributing to GitLore
+# Contributing to GitRelic
 
 Thanks for your interest in contributing! This document covers how to get set up, how the codebase is organized, and what to expect when submitting a pull request.
 
@@ -14,8 +14,8 @@ Thanks for your interest in contributing! This document covers how to get set up
 ### Setup
 
 ```bash
-git clone https://github.com/your-username/gitlore.git
-cd gitlore
+git clone https://github.com/your-username/gitrelic.git
+cd gitrelic
 pnpm install
 pnpm build
 ```
@@ -35,13 +35,13 @@ pnpm dev
 ## Project Structure
 
 ```
-gitlore/
+gitrelic/
 ├── packages/
 │   └── core/               # Analysis engine — start here for new analyzers
 │       └── src/
 │           ├── analyzers/  # One file per analyzer (churn, bus-factor, etc.)
 │           ├── utils/      # Git primitives (parseGitLog, getTrackedFiles)
-│           ├── runner.ts   # Orchestrates all analyzers → GitloreReport
+│           ├── runner.ts   # Orchestrates all analyzers → GitrelicReport
 │           └── types.ts    # All TypeScript interfaces
 ├── apps/
 │   ├── cli/                # Terminal UI (Ink + Commander)
@@ -56,7 +56,7 @@ gitlore/
 1. Create `packages/core/src/analyzers/my-analyzer.ts`
 2. Export a function `analyzeX(commits: RawCommit[], trackedFiles: string[]): XReport`
 3. Add `XReport` (and any supporting interfaces) to `packages/core/src/types.ts`
-4. Call it in `packages/core/src/runner.ts` and include the result in the `GitloreReport` return value
+4. Call it in `packages/core/src/runner.ts` and include the result in the `GitrelicReport` return value
 5. Export any public types from `packages/core/src/index.ts`
 6. Add tests in `packages/core/src/analyzers/my-analyzer.test.ts`
 
@@ -71,10 +71,10 @@ See any existing analyzer (e.g. `churn.ts`) as a reference.
 pnpm test
 
 # Core package only (with coverage)
-pnpm --filter @gitlore/core test
+pnpm --filter @gitrelic/core test
 
 # Watch mode
-pnpm --filter @gitlore/core test -- --watch
+pnpm --filter @gitrelic/core test -- --watch
 ```
 
 Tests live next to source files (`churn.ts` → `churn.test.ts`). New code should come with tests.
@@ -93,7 +93,7 @@ Tests live next to source files (`churn.ts` → `churn.test.ts`). New code shoul
 ## Reporting Issues
 
 Open a GitHub issue with:
-- What you were running (`gitlore --path ...`)
+- What you were running (`gitrelic --path ...`)
 - What you expected to see
 - What actually happened
 

@@ -1,10 +1,10 @@
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 
-import type { DirectoryCoverage, GitloreReport } from '@gitlore/core';
+import type { DirectoryCoverage, GitrelicReport } from '@gitrelic/core';
 
 interface TestCoverageTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
 }
 
 export function TestCoverageTab({ report }: TestCoverageTabProps) {

@@ -3,7 +3,7 @@
  * Copies the built web dashboard into the cli's own dist/ so it ships with
  * the published package.
  *
- * Context: the published `gitlore` package declares `files: ["dist"]`, so
+ * Context: the published `gitrelic` package declares `files: ["dist"]`, so
  * only `apps/cli/dist/` lands in the npm tarball. Before this script existed,
  * the CLI's `--web` flag resolved the dashboard via `../../web/dist` from
  * `import.meta.url`, which only works inside the monorepo. Once installed
@@ -15,8 +15,8 @@
  * points at `dist/web/` regardless of install location.
  *
  * This script is invoked from `apps/cli/tsup.config.ts` via `onSuccess`.
- * It assumes `@gitlore/web` has already been built — turbo enforces this
- * because `apps/cli/package.json` declares `@gitlore/web` as a devDependency.
+ * It assumes `@gitrelic/web` has already been built — turbo enforces this
+ * because `apps/cli/package.json` declares `@gitrelic/web` as a devDependency.
  */
 
 import { cpSync, existsSync, rmSync } from 'node:fs';
@@ -29,7 +29,7 @@ const CLI_DIST_WEB = resolve(__dirname, '../dist/web');
 
 if (!existsSync(WEB_DIST)) {
   console.error(`✗ web dist not found at ${WEB_DIST}`);
-  console.error('  Run `pnpm --filter @gitlore/web build` first, or use');
+  console.error('  Run `pnpm --filter @gitrelic/web build` first, or use');
   console.error('  `pnpm build` at the repo root so turbo orders the builds.');
   process.exit(1);
 }

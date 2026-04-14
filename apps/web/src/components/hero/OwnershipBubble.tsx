@@ -4,11 +4,11 @@ import { hierarchy, pack } from 'd3-hierarchy';
 
 import { authorColor } from '../../utils/colors';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 import type { HierarchyCircularNode } from 'd3-hierarchy';
 
 interface OwnershipBubbleProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
 }
@@ -22,7 +22,7 @@ export interface DirBubble {
   fileCount: number;
 }
 
-export function buildDirectoryBubbles(report: GitloreReport): DirBubble[] {
+export function buildDirectoryBubbles(report: GitrelicReport): DirBubble[] {
   // Build bus factor map
   const busFactorMap = new Map<string, string>();
   for (const f of report.busFactors.files) {

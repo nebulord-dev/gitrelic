@@ -1,5 +1,5 @@
 {
-  "name": "@gitlore/web",
+  "name": "@gitrelic/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -19,7 +19,7 @@
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@gitlore/core": "workspace:*",
+    "@gitrelic/core": "workspace:*",
     "@tailwindcss/vite": "^4.2.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

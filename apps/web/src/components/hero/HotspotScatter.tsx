@@ -4,10 +4,10 @@ import { scaleLinear } from 'd3-scale';
 
 import { categoryColor } from '../../utils/colors';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface HotspotScatterProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
 }
@@ -22,7 +22,7 @@ export interface ScatterPoint {
 
 const PADDING = { top: 20, right: 20, bottom: 40, left: 50 };
 
-export function prepareScatterData(report: GitloreReport): ScatterPoint[] {
+export function prepareScatterData(report: GitrelicReport): ScatterPoint[] {
   const locMap = new Map<string, number>();
   for (const f of report.loc.files) {
     locMap.set(f.file, f.lines);

@@ -1,11 +1,11 @@
-# GITLORE
+# GITRELIC
 
 Git archaeology — understand the history and health of your codebase.
 
 
 ## What it does
 
-Run `gitlore` in any git repository and get a narrative health report on the codebase's *history* — not just its current state.
+Run `gitrelic` in any git repository and get a narrative health report on the codebase's *history* — not just its current state.
 
 ### Churn & Complexity
 
@@ -45,30 +45,30 @@ Run `gitlore` in any git repository and get a narrative health report on the cod
 
 ```bash
 # Analyze current directory
-gitlore
+gitrelic
 
 # Analyze a specific repo
-gitlore --path ~/projects/my-app
+gitrelic --path ~/projects/my-app
 
 # Open web dashboard
-gitlore --path ~/projects/my-app --web
+gitrelic --path ~/projects/my-app --web
 
 # Analyze only the last 6 months
-gitlore --path ~/projects/my-app --since "6 months ago"
+gitrelic --path ~/projects/my-app --since "6 months ago"
 
 # Output JSON for piping
-gitlore --path ~/projects/my-app --json > gitlore-report.json
+gitrelic --path ~/projects/my-app --json > gitrelic-report.json
 
 # Show commit message shame leaderboard
-gitlore --path ~/projects/my-app --shame
+gitrelic --path ~/projects/my-app --shame
 
 # Show parallel development panel
-gitlore --path ~/projects/my-app --parallel
+gitrelic --path ~/projects/my-app --parallel
 ```
 
-## How GitLore scores files
+## How GitRelic scores files
 
-GitLore uses three scoring systems, each 0–100:
+GitRelic uses three scoring systems, each 0–100:
 
 ### Churn score
 
@@ -113,7 +113,7 @@ pnpm monorepo + Turbo:
 ## Monorepo
 
 ```text
-gitlore/
+gitrelic/
 ├── packages/
 │   └── core/           # Analysis engine
 ├── apps/

@@ -5,17 +5,17 @@ import { fileURLToPath } from 'node:url';
 
 import { useState, useEffect } from 'react';
 
-import { runGitlore } from '@gitlore/core';
+import { runGitrelic } from '@gitrelic/core';
 import { program } from 'commander';
 import { render } from 'ink';
 import open from 'open';
 
 import { App } from './components/App.js';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 program
-  .name('gitlore')
+  .name('gitrelic')
   .description('Git archaeology — understand the history and health of your codebase')
   .version('0.1.0')
   .option('-p, --path <path>', 'Path to the git repository', process.cwd())
@@ -58,7 +58,7 @@ if (!existsSync(path.join(repoPath, '.git'))) {
 if (opts.json) {
   // Non-interactive JSON mode
   try {
-    const report = await runGitlore({
+    const report = await runGitrelic({
       repoPath,
       branch: opts.branch,
       since,
@@ -72,13 +72,13 @@ if (opts.json) {
 }
 
 // Interactive Ink mode.
-function GitloreApp() {
-  const [report, setReport] = useState<GitloreReport | null>(null);
+function GitrelicApp() {
+  const [report, setReport] = useState<GitrelicReport | null>(null);
   const [progress, setProgress] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    runGitlore({
+    runGitrelic({
       repoPath,
       branch: opts.branch,
       since,
@@ -114,9 +114,9 @@ function GitloreApp() {
 }
 
 // Capture the render instance so the error path can unmount cleanly.
-const inkInstance = render(<GitloreApp />);
+const inkInstance = render(<GitrelicApp />);
 
-async function serveWebDashboard(report: GitloreReport): Promise<void> {
+async function serveWebDashboard(report: GitrelicReport): Promise<void> {
   // The web dashboard is copied into the cli's own dist/web/ at build time
   // (see scripts/copy-web-dist.mjs) so it ships inside the published package
   // and resolves identically in the monorepo and in node_modules installs.
@@ -130,7 +130,7 @@ async function serveWebDashboard(report: GitloreReport): Promise<void> {
   const port = await getFreePort(7777);
 
   const server = createServer((req, res) => {
-    if (req.url === '/gitlore-report.json') {
+    if (req.url === '/gitrelic-report.json') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(report));
       return;

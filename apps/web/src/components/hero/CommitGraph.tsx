@@ -4,10 +4,10 @@ import { CommitBranches } from './CommitBranches';
 import { CommitDAG } from './CommitDAG';
 import { CommitHeatmap } from './CommitHeatmap';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface CommitGraphProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
 }

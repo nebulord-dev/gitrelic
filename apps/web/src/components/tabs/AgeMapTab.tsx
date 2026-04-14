@@ -2,10 +2,10 @@ import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { ageColor, fileName, filePath, fmt } from '../theme';
 
-import type { FileAge, GitloreReport } from '@gitlore/core';
+import type { FileAge, GitrelicReport } from '@gitrelic/core';
 
 interface AgeMapTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   onSelectFile: (file: string) => void;
 }
 

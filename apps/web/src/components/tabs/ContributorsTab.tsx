@@ -2,10 +2,10 @@ import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fmt } from '../theme';
 
-import type { Contributor, GitloreReport } from '@gitlore/core';
+import type { Contributor, GitrelicReport } from '@gitrelic/core';
 
 interface ContributorsTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
 }
 
 export function ContributorsTab({ report }: ContributorsTabProps) {

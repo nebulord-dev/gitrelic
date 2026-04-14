@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import { buildDirectoryBubbles } from './OwnershipBubble';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
-function makeReport(overrides: Partial<GitloreReport> = {}): GitloreReport {
+function makeReport(overrides: Partial<GitrelicReport> = {}): GitrelicReport {
   return {
     loc: {
       totalFiles: 2,
@@ -40,7 +40,7 @@ function makeReport(overrides: Partial<GitloreReport> = {}): GitloreReport {
       summary: '',
     },
     ...overrides,
-  } as GitloreReport;
+  } as GitrelicReport;
 }
 
 describe('buildDirectoryBubbles', () => {

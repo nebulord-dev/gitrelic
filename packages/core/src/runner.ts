@@ -39,7 +39,7 @@ import type {
   DeadCodeReport,
   ForensicsReport,
   GhostFilesReport,
-  GitloreReport,
+  GitrelicReport,
   HotspotClusterReport,
   HotspotReport,
   KnowledgeConcentrationReport,
@@ -47,7 +47,7 @@ import type {
   ParallelDevReport,
   RenameTrackingReport,
   RewriteRatioReport,
-  RunGitloreOptions,
+  RunGitrelicOptions,
   TestCoverageProxyReport,
 } from './types.js';
 
@@ -59,7 +59,7 @@ function safeRun<T>(name: string, fn: () => T, fallback: T): T {
     return fn();
   } catch (err) {
     process.stderr.write(
-      `[gitlore] analyzer "${name}" failed: ${(err as Error).message ?? String(err)}\n`,
+      `[gitrelic] analyzer "${name}" failed: ${(err as Error).message ?? String(err)}\n`,
     );
     return fallback;
   }
@@ -70,7 +70,7 @@ async function safeRunAsync<T>(name: string, fn: () => Promise<T>, fallback: T):
     return await fn();
   } catch (err) {
     process.stderr.write(
-      `[gitlore] analyzer "${name}" failed: ${(err as Error).message ?? String(err)}\n`,
+      `[gitrelic] analyzer "${name}" failed: ${(err as Error).message ?? String(err)}\n`,
     );
     return fallback;
   }
@@ -213,11 +213,11 @@ const EMPTY_RENAME_TRACKING: RenameTrackingReport = {
 const EMPTY_CURSED_FILES: CursedFile[] = [];
 
 /**
- * Runs the GitLore analysis on a given git repository and returns a comprehensive report.
+ * Runs the GitRelic analysis on a given git repository and returns a comprehensive report.
  * @param options - The options for running the analysis, including repository path, branch, and since date.
- * @Returns a GitloreReport containing churn, bus factor, age map, contributors, cursed files, and forensics data.
+ * @Returns a GitrelicReport containing churn, bus factor, age map, contributors, cursed files, and forensics data.
  */
-export async function runGitlore(options: RunGitloreOptions): Promise<GitloreReport> {
+export async function runGitrelic(options: RunGitrelicOptions): Promise<GitrelicReport> {
   const { repoPath, branch, since, onProgress } = options;
   const repoName = path.basename(repoPath);
 

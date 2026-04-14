@@ -4,10 +4,10 @@ import { scaleLinear, scaleTime } from 'd3-scale';
 
 import { authorColor } from '../../utils/colors';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface ContributorSwimlanesProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   selectedFile: string | null;
   selectedContributor: string | null;
   onSelectFile: (file: string) => void;
@@ -34,7 +34,7 @@ const LANE_HEIGHT = 56;
 const HEATSTRIP_H = 8;
 const LABEL_WIDTH = 130;
 
-export function prepareSwimlaneData(report: GitloreReport): SwimLane[] {
+export function prepareSwimlaneData(report: GitrelicReport): SwimLane[] {
   const commits = report.commits ?? [];
   const hotspotFiles = new Set(
     report.hotspots.files

@@ -1,10 +1,10 @@
 import Badge from '../shared/Badge';
 import { fileName, fmt } from '../theme';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface ContributorsInspectorProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   file: string | null;
   contributor: string | null;
   onSelectFile: (file: string) => void;

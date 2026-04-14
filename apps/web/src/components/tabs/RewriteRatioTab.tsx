@@ -1,10 +1,10 @@
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath, fmt } from '../theme';
 
-import type { FileRewriteRatio, GitloreReport } from '@gitlore/core';
+import type { FileRewriteRatio, GitrelicReport } from '@gitrelic/core';
 
 interface RewriteRatioTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   onSelectFile: (file: string) => void;
 }
 

@@ -1,10 +1,10 @@
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fmt } from '../theme';
 
-import type { CoAuthorPair, GitloreReport } from '@gitlore/core';
+import type { CoAuthorPair, GitrelicReport } from '@gitrelic/core';
 
 interface CoAuthorsTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
 }
 
 export function CoAuthorsTab({ report }: CoAuthorsTabProps) {

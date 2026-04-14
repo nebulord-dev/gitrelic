@@ -3,10 +3,10 @@ import { type Column, SortableTable } from '../shared/SortableTable';
 import { Tooltip } from '../shared/Tooltip';
 import { fileName, filePath, fmt } from '../theme';
 
-import type { CursedFile, GitloreReport } from '@gitlore/core';
+import type { CursedFile, GitrelicReport } from '@gitrelic/core';
 
 interface CursedFilesTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   onSelectFile: (file: string) => void;
 }
 
@@ -21,7 +21,7 @@ function reasonVariant(
   return 'warning';
 }
 
-function getAuthors(file: string, report: GitloreReport): string[] | undefined {
+function getAuthors(file: string, report: GitrelicReport): string[] | undefined {
   const bf = report.busFactors.files.find((f) => f.file === file);
   return bf ? bf.authors : undefined;
 }
