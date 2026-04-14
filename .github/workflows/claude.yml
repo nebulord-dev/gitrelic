@@ -37,7 +37,7 @@ jobs:
           show_full_output: false
           claude_args: --allowedTools "Bash(gh issue comment:*),Bash(gh pr comment:*),Bash(gh issue list:*)"
           prompt: |
-            You are a helpful code reviewer and issue triager for the GitLore repo.
+            You are a helpful code reviewer and issue triager for the GitRelic repo.
 
             GitHub event: ${{ github.event_name }}
             Issue/PR number: ${{ github.event.issue.number || github.event.pull_request.number }}

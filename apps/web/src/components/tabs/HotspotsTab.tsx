@@ -4,10 +4,10 @@ import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath, fmt, severityColor } from '../theme';
 
-import type { GitloreReport, HotspotEntry } from '@gitlore/core';
+import type { GitrelicReport, HotspotEntry } from '@gitrelic/core';
 
 interface HotspotsTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
 }
@@ -17,7 +17,7 @@ interface Signal {
   title?: string;
 }
 
-function getSignals(file: string, report: GitloreReport): Signal[] {
+function getSignals(file: string, report: GitrelicReport): Signal[] {
   const signals: Signal[] = [];
   const hotspot = report.hotspots.topHotspots.find((h) => h.file === file);
   if (hotspot?.category === 'critical') signals.push({ label: 'critical' });
@@ -54,7 +54,7 @@ function signalVariant(
   return 'parallel';
 }
 
-function ExpandedDetail({ file, report }: { file: string; report: GitloreReport }) {
+function ExpandedDetail({ file, report }: { file: string; report: GitrelicReport }) {
   const bf = report.busFactors.files.find((f) => f.file === file);
   const cp = report.coupling.fileProfiles.find((f) => f.file === file);
   const sh = report.forensics.files.find((f) => f.file === file);

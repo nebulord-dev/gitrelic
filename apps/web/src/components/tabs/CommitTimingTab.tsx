@@ -2,10 +2,10 @@ import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath } from '../theme';
 
-import type { FileTimingProfile, GitloreReport } from '@gitlore/core';
+import type { FileTimingProfile, GitrelicReport } from '@gitrelic/core';
 
 interface CommitTimingTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   onSelectFile: (file: string) => void;
 }
 

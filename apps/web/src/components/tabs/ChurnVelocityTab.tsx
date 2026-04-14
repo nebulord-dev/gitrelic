@@ -2,10 +2,10 @@ import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath } from '../theme';
 
-import type { FileChurnVelocity, GitloreReport } from '@gitlore/core';
+import type { FileChurnVelocity, GitrelicReport } from '@gitrelic/core';
 
 interface ChurnVelocityTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   onSelectFile: (file: string) => void;
 }
 

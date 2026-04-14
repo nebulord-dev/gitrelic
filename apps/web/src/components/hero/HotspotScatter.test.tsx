@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import { prepareScatterData } from './HotspotScatter';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
-function makeReport(): GitloreReport {
+function makeReport(): GitrelicReport {
   return {
     churn: {
       files: [
@@ -33,7 +33,7 @@ function makeReport(): GitloreReport {
       topHotspots: [],
       summary: '',
     },
-  } as Partial<GitloreReport> as GitloreReport;
+  } as Partial<GitrelicReport> as GitrelicReport;
 }
 
 describe('prepareScatterData', () => {

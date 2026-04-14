@@ -2,7 +2,7 @@
 layout: home
 
 hero:
-  name: GitLore
+  name: GitRelic
   text: Git Archaeology
   tagline: Surface churn patterns, bus factor risks, hotspots, and cursed files from your repo's git history.
   actions:
@@ -11,7 +11,7 @@ hero:
       link: /guide/introduction
     - theme: alt
       text: View on GitHub
-      link: https://github.com/nebulord-dev/gitlore
+      link: https://github.com/nebulord-dev/gitrelic
 
 features:
   - title: 22 Analyzers

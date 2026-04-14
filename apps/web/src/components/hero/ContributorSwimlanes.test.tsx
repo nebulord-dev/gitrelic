@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { prepareSwimlaneData } from './ContributorSwimlanes';
 
-import type { GitloreReport, RawCommit } from '@gitlore/core';
+import type { GitrelicReport, RawCommit } from '@gitrelic/core';
 
 function makeCommit(overrides: Partial<RawCommit>): RawCommit {
   return {
@@ -19,7 +19,7 @@ function makeCommit(overrides: Partial<RawCommit>): RawCommit {
   };
 }
 
-function makeReport(commits: RawCommit[]): GitloreReport {
+function makeReport(commits: RawCommit[]): GitrelicReport {
   return {
     commits,
     hotspots: {
@@ -61,7 +61,7 @@ function makeReport(commits: RawCommit[]): GitloreReport {
       topContributor: {} as any,
       summary: '',
     },
-  } as Partial<GitloreReport> as GitloreReport;
+  } as Partial<GitrelicReport> as GitrelicReport;
 }
 
 describe('prepareSwimlaneData', () => {

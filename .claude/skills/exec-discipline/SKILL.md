@@ -7,11 +7,11 @@ description: "Enforce use of utils/git.ts for all git command execution — neve
 
 ## Rule
 
-All git command execution in `@gitlore/core` MUST go through `packages/core/src/utils/git.ts`. No other file should import `execa` directly for running git commands.
+All git command execution in `@gitrelic/core` MUST go through `packages/core/src/utils/git.ts`. No other file should import `execa` directly for running git commands.
 
 ## Why
 
-Gitlore's core package runs many git commands across its analyzers. Centralizing execution through `utils/git.ts` ensures:
+Gitrelic's core package runs many git commands across its analyzers. Centralizing execution through `utils/git.ts` ensures:
 
 - **Consistent error handling** — one place to catch and wrap git failures
 - **Consistent `cwd` passing** — every git call needs `repoPath`, enforced by the function signatures

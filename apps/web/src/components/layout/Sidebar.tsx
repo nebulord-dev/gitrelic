@@ -1,8 +1,8 @@
 import type { DashboardMode, NavItem } from '../../hooks/useSelection';
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface SidebarProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   activeItem: NavItem;
   onNavigate: (item: NavItem) => void;
   dashboardMode: DashboardMode;
@@ -26,7 +26,7 @@ const DASHBOARD_SUB_ITEMS: { mode: DashboardMode; label: string }[] = [
   { mode: 'tech-debt', label: 'Tech Debt' },
 ];
 
-function getNavGroups(report: GitloreReport): NavGroup[] {
+function getNavGroups(report: GitrelicReport): NavGroup[] {
   return [
     {
       label: 'Overview',

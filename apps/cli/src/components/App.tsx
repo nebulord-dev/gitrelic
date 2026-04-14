@@ -1,10 +1,10 @@
 import { Box, Text, Newline } from 'ink';
 import Spinner from 'ink-spinner';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface Props {
-  report: GitloreReport | null;
+  report: GitrelicReport | null;
   progress: string;
   error: string | null;
   showShame?: boolean;
@@ -102,7 +102,7 @@ function Banner({ repoName }: { repoName: string }) {
   );
 }
 
-function MetaPanel({ report }: { report: GitloreReport }) {
+function MetaPanel({ report }: { report: GitrelicReport }) {
   const { meta } = report;
   const years = (meta.ageInDays / 365).toFixed(1);
   return (
@@ -146,7 +146,7 @@ function MetaPanel({ report }: { report: GitloreReport }) {
   );
 }
 
-// function ChurnPanel({ report }: { report: GitloreReport }) {
+// function ChurnPanel({ report }: { report: GitrelicReport }) {
 //   const { churn } = report;
 //   return (
 //     <Box flexDirection="column">
@@ -171,7 +171,7 @@ function MetaPanel({ report }: { report: GitloreReport }) {
 //   );
 // }
 
-// function CursedFilesPanel({ report }: { report: GitloreReport }) {
+// function CursedFilesPanel({ report }: { report: GitrelicReport }) {
 //   if (report.cursedFiles.length === 0) return null;
 //   return (
 //     <Box flexDirection="column">
@@ -197,7 +197,7 @@ function MetaPanel({ report }: { report: GitloreReport }) {
 //   );
 // }
 
-function ContributorPanel({ report }: { report: GitloreReport }) {
+function ContributorPanel({ report }: { report: GitrelicReport }) {
   const { contributors } = report;
   return (
     <Box flexDirection="column">
@@ -235,7 +235,7 @@ function LaunchPanel() {
   );
 }
 
-// function BusFactorPanel({ report }: { report: GitloreReport }) {
+// function BusFactorPanel({ report }: { report: GitrelicReport }) {
 //   const { busFactors } = report;
 //   if (busFactors.criticalFiles.length === 0)
 //     return (
@@ -266,7 +266,7 @@ function LaunchPanel() {
 //   );
 // }
 
-// function HotspotPanel({ report }: { report: GitloreReport }) {
+// function HotspotPanel({ report }: { report: GitrelicReport }) {
 //   const { hotspots } = report;
 //   if (hotspots.files.length === 0) return null;
 
@@ -320,7 +320,7 @@ function LaunchPanel() {
 //   );
 // }
 
-// function ClusteringPanel({ report }: { report: GitloreReport }) {
+// function ClusteringPanel({ report }: { report: GitrelicReport }) {
 //   const { hotspotClusters } = report;
 //   if (hotspotClusters.clusters.length === 0) return null;
 
@@ -369,7 +369,7 @@ function LaunchPanel() {
 //   );
 // }
 
-// function CouplingPanel({ report }: { report: GitloreReport }) {
+// function CouplingPanel({ report }: { report: GitrelicReport }) {
 //   const { coupling } = report;
 //   if (coupling.pairs.length === 0) return null;
 //   return (
@@ -397,7 +397,7 @@ function LaunchPanel() {
 //   );
 // }
 
-// function VelocityPanel({ report }: { report: GitloreReport }) {
+// function VelocityPanel({ report }: { report: GitrelicReport }) {
 //   const { churnVelocity } = report;
 //   if (churnVelocity.acceleratingFiles.length === 0) return null;
 //   return (
@@ -424,7 +424,7 @@ function LaunchPanel() {
 //   );
 // }
 
-// function RewritePanel({ report }: { report: GitloreReport }) {
+// function RewritePanel({ report }: { report: GitrelicReport }) {
 //   const { rewriteRatio } = report;
 //   if (rewriteRatio.topRewriters.length === 0) return null;
 //   return (
@@ -450,7 +450,7 @@ function LaunchPanel() {
 //   );
 // }
 
-// function BlastRadiusPanel({ report }: { report: GitloreReport }) {
+// function BlastRadiusPanel({ report }: { report: GitrelicReport }) {
 //   const { blastRadius } = report;
 //   if (blastRadius.topBlasters.length === 0) return null;
 //   return (
@@ -476,7 +476,7 @@ function LaunchPanel() {
 //   );
 // }
 
-// function DeadCodePanel({ report }: { report: GitloreReport }) {
+// function DeadCodePanel({ report }: { report: GitrelicReport }) {
 //   const { deadCode } = report;
 //   if (deadCode.candidates.length === 0) return null;
 //   return (
@@ -505,7 +505,7 @@ function LaunchPanel() {
 //   );
 // }
 
-// function TestCoveragePanel({ report }: { report: GitloreReport }) {
+// function TestCoveragePanel({ report }: { report: GitrelicReport }) {
 //   const { testCoverage } = report;
 //   if (testCoverage.uncoveredDirectories.length === 0) {
 //     return (
@@ -537,7 +537,7 @@ function LaunchPanel() {
 //   );
 // }
 
-// function GhostFilesPanel({ report }: { report: GitloreReport }) {
+// function GhostFilesPanel({ report }: { report: GitrelicReport }) {
 //   const { ghostFiles } = report;
 //   if (ghostFiles.files.length === 0) return null;
 //   return (
@@ -566,7 +566,7 @@ function LaunchPanel() {
 //   );
 // }
 
-// function KnowledgePanel({ report }: { report: GitloreReport }) {
+// function KnowledgePanel({ report }: { report: GitrelicReport }) {
 //   const { knowledgeConcentration } = report;
 //   return (
 //     <Box flexDirection="column">
@@ -593,7 +593,7 @@ function LaunchPanel() {
 //   );
 // }
 
-// function CoAuthorPanel({ report }: { report: GitloreReport }) {
+// function CoAuthorPanel({ report }: { report: GitrelicReport }) {
 //   const { coAuthors } = report;
 //   if (coAuthors.totalCoAuthoredCommits === 0) return null;
 //   return (
@@ -621,7 +621,7 @@ function LaunchPanel() {
 //   );
 // }
 
-// function ShamePanel({ report }: { report: GitloreReport }) {
+// function ShamePanel({ report }: { report: GitrelicReport }) {
 //   const { forensics } = report;
 //   if (forensics.shameLeaderboard.length === 0) {
 //     return (
@@ -662,7 +662,7 @@ function LaunchPanel() {
 //   );
 // }
 
-// function ParallelPanel({ report }: { report: GitloreReport }) {
+// function ParallelPanel({ report }: { report: GitrelicReport }) {
 //   const { parallelDev } = report;
 //   if (parallelDev.hotFiles.length === 0) {
 //     return (

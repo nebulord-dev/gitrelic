@@ -1,10 +1,10 @@
 import { defineConfig } from 'vitepress';
 
 export default defineConfig({
-  title: 'GitLore',
+  title: 'GitRelic',
   description:
     'Git archaeology for your repository — churn, bus factor, hotspots, and cursed files.',
-  base: '/gitlore/',
+  base: '/gitrelic/',
   appearance: 'dark',
   lastUpdated: true,
 
@@ -12,11 +12,11 @@ export default defineConfig({
     nav: [
       {
         text: 'Changelog',
-        link: 'https://github.com/nebulord-dev/gitlore/blob/main/CHANGELOG.md',
+        link: 'https://github.com/nebulord-dev/gitrelic/blob/main/CHANGELOG.md',
       },
       {
         text: 'Contributing',
-        link: 'https://github.com/nebulord-dev/gitlore/blob/main/CONTRIBUTING.md',
+        link: 'https://github.com/nebulord-dev/gitrelic/blob/main/CONTRIBUTING.md',
       },
     ],
 

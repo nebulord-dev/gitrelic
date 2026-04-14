@@ -2,7 +2,7 @@
 
 import type { RawCommit } from './utils/git.js';
 
-export interface GitloreReport {
+export interface GitrelicReport {
   timestamp: string;
   repoPath: string;
   repoName: string;
@@ -492,7 +492,7 @@ export interface RenameTrackingReport {
 
 // ─── Runner options ────────────────────────────────────────────────────────────
 
-export interface RunGitloreOptions {
+export interface RunGitrelicOptions {
   repoPath: string;
   branch?: string;
   since?: string; // e.g. "6 months ago", "2023-01-01"

@@ -1,14 +1,14 @@
 {
-  "name": "gitlore",
-  "version": "1.5.0",
+  "name": "gitrelic",
+  "version": "0.1.0",
   "description": "Git archaeology CLI — surface churn, bus factor, hotspots, and cursed files from your repo's git history",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nebulord-dev/gitlore"
+    "url": "https://github.com/nebulord-dev/gitrelic"
   },
   "bin": {
-    "gitlore": "./dist/index.js"
+    "gitrelic": "./dist/index.js"
   },
   "files": [
     "dist"
@@ -35,8 +35,8 @@
     "react": "^19.2.4"
   },
   "devDependencies": {
-    "@gitlore/core": "workspace:*",
-    "@gitlore/web": "workspace:*",
+    "@gitrelic/core": "workspace:*",
+    "@gitrelic/web": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "tsup": "catalog:",

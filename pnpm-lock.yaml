@@ -90,10 +90,10 @@ importers:
         specifier: ^19.2.4
         version: 19.2.4
     devDependencies:
-      '@gitlore/core':
+      '@gitrelic/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@gitlore/web':
+      '@gitrelic/web':
         specifier: workspace:*
         version: link:../web
       '@types/node':
@@ -136,7 +136,7 @@ importers:
         specifier: ^19.2.4
         version: 19.2.4(react@19.2.4)
     devDependencies:
-      '@gitlore/core':
+      '@gitrelic/core':
         specifier: workspace:*
         version: link:../../packages/core
       '@tailwindcss/vite':

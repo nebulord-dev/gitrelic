@@ -6,10 +6,10 @@ import { FileInspector } from '../inspector/FileInspector';
 import { GuidePanel } from '../inspector/GuidePanel';
 
 import type { InspectorTab } from '../../hooks/useSelection';
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface InspectorPanelProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   selectedFile: string | null;
   selectedContributor: string | null;
   activeTab: InspectorTab;

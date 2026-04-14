@@ -27,7 +27,7 @@ If applicable, paste terminal output or screenshots.
 
 - OS: [e.g. macOS 15, Ubuntu 24.04]
 - Node.js version: [e.g. 22.x]
-- GitLore version: [e.g. 1.0.0]
+- GitRelic version: [e.g. 1.0.0]
 
 **Additional context**
 Add any other context about the problem here.

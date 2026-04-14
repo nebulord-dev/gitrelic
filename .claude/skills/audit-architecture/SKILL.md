@@ -1,25 +1,25 @@
 ---
 name: audit-architecture
-description: Use when auditing GitLore's monorepo architecture for boundary violations, dependency order problems, publishing invariants, or cross-package import issues. Run before merging large feature branches or after adding new packages.
+description: Use when auditing GitRelic's monorepo architecture for boundary violations, dependency order problems, publishing invariants, or cross-package import issues. Run before merging large feature branches or after adding new packages.
 ---
 
 # Audit: Monorepo Architecture
 
-Dispatch the `monorepo-architect` agent (`.claude/agents/monorepo-architect.md`) to review structural integrity across all GitLore packages.
+Dispatch the `monorepo-architect` agent (`.claude/agents/monorepo-architect.md`) to review structural integrity across all GitRelic packages.
 
 ## Checklist
 
 ### 1. Package Boundary Violations
 
-**Critical rule:** `apps/web` must NEVER import values from `@gitlore/core`. Only `import type` is allowed — value imports would bundle Node.js modules (`execa`, `node:fs`, `node:http`) into the browser build and break Vite.
+**Critical rule:** `apps/web` must NEVER import values from `@gitrelic/core`. Only `import type` is allowed — value imports would bundle Node.js modules (`execa`, `node:fs`, `node:http`) into the browser build and break Vite.
 
-- Run: `grep -r "from '@gitlore/core'" apps/web/src` — every match must be `import type`
-- Run: `grep -r "require('@gitlore/core')" apps/web/src` — must be zero
+- Run: `grep -r "from '@gitrelic/core'" apps/web/src` — every match must be `import type`
+- Run: `grep -r "require('@gitrelic/core')" apps/web/src` — must be zero
 - Check for any shared constants (thresholds, weights) that should be duplicated in `apps/web/src/utils/`, not imported from core
 
 ### 2. Dependency Direction
 
-The enforced direction is: `@gitlore/core` → `@gitlore/cli` and `@gitlore/web` (the latter two are siblings, neither depends on the other).
+The enforced direction is: `@gitrelic/core` → `@gitrelic/cli` and `@gitrelic/web` (the latter two are siblings, neither depends on the other).
 
 - `packages/core` must not import from `apps/cli` or `apps/web`
 - `apps/cli` must not import from `apps/web` (the web dist/ is served as static files at runtime, not imported at build time)
@@ -29,11 +29,11 @@ The enforced direction is: `@gitlore/core` → `@gitlore/cli` and `@gitlore/web`
 
 ### 3. Publishing Invariant (High-Priority)
 
-`apps/cli/package.json` (the published `gitlore` package) declares `@gitlore/core: workspace:*` as a runtime dependency. But `packages/core/package.json` is `"private": true`. Once `pnpm publish` rewrites `workspace:*` to a real version, `npm install gitlore` will fail because `@gitlore/core` was never published.
+`apps/cli/package.json` (the published `gitrelic` package) declares `@gitrelic/core: workspace:*` as a runtime dependency. But `packages/core/package.json` is `"private": true`. Once `pnpm publish` rewrites `workspace:*` to a real version, `npm install gitrelic` will fail because `@gitrelic/core` was never published.
 
 Three possible fixes — verify which one is in place:
 
-1. **Bundle core into cli** — `apps/cli/tsup.config.ts` has `noExternal: ['@gitlore/core']`, so core's source is inlined at build time. Core stays private. In this case, every runtime dep of core (currently just `execa`) must also appear in `apps/cli/package.json` dependencies, because the bundled code does `require('execa')` against cli's own `node_modules`
+1. **Bundle core into cli** — `apps/cli/tsup.config.ts` has `noExternal: ['@gitrelic/core']`, so core's source is inlined at build time. Core stays private. In this case, every runtime dep of core (currently just `execa`) must also appear in `apps/cli/package.json` dependencies, because the bundled code does `require('execa')` against cli's own `node_modules`
 2. **Publish core** — remove `"private": true` from `packages/core/package.json` and publish it separately
 3. **Don't publish cli yet** — fine for pre-release, but flag as a known blocker
 
@@ -57,11 +57,11 @@ All git command execution MUST go through `packages/core/src/utils/git.ts`. See 
 ### 6. Type Export Discipline
 
 - `packages/core/src/index.ts` — what's exported? Types should be exported; internal implementation (individual analyzer functions, git utils) should only be exported if intentionally public API
-- `apps/cli` and `apps/web` should import from `@gitlore/core` via the package name (workspace import), not via relative paths like `../../../packages/core/src`. Relative path imports across packages bypass the build system and cause subtle bugs
+- `apps/cli` and `apps/web` should import from `@gitrelic/core` via the package name (workspace import), not via relative paths like `../../../packages/core/src`. Relative path imports across packages bypass the build system and cause subtle bugs
 
 ### 7. Linting and Formatting Consistency
 
-GitLore uses oxlint + oxfmt at the root (NOT ESLint/Prettier).
+GitRelic uses oxlint + oxfmt at the root (NOT ESLint/Prettier).
 
 - Check root `oxlint.config.ts` and `.oxfmtrc.json` exist and are wired in
 - Run `pnpm lint` and `pnpm format:check` — both must pass
@@ -76,12 +76,12 @@ If any new package was added since the last audit:
 - Does it have its own `tsconfig.json` extending the root (if there is one)?
 - Does it have a `build` script that tsup or Vite can run?
 - Does `turbo.json` need any package-specific overrides?
-- Does the published `gitlore` CLI need to depend on it?
+- Does the published `gitrelic` CLI need to depend on it?
 
 ## Key Files
 
 ```
-gitlore/
+gitrelic/
 ├── turbo.json                           # Build pipeline
 ├── pnpm-workspace.yaml                  # Workspace members + catalog
 ├── oxlint.config.ts, .oxfmtrc.json      # Linting/formatting
@@ -91,10 +91,10 @@ gitlore/
 │   ├── src/utils/git.ts                 # Exec-discipline boundary
 │   └── src/analyzers/rename-tracking.ts # Known exec-discipline violator
 ├── apps/cli/
-│   ├── package.json                     # Published — dep on @gitlore/core
+│   ├── package.json                     # Published — dep on @gitrelic/core
 │   └── tsup.config.ts                   # Bundling config (noExternal?)
 └── apps/web/
-    └── src/                             # grep for `from '@gitlore/core'`
+    └── src/                             # grep for `from '@gitrelic/core'`
 ```
 
 ## How to Run

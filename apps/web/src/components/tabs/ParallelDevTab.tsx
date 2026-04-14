@@ -2,10 +2,10 @@ import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath } from '../theme';
 
-import type { FileParallelDev, GitloreReport } from '@gitlore/core';
+import type { FileParallelDev, GitrelicReport } from '@gitrelic/core';
 
 interface ParallelDevTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   onSelectFile: (file: string) => void;
 }
 

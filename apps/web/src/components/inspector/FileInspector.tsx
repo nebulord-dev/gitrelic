@@ -1,10 +1,10 @@
 import Badge from '../shared/Badge';
 import { fileName, fmt, severityColor } from '../theme';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface FileInspectorProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   file: string;
   onSelectContributor: (email: string) => void;
 }
@@ -15,7 +15,7 @@ interface InspectorRow {
   color?: string;
 }
 
-function getFileData(file: string, report: GitloreReport): InspectorRow[] {
+function getFileData(file: string, report: GitrelicReport): InspectorRow[] {
   const rows: InspectorRow[] = [];
 
   const hotspot = report.hotspots.topHotspots.find((h) => h.file === file);

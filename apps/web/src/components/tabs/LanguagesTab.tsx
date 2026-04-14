@@ -1,10 +1,10 @@
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fmt } from '../theme';
 
-import type { GitloreReport, LanguageBreakdown } from '@gitlore/core';
+import type { GitrelicReport, LanguageBreakdown } from '@gitrelic/core';
 
 interface LanguagesTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
 }
 
 export function LanguagesTab({ report }: LanguagesTabProps) {

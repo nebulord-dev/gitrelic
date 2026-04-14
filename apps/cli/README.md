@@ -1,4 +1,4 @@
-# Gitlore
+# Gitrelic
 
 Git archaeology — surface churn patterns, bus factor risks, hotspots, and cursed files from your repo's git history.
 
@@ -8,29 +8,29 @@ Built on the methodology from Adam Tornhill's *Your Code as a Crime Scene* and *
 
 ```bash
 # npx
-npx gitlore --web
+npx gitrelic --web
 
 # global
-npm install -g gitlore
+npm install -g gitrelic
 ```
 
 ## Quick Start
 
 ```bash
 # Analyze current directory
-gitlore
+gitrelic
 
 # Analyze a specific repo
-gitlore --path ~/projects/my-app
+gitrelic --path ~/projects/my-app
 
 # Open web dashboard
-gitlore --path ~/projects/my-app --web
+gitrelic --path ~/projects/my-app --web
 
 # Analyze only the last 6 months
-gitlore --path ~/projects/my-app --since "6 months ago"
+gitrelic --path ~/projects/my-app --since "6 months ago"
 
 # Output JSON for piping
-gitlore --path ~/projects/my-app --json > report.json
+gitrelic --path ~/projects/my-app --json > report.json
 ```
 
 ## What You Get
@@ -57,7 +57,7 @@ Rich Ink-powered terminal UI for quick scans, plus a full web dashboard with her
 
 ## Documentation
 
-Full docs at [nebulord-dev.github.io/gitlore](https://nebulord-dev.github.io/gitlore/)
+Full docs at [nebulord-dev.github.io/gitrelic](https://nebulord-dev.github.io/gitrelic/)
 
 ## License
 

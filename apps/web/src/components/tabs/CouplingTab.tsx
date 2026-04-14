@@ -1,10 +1,10 @@
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName } from '../theme';
 
-import type { CoupledPair, GitloreReport } from '@gitlore/core';
+import type { CoupledPair, GitrelicReport } from '@gitrelic/core';
 
 interface CouplingTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   onSelectFile: (file: string) => void;
 }
 

@@ -5,11 +5,11 @@ import { arc } from 'd3-shape';
 
 import { authorColor } from '../../utils/colors';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 import type { HierarchyRectangularNode } from 'd3-hierarchy';
 
 interface OwnershipSunburstProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   selectedFile: string | null;
   selectedContributor: string | null;
   onSelectFile: (file: string) => void;

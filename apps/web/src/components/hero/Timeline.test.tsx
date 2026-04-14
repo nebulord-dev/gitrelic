@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { binCommitsByWeek } from './Timeline';
 
-import type { RawCommit } from '@gitlore/core';
+import type { RawCommit } from '@gitrelic/core';
 
 function makeCommit(overrides: Partial<RawCommit>): RawCommit {
   return {

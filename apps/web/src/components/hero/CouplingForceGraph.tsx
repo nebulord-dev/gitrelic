@@ -4,11 +4,11 @@ import { forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY
 
 import { categoryColor } from '../../utils/colors';
 
-import type { GitloreReport, CoupledPair } from '@gitlore/core';
+import type { GitrelicReport, CoupledPair } from '@gitrelic/core';
 import type { Simulation as D3Simulation } from 'd3-force';
 
 interface CouplingForceGraphProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
 }
@@ -29,7 +29,7 @@ interface GraphLink {
 
 function buildGraph(
   pairs: CoupledPair[],
-  report: GitloreReport,
+  report: GitrelicReport,
 ): { nodes: GraphNode[]; links: GraphLink[] } {
   const nodeSet = new Set<string>();
   const links: GraphLink[] = [];

@@ -1,10 +1,10 @@
 import { fmt } from '../theme';
 
 import type { DashboardMode } from '../../hooks/useSelection';
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface MetricsStripProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   dashboardMode: DashboardMode;
 }
 
@@ -14,7 +14,7 @@ interface Metric {
   color: string;
 }
 
-function getOverviewMetrics(report: GitloreReport): Metric[] {
+function getOverviewMetrics(report: GitrelicReport): Metric[] {
   const criticalCount = report.hotspots.topHotspots.filter((h) => h.category === 'critical').length;
 
   return [
@@ -59,7 +59,7 @@ function getOverviewMetrics(report: GitloreReport): Metric[] {
   ];
 }
 
-function getRiskMetrics(report: GitloreReport): Metric[] {
+function getRiskMetrics(report: GitrelicReport): Metric[] {
   const criticalBusFactor = report.busFactors.criticalFiles.length;
   const ghostFiles = report.ghostFiles.totalGhostFiles;
   const concentrationIndex = Math.round(report.knowledgeConcentration.concentrationIndex);
@@ -103,7 +103,7 @@ function getRiskMetrics(report: GitloreReport): Metric[] {
   ];
 }
 
-function getTechDebtMetrics(report: GitloreReport): Metric[] {
+function getTechDebtMetrics(report: GitrelicReport): Metric[] {
   const deadFiles = report.deadCode.totalDeadFiles;
   const growingFiles = report.complexityTrend.growingFiles.length;
   const highRewrite = report.rewriteRatio.topRewriters.length;
@@ -152,7 +152,7 @@ function getTechDebtMetrics(report: GitloreReport): Metric[] {
   ];
 }
 
-function getMetrics(report: GitloreReport, mode: DashboardMode): Metric[] {
+function getMetrics(report: GitrelicReport, mode: DashboardMode): Metric[] {
   switch (mode) {
     case 'risk':
       return getRiskMetrics(report);

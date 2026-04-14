@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { authorColor } from '../../utils/colors';
 
-import type { RawCommit } from '@gitlore/core';
+import type { RawCommit } from '@gitrelic/core';
 
 interface CommitDAGProps {
   commits: RawCommit[];

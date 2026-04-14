@@ -1,9 +1,9 @@
 import Badge from '../shared/Badge';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface KnowledgeSilosTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
 }
 
 function riskLevel(index: number): { variant: 'healthy' | 'warning' | 'critical'; label: string } {

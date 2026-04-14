@@ -25,10 +25,10 @@ import { ShameTab } from '../tabs/ShameTab';
 import { TestCoverageTab } from '../tabs/TestCoverageTab';
 
 import type { BottomTab, SidebarGroup } from '../../hooks/useSelection';
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface BottomPanelProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   activeGroup: SidebarGroup;
   activeTab: BottomTab;
   onTabChange: (tab: BottomTab) => void;
@@ -68,7 +68,7 @@ function TabContent({
   onSelectFile,
 }: {
   tab: BottomTab;
-  report: GitloreReport;
+  report: GitrelicReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
 }) {

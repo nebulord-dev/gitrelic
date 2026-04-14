@@ -2,14 +2,14 @@
  * End-to-end snapshot regression test.
  *
  * Builds a deterministic fixture git repo (pinned authors/dates/messages →
- * stable commit hashes) and runs the full `runGitlore()` pipeline against it.
+ * stable commit hashes) and runs the full `runGitrelic()` pipeline against it.
  * Each analyzer section is snapshotted separately so drift shows up as a
  * focused diff instead of a monolithic blob.
  *
  * When an analyzer's wire format intentionally changes, update the snapshots
- * with `pnpm --filter @gitlore/core test -- -u`.
+ * with `pnpm --filter @gitrelic/core test -- -u`.
  *
- * Goal: catch accidental changes to the `GitloreReport` shape that would
+ * Goal: catch accidental changes to the `GitrelicReport` shape that would
  * silently break the web dashboard or downstream JSON consumers.
  */
 
@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { runGitlore } from './runner.js';
+import { runGitrelic } from './runner.js';
 
 import type {
   AgeMapReport,
@@ -38,7 +38,7 @@ import type {
   DeadCodeReport,
   ForensicsReport,
   GhostFilesReport,
-  GitloreReport,
+  GitrelicReport,
   HotspotClusterReport,
   HotspotReport,
   KnowledgeConcentrationReport,
@@ -95,7 +95,7 @@ function normalizeMeta(meta: RepoMeta) {
 // ─── Fixture lifecycle ───────────────────────────────────────────────────────
 
 let repoPath = '';
-let report: GitloreReport;
+let report: GitrelicReport;
 
 beforeAll(async () => {
   // Only fake `Date` — leaving setTimeout/setInterval real keeps execa's
@@ -104,11 +104,11 @@ beforeAll(async () => {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(FROZEN_NOW);
 
-  repoPath = mkdtempSync(path.join(tmpdir(), 'gitlore-fixture-'));
+  repoPath = mkdtempSync(path.join(tmpdir(), 'gitrelic-fixture-'));
   // execFileSync with argv array — no shell, no injection surface.
   execFileSync('bash', [BUILD_SCRIPT, repoPath], { stdio: 'pipe' });
 
-  report = await runGitlore({ repoPath });
+  report = await runGitrelic({ repoPath });
 }, 30_000);
 
 afterAll(() => {
@@ -217,7 +217,7 @@ describe('fixture regression', () => {
 
   it('top-level report keys are stable', () => {
     // Pins the wire format itself — if a field is added or removed at the top
-    // level of GitloreReport this test flags it immediately.
+    // level of GitrelicReport this test flags it immediately.
     expect(Object.keys(report).sort()).toMatchSnapshot();
   });
 });

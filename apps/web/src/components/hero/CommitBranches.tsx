@@ -4,7 +4,7 @@ import { scaleTime } from 'd3-scale';
 
 import { authorColor } from '../../utils/colors';
 
-import type { RawCommit } from '@gitlore/core';
+import type { RawCommit } from '@gitrelic/core';
 
 interface CommitBranchesProps {
   commits: RawCommit[];

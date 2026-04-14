@@ -1,10 +1,10 @@
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath, fmt } from '../theme';
 
-import type { FileRenameChain, GitloreReport } from '@gitlore/core';
+import type { FileRenameChain, GitrelicReport } from '@gitrelic/core';
 
 interface RenamesTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   onSelectFile: (file: string) => void;
 }
 

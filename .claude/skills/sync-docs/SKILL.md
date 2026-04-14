@@ -48,7 +48,7 @@ Read each doc that might need updating. Don't propose changes based on assumptio
 Docs to check (read only the ones relevant to what changed):
 
 - `CLAUDE.md` — AI navigation guide: architecture overview, package breakdown, key concepts, build commands
-- `README.md` — root README: features list, usage, what GitLore analyzes
+- `README.md` — root README: features list, usage, what GitRelic analyzes
 - Jira project KAN — task board (check via Atlassian MCP tools if tasks were completed or new ones discovered)
 
 ### Step 4: Evaluate Each Doc

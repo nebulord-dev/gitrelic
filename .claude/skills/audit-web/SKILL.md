@@ -5,18 +5,18 @@ description: Use when auditing apps/web for Node.js import violations, XSS in ta
 
 # Audit: apps/web
 
-The browser dashboard. The critical constraint: it must never import values from `@gitlore/core` — that would bundle Node.js modules (`execa`, `node:fs`, `node:http`) into the browser build and break Vite.
+The browser dashboard. The critical constraint: it must never import values from `@gitrelic/core` — that would bundle Node.js modules (`execa`, `node:fs`, `node:http`) into the browser build and break Vite.
 
 ## Checklist
 
 ### 1. Import Discipline (Critical)
 
-**Rule:** `apps/web` may only use `import type` from `@gitlore/core`. Any value import (functions, classes, constants) pulls in Node.js deps and breaks the browser build.
+**Rule:** `apps/web` may only use `import type` from `@gitrelic/core`. Any value import (functions, classes, constants) pulls in Node.js deps and breaks the browser build.
 
-- Run: `grep -r "from '@gitlore/core'" apps/web/src` — every match must be `import type`
-- Run: `grep -r "require('@gitlore/core')" apps/web/src` — must be zero
+- Run: `grep -r "from '@gitrelic/core'" apps/web/src` — every match must be `import type`
+- Run: `grep -r "require('@gitrelic/core')" apps/web/src` — must be zero
 - If any scoring thresholds, category weights, or shared constants are needed in the browser, they should be duplicated into `apps/web/src/utils/` (like sickbay's `lib/constants.ts`), not imported from core
-- Run `pnpm --filter @gitlore/web build` — a Node.js import violation fails Vite at build time with a cryptic "Module externalized" error
+- Run `pnpm --filter @gitrelic/web build` — a Node.js import violation fails Vite at build time with a cryptic "Module externalized" error
 
 ### 2. XSS Surface
 
@@ -42,12 +42,12 @@ For each: confirm text is set via React children or D3's `.text()` (safe), not `
 
 ### 4. Report Loading (`apps/web/src/App.tsx`)
 
-Currently very simple: `fetch('/gitlore-report.json')`, parse, pass to `Shell`. Review edge cases:
+Currently very simple: `fetch('/gitrelic-report.json')`, parse, pass to `Shell`. Review edge cases:
 
-- 404 when dashboard is opened standalone (no CLI server) — current error message "No report found. Run gitlore --web to generate one." is fine
+- 404 when dashboard is opened standalone (no CLI server) — current error message "No report found. Run gitrelic --web to generate one." is fine
 - Malformed JSON — `r.json()` rejects; does the catch handler surface a useful message or just the generic `SyntaxError`?
 - **Structurally valid but missing fields** — e.g. a report missing `hotspotClusters` (older CLI version) will crash the corresponding tab. Does the dashboard gracefully skip missing sections or show "unavailable"?
-- **No report validation at all** — the cast `as Promise<GitloreReport>` is a lie. Consider a minimal shape check before rendering
+- **No report validation at all** — the cast `as Promise<GitrelicReport>` is a lie. Consider a minimal shape check before rendering
 
 ### 5. Large-Report Performance
 

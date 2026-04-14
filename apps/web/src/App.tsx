@@ -3,17 +3,17 @@ import { useEffect, useState } from 'react';
 import { Shell } from './components/layout/Shell';
 import { normalizeReport } from './utils/normalizeReport';
 
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 export default function App() {
-  const [report, setReport] = useState<GitloreReport | null>(null);
+  const [report, setReport] = useState<GitrelicReport | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/gitlore-report.json')
+    fetch('/gitrelic-report.json')
       .then((r) => {
-        if (!r.ok) throw new Error('No report found. Run gitlore --web to generate one.');
-        return r.json() as Promise<Partial<GitloreReport>>;
+        if (!r.ok) throw new Error('No report found. Run gitrelic --web to generate one.');
+        return r.json() as Promise<Partial<GitrelicReport>>;
       })
       .then((raw) => setReport(normalizeReport(raw)))
       .catch((err: Error) => setError(err.message));

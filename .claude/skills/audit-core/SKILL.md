@@ -5,7 +5,7 @@ description: Use when auditing packages/core for analyzer correctness, exec-disc
 
 # Audit: packages/core
 
-Deep audit of the analysis engine. Focus on correctness and robustness — this is what GitLore runs against user repositories, and every analyzer consumes the same commit/file data.
+Deep audit of the analysis engine. Focus on correctness and robustness — this is what GitRelic runs against user repositories, and every analyzer consumes the same commit/file data.
 
 ## Checklist
 

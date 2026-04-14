@@ -5,10 +5,10 @@ import { area, stack, stackOrderNone, stackOffsetNone } from 'd3-shape';
 
 import { authorColor } from '../../utils/colors';
 
-import type { GitloreReport, RawCommit } from '@gitlore/core';
+import type { GitrelicReport, RawCommit } from '@gitrelic/core';
 
 interface TimelineProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   selectedContributor: string | null;
   onSelectContributor: (email: string) => void;
 }

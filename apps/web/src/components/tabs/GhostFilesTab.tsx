@@ -2,10 +2,10 @@ import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath, fmt } from '../theme';
 
-import type { GhostFile, GitloreReport } from '@gitlore/core';
+import type { GhostFile, GitrelicReport } from '@gitrelic/core';
 
 interface GhostFilesTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   onSelectFile: (file: string) => void;
 }
 

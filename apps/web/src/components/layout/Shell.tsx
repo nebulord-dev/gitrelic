@@ -19,7 +19,7 @@ import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 
 import type { DashboardMode, HeroViz } from '../../hooks/useSelection';
-import type { GitloreReport } from '@gitlore/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 function getHeroVizzes(mode: DashboardMode): { id: HeroViz; label: string }[] {
   switch (mode) {
@@ -47,7 +47,7 @@ function getHeroVizzes(mode: DashboardMode): { id: HeroViz; label: string }[] {
 }
 
 interface ShellProps {
-  report: GitloreReport;
+  report: GitrelicReport;
 }
 
 export function Shell({ report }: ShellProps) {

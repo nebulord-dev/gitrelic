@@ -3,10 +3,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { scaleLinear, scalePoint } from 'd3-scale';
 import { area as d3Area, line as d3Line, curveMonotoneX } from 'd3-shape';
 
-import type { FileComplexityTrend, GitloreReport } from '@gitlore/core';
+import type { FileComplexityTrend, GitrelicReport } from '@gitrelic/core';
 
 interface GrowthTimelineProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
 }

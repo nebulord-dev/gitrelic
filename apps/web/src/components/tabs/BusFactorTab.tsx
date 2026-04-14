@@ -3,10 +3,10 @@ import { type Column, SortableTable } from '../shared/SortableTable';
 import { Tooltip } from '../shared/Tooltip';
 import { fileName, filePath } from '../theme';
 
-import type { FileBusFactor, GitloreReport } from '@gitlore/core';
+import type { FileBusFactor, GitrelicReport } from '@gitrelic/core';
 
 interface BusFactorTabProps {
-  report: GitloreReport;
+  report: GitrelicReport;
   onSelectFile: (file: string) => void;
 }
 
