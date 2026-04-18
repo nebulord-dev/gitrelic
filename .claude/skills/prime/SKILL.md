@@ -102,7 +102,7 @@ Provide a concise summary covering:
 
 - TypeScript throughout; Ink (React for terminals) in CLI; Vite + React 19 + Tailwind in web
 - pnpm workspaces + Turbo for build orchestration
-- tsup for bundling core/cli; Vite for web
+- tsdown for bundling core/cli; Vite for web
 - oxlint + oxfmt for linting/formatting; husky + lint-staged for pre-commit hooks
 
 ### Sister Project: Sickbay
