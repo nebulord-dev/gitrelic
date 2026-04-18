@@ -8,7 +8,7 @@
     "url": "https://github.com/nebulord-dev/gitrelic"
   },
   "bin": {
-    "gitrelic": "./dist/index.js"
+    "gitrelic": "./dist/index.mjs"
   },
   "files": [
     "dist"
@@ -16,8 +16,8 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
     }
   },
   "scripts": {
