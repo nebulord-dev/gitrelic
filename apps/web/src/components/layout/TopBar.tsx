@@ -48,6 +48,11 @@ export function TopBar({ report }: TopBarProps) {
           GITRELIC
         </span>
         <span style={{ color: 'var(--accent-primary)', fontSize: 12 }}>{repoName}</span>
+        {meta.analyzedBranch && (
+          <span style={{ color: 'var(--text-secondary)', fontSize: 11 }}>
+            {meta.analyzedBranch}
+          </span>
+        )}
         <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>
           • {fmt(meta.totalCommits)} commits • {fmt(meta.totalAuthors)} authors •{' '}
           {Math.round((meta.ageInDays / 365) * 10) / 10}y

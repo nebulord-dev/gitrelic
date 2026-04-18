@@ -22,7 +22,13 @@ import { analyzeParallelDev } from './analyzers/parallel-dev.js';
 import { analyzeRenameTracking } from './analyzers/rename-tracking.js';
 import { analyzeRewriteRatio } from './analyzers/rewrite-ratio.js';
 import { analyzeTestCoverage } from './analyzers/test-coverage.js';
-import { getAllCommits, getTrackedFiles, getBranches, detectPrimaryLanguage } from './utils/git.js';
+import {
+  getAllCommits,
+  getTrackedFiles,
+  getBranches,
+  getCurrentBranch,
+  detectPrimaryLanguage,
+} from './utils/git.js';
 
 import type {
   AgeMapReport,
@@ -231,6 +237,7 @@ export async function runGitrelic(options: RunGitrelicOptions): Promise<Gitrelic
   onProgress?.('Scanning tracked files...');
   const trackedFiles = await getTrackedFiles(repoPath);
   const branches = await getBranches(repoPath);
+  const analyzedBranch = branch ?? (await getCurrentBranch(repoPath));
   const primaryLanguage = detectPrimaryLanguage(trackedFiles);
 
   const sorted = [...commits].sort((a, b) => a.date.localeCompare(b.date));
@@ -404,6 +411,7 @@ export async function runGitrelic(options: RunGitrelicOptions): Promise<Gitrelic
       ageInDays,
       primaryLanguage,
       branches,
+      analyzedBranch,
     },
     churn,
     busFactors,

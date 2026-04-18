@@ -12,7 +12,7 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
     timestamp: raw.timestamp ?? new Date().toISOString(),
     repoPath: raw.repoPath ?? '',
     repoName: raw.repoName ?? 'unknown',
-    meta: raw.meta ?? {
+    meta: {
       totalCommits: 0,
       totalFiles: 0,
       totalAuthors: 0,
@@ -21,6 +21,8 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       ageInDays: 0,
       primaryLanguage: 'unknown',
       branches: [],
+      analyzedBranch: '',
+      ...raw.meta,
     },
     churn: raw.churn ?? {
       files: [],
