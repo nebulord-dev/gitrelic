@@ -70,9 +70,19 @@ describe('analyzeChurnVelocity', () => {
     expect(result.files.map((f) => f.file)).toEqual(['a.ts']);
   });
 
-  it('returns acceleratingFiles array', () => {
+  it('returns empty result for zero commits', () => {
     const result = analyzeChurnVelocity([], []);
-    expect(result.acceleratingFiles).toBeDefined();
+    expect(result.files).toHaveLength(0);
+    expect(result.acceleratingFiles).toHaveLength(0);
+    expect(result.summary).toBe('Insufficient history for velocity analysis');
+  });
+
+  it('returns empty result for single commit (insufficient history)', () => {
+    const commits = [makeCommit({ hash: '1', date: '2025-06-01T00:00:00Z', files: ['a.ts'] })];
+    const result = analyzeChurnVelocity(commits, ['a.ts']);
+    expect(result.files).toHaveLength(0);
+    expect(result.acceleratingFiles).toHaveLength(0);
+    expect(result.summary).toBe('Insufficient history for velocity analysis');
   });
 
   it('produces a summary', () => {

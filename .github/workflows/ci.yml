@@ -223,19 +223,19 @@ jobs:
           fi
           echo "OK: dist/web/index.html present"
 
-          NO_COLOR=1 ./node_modules/.bin/gitrelic \
+          ./node_modules/.bin/gitrelic \
             --path "$GITHUB_WORKSPACE" \
             --since "1 month ago" \
             --web > web.log 2>&1 &
           CLI_PID=$!
 
-          # Wait for the server to come up and extract the actual port from
-          # CLI output — getFreePort may pick a port other than 7777 if it
-          # is already in use on the runner.
+          # Wait for the server to come up and extract the port from the
+          # structured GITRELIC_PORT=N line emitted to stderr. This avoids
+          # parsing Ink's ANSI-colored terminal output.
           PORT=""
           for i in $(seq 1 30); do
             if [ -s web.log ]; then
-              PORT=$(grep -oP 'http://localhost:\K[0-9]+' web.log | head -1)
+              PORT=$(grep -oP 'GITRELIC_PORT=\K[0-9]+' web.log | head -1)
               if [ -n "$PORT" ] && curl -sf -o /dev/null "http://localhost:$PORT/"; then
                 break
               fi
@@ -243,7 +243,7 @@ jobs:
             sleep 1
           done
           if [ -z "$PORT" ]; then
-            echo "❌ Could not detect server port from CLI output"
+            echo "❌ Could not detect GITRELIC_PORT in CLI output"
             cat web.log
             exit 1
           fi

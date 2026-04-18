@@ -94,22 +94,17 @@ function GitrelicApp() {
           const port = await serveWebDashboard(result);
           setWebPort(port);
         } else {
-          // Render the results frame, then tear down Ink and exit so
+          // Let Ink finish its render cycle, then tear down and exit so
           // shell consumers (CI, scripts) don't hang indefinitely.
-          setTimeout(() => {
-            inkInstance.unmount();
-            process.exit(0);
-          }, 50);
+          inkInstance.unmount();
         }
       })
       .catch((err: Error) => {
         setError(err.message);
-        // Render the error frame, then tear down Ink and exit non-zero so
-        // shell consumers (CI, scripts) see the failure instead of a hang.
-        setTimeout(() => {
-          inkInstance.unmount();
-          process.exit(1);
-        }, 50);
+        // Let Ink render the error frame, then tear down and exit non-zero
+        // so shell consumers (CI, scripts) see the failure.
+        process.exitCode = 1;
+        inkInstance.unmount();
       });
   }, []);
 
@@ -126,8 +121,11 @@ function GitrelicApp() {
   );
 }
 
-// Capture the render instance so the error path can unmount cleanly.
+// Capture the render instance so success/error paths can unmount cleanly.
+// waitUntilExit() resolves once unmount() is called, allowing the process
+// to exit naturally without fragile setTimeout delays.
 const inkInstance = render(<GitrelicApp />);
+await inkInstance.waitUntilExit();
 
 async function serveWebDashboard(report: GitrelicReport): Promise<number> {
   // The web dashboard is copied into the cli's own dist/web/ at build time
@@ -223,6 +221,9 @@ async function serveWebDashboard(report: GitrelicReport): Promise<number> {
     server.once('error', reject);
     server.listen(port, '127.0.0.1', () => resolve());
   });
+  // Structured line for machine consumption (CI, scripts). Ink's colored
+  // output can embed ANSI codes that break naive grep; this is always clean.
+  process.stderr.write(`GITRELIC_PORT=${port}\n`);
   await open(`http://localhost:${port}`);
   return port;
 }

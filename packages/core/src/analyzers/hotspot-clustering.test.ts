@@ -30,7 +30,7 @@ function makeHotspotReport(entries: { file: string; score: number }[]): HotspotR
 }
 
 function emptyBusFactor(): BusFactorReport {
-  return { files: [], criticalFiles: [], overallBusFactor: 999, summary: '' };
+  return { files: [], criticalFiles: [], overallBusFactor: 0, summary: '' };
 }
 
 function emptyCoupling(): CouplingReport {
