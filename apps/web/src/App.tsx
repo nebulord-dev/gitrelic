@@ -13,7 +13,9 @@ export default function App() {
     fetch('/gitrelic-report.json')
       .then((r) => {
         if (!r.ok) throw new Error('No report found. Run gitrelic --web to generate one.');
-        return r.json() as Promise<Partial<GitrelicReport>>;
+        return r.json().catch(() => {
+          throw new Error('Report file is malformed. Re-run gitrelic --web.');
+        }) as Promise<Partial<GitrelicReport>>;
       })
       .then((raw) => setReport(normalizeReport(raw)))
       .catch((err: Error) => setError(err.message));
