@@ -2097,6 +2097,7 @@ exports[`fixture regression > loc report is stable 1`] = `
 exports[`fixture regression > meta shape is stable 1`] = `
 {
   "ageInDays": 94,
+  "analyzedBranch": "main",
   "branches": [
     "main",
   ],

@@ -32,7 +32,7 @@ export function App({ report, progress, error }: Props) {
 
   return (
     <Box flexDirection="column" padding={1}>
-      <Banner repoName={report.repoName} />
+      <Banner repoName={report.repoName} branch={report.meta.analyzedBranch} />
       <MetaPanel report={report} />
       <Newline />
       {/* <ChurnPanel report={report} />
@@ -81,7 +81,7 @@ export function App({ report, progress, error }: Props) {
   );
 }
 
-function Banner({ repoName }: { repoName: string }) {
+function Banner({ repoName, branch }: { repoName: string; branch: string }) {
   return (
     <Box flexDirection="column" marginBottom={1}>
       <Text color="magenta" bold>{`
@@ -91,12 +91,17 @@ function Banner({ repoName }: { repoName: string }) {
 ██║   ██║██║   ██║   ██║     ██║   ██║██╔══██╗██╔══╝
 ╚██████╔╝██║   ██║   ███████╗╚██████╔╝██║  ██║███████╗
  ╚═════╝ ╚═╝   ╚═╝   ╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝`}</Text>
-      <Text color="gray">
-        {' '}
-        git archaeology for{' '}
+      <Text>
+        <Text color="gray"> git archaeology for </Text>
         <Text color="white" bold>
           {repoName}
         </Text>
+        {branch ? (
+          <>
+            <Text color="gray"> on </Text>
+            <Text color="cyan">{branch}</Text>
+          </>
+        ) : null}
       </Text>
     </Box>
   );

@@ -43,6 +43,7 @@ export interface RepoMeta {
   ageInDays: number;
   primaryLanguage: string;
   branches: string[];
+  analyzedBranch: string;
 }
 
 // ─── Churn ─────────────────────────────────────────────────────────────────────
