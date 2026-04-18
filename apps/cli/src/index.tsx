@@ -79,6 +79,7 @@ function GitrelicApp() {
   const [report, setReport] = useState<GitrelicReport | null>(null);
   const [progress, setProgress] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [webPort, setWebPort] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     runGitrelic({
@@ -90,8 +91,15 @@ function GitrelicApp() {
       .then(async (result) => {
         setReport(result);
         if (opts.web) {
-          setProgress('Opening web dashboard...');
-          await serveWebDashboard(result);
+          const port = await serveWebDashboard(result);
+          setWebPort(port);
+        } else {
+          // Render the results frame, then tear down Ink and exit so
+          // shell consumers (CI, scripts) don't hang indefinitely.
+          setTimeout(() => {
+            inkInstance.unmount();
+            process.exit(0);
+          }, 50);
         }
       })
       .catch((err: Error) => {
@@ -113,6 +121,7 @@ function GitrelicApp() {
       version={pkg.version}
       showShame={opts.shame ?? false}
       showParallel={opts.parallel ?? false}
+      webPort={webPort}
     />
   );
 }
@@ -120,7 +129,7 @@ function GitrelicApp() {
 // Capture the render instance so the error path can unmount cleanly.
 const inkInstance = render(<GitrelicApp />);
 
-async function serveWebDashboard(report: GitrelicReport): Promise<void> {
+async function serveWebDashboard(report: GitrelicReport): Promise<number> {
   // The web dashboard is copied into the cli's own dist/web/ at build time
   // (see scripts/copy-web-dist.mjs) so it ships inside the published package
   // and resolves identically in the monorepo and in node_modules installs.
@@ -215,6 +224,7 @@ async function serveWebDashboard(report: GitrelicReport): Promise<void> {
     server.listen(port, '127.0.0.1', () => resolve());
   });
   await open(`http://localhost:${port}`);
+  return port;
 }
 
 async function getFreePort(preferred: number, attempts = 0): Promise<number> {
