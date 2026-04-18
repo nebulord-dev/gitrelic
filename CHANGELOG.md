@@ -1,3 +1,10 @@
+# [0.2.0](https://github.com/nebulord-dev/gitrelic/compare/v0.1.0...v0.2.0) (2026-04-18)
+
+
+### Features
+
+* add branch name to the header ([#21](https://github.com/nebulord-dev/gitrelic/issues/21)) ([6f7eef9](https://github.com/nebulord-dev/gitrelic/commit/6f7eef9593642db877ddacfb9a058cca72557366))
+
 # Changelog
 
 ## 0.1.0
