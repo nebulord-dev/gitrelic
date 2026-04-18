@@ -144,3 +144,25 @@ node apps/cli/dist/index.js --path ~/path/to/any-git-repo
 node apps/cli/dist/index.js --path ~/path/to/any-git-repo --web
 node apps/cli/dist/index.js --path ~/path/to/any-git-repo --json
 ```
+
+## Releases & Versioning
+
+Releases are automated by semantic-release on push to `main` (see `.releaserc.json` and `.github/workflows/publish.yml`). The published package is `gitrelic` on npm (`apps/cli` is `pkgRoot`).
+
+**Pre-1.0 guard:** GitRelic is in pre-alpha and must stay on 0.x. `.releaserc.json` contains a `releaseRules` override on `@semantic-release/commit-analyzer` that reclassifies breaking changes as a **minor** bump instead of major:
+
+```json
+["@semantic-release/commit-analyzer", {
+  "releaseRules": [
+    { "breaking": true, "release": "minor" }
+  ]
+}]
+```
+
+Effect during pre-1.0:
+
+- `fix:` → patch (0.1.0 → 0.1.1)
+- `feat:` → minor (0.1.0 → 0.2.0)
+- `feat!:` / `chore!:` / `BREAKING CHANGE:` → **minor** (0.1.0 → 0.2.0), not major
+
+**Do not remove this rule casually.** It exists because a single `chore!:` commit (the gitlore→gitrelic rename) once caused semantic-release to jump straight to `v2.0.0`, which had to be unpublished and reset. Remove it only when intentionally cutting `1.0.0`, and do so in the same PR that marks the 1.0 release.
