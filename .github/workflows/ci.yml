@@ -223,7 +223,7 @@ jobs:
           fi
           echo "OK: dist/web/index.html present"
 
-          ./node_modules/.bin/gitrelic \
+          NO_COLOR=1 ./node_modules/.bin/gitrelic \
             --path "$GITHUB_WORKSPACE" \
             --since "1 month ago" \
             --web > web.log 2>&1 &
