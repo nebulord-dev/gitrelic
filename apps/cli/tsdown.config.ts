@@ -1,14 +1,11 @@
-import { defineConfig } from 'tsup';
+import { defineConfig } from 'tsdown';
 
 export default defineConfig({
   entry: ['src/index.tsx'],
-  format: ['esm'],
-  dts: true,
-  clean: true,
   // @gitrelic/core is private and not published separately, so inline its source
   // into the CLI bundle. Its runtime dependencies (currently just execa) must
   // be declared in apps/cli/package.json so they resolve at install time.
-  noExternal: ['@gitrelic/core'],
+  deps: { alwaysBundle: ['@gitrelic/core'] },
   banner: {
     js: '#!/usr/bin/env node',
   },

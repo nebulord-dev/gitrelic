@@ -21,8 +21,8 @@
     }
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
@@ -39,7 +39,7 @@
     "@gitrelic/web": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
-    "tsup": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:"
   }
 }
