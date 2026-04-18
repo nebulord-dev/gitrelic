@@ -1,4 +1,6 @@
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { analyzeAgeMap } from './analyzers/age-map.js';
 import { analyzeBlastRadius } from './analyzers/blast-radius.js';
@@ -223,6 +225,9 @@ const EMPTY_CURSED_FILES: CursedFile[] = [];
  * @param options - The options for running the analysis, including repository path, branch, and since date.
  * @Returns a GitrelicReport containing churn, bus factor, age map, contributors, cursed files, and forensics data.
  */
+const __coreDir = path.dirname(fileURLToPath(import.meta.url));
+const corePkg = JSON.parse(readFileSync(path.resolve(__coreDir, '../package.json'), 'utf-8'));
+
 export async function runGitrelic(options: RunGitrelicOptions): Promise<GitrelicReport> {
   const { repoPath, branch, since, onProgress } = options;
   const repoName = path.basename(repoPath);
@@ -412,6 +417,7 @@ export async function runGitrelic(options: RunGitrelicOptions): Promise<Gitrelic
       primaryLanguage,
       branches,
       analyzedBranch,
+      gitrelicVersion: corePkg.version,
     },
     churn,
     busFactors,

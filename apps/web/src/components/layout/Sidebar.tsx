@@ -45,7 +45,7 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           label: 'Cursed Files',
           badge: report.cursedFiles.length,
         },
-        { id: 'dead-code', label: 'Dead Code', badge: report.deadCode.totalDeadFiles },
+        { id: 'dead-code', label: 'Stale Files', badge: report.deadCode.totalDeadFiles },
         { id: 'complexity', label: 'Complexity' },
         { id: 'rewrites', label: 'Rewrites' },
       ],

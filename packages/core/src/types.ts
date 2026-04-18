@@ -44,6 +44,7 @@ export interface RepoMeta {
   primaryLanguage: string;
   branches: string[];
   analyzedBranch: string;
+  gitrelicVersion: string;
 }
 
 // ─── Churn ─────────────────────────────────────────────────────────────────────

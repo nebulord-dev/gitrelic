@@ -7,11 +7,12 @@ interface Props {
   report: GitrelicReport | null;
   progress: string;
   error: string | null;
+  version?: string;
   showShame?: boolean;
   showParallel?: boolean;
 }
 
-export function App({ report, progress, error }: Props) {
+export function App({ report, progress, error, version }: Props) {
   if (error) {
     return (
       <Box flexDirection="column" padding={1}>
@@ -32,7 +33,7 @@ export function App({ report, progress, error }: Props) {
 
   return (
     <Box flexDirection="column" padding={1}>
-      <Banner repoName={report.repoName} branch={report.meta.analyzedBranch} />
+      <Banner repoName={report.repoName} branch={report.meta.analyzedBranch} version={version} />
       <MetaPanel report={report} />
       <Newline />
       {/* <ChurnPanel report={report} />
@@ -81,7 +82,15 @@ export function App({ report, progress, error }: Props) {
   );
 }
 
-function Banner({ repoName, branch }: { repoName: string; branch: string }) {
+function Banner({
+  repoName,
+  branch,
+  version,
+}: {
+  repoName: string;
+  branch: string;
+  version?: string;
+}) {
   return (
     <Box flexDirection="column" marginBottom={1}>
       <Text color="magenta" bold>{`
@@ -91,9 +100,8 @@ function Banner({ repoName, branch }: { repoName: string; branch: string }) {
 ██║   ██║██║   ██║   ██╔══██╗██╔══╝  ██║     ██║██║
 ╚██████╔╝██║   ██║   ██║  ██║███████╗███████╗██║╚██████╗
  ╚═════╝ ╚═╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝ ╚═════╝`}</Text>
-      <Text color="gray">
-        {' '}
-        git archaeology for{' '}
+      <Text>
+        <Text color="gray"> git archaeology for </Text>
         <Text color="white" bold>
           {repoName}
         </Text>
@@ -102,6 +110,12 @@ function Banner({ repoName, branch }: { repoName: string; branch: string }) {
             <Text color="gray"> on </Text>
             <Text color="cyan">{branch}</Text>
           </>
+        ) : null}
+        {version ? (
+          <Text color="gray" dimColor>
+            {' '}
+            v{version}
+          </Text>
         ) : null}
       </Text>
     </Box>
