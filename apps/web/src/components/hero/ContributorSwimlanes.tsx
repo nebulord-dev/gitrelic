@@ -271,15 +271,12 @@ export function ContributorSwimlanes({
                         if (c.files.length > 0) onSelectFile(c.files[0]);
                       }}
                       onMouseEnter={(e) => {
-                        const rect = containerRef.current?.getBoundingClientRect();
-                        if (rect) {
-                          setTooltip({
-                            x: e.clientX - rect.left,
-                            y: e.clientY - rect.top,
-                            commit: c,
-                            author: lane.name,
-                          });
-                        }
+                        setTooltip({
+                          x: e.clientX,
+                          y: e.clientY,
+                          commit: c,
+                          author: lane.name,
+                        });
                       }}
                       onMouseLeave={() => setTooltip(null)}
                     />
@@ -345,8 +342,8 @@ export function ContributorSwimlanes({
       {tooltip && (
         <div
           style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
+            position: 'fixed',
+            left: Math.min(tooltip.x + 12, window.innerWidth - 320),
             top: tooltip.y - 8,
             background: 'var(--surface-elevated)',
             border: '1px solid var(--border-primary)',
@@ -355,7 +352,7 @@ export function ContributorSwimlanes({
             fontSize: 10,
             color: 'var(--text-primary)',
             pointerEvents: 'none',
-            zIndex: 20,
+            zIndex: 1000,
             maxWidth: 300,
           }}
         >
