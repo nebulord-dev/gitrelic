@@ -16,9 +16,8 @@
     "gitrelic": "node apps/cli/dist/index.js",
     "test": "pnpm -r test",
     "test:coverage": "pnpm -r test:coverage",
-    "test:web": "pnpm --filter @gitrelic/web test:ui",
-    "test:cli": "pnpm --filter @gitrelic/cli test:ui",
-    "test:core": "pnpm --filter @gitrelic/core test:ui",
+    "test:core": "vitest --ui --coverage --root packages/core",
+    "test:web": "vitest --ui --coverage --root apps/web",
     "prepare": "husky",
     "all-checks": "pnpm build && pnpm test && pnpm lint && pnpm format"
   },

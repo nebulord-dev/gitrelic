@@ -11,8 +11,12 @@ export function analyzeChurnVelocity(
   commits: RawCommit[],
   trackedFiles: string[],
 ): ChurnVelocityReport {
-  if (commits.length === 0) {
-    return { files: [], acceleratingFiles: [], summary: 'No commits to analyze' };
+  if (commits.length < 2) {
+    return {
+      files: [],
+      acceleratingFiles: [],
+      summary: 'Insufficient history for velocity analysis',
+    };
   }
 
   const trackedSet = new Set(trackedFiles);

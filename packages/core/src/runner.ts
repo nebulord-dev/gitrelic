@@ -236,7 +236,10 @@ export async function runGitrelic(options: RunGitrelicOptions): Promise<Gitrelic
   const commits = await getAllCommits(repoPath, { since, branch });
 
   if (commits.length === 0) {
-    throw new Error('No commits found. Is this a git repository?');
+    const msg = since
+      ? `No commits found since "${since}". Try a broader time range or use --since all.`
+      : 'No commits found. Is this a git repository?';
+    throw new Error(msg);
   }
 
   onProgress?.('Scanning tracked files...');
