@@ -23,9 +23,9 @@ const METRIC_GROUPS: MetricGroup[] = [
           'Files flagged across multiple risk dimensions: high churn, concentrated ownership, shame, and age anomalies.',
       },
       {
-        name: 'Dead Code',
+        name: 'Stale Files',
         description:
-          'Tracked files with zero commits in the analysis window. Candidates for removal.',
+          'Tracked files with zero commits in the analysis window. Potentially forgotten or stable.',
       },
       {
         name: 'Complexity Trend',

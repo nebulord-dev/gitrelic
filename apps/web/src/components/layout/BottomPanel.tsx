@@ -45,7 +45,7 @@ const TAB_LABELS: Record<BottomTab, string> = {
   'parallel-dev': 'Parallel Dev',
   shame: 'Shame',
   'age-map': 'Age Map',
-  'dead-code': 'Dead Code',
+  'dead-code': 'Stale Files',
   'complexity-trend': 'Complexity Trend',
   'rewrite-ratio': 'Rewrite Ratio',
   'churn-velocity': 'Churn Velocity',

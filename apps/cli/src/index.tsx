@@ -14,10 +14,13 @@ import { App } from './components/App.js';
 
 import type { GitrelicReport } from '@gitrelic/core';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(path.resolve(__dirname, '../package.json'), 'utf-8'));
+
 program
   .name('gitrelic')
   .description('Git archaeology — understand the history and health of your codebase')
-  .version('0.1.0')
+  .version(pkg.version, '-v, --version')
   .option('-p, --path <path>', 'Path to the git repository', process.cwd())
   .option('-b, --branch <branch>', 'Branch to analyze (default: current branch)')
   .option(
@@ -107,6 +110,7 @@ function GitrelicApp() {
       report={report}
       progress={progress}
       error={error}
+      version={pkg.version}
       showShame={opts.shame ?? false}
       showParallel={opts.parallel ?? false}
     />

@@ -2102,6 +2102,7 @@ exports[`fixture regression > meta shape is stable 1`] = `
     "main",
   ],
   "firstCommit": "2026-01-01T09:00:00Z",
+  "gitrelicVersion": "0.1.0",
   "lastCommit": "2026-04-05T15:30:00Z",
   "primaryLanguage": "TypeScript",
   "totalAuthors": 3,

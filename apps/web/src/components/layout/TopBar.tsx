@@ -1,5 +1,3 @@
-import { useCallback, useState } from 'react';
-
 import { fmt } from '../theme';
 
 import type { GitrelicReport } from '@gitrelic/core';
@@ -10,19 +8,6 @@ interface TopBarProps {
 
 export function TopBar({ report }: TopBarProps) {
   const { meta, repoName } = report;
-  const [theme, setTheme] = useState<'dark' | 'light'>(
-    () => (document.documentElement.dataset.theme as 'light') || 'dark',
-  );
-
-  const toggleTheme = useCallback(() => {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    if (next === 'dark') {
-      delete document.documentElement.dataset.theme;
-    } else {
-      document.documentElement.dataset.theme = next;
-    }
-    setTheme(next);
-  }, [theme]);
 
   return (
     <div
@@ -47,6 +32,11 @@ export function TopBar({ report }: TopBarProps) {
         >
           GITRELIC
         </span>
+        {meta.gitrelicVersion && (
+          <span style={{ color: 'var(--text-tertiary)', fontSize: 9 }}>
+            v{meta.gitrelicVersion}
+          </span>
+        )}
         <span style={{ color: 'var(--accent-primary)', fontSize: 12 }}>{repoName}</span>
         {meta.analyzedBranch && (
           <span style={{ color: 'var(--text-secondary)', fontSize: 11 }}>
@@ -55,10 +45,12 @@ export function TopBar({ report }: TopBarProps) {
         )}
         <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>
           • {fmt(meta.totalCommits)} commits • {fmt(meta.totalAuthors)} authors •{' '}
-          {Math.round((meta.ageInDays / 365) * 10) / 10}y
+          {new Date(meta.firstCommit).toLocaleDateString()} –{' '}
+          {new Date(meta.lastCommit).toLocaleDateString()}
         </span>
       </div>
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+      {/* Theme toggle hidden until light theme covers all graphs/visualizations */}
+      {/* <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
         <button
           onClick={toggleTheme}
           style={{
@@ -74,7 +66,7 @@ export function TopBar({ report }: TopBarProps) {
         >
           {theme === 'dark' ? '☀' : '☽'}
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }

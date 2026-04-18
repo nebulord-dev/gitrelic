@@ -22,6 +22,7 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       primaryLanguage: 'unknown',
       branches: [],
       analyzedBranch: '',
+      gitrelicVersion: '',
       ...raw.meta,
     },
     churn: raw.churn ?? {
