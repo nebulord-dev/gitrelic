@@ -80,6 +80,15 @@ function GitrelicApp() {
   const [progress, setProgress] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [webPort, setWebPort] = useState<number | undefined>(undefined);
+  // Drives unmount from a useEffect so React has a full render cycle to flush
+  // the final frame (report or error) before Ink tears down. Setting this to
+  // true triggers the effect *after* the state update that caused it has been
+  // painted, avoiding the race where unmount() fires before the output appears.
+  const [shouldExit, setShouldExit] = useState(false);
+
+  useEffect(() => {
+    if (shouldExit) inkInstance.unmount();
+  }, [shouldExit]);
 
   useEffect(() => {
     runGitrelic({
@@ -94,17 +103,13 @@ function GitrelicApp() {
           const port = await serveWebDashboard(result);
           setWebPort(port);
         } else {
-          // Let Ink finish its render cycle, then tear down and exit so
-          // shell consumers (CI, scripts) don't hang indefinitely.
-          inkInstance.unmount();
+          setShouldExit(true);
         }
       })
       .catch((err: Error) => {
         setError(err.message);
-        // Let Ink render the error frame, then tear down and exit non-zero
-        // so shell consumers (CI, scripts) see the failure.
         process.exitCode = 1;
-        inkInstance.unmount();
+        setShouldExit(true);
       });
   }, []);
 
