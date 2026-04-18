@@ -69,7 +69,7 @@ pnpm workspace + Turbo. Strict dependency order:
 
 1. `runGitrelic()` in core runs all analyzers
 2. CLI receives `GitrelicReport` and renders Ink UI
-3. With `--web`: CLI starts HTTP server, serves web/dist + `/gitrelic-report.json`
+3. With `--web`: CLI starts HTTP server (dynamic port via `getFreePort`, preferred 7777), serves web/dist + `/gitrelic-report.json`
 
 ### Adding a new analyzer
 
@@ -132,8 +132,9 @@ Pre-commit hook (husky + lint-staged) runs `oxlint --fix` and `oxfmt` on staged 
 ## Testing
 
 ```bash
-pnpm test                           # run all tests (207 across core)
-pnpm test:core                      # core package tests with UI
+pnpm test                           # run all tests (231 core + 29 web)
+pnpm test:core                      # core package tests with Vitest UI
+pnpm test:web                       # web package tests with Vitest UI
 pnpm test:coverage                  # coverage report
 ```
 
