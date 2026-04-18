@@ -229,15 +229,28 @@ jobs:
             --web > web.log 2>&1 &
           CLI_PID=$!
 
-          for i in $(seq 1 20); do
-            if curl -sf -o /dev/null http://localhost:7777/; then
-              break
+          # Wait for the server to come up and extract the port from the
+          # structured GITRELIC_PORT=N line emitted to stderr. This avoids
+          # parsing Ink's ANSI-colored terminal output.
+          PORT=""
+          for i in $(seq 1 30); do
+            if [ -s web.log ]; then
+              PORT=$(grep -oP 'GITRELIC_PORT=\K[0-9]+' web.log | head -1)
+              if [ -n "$PORT" ] && curl -sf -o /dev/null "http://localhost:$PORT/"; then
+                break
+              fi
             fi
             sleep 1
           done
+          if [ -z "$PORT" ]; then
+            echo "❌ Could not detect GITRELIC_PORT in CLI output"
+            cat web.log
+            exit 1
+          fi
+          echo "✓ Server detected on port $PORT"
 
-          ROOT_CODE=$(curl -s -o /tmp/root.html -w "%{http_code}" http://localhost:7777/)
-          REPORT_CODE=$(curl -s -o /tmp/report.json -w "%{http_code}" http://localhost:7777/gitrelic-report.json)
+          ROOT_CODE=$(curl -s -o /tmp/root.html -w "%{http_code}" "http://localhost:$PORT/")
+          REPORT_CODE=$(curl -s -o /tmp/report.json -w "%{http_code}" "http://localhost:$PORT/gitrelic-report.json")
 
           kill "$CLI_PID" 2>/dev/null || true
 

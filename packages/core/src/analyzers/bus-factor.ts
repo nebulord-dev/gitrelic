@@ -48,7 +48,8 @@ export function analyzeBusFactor(commits: RawCommit[], trackedFiles: string[]): 
   const criticalFiles = files.filter((f) => f.risk === 'critical');
 
   // Overall bus factor: if removed this many people, half of high-churn files become single-author
-  const overallBusFactor = Math.min(...files.slice(0, 20).map((f) => f.uniqueAuthors), 999);
+  const top20 = files.slice(0, 20);
+  const overallBusFactor = top20.length === 0 ? 0 : Math.min(...top20.map((f) => f.uniqueAuthors));
 
   const worstFile = criticalFiles[0];
   const summary = worstFile

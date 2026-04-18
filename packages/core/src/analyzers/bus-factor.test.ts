@@ -105,6 +105,21 @@ describe('analyzeBusFactor', () => {
     expect(result.summary).toContain('risky.ts');
   });
 
+  it('returns overallBusFactor 0 for empty commit list', () => {
+    const result = analyzeBusFactor([], []);
+    expect(result.overallBusFactor).toBe(0);
+    expect(result.files).toHaveLength(0);
+    expect(result.criticalFiles).toHaveLength(0);
+    expect(result.summary).toContain('healthy');
+  });
+
+  it('returns overallBusFactor 0 when no tracked files match commits', () => {
+    const commits = [makeCommit({ hash: '1', files: ['deleted.ts'] })];
+    const result = analyzeBusFactor(commits, ['other.ts']);
+    expect(result.overallBusFactor).toBe(0);
+    expect(result.files).toHaveLength(0);
+  });
+
   it('produces healthy summary when no critical files', () => {
     const authors = ['alice', 'bob', 'carol', 'dave'];
     const commits = authors.map((name, i) =>

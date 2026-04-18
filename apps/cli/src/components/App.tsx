@@ -10,9 +10,10 @@ interface Props {
   version?: string;
   showShame?: boolean;
   showParallel?: boolean;
+  webPort?: number;
 }
 
-export function App({ report, progress, error, version }: Props) {
+export function App({ report, progress, error, version, webPort }: Props) {
   if (error) {
     return (
       <Box flexDirection="column" padding={1}>
@@ -77,7 +78,7 @@ export function App({ report, progress, error, version }: Props) {
           <ParallelPanel report={report} />
         </>
       )} */}
-      <LaunchPanel />
+      {webPort != null && <LaunchPanel port={webPort} />}
     </Box>
   );
 }
@@ -243,12 +244,12 @@ function ContributorPanel({ report }: { report: GitrelicReport }) {
   );
 }
 
-function LaunchPanel() {
+function LaunchPanel({ port }: { port: number }) {
   return (
     <Box marginTop={1}>
       <>
         <Text color="green">✓ Dashboard running at </Text>
-        <Text color="cyan">http://localhost:7777</Text>
+        <Text color="cyan">http://localhost:{port}</Text>
         <Text dimColor> (Ctrl+C to stop)</Text>
       </>
     </Box>

@@ -35,6 +35,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Verify core runtime deps are a subset of cli runtime deps
+        run: |
+          CORE_DEPS=$(jq -r '.dependencies // {} | keys[]' packages/core/package.json | sort)
+          CLI_DEPS=$(jq -r '.dependencies // {} | keys[]' apps/cli/package.json | sort)
+          MISSING=$(comm -23 <(echo "$CORE_DEPS") <(echo "$CLI_DEPS") || true)
+          if [ -n "$MISSING" ]; then
+            echo "❌ apps/cli is missing runtime deps that @gitrelic/core declares:"
+            echo "$MISSING" | sed 's/^/    - /'
+            exit 1
+          fi
+          echo "✓ All core runtime deps are declared in cli"
+
       - name: Build
         run: pnpm build
 

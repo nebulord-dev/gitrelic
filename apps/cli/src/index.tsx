@@ -79,6 +79,16 @@ function GitrelicApp() {
   const [report, setReport] = useState<GitrelicReport | null>(null);
   const [progress, setProgress] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [webPort, setWebPort] = useState<number | undefined>(undefined);
+  // Drives unmount from a useEffect so React has a full render cycle to flush
+  // the final frame (report or error) before Ink tears down. Setting this to
+  // true triggers the effect *after* the state update that caused it has been
+  // painted, avoiding the race where unmount() fires before the output appears.
+  const [shouldExit, setShouldExit] = useState(false);
+
+  useEffect(() => {
+    if (shouldExit) inkInstance.unmount();
+  }, [shouldExit]);
 
   useEffect(() => {
     runGitrelic({
@@ -90,18 +100,16 @@ function GitrelicApp() {
       .then(async (result) => {
         setReport(result);
         if (opts.web) {
-          setProgress('Opening web dashboard...');
-          await serveWebDashboard(result);
+          const port = await serveWebDashboard(result);
+          setWebPort(port);
+        } else {
+          setShouldExit(true);
         }
       })
       .catch((err: Error) => {
         setError(err.message);
-        // Render the error frame, then tear down Ink and exit non-zero so
-        // shell consumers (CI, scripts) see the failure instead of a hang.
-        setTimeout(() => {
-          inkInstance.unmount();
-          process.exit(1);
-        }, 50);
+        process.exitCode = 1;
+        setShouldExit(true);
       });
   }, []);
 
@@ -113,14 +121,18 @@ function GitrelicApp() {
       version={pkg.version}
       showShame={opts.shame ?? false}
       showParallel={opts.parallel ?? false}
+      webPort={webPort}
     />
   );
 }
 
-// Capture the render instance so the error path can unmount cleanly.
+// Capture the render instance so success/error paths can unmount cleanly.
+// waitUntilExit() resolves once unmount() is called, allowing the process
+// to exit naturally without fragile setTimeout delays.
 const inkInstance = render(<GitrelicApp />);
+await inkInstance.waitUntilExit();
 
-async function serveWebDashboard(report: GitrelicReport): Promise<void> {
+async function serveWebDashboard(report: GitrelicReport): Promise<number> {
   // The web dashboard is copied into the cli's own dist/web/ at build time
   // (see scripts/copy-web-dist.mjs) so it ships inside the published package
   // and resolves identically in the monorepo and in node_modules installs.
@@ -214,7 +226,11 @@ async function serveWebDashboard(report: GitrelicReport): Promise<void> {
     server.once('error', reject);
     server.listen(port, '127.0.0.1', () => resolve());
   });
+  // Structured line for machine consumption (CI, scripts). Ink's colored
+  // output can embed ANSI codes that break naive grep; this is always clean.
+  process.stderr.write(`GITRELIC_PORT=${port}\n`);
   await open(`http://localhost:${port}`);
+  return port;
 }
 
 async function getFreePort(preferred: number, attempts = 0): Promise<number> {
