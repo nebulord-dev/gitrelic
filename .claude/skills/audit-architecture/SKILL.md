@@ -33,11 +33,11 @@ The enforced direction is: `@gitrelic/core` → `@gitrelic/cli` and `@gitrelic/w
 
 Three possible fixes — verify which one is in place:
 
-1. **Bundle core into cli** — `apps/cli/tsup.config.ts` has `noExternal: ['@gitrelic/core']`, so core's source is inlined at build time. Core stays private. In this case, every runtime dep of core (currently just `execa`) must also appear in `apps/cli/package.json` dependencies, because the bundled code does `require('execa')` against cli's own `node_modules`
+1. **Bundle core into cli** — `apps/cli/tsdown.config.ts` has `deps.alwaysBundle: ['@gitrelic/core']`, so core's source is inlined at build time. Core stays private. In this case, every runtime dep of core (currently just `execa`) must also appear in `apps/cli/package.json` dependencies, because the bundled code does `require('execa')` against cli's own `node_modules`
 2. **Publish core** — remove `"private": true` from `packages/core/package.json` and publish it separately
 3. **Don't publish cli yet** — fine for pre-release, but flag as a known blocker
 
-Current state (as of last audit): tsup config has NO `noExternal`, core is still private. This is a latent breakage. Confirm the current state and flag if unresolved.
+Current state (as of last audit): tsdown config has NO `deps.alwaysBundle`, core is still private. This is a latent breakage. Confirm the current state and flag if unresolved.
 
 ### 4. Exec Discipline Invariant
 
@@ -74,7 +74,7 @@ If any new package was added since the last audit:
 
 - Is it in `pnpm-workspace.yaml`?
 - Does it have its own `tsconfig.json` extending the root (if there is one)?
-- Does it have a `build` script that tsup or Vite can run?
+- Does it have a `build` script that tsdown or Vite can run?
 - Does `turbo.json` need any package-specific overrides?
 - Does the published `gitrelic` CLI need to depend on it?
 
@@ -92,7 +92,7 @@ gitrelic/
 │   └── src/analyzers/rename-tracking.ts # Known exec-discipline violator
 ├── apps/cli/
 │   ├── package.json                     # Published — dep on @gitrelic/core
-│   └── tsup.config.ts                   # Bundling config (noExternal?)
+│   └── tsdown.config.ts                 # Bundling config (deps.alwaysBundle?)
 └── apps/web/
     └── src/                             # grep for `from '@gitrelic/core'`
 ```
@@ -102,7 +102,7 @@ gitrelic/
 ```
 Use the monorepo-architect agent. Provide it this checklist plus the current
 state of: turbo.json, pnpm-workspace.yaml, packages/core/package.json,
-apps/cli/package.json, apps/cli/tsup.config.ts, and the results of grepping
+apps/cli/package.json, apps/cli/tsdown.config.ts, and the results of grepping
 for cross-package imports in apps/web/src.
 ```
 

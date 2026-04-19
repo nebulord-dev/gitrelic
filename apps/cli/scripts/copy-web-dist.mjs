@@ -10,11 +10,11 @@
  * via npm/npx, that path resolves to the non-existent `node_modules/web/dist`
  * and `--web` crashes with ENOENT.
  *
- * Fix: copy `apps/web/dist/*` → `apps/cli/dist/web/*` after tsup builds the
+ * Fix: copy `apps/web/dist/*` → `apps/cli/dist/web/*` after tsdown builds the
  * CLI. `apps/cli/src/index.tsx` resolves the dashboard via `./web` which
  * points at `dist/web/` regardless of install location.
  *
- * This script is invoked from `apps/cli/tsup.config.ts` via `onSuccess`.
+ * This script is invoked from `apps/cli/tsdown.config.ts` via `onSuccess`.
  * It assumes `@gitrelic/web` has already been built — turbo enforces this
  * because `apps/cli/package.json` declares `@gitrelic/web` as a devDependency.
  */

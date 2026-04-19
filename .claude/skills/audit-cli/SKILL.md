@@ -16,10 +16,10 @@ The published `gitrelic` package has `@gitrelic/core: workspace:*` as a runtime 
 Verify on every audit:
 
 - Is `packages/core/package.json` still `"private": true`?
-- Is there any bundling configured in `apps/cli/tsup.config.ts` (e.g. `noExternal: ['@gitrelic/core']`) that would inline core's source?
+- Is there any bundling configured in `apps/cli/tsdown.config.ts` (e.g. `deps: { alwaysBundle: ['@gitrelic/core'] }`) that would inline core's source?
 - Has the cli been published to npm? If yes, how does it actually resolve core at install time?
 
-This is the single highest-priority finding — fix direction is either: make core public, bundle core into cli via tsup's `noExternal`, or stop publishing cli.
+This is the single highest-priority finding — fix direction is either: make core public, bundle core into cli via tsdown's `alwaysBundle`, or stop publishing cli.
 
 ### 2. Commander Setup (`src/index.tsx`)
 
@@ -79,8 +79,8 @@ The monorepo layout and the published tarball layout are **not the same**. Anyth
 Verify on every audit:
 
 - **`files` field in `apps/cli/package.json`** — does it include everything the runtime touches? Currently `["dist"]`. If the CLI reads anything outside `dist/` at runtime (web assets, templates, config defaults, etc.), it's a ticking bomb. Grep `src/` for `readFileSync`, `existsSync`, `createReadStream`, `import()`, and any `new URL(..., import.meta.url)` — every resolved path must land under `dist/` after build.
-- **Every `new URL(..., import.meta.url)` in `src/`** — trace the resolved path in **both** the monorepo layout (`apps/cli/dist/index.js`) and the published layout (`node_modules/gitrelic/dist/index.js`). If they differ, the referenced asset must be bundled into `dist/` at build time via a tsup `onSuccess` hook or similar.
-- **tsup `onSuccess` copy hooks** — any script that stages assets into `dist/` must **fail loudly** when its source is missing, not silently skip. Check that each hook (currently `scripts/copy-web-dist.mjs`) has an `existsSync` guard followed by `process.exit(1)` with a helpful message that mentions the fix (e.g., "run `pnpm --filter @gitrelic/web build` first, or use `pnpm build` at the repo root").
+- **Every `new URL(..., import.meta.url)` in `src/`** — trace the resolved path in **both** the monorepo layout (`apps/cli/dist/index.js`) and the published layout (`node_modules/gitrelic/dist/index.js`). If they differ, the referenced asset must be bundled into `dist/` at build time via a tsdown `onSuccess` hook or similar.
+- **tsdown `onSuccess` copy hooks** — any script that stages assets into `dist/` must **fail loudly** when its source is missing, not silently skip. Check that each hook (currently `scripts/copy-web-dist.mjs`) has an `existsSync` guard followed by `process.exit(1)` with a helpful message that mentions the fix (e.g., "run `pnpm --filter @gitrelic/web build` first, or use `pnpm build` at the repo root").
 - **Turbo build ordering via workspace deps** — if the CLI's build depends on another workspace package's output being copied in, that package must be declared as a workspace dependency of the CLI (even if only a `devDependency`), otherwise turbo runs the builds in parallel and you get flaky/broken CLI tarballs. Check `apps/cli/package.json` — any workspace package whose output ends up inside `apps/cli/dist/` must appear in `devDependencies` as `workspace:*`.
 - **`fileURLToPath` vs `URL#pathname`** — any runtime path derived from `import.meta.url` must go through `fileURLToPath`. See the bullet in §3 for the Windows rationale. This check belongs here too because the failure mode is cross-platform parity, not just web-server-specific.
 - **Install smoke test coverage** — the CI `install-smoke` job packs the tarball and installs it cleanly. It should exercise **every** user-facing code path the CLI supports, not just the happy path. Current coverage as of 1.4.3: `--json` (report shape assertions) and `--web` (HTTP probes). Flag any newly-added flag or mode that isn't covered.
@@ -91,7 +91,7 @@ Verify on every audit:
 ```
 apps/cli/
 ├── package.json            # Dep on @gitrelic/core — publishing invariant
-├── tsup.config.ts          # Bundling config — check for noExternal
+├── tsdown.config.ts        # Bundling config — check for deps.alwaysBundle
 └── src/
     ├── index.tsx           # Commander entry, JSON path, web server, GitrelicApp
     └── components/

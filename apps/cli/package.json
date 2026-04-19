@@ -8,7 +8,7 @@
     "url": "https://github.com/nebulord-dev/gitrelic"
   },
   "bin": {
-    "gitrelic": "./dist/index.js"
+    "gitrelic": "./dist/index.mjs"
   },
   "files": [
     "dist"
@@ -16,13 +16,13 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
     }
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
@@ -39,7 +39,7 @@
     "@gitrelic/web": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
-    "tsup": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:"
   }
 }
