@@ -22,7 +22,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "execa": "^9.5.2"
+    "execa": "^9.6.1"
   },
   "devDependencies": {
     "@types/node": "catalog:",

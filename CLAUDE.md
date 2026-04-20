@@ -173,6 +173,44 @@ node apps/cli/dist/index.mjs --path ~/path/to/any-git-repo --json
 
 The built output is `dist/index.mjs` (matches `apps/cli/package.json` `bin` field). To verify the published layout, pack the tarball: `cd apps/cli && pnpm pack && tar -tzf gitrelic-*.tgz`.
 
+## Dependency Hygiene
+
+GitRelic has three dependency surfaces and each is scanned / updated differently:
+
+1. **Per-package `dependencies` / `devDependencies`** in `packages/core`, `apps/cli`, `apps/web`, `apps/docs`
+2. **Workspace catalog** in `pnpm-workspace.yaml` (shared `typescript`, `tsdown`, `vitest`, `@types/*`, etc.)
+3. **pnpm overrides** in root `package.json` (narrow pins for security / compat — e.g. `vitepress>vite`)
+
+### `pnpm outdated` vs `taze`
+
+They answer different questions — use both.
+
+- **`pnpm -r outdated`** — "Is my **installed** version behind the latest?" Reads the lockfile. Reports nothing if your declared range (e.g. `^9.5.2`) already resolves to the current latest (`9.6.1`). Great for catching real upgrades available without range-bumping.
+- **`pnpm dlx taze -r`** — "Is my **declared range** behind the latest?" Reads `package.json`. Flags `^9.5.2` even if the resolved install is already `9.6.1`, because the floor of the range is stale. Also understands catalog entries. Runs with `npx taze -r` too.
+
+Both tools together give the full picture. Taze also has a known parse error on pnpm's range-selector override keys (`picomatch@>=4.0.0 <4.0.4`) — harmless, the report above the error is complete.
+
+### Bumping
+
+```bash
+pnpm -r update --latest <pkg>        # rewrites package.json ranges AND lockfile (-L short form)
+pnpm -r up -L --interactive          # pick-list — use this for anything majorish
+```
+
+- `pnpm update` (no `--latest`) only refreshes within the existing range — it won't raise the declared floor
+- `pnpm -r up -L` does NOT touch the workspace catalog; bump `pnpm-workspace.yaml` by hand (or use taze)
+- Overrides in root `package.json` are also invisible to `pnpm update` — edit directly
+
+### Bundled-deps mirror discipline
+
+When bumping any runtime dep in `packages/core`, bump the matching entry in `apps/cli/package.json` in the **same commit**. The `install-smoke` CI only checks that keys match, not versions — so two declarations can drift to different ranges while CI stays green, and a future fresh install could resolve them differently.
+
+`pnpm -r up -L <pkg>` handles this automatically when both packages declare the dep (common case: `execa`).
+
+### Why `vitepress>vite` is pinned to `^6.4.2`
+
+That override is **scoped** — it only pins vite **where vitepress depends on it**, not the top-level vite used by `apps/web`. VitePress 1.x was built against vite 6; vite 7+ has breaking changes VitePress 1.x never absorbed. The lockfile happily holds both `vite@6.4.x` (inside vitepress) and `vite@8.x` (for `apps/web`). Taze will flag the top-level vite range even though the override pins a different vite instance to 6 — that's not drift, it's two separate vites in the graph. Drop the override only when moving to VitePress 2.x (which supports vite 7+).
+
 ## Releases & Versioning
 
 Releases are automated by semantic-release on push to `main` (see `.releaserc.json` and `.github/workflows/publish.yml`). The published package is `gitrelic` on npm (`apps/cli` is `pkgRoot`).
