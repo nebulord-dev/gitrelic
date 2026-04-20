@@ -54,6 +54,9 @@ Read based on the task at hand:
 
 - `apps/cli/src/index.tsx` — CLI entry, Commander setup, `--web` server
 - `apps/cli/src/components/App.tsx` — root Ink component (loading → results)
+- `apps/cli/tsdown.config.ts` — `deps.alwaysBundle: ['@gitrelic/core']` (bundles core inline) + `onSuccess` web-copy hook
+- `apps/cli/scripts/copy-web-dist.mjs` — copies `apps/web/dist/*` → `apps/cli/dist/web/*` at build time
+- **Two publishing invariants** enforced by the `install-smoke` CI job (`.github/workflows/ci.yml`): every runtime dep of core must be mirrored in `apps/cli/package.json`; and `node_modules/gitrelic/dist/web/index.html` must exist after installing the packed tarball. Changes that touch the CLI should verify both still hold — see `.claude/skills/audit-cli/` §1–§2 for detail
 
 **If working on web dashboard:**
 
@@ -65,6 +68,12 @@ Read based on the task at hand:
 - `apps/web/src/components/hero/` — D3 hero visualizations. Biggest XSS surface — must only use `.text()`, never `.html()`
 - `apps/web/src/components/tabs/` — 22 tabs, one per analyzer
 - Critical rule: only `import type` from `@gitrelic/core`. Value imports leak Node.js modules into the browser bundle.
+
+**If working on the documentation site:**
+
+- `apps/docs/` — VitePress site (workspace name `@gitrelic/docs`), deploys to `nebulord-dev.github.io/gitrelic` via `.github/workflows/docs.yml` on `apps/docs/**` changes to `main`
+- `apps/docs/.vitepress/config.ts` — site config and sidebar
+- Excluded from root `pnpm build`; use `pnpm docs:dev` / `pnpm docs:build`
 
 **For package-scoped audits:**
 

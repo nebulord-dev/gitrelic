@@ -9,11 +9,14 @@
 pnpm workspace + Turbo. Strict dependency order:
 
 ```
-@gitrelic/core (foundation)
+@gitrelic/core (foundation — private)
     ↓
-@gitrelic/cli (depends on core)
-@gitrelic/web (independent, served by CLI --web flag)
+gitrelic              (CLI, the only published package; bundles core inline)
+@gitrelic/web         (browser dashboard; served by CLI --web flag)
+@gitrelic/docs        (VitePress site; deploys separately via .github/workflows/docs.yml)
 ```
+
+Workspace names in `pnpm --filter <name>` commands: `@gitrelic/core`, `gitrelic` (NOT `@gitrelic/cli`), `@gitrelic/web`, `@gitrelic/docs`.
 
 ## Package Breakdown
 
@@ -46,10 +49,12 @@ pnpm workspace + Turbo. Strict dependency order:
   - `commit-timing.ts` — late-night/weekend stress patterns
   - `rename-tracking.ts` — file rename chain detection
 
-### `apps/cli` — Terminal Interface
+### `apps/cli` — Terminal Interface (published as `gitrelic` on npm)
 
 - `src/index.tsx` — Commander entry, Ink render, `--web` server
 - `src/components/App.tsx` — root Ink component (loading → results)
+- `scripts/copy-web-dist.mjs` — tsdown `onSuccess` hook: copies `apps/web/dist/*` → `apps/cli/dist/web/*` so the dashboard ships inside the published tarball
+- `tsdown.config.ts` — `deps.alwaysBundle: ['@gitrelic/core']` inlines core's source into the CLI bundle (core stays private)
 
 ### `apps/web` — Web Dashboard
 
@@ -62,6 +67,13 @@ pnpm workspace + Turbo. Strict dependency order:
 - `src/components/hero/` — D3 visualizations (commit graph, swimlanes, treemaps, force graphs, etc.). Biggest XSS surface — must only use `.text()`, never `.html()`
 - `src/components/tabs/` — 22 deep-dive tabs, one per analyzer
 - Critical rule: only `import type` from `@gitrelic/core`. Value imports bundle Node.js modules into the browser build and break Vite.
+
+### `apps/docs` — VitePress Documentation Site
+
+- `.vitepress/config.ts` — site config, base `/gitrelic/`
+- `guide/`, `analyzers/`, `dashboard/`, `advanced/` — content
+- Deployed to `nebulord-dev.github.io/gitrelic` via `.github/workflows/docs.yml` on `apps/docs/**` changes to `main`
+- **Excluded from root `pnpm build`** — docs has its own deploy workflow. `pnpm docs:dev` / `pnpm docs:build` to work locally.
 
 ## Key Concepts
 
@@ -102,6 +114,16 @@ Run these before merging large feature branches or when onboarding to a specific
 
 Everything comes from `git log` and `git ls-files`. No external tool dependencies — pure git.
 
+### Publishing invariants
+
+The published `gitrelic` package relies on two invariants that CI enforces. Both are load-bearing — break either one and `npm install gitrelic` crashes at runtime.
+
+1. **Bundled-deps mirror.** `apps/cli/tsdown.config.ts` inlines `@gitrelic/core`'s source via `deps.alwaysBundle`. The bundled code still calls `require('execa')` (and anything else core declares) against the CLI's own `node_modules` — so every runtime dep in `packages/core/package.json` MUST also appear in `apps/cli/package.json` with matching version ranges. The `install-smoke` CI job diffs the two dependency lists and fails on drift.
+
+2. **Published-asset mirror.** `apps/cli/package.json` ships `files: ["dist"]`, so only `dist/` lands in the tarball. The web dashboard lives at `apps/web/dist/`, outside the tarball — `scripts/copy-web-dist.mjs` (run as tsdown `onSuccess`) copies it into `apps/cli/dist/web/` at build time. Without this, `--web` crashes with `ENOENT` on every published version. Turbo orders the web build first because `apps/cli/package.json` declares `@gitrelic/web` as a `devDependency: workspace:*`.
+
+Changes to either side (new core dep, removed core dep, web dist layout change) must keep both invariants intact in the same PR.
+
 ## Task Management
 
 Tasks are tracked in **Jira** (nebulord.atlassian.net, project KAN, epic KAN-6 for GitRelic). Use the Atlassian MCP tools to read and update tasks. Do not create or edit local task files.
@@ -109,12 +131,15 @@ Tasks are tracked in **Jira** (nebulord.atlassian.net, project KAN, epic KAN-6 f
 ## Build Commands
 
 ```bash
-pnpm build                          # all packages
+pnpm build                          # core + cli + web (apps/docs excluded)
 pnpm --filter @gitrelic/core build
-pnpm --filter @gitrelic/cli build
+pnpm --filter gitrelic build        # NOT @gitrelic/cli — published package is unscoped
 pnpm --filter @gitrelic/web build
+pnpm docs:build                     # apps/docs (VitePress) — separate from pnpm build
 pnpm dev                            # watch all
 ```
+
+TypeScript 6 throughout (`tsconfig.base.json` + `pnpm-workspace.yaml` catalog). tsdown bundles core and CLI; Vite bundles web; VitePress bundles docs.
 
 ## Linting & Formatting
 
@@ -141,10 +166,12 @@ pnpm test:coverage                  # coverage report
 ## Running Locally
 
 ```bash
-node apps/cli/dist/index.js --path ~/path/to/any-git-repo
-node apps/cli/dist/index.js --path ~/path/to/any-git-repo --web
-node apps/cli/dist/index.js --path ~/path/to/any-git-repo --json
+node apps/cli/dist/index.mjs --path ~/path/to/any-git-repo
+node apps/cli/dist/index.mjs --path ~/path/to/any-git-repo --web
+node apps/cli/dist/index.mjs --path ~/path/to/any-git-repo --json
 ```
+
+The built output is `dist/index.mjs` (matches `apps/cli/package.json` `bin` field). To verify the published layout, pack the tarball: `cd apps/cli && pnpm pack && tar -tzf gitrelic-*.tgz`.
 
 ## Releases & Versioning
 

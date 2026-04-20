@@ -13,7 +13,7 @@
     "docs:dev": "pnpm --filter @gitrelic/docs docs:dev",
     "docs:build": "pnpm --filter @gitrelic/docs docs:build",
     "typecheck": "turbo run typecheck",
-    "gitrelic": "node apps/cli/dist/index.js",
+    "gitrelic": "node apps/cli/dist/index.mjs",
     "test": "pnpm -r test",
     "test:coverage": "pnpm -r test:coverage",
     "test:core": "vitest --ui --coverage --root packages/core",
