@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useSelection } from '../../hooks/useSelection';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
@@ -20,6 +20,35 @@ import { TopBar } from './TopBar';
 
 import type { DashboardMode, HeroViz } from '../../hooks/useSelection';
 import type { GitrelicReport } from '@gitrelic/core';
+
+export type LayoutMode =
+  | 'default'
+  | 'focus-canvas'
+  | 'fullscreen-hero'
+  | 'fullscreen-table'
+  | 'canvas-minimal';
+
+interface PanelVisibility {
+  sidebar: boolean;
+  bottomPanel: boolean;
+  inspector: boolean;
+  metricsStrip: boolean;
+}
+
+export function computeVisibility(mode: LayoutMode): PanelVisibility {
+  switch (mode) {
+    case 'focus-canvas':
+      return { sidebar: false, bottomPanel: true, inspector: false, metricsStrip: true };
+    case 'fullscreen-hero':
+      return { sidebar: false, bottomPanel: false, inspector: false, metricsStrip: false };
+    case 'fullscreen-table':
+      return { sidebar: false, bottomPanel: true, inspector: false, metricsStrip: false };
+    case 'canvas-minimal':
+      return { sidebar: false, bottomPanel: false, inspector: false, metricsStrip: true };
+    default:
+      return { sidebar: true, bottomPanel: true, inspector: true, metricsStrip: true };
+  }
+}
 
 function getHeroVizzes(mode: DashboardMode): { id: HeroViz; label: string }[] {
   switch (mode) {
@@ -52,6 +81,8 @@ interface ShellProps {
 
 export function Shell({ report }: ShellProps) {
   const selection = useSelection();
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>('default');
+  const visibility = computeVisibility(layoutMode);
   const heroVizzes = getHeroVizzes(selection.dashboardMode);
 
   useEffect(() => {
