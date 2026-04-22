@@ -81,9 +81,8 @@ interface ShellProps {
 
 export function Shell({ report }: ShellProps) {
   const selection = useSelection();
-  // oxlint-disable-next-line no-unused-vars -- consumed in Task 1.2
+  // oxlint-disable-next-line no-unused-vars -- consumed in Task 1.3
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('default');
-  // oxlint-disable-next-line no-unused-vars -- consumed in Task 1.2
   const visibility = computeVisibility(layoutMode);
   const heroVizzes = getHeroVizzes(selection.dashboardMode);
 
@@ -109,13 +108,15 @@ export function Shell({ report }: ShellProps) {
       {/* Body: sidebar + center + inspector */}
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
         {/* Left sidebar */}
-        <Sidebar
-          report={report}
-          activeItem={selection.activeNavItem}
-          dashboardMode={selection.dashboardMode}
-          onNavigate={selection.navigateTo}
-          onDashboardMode={selection.setDashboardMode}
-        />
+        {visibility.sidebar && (
+          <Sidebar
+            report={report}
+            activeItem={selection.activeNavItem}
+            dashboardMode={selection.dashboardMode}
+            onNavigate={selection.navigateTo}
+            onDashboardMode={selection.setDashboardMode}
+          />
+        )}
 
         {/* Center area: metrics + hero + bottom */}
         <div
@@ -126,7 +127,9 @@ export function Shell({ report }: ShellProps) {
             minWidth: 0,
           }}
         >
-          <MetricsStrip report={report} dashboardMode={selection.dashboardMode} />
+          {visibility.metricsStrip && (
+            <MetricsStrip report={report} dashboardMode={selection.dashboardMode} />
+          )}
 
           {/* Hero visualization */}
           <div
@@ -269,26 +272,30 @@ export function Shell({ report }: ShellProps) {
           </div>
 
           {/* Bottom panel */}
-          <BottomPanel
-            report={report}
-            activeGroup={selection.activeGroup}
-            activeTab={selection.activeBottomTab}
-            onTabChange={selection.setActiveBottomTab}
-            selectedFile={selection.selectedFile}
-            onSelectFile={selection.selectFile}
-          />
+          {visibility.bottomPanel && (
+            <BottomPanel
+              report={report}
+              activeGroup={selection.activeGroup}
+              activeTab={selection.activeBottomTab}
+              onTabChange={selection.setActiveBottomTab}
+              selectedFile={selection.selectedFile}
+              onSelectFile={selection.selectFile}
+            />
+          )}
         </div>
 
         {/* Right inspector */}
-        <InspectorPanel
-          report={report}
-          selectedFile={selection.selectedFile}
-          selectedContributor={selection.selectedContributor}
-          activeTab={selection.activeInspectorTab}
-          onTabChange={selection.setActiveInspectorTab}
-          onSelectFile={selection.selectFile}
-          onSelectContributor={selection.selectContributor}
-        />
+        {visibility.inspector && (
+          <InspectorPanel
+            report={report}
+            selectedFile={selection.selectedFile}
+            selectedContributor={selection.selectedContributor}
+            activeTab={selection.activeInspectorTab}
+            onTabChange={selection.setActiveInspectorTab}
+            onSelectFile={selection.selectFile}
+            onSelectContributor={selection.selectContributor}
+          />
+        )}
       </div>
     </div>
   );
