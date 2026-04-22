@@ -81,7 +81,6 @@ interface ShellProps {
 
 export function Shell({ report }: ShellProps) {
   const selection = useSelection();
-  // oxlint-disable-next-line no-unused-vars -- consumed in Task 1.3
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('default');
   const visibility = computeVisibility(layoutMode);
   const heroVizzes = getHeroVizzes(selection.dashboardMode);
@@ -103,7 +102,7 @@ export function Shell({ report }: ShellProps) {
       }}
     >
       {/* Top bar */}
-      <TopBar report={report} />
+      <TopBar report={report} layoutMode={layoutMode} onLayoutModeChange={setLayoutMode} />
 
       {/* Body: sidebar + center + inspector */}
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
