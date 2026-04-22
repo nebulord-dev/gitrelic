@@ -81,7 +81,9 @@ interface ShellProps {
 
 export function Shell({ report }: ShellProps) {
   const selection = useSelection();
+  // oxlint-disable-next-line no-unused-vars -- consumed in Task 1.2
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('default');
+  // oxlint-disable-next-line no-unused-vars -- consumed in Task 1.2
   const visibility = computeVisibility(layoutMode);
   const heroVizzes = getHeroVizzes(selection.dashboardMode);
 
