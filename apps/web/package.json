@@ -7,6 +7,7 @@
     "build": "vite build",
     "dev": "vite --port 7777",
     "preview": "vite preview",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
