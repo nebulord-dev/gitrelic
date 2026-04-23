@@ -60,7 +60,8 @@ export type AnalyzerPresetId =
   | 'coupling'
   | 'contributors'
   | 'cursed-files'
-  | 'dead-code';
+  | 'dead-code'
+  | 'blast-radius';
 // NOTE: Stream 3 will extend AnalyzerPresetId with the remaining presets.
 
 export type PresetId = DashboardPresetId | AnalyzerPresetId;

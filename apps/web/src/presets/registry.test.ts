@@ -18,7 +18,7 @@ function makeReport(): GitrelicReport {
     deadCode: { totalDeadFiles: 0, totalDeadLines: 0, candidates: [] },
     ghostFiles: { totalGhostFiles: 0 },
     knowledgeConcentration: { concentrationIndex: 0 },
-    blastRadius: { files: [] },
+    blastRadius: { files: [], topBlasters: [] },
     complexityTrend: { growingFiles: [] },
     rewriteRatio: { topRewriters: [] },
     churnVelocity: { acceleratingFiles: [] },

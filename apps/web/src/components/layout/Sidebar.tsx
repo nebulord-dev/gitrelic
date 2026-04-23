@@ -52,6 +52,10 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           label: 'Stale Files',
           badge: report.deadCode.totalDeadFiles,
         },
+        {
+          id: 'blast-radius',
+          label: 'Blast Radius',
+        },
         // NOTE: Stream 3 will add the other Code Health presets here.
       ],
     },

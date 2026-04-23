@@ -1,3 +1,4 @@
+import { blastRadiusMetrics } from './metrics/blast-radius';
 import { busFactorMetrics } from './metrics/bus-factor';
 import { contributorsMetrics } from './metrics/contributors';
 import { couplingMetrics } from './metrics/coupling';
@@ -160,5 +161,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['dead-code'],
     },
     metrics: deadCodeMetrics,
+  },
+  'blast-radius': {
+    id: 'blast-radius',
+    tier: 'analyzer',
+    label: 'Blast Radius',
+    group: 'code-health',
+    hero: {
+      defaultViz: 'scatter',
+      altTabs: ['scatter', 'coupling'],
+    },
+    bottomPanel: {
+      defaultTab: 'blast-radius',
+      altTabs: ['blast-radius'],
+    },
+    metrics: blastRadiusMetrics,
   },
 };
