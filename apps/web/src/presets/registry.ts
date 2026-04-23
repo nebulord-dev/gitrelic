@@ -11,6 +11,7 @@ import { knowledgeSilosMetrics } from './metrics/knowledge-silos';
 import { languagesMetrics } from './metrics/languages';
 import { overviewMetrics } from './metrics/overview';
 import { parallelDevMetrics } from './metrics/parallel-dev';
+import { rewriteRatioMetrics } from './metrics/rewrite-ratio';
 import { riskMetrics } from './metrics/risk';
 import { techDebtMetrics } from './metrics/tech-debt';
 import { testCoverageMetrics } from './metrics/test-coverage';
@@ -272,5 +273,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['test-coverage'],
     },
     metrics: testCoverageMetrics,
+  },
+  'rewrite-ratio': {
+    id: 'rewrite-ratio',
+    tier: 'analyzer',
+    label: 'Rewrite Ratio',
+    group: 'code-health',
+    hero: {
+      defaultViz: 'scatter',
+      altTabs: ['scatter', 'debt-scatter'],
+    },
+    bottomPanel: {
+      defaultTab: 'rewrite-ratio',
+      altTabs: ['rewrite-ratio'],
+    },
+    metrics: rewriteRatioMetrics,
   },
 };

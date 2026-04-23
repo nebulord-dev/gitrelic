@@ -66,6 +66,11 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           label: 'Age Map',
           badge: report.ageMap.ancientFiles.length,
         },
+        {
+          id: 'rewrite-ratio',
+          label: 'Rewrite Ratio',
+          badge: report.rewriteRatio.topRewriters.length,
+        },
         // NOTE: Stream 3 will add the other Code Health presets here.
       ],
     },
