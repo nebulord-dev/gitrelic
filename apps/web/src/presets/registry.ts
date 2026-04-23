@@ -1,3 +1,4 @@
+import { busFactorMetrics } from './metrics/bus-factor';
 import { hotspotsMetrics } from './metrics/hotspots';
 import { overviewMetrics } from './metrics/overview';
 import { riskMetrics } from './metrics/risk';
@@ -81,7 +82,21 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     },
     metrics: hotspotsMetrics,
   },
-  'bus-factor': undefined as unknown as PresetDefinition,
+  'bus-factor': {
+    id: 'bus-factor',
+    tier: 'analyzer',
+    label: 'Bus Factor',
+    group: 'ownership-risk',
+    hero: {
+      defaultViz: 'risk-heatmap',
+      altTabs: ['risk-heatmap', 'ownership'],
+    },
+    bottomPanel: {
+      defaultTab: 'bus-factor',
+      altTabs: ['bus-factor', 'knowledge-silos'],
+    },
+    metrics: busFactorMetrics,
+  },
   coupling: undefined as unknown as PresetDefinition,
   contributors: undefined as unknown as PresetDefinition,
 };
