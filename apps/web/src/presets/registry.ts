@@ -1,3 +1,4 @@
+import { hotspotsMetrics } from './metrics/hotspots';
 import { overviewMetrics } from './metrics/overview';
 import { riskMetrics } from './metrics/risk';
 import { techDebtMetrics } from './metrics/tech-debt';
@@ -65,7 +66,21 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     metrics: techDebtMetrics,
   },
   // Tier 2 entries (Tasks 2.11 – 2.14) go below this line.
-  hotspots: undefined as unknown as PresetDefinition,
+  hotspots: {
+    id: 'hotspots',
+    tier: 'analyzer',
+    label: 'Hotspots',
+    group: 'code-health',
+    hero: {
+      defaultViz: 'scatter',
+      altTabs: ['scatter', 'treemap', 'risk-heatmap'],
+    },
+    bottomPanel: {
+      defaultTab: 'hotspots',
+      altTabs: ['hotspots'],
+    },
+    metrics: hotspotsMetrics,
+  },
   'bus-factor': undefined as unknown as PresetDefinition,
   coupling: undefined as unknown as PresetDefinition,
   contributors: undefined as unknown as PresetDefinition,
