@@ -27,7 +27,7 @@ export function complexityTrendMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Net Lines',
       value: files.length > 0 ? fmt(netLines) : '—',
-      color: netLines > 0 ? 'var(--severity-warning)' : 'var(--text-primary)',
+      color: 'var(--text-primary)',
     },
   ];
 }
