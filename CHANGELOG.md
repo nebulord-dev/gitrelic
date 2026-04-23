@@ -1,3 +1,10 @@
+# [0.9.0](https://github.com/nebulord-dev/gitrelic/compare/v0.8.0...v0.9.0) (2026-04-23)
+
+
+### Features
+
+* **web:** add Commit Timing Tier 2 preset (Wave C) ([#33](https://github.com/nebulord-dev/gitrelic/issues/33)) ([8f38681](https://github.com/nebulord-dev/gitrelic/commit/8f386819b6cb5a72547fc49fd9686a590b8000c1))
+
 # [0.8.0](https://github.com/nebulord-dev/gitrelic/compare/v0.7.0...v0.8.0) (2026-04-23)
 
 
