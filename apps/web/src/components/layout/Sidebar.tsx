@@ -87,7 +87,14 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
     {
       label: 'Team & Activity',
       groupId: 'team-activity',
-      items: [{ id: 'contributors', label: 'Contributors' }],
+      items: [
+        { id: 'contributors', label: 'Contributors' },
+        {
+          id: 'parallel-dev',
+          label: 'Parallel Dev',
+          badge: report.parallelDev.hotFiles.length,
+        },
+      ],
     },
   ];
 }

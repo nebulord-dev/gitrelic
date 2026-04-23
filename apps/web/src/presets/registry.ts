@@ -8,6 +8,7 @@ import { deadCodeMetrics } from './metrics/dead-code';
 import { hotspotsMetrics } from './metrics/hotspots';
 import { knowledgeSilosMetrics } from './metrics/knowledge-silos';
 import { overviewMetrics } from './metrics/overview';
+import { parallelDevMetrics } from './metrics/parallel-dev';
 import { riskMetrics } from './metrics/risk';
 import { techDebtMetrics } from './metrics/tech-debt';
 
@@ -208,5 +209,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['knowledge-silos'],
     },
     metrics: knowledgeSilosMetrics,
+  },
+  'parallel-dev': {
+    id: 'parallel-dev',
+    tier: 'analyzer',
+    label: 'Parallel Dev',
+    group: 'team-activity',
+    hero: {
+      defaultViz: 'swimlanes',
+      altTabs: ['swimlanes', 'timeline'],
+    },
+    bottomPanel: {
+      defaultTab: 'parallel-dev',
+      altTabs: ['parallel-dev'],
+    },
+    metrics: parallelDevMetrics,
   },
 };

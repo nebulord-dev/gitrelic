@@ -63,7 +63,8 @@ export type AnalyzerPresetId =
   | 'dead-code'
   | 'blast-radius'
   | 'complexity-trend'
-  | 'knowledge-silos';
+  | 'knowledge-silos'
+  | 'parallel-dev';
 // NOTE: Stream 3 will extend AnalyzerPresetId with the remaining presets.
 
 export type PresetId = DashboardPresetId | AnalyzerPresetId;
