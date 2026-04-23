@@ -1,5 +1,3 @@
-import { fmt } from '../../components/theme';
-
 import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -38,11 +36,6 @@ export function overviewMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Repo Age',
       value: `${(report.meta.ageInDays / 365).toFixed(1)}y`,
-      color: 'var(--text-primary)',
-    },
-    {
-      label: 'Lines of Code',
-      value: fmt(report.loc.totalLines),
       color: 'var(--text-primary)',
     },
   ];
