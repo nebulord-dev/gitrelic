@@ -68,7 +68,8 @@ export type AnalyzerPresetId =
   | 'age-map'
   | 'languages'
   | 'test-coverage'
-  | 'rewrite-ratio';
+  | 'rewrite-ratio'
+  | 'commit-timing';
 // NOTE: Stream 3 will extend AnalyzerPresetId with the remaining presets.
 
 export type PresetId = DashboardPresetId | AnalyzerPresetId;

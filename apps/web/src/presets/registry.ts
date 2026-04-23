@@ -1,6 +1,7 @@
 import { ageMapMetrics } from './metrics/age-map';
 import { blastRadiusMetrics } from './metrics/blast-radius';
 import { busFactorMetrics } from './metrics/bus-factor';
+import { commitTimingMetrics } from './metrics/commit-timing';
 import { complexityTrendMetrics } from './metrics/complexity-trend';
 import { contributorsMetrics } from './metrics/contributors';
 import { couplingMetrics } from './metrics/coupling';
@@ -288,5 +289,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['rewrite-ratio'],
     },
     metrics: rewriteRatioMetrics,
+  },
+  'commit-timing': {
+    id: 'commit-timing',
+    tier: 'analyzer',
+    label: 'Commit Timing',
+    group: 'team-activity',
+    hero: {
+      defaultViz: 'timeline',
+      altTabs: ['timeline', 'swimlanes'],
+    },
+    bottomPanel: {
+      defaultTab: 'commit-timing',
+      altTabs: ['commit-timing'],
+    },
+    metrics: commitTimingMetrics,
   },
 };
