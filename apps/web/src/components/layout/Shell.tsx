@@ -86,6 +86,31 @@ export function Shell({ report }: ShellProps) {
   const heroVizzes = getHeroVizzes(selection.dashboardMode);
 
   useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.metaKey && !e.shiftKey && e.key === '.') {
+        e.preventDefault();
+        setLayoutMode((m) => (m === 'focus-canvas' ? 'default' : 'focus-canvas'));
+        return;
+      }
+      if (e.metaKey && e.shiftKey && e.key === '.') {
+        e.preventDefault();
+        setLayoutMode((m) => (m === 'fullscreen-hero' ? 'default' : 'fullscreen-hero'));
+        return;
+      }
+      if (e.metaKey && e.shiftKey && e.key === ',') {
+        e.preventDefault();
+        setLayoutMode((m) => (m === 'fullscreen-table' ? 'default' : 'fullscreen-table'));
+        return;
+      }
+      if (e.key === 'Escape') {
+        setLayoutMode('default');
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  useEffect(() => {
     const top = report.hotspots.topHotspots[0];
     if (top) {
       selection.selectFile(top.file);

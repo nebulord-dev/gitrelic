@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { normalizeReport } from '../../utils/normalizeReport';
@@ -63,5 +63,31 @@ describe('computeVisibility', () => {
       inspector: false,
       metricsStrip: true,
     });
+  });
+});
+
+describe('Shell keyboard shortcuts', () => {
+  it('⌘. enters focus-canvas mode', () => {
+    const { container } = render(<Shell report={makeMinimalReport()} />);
+    // Sidebar visible initially
+    expect(container.querySelector('nav')).not.toBeNull();
+    fireEvent.keyDown(window, { key: '.', metaKey: true });
+    // Sidebar hidden in focus-canvas
+    expect(container.querySelector('nav')).toBeNull();
+  });
+
+  it('Esc returns to default mode', () => {
+    const { container } = render(<Shell report={makeMinimalReport()} />);
+    fireEvent.keyDown(window, { key: '.', metaKey: true });
+    expect(container.querySelector('nav')).toBeNull();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(container.querySelector('nav')).not.toBeNull();
+  });
+
+  it('⌘⇧. enters fullscreen-hero mode', () => {
+    const { container } = render(<Shell report={makeMinimalReport()} />);
+    fireEvent.keyDown(window, { key: '.', metaKey: true, shiftKey: true });
+    // Bottom panel hidden
+    expect(container.querySelector('[style*="row-resize"]')).toBeNull();
   });
 });
