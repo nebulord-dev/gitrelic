@@ -66,7 +66,8 @@ export type AnalyzerPresetId =
   | 'knowledge-silos'
   | 'parallel-dev'
   | 'age-map'
-  | 'languages';
+  | 'languages'
+  | 'test-coverage';
 // NOTE: Stream 3 will extend AnalyzerPresetId with the remaining presets.
 
 export type PresetId = DashboardPresetId | AnalyzerPresetId;

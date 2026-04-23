@@ -104,7 +104,14 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
     {
       label: 'Structure',
       groupId: 'structure',
-      items: [{ id: 'languages', label: 'Languages' }],
+      items: [
+        { id: 'languages', label: 'Languages' },
+        {
+          id: 'test-coverage',
+          label: 'Test Coverage',
+          badge: report.testCoverage.uncoveredDirectories.length,
+        },
+      ],
     },
   ];
 }

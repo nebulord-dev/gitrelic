@@ -13,6 +13,7 @@ import { overviewMetrics } from './metrics/overview';
 import { parallelDevMetrics } from './metrics/parallel-dev';
 import { riskMetrics } from './metrics/risk';
 import { techDebtMetrics } from './metrics/tech-debt';
+import { testCoverageMetrics } from './metrics/test-coverage';
 
 import type { PresetDefinition, PresetId } from './types';
 
@@ -256,5 +257,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['languages'],
     },
     metrics: languagesMetrics,
+  },
+  'test-coverage': {
+    id: 'test-coverage',
+    tier: 'analyzer',
+    label: 'Test Coverage',
+    group: 'structure',
+    hero: {
+      defaultViz: 'treemap',
+      altTabs: ['treemap'],
+    },
+    bottomPanel: {
+      defaultTab: 'test-coverage',
+      altTabs: ['test-coverage'],
+    },
+    metrics: testCoverageMetrics,
   },
 };
