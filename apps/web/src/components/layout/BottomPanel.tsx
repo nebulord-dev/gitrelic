@@ -34,6 +34,7 @@ interface BottomPanelProps {
   onTabChange: (tab: BottomTab) => void;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
+  fillAvailable?: boolean;
 }
 
 const TAB_LABELS: Record<BottomTab, string> = {
@@ -133,6 +134,7 @@ export function BottomPanel({
   onTabChange,
   selectedFile,
   onSelectFile,
+  fillAvailable = false,
 }: BottomPanelProps) {
   const [height, setHeight] = useState(DEFAULT_HEIGHT);
   const dragRef = useRef<{ startY: number; startHeight: number } | null>(null);
@@ -176,8 +178,7 @@ export function BottomPanel({
     <div
       style={{
         borderTop: '1px solid var(--border-primary)',
-        height,
-        flexShrink: 0,
+        ...(fillAvailable ? { flex: 1, minHeight: 0 } : { height, flexShrink: 0 }),
         display: 'flex',
         flexDirection: 'column',
         background: 'var(--surface-primary)',
@@ -185,18 +186,20 @@ export function BottomPanel({
       }}
     >
       {/* Resize handle */}
-      <div
-        onMouseDown={handleMouseDown}
-        style={{
-          position: 'absolute',
-          top: -3,
-          left: 0,
-          right: 0,
-          height: 6,
-          cursor: 'row-resize',
-          zIndex: 10,
-        }}
-      />
+      {!fillAvailable && (
+        <div
+          onMouseDown={handleMouseDown}
+          style={{
+            position: 'absolute',
+            top: -3,
+            left: 0,
+            right: 0,
+            height: 6,
+            cursor: 'row-resize',
+            zIndex: 10,
+          }}
+        />
+      )}
 
       {/* Tab bar */}
       <div

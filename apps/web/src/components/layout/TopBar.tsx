@@ -1,12 +1,16 @@
 import { fmt } from '../theme';
+import { LayoutControls } from './LayoutControls';
 
+import type { LayoutMode } from './Shell';
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface TopBarProps {
   report: GitrelicReport;
+  layoutMode: LayoutMode;
+  onLayoutModeChange: (mode: LayoutMode) => void;
 }
 
-export function TopBar({ report }: TopBarProps) {
+export function TopBar({ report, layoutMode, onLayoutModeChange }: TopBarProps) {
   const { meta, repoName } = report;
 
   return (
@@ -49,6 +53,7 @@ export function TopBar({ report }: TopBarProps) {
           {new Date(meta.lastCommit).toLocaleDateString()}
         </span>
       </div>
+      <LayoutControls mode={layoutMode} onModeChange={onLayoutModeChange} />
       {/* Theme toggle hidden until light theme covers all graphs/visualizations */}
       {/* <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
         <button
