@@ -81,7 +81,7 @@ export function computeVisibility(mode: LayoutMode): PanelVisibility {
   }
 }
 
-const HERO_LABELS: Record<HeroViz, string> = {
+export const HERO_LABELS: Record<HeroViz, string> = {
   treemap: 'Treemap',
   ownership: 'Ownership',
   coupling: 'Coupling',
@@ -91,8 +91,8 @@ const HERO_LABELS: Record<HeroViz, string> = {
   swimlanes: 'Swimlanes',
   'risk-heatmap': 'Heatmap',
   'ownership-sunburst': 'Sunburst',
-  'growth-timeline': 'Timeline',
-  'debt-scatter': 'Scatter',
+  'growth-timeline': 'Growth',
+  'debt-scatter': 'Debt',
 };
 
 interface ShellProps {
@@ -322,6 +322,7 @@ export function Shell({ report }: ShellProps) {
               onTabChange={selection.setBottomTabOverride}
               selectedFile={selection.selectedFile}
               onSelectFile={selection.selectFile}
+              fillAvailable={!visibility.hero}
             />
           )}
         </div>

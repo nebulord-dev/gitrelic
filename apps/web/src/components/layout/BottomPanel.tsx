@@ -33,6 +33,9 @@ interface BottomPanelProps {
   onTabChange: (tab: BottomTab) => void;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
+  // When true, fill the available vertical space instead of a fixed height.
+  // Used in fullscreen-table layout mode where the hero is hidden.
+  fillAvailable?: boolean;
 }
 
 const TAB_LABELS: Record<BottomTab, string> = {
@@ -132,6 +135,7 @@ export function BottomPanel({
   onTabChange,
   selectedFile,
   onSelectFile,
+  fillAvailable = false,
 }: BottomPanelProps) {
   const [height, setHeight] = useState(DEFAULT_HEIGHT);
   const dragRef = useRef<{ startY: number; startHeight: number } | null>(null);
@@ -163,20 +167,17 @@ export function BottomPanel({
     [height],
   );
 
-  const visibleTabs = altTabs;
-
   useEffect(() => {
-    if (!visibleTabs.includes(activeTab)) {
-      onTabChange(visibleTabs[0]);
+    if (!altTabs.includes(activeTab)) {
+      onTabChange(altTabs[0]);
     }
-  }, [activeTab, onTabChange, visibleTabs]);
+  }, [activeTab, onTabChange, altTabs]);
 
   return (
     <div
       style={{
         borderTop: '1px solid var(--border-primary)',
-        height,
-        flexShrink: 0,
+        ...(fillAvailable ? { flex: 1, minHeight: 0 } : { height, flexShrink: 0 }),
         display: 'flex',
         flexDirection: 'column',
         background: 'var(--surface-primary)',
@@ -207,7 +208,7 @@ export function BottomPanel({
           flexShrink: 0,
         }}
       >
-        {visibleTabs.map((tabId) => (
+        {altTabs.map((tabId) => (
           <button
             key={tabId}
             onClick={() => onTabChange(tabId)}
