@@ -24,7 +24,7 @@ Show directory structure:
 Read in this order — each builds on the previous:
 
 - `CLAUDE.md` — project rules, architecture overview, file navigation guide
-- Jira project KAN (nebulord.atlassian.net) — current task board, epic KAN-6 for GitRelic
+<!-- - Jira project KAN (nebulord.atlassian.net) — current task board, epic KAN-6 for GitRelic -->
 
 List available design docs:
 !`ls docs/superpowers/plans/ docs/superpowers/specs/ 2>/dev/null || echo "No plans directory yet"`
@@ -98,8 +98,8 @@ Provide a concise summary covering:
 ### Project Overview
 
 - Purpose and current phase of development
-- What's actively being worked on (from Jira In Progress)
-- What's coming next (from Jira To Do)
+<!-- - What's actively being worked on (from Jira In Progress)
+- What's coming next (from Jira To Do) -->
 
 ### Architecture
 
@@ -127,7 +127,7 @@ Key libraries Sickbay has that GitRelic will need as features grow:
 ### Current State
 
 - Active branch and recent commits
-- Jira status: what's in progress, what's blocked
+<!-- - Jira status: what's in progress, what's blocked -->
 - Immediate next actions
 
 **Make this summary easy to scan — use bullet points and clear headers.**
