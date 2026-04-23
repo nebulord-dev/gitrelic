@@ -101,6 +101,11 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
         },
       ],
     },
+    {
+      label: 'Structure',
+      groupId: 'structure',
+      items: [{ id: 'languages', label: 'Languages' }],
+    },
   ];
 }
 

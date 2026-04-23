@@ -8,6 +8,7 @@ import { cursedFilesMetrics } from './metrics/cursed-files';
 import { deadCodeMetrics } from './metrics/dead-code';
 import { hotspotsMetrics } from './metrics/hotspots';
 import { knowledgeSilosMetrics } from './metrics/knowledge-silos';
+import { languagesMetrics } from './metrics/languages';
 import { overviewMetrics } from './metrics/overview';
 import { parallelDevMetrics } from './metrics/parallel-dev';
 import { riskMetrics } from './metrics/risk';
@@ -240,5 +241,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['age-map'],
     },
     metrics: ageMapMetrics,
+  },
+  languages: {
+    id: 'languages',
+    tier: 'analyzer',
+    label: 'Languages',
+    group: 'structure',
+    hero: {
+      defaultViz: 'treemap',
+      altTabs: ['treemap'],
+    },
+    bottomPanel: {
+      defaultTab: 'languages',
+      altTabs: ['languages'],
+    },
+    metrics: languagesMetrics,
   },
 };
