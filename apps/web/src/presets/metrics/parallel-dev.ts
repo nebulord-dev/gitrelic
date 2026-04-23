@@ -7,7 +7,7 @@ export function parallelDevMetrics(report: GitrelicReport): Metric[] {
   const { hotFiles, totalParallelFiles, files } = report.parallelDev;
   const topFile = hotFiles[0];
   const topScore = topFile?.parallelScore ?? 0;
-  const peakAuthors = files.length > 0 ? Math.max(...files.map((f) => f.peakAuthors)) : 0;
+  const peakAuthors = files.reduce((max, f) => (f.peakAuthors > max ? f.peakAuthors : max), 0);
 
   return [
     {

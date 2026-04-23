@@ -51,6 +51,13 @@ describe('blastRadiusMetrics', () => {
     expect(metrics[3].value).toBe('2');
   });
 
+  it('returns em-dash for Top Blast Score when files exist but topBlasters is empty', () => {
+    const metrics = blastRadiusMetrics(makeReport({ files: [makeFile()], topBlasters: [] }));
+    expect(metrics[0].value).toBe('—');
+    expect(metrics[0].color).toBe('var(--severity-healthy)');
+    expect(metrics[3].value).toBe('1');
+  });
+
   it('rounds fractional top blast scores', () => {
     const files = [makeFile()];
     const topBlasters = [makeFile({ blastScore: 65.7 })];

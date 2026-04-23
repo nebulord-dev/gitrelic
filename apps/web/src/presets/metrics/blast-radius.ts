@@ -6,7 +6,10 @@ import type { GitrelicReport } from '@gitrelic/core';
 export function blastRadiusMetrics(report: GitrelicReport): Metric[] {
   const { files, topBlasters } = report.blastRadius;
   const topScore = topBlasters[0]?.blastScore ?? 0;
-  const maxCoChanged = files.length > 0 ? Math.max(...files.map((f) => f.maxCoChangedFiles)) : 0;
+  const maxCoChanged = files.reduce(
+    (max, f) => (f.maxCoChangedFiles > max ? f.maxCoChangedFiles : max),
+    0,
+  );
   const avgCoChanged =
     files.length > 0
       ? Math.round((files.reduce((sum, f) => sum + f.avgCoChangedFiles, 0) / files.length) * 10) /
@@ -16,9 +19,9 @@ export function blastRadiusMetrics(report: GitrelicReport): Metric[] {
   return [
     {
       label: 'Top Blast Score',
-      value: files.length > 0 ? String(Math.round(topScore)) : '—',
+      value: topBlasters.length > 0 ? String(Math.round(topScore)) : '—',
       color:
-        files.length === 0
+        topBlasters.length === 0
           ? 'var(--severity-healthy)'
           : topScore >= 70
             ? 'var(--severity-critical)'
