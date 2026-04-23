@@ -17,23 +17,29 @@ export function LayoutControls({ mode, onModeChange }: LayoutControlsProps) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <button
-        aria-label="Toggle sidebar"
+        aria-label="Hide sidebars"
+        title="Hide sidebars (⌘.)"
+        aria-pressed={mode === 'focus-canvas'}
         onClick={() => onModeChange(mode === 'focus-canvas' ? 'default' : 'focus-canvas')}
-        style={iconButtonStyle(mode !== 'default' && mode !== 'canvas-minimal')}
+        style={iconButtonStyle(mode === 'focus-canvas')}
       >
         ◧
       </button>
       <button
-        aria-label="Toggle bottom panel"
+        aria-label="Fullscreen hero"
+        title="Fullscreen hero (⌘⇧.)"
+        aria-pressed={mode === 'fullscreen-hero'}
         onClick={() => onModeChange(mode === 'fullscreen-hero' ? 'default' : 'fullscreen-hero')}
-        style={iconButtonStyle(mode === 'fullscreen-hero' || mode === 'canvas-minimal')}
+        style={iconButtonStyle(mode === 'fullscreen-hero')}
       >
         ⬓
       </button>
       <button
-        aria-label="Toggle inspector"
-        onClick={() => onModeChange(mode === 'default' ? 'focus-canvas' : 'default')}
-        style={iconButtonStyle(mode !== 'default')}
+        aria-label="Fullscreen table"
+        title="Fullscreen table (⌘⇧,)"
+        aria-pressed={mode === 'fullscreen-table'}
+        onClick={() => onModeChange(mode === 'fullscreen-table' ? 'default' : 'fullscreen-table')}
+        style={iconButtonStyle(mode === 'fullscreen-table')}
       >
         ◨
       </button>
