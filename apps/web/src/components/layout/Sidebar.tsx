@@ -47,6 +47,11 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           label: 'Cursed Files',
           badge: report.cursedFiles.filter((c) => c.curseScore >= 70).length,
         },
+        {
+          id: 'dead-code',
+          label: 'Stale Files',
+          badge: report.deadCode.totalDeadFiles,
+        },
         // NOTE: Stream 3 will add the other Code Health presets here.
       ],
     },

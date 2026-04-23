@@ -2,6 +2,7 @@ import { busFactorMetrics } from './metrics/bus-factor';
 import { contributorsMetrics } from './metrics/contributors';
 import { couplingMetrics } from './metrics/coupling';
 import { cursedFilesMetrics } from './metrics/cursed-files';
+import { deadCodeMetrics } from './metrics/dead-code';
 import { hotspotsMetrics } from './metrics/hotspots';
 import { overviewMetrics } from './metrics/overview';
 import { riskMetrics } from './metrics/risk';
@@ -144,5 +145,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['cursed-files'],
     },
     metrics: cursedFilesMetrics,
+  },
+  'dead-code': {
+    id: 'dead-code',
+    tier: 'analyzer',
+    label: 'Stale Files',
+    group: 'code-health',
+    hero: {
+      defaultViz: 'scatter',
+      altTabs: ['scatter', 'treemap'],
+    },
+    bottomPanel: {
+      defaultTab: 'dead-code',
+      altTabs: ['dead-code'],
+    },
+    metrics: deadCodeMetrics,
   },
 };

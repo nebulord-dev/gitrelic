@@ -15,7 +15,7 @@ function makeReport(): GitrelicReport {
     cursedFiles: [],
     busFactors: { criticalFiles: [] },
     coupling: { pairs: [], topPairs: [], fileProfiles: [], summary: '' },
-    deadCode: { totalDeadFiles: 0, candidates: [] },
+    deadCode: { totalDeadFiles: 0, totalDeadLines: 0, candidates: [] },
     ghostFiles: { totalGhostFiles: 0 },
     knowledgeConcentration: { concentrationIndex: 0 },
     blastRadius: { files: [] },
