@@ -1,3 +1,10 @@
+## [0.5.1](https://github.com/nebulord-dev/gitrelic/compare/v0.5.0...v0.5.1) (2026-04-23)
+
+
+### Bug Fixes
+
+* **web:** preset framework follow-ups from PR [#28](https://github.com/nebulord-dev/gitrelic/issues/28) review ([#29](https://github.com/nebulord-dev/gitrelic/issues/29)) ([564e6bf](https://github.com/nebulord-dev/gitrelic/commit/564e6bff2e4585ffe57abb13111115bdb9016b63))
+
 # [0.5.0](https://github.com/nebulord-dev/gitrelic/compare/v0.4.1...v0.5.0) (2026-04-23)
 
 
