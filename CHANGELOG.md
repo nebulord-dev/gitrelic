@@ -1,3 +1,10 @@
+# [0.5.0](https://github.com/nebulord-dev/gitrelic/compare/v0.4.1...v0.5.0) (2026-04-23)
+
+
+### Features
+
+* **web:** analyzer preset framework + 4 Tier 2 presets ([#28](https://github.com/nebulord-dev/gitrelic/issues/28)) ([321b0c6](https://github.com/nebulord-dev/gitrelic/commit/321b0c6d95d9794a76089f228a1cc5b065bfa368))
+
 ## [0.4.1](https://github.com/nebulord-dev/gitrelic/compare/v0.4.0...v0.4.1) (2026-04-23)
 
 
