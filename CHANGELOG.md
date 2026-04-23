@@ -1,3 +1,10 @@
+# [0.8.0](https://github.com/nebulord-dev/gitrelic/compare/v0.7.0...v0.8.0) (2026-04-23)
+
+
+### Features
+
+* **web:** add Wave B Tier 2 presets (4 presets + Structure group) ([#32](https://github.com/nebulord-dev/gitrelic/issues/32)) ([4cdcdea](https://github.com/nebulord-dev/gitrelic/commit/4cdcdeae784a431f545eb7f474fe58c3ab60f8fe))
+
 # [0.7.0](https://github.com/nebulord-dev/gitrelic/compare/v0.6.0...v0.7.0) (2026-04-23)
 
 
