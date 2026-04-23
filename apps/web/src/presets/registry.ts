@@ -1,6 +1,7 @@
 import { busFactorMetrics } from './metrics/bus-factor';
 import { contributorsMetrics } from './metrics/contributors';
 import { couplingMetrics } from './metrics/coupling';
+import { cursedFilesMetrics } from './metrics/cursed-files';
 import { hotspotsMetrics } from './metrics/hotspots';
 import { overviewMetrics } from './metrics/overview';
 import { riskMetrics } from './metrics/risk';
@@ -128,5 +129,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['contributors'],
     },
     metrics: contributorsMetrics,
+  },
+  'cursed-files': {
+    id: 'cursed-files',
+    tier: 'analyzer',
+    label: 'Cursed Files',
+    group: 'code-health',
+    hero: {
+      defaultViz: 'risk-heatmap',
+      altTabs: ['risk-heatmap', 'treemap', 'scatter'],
+    },
+    bottomPanel: {
+      defaultTab: 'cursed-files',
+      altTabs: ['cursed-files'],
+    },
+    metrics: cursedFilesMetrics,
   },
 };

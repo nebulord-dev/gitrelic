@@ -54,8 +54,13 @@ export interface Metric {
 
 export type DashboardPresetId = 'overview' | 'risk' | 'tech-debt';
 
-export type AnalyzerPresetId = 'hotspots' | 'bus-factor' | 'coupling' | 'contributors';
-// NOTE: Stream 3 will extend AnalyzerPresetId with the remaining 18 presets.
+export type AnalyzerPresetId =
+  | 'hotspots'
+  | 'bus-factor'
+  | 'coupling'
+  | 'contributors'
+  | 'cursed-files';
+// NOTE: Stream 3 will extend AnalyzerPresetId with the remaining presets.
 
 export type PresetId = DashboardPresetId | AnalyzerPresetId;
 
