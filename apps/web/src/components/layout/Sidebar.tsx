@@ -73,6 +73,7 @@ export function Sidebar({ report, activePresetId, onApplyPreset }: SidebarProps)
 
   return (
     <nav
+      aria-label="Dashboard navigation"
       style={{
         width: 200,
         minWidth: 200,
@@ -103,6 +104,7 @@ export function Sidebar({ report, activePresetId, onApplyPreset }: SidebarProps)
               <button
                 key={item.id}
                 onClick={() => onApplyPreset(item.id)}
+                aria-current={isActive ? 'page' : undefined}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
