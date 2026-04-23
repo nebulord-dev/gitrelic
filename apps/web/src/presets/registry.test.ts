@@ -21,7 +21,7 @@ function makeReport(): GitrelicReport {
     complexityTrend: { growingFiles: [] },
     rewriteRatio: { topRewriters: [] },
     churnVelocity: { acceleratingFiles: [] },
-  } as Partial<GitrelicReport> as GitrelicReport;
+  } as unknown as GitrelicReport;
 }
 
 const DEFINED_PRESETS = (Object.entries(PRESETS) as [PresetId, PresetDefinition | undefined][])

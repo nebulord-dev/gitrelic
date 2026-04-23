@@ -1,30 +1,10 @@
-import { overviewMetrics } from '../../presets/metrics/overview';
-import { riskMetrics } from '../../presets/metrics/risk';
-import { techDebtMetrics } from '../../presets/metrics/tech-debt';
-
-import type { DashboardMode } from '../../hooks/useSelection';
 import type { Metric } from '../../presets/types';
-import type { GitrelicReport } from '@gitrelic/core';
 
 interface MetricsStripProps {
-  report: GitrelicReport;
-  dashboardMode: DashboardMode;
+  metrics: Metric[];
 }
 
-function getMetrics(report: GitrelicReport, mode: DashboardMode): Metric[] {
-  switch (mode) {
-    case 'risk':
-      return riskMetrics(report);
-    case 'tech-debt':
-      return techDebtMetrics(report);
-    default:
-      return overviewMetrics(report);
-  }
-}
-
-export function MetricsStrip({ report, dashboardMode }: MetricsStripProps) {
-  const metrics = getMetrics(report, dashboardMode);
-
+export function MetricsStrip({ metrics }: MetricsStripProps) {
   return (
     <div
       style={{

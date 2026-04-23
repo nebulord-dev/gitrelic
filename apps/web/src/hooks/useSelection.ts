@@ -1,152 +1,64 @@
 import { useCallback, useState } from 'react';
 
-export type NavItem =
-  | 'dashboard'
-  | 'health-score'
-  | 'hotspots'
-  | 'cursed-files'
-  | 'dead-code'
-  | 'complexity'
-  | 'rewrites'
-  | 'bus-factor'
-  | 'ghost-files'
-  | 'knowledge'
-  | 'coupling'
-  | 'contributors'
-  | 'co-authors'
-  | 'timing'
-  | 'parallel-dev'
-  | 'shame'
-  | 'age-map'
-  | 'languages'
-  | 'test-coverage'
-  | 'renames';
+import { PRESETS } from '../presets/registry';
 
-export type BottomTab =
-  | 'hotspots'
-  | 'cursed-files'
-  | 'bus-factor'
-  | 'coupling'
-  | 'contributors'
-  | 'parallel-dev'
-  | 'shame'
-  | 'age-map'
-  | 'dead-code'
-  | 'complexity-trend'
-  | 'rewrite-ratio'
-  | 'churn-velocity'
-  | 'blast-radius'
-  | 'ghost-files'
-  | 'knowledge-silos'
-  | 'co-authors'
-  | 'commit-timing'
-  | 'languages'
-  | 'test-coverage'
-  | 'renames'
-  | 'risk-register'
-  | 'debt-inventory';
-
-export type SidebarGroup =
-  | 'overview'
-  | 'code-health'
-  | 'ownership-risk'
-  | 'team-activity'
-  | 'structure'
-  | 'risk'
-  | 'tech-debt';
-
-export const GROUP_TABS: Record<SidebarGroup, BottomTab[]> = {
-  overview: ['hotspots', 'cursed-files', 'bus-factor', 'churn-velocity', 'ghost-files'],
-  'code-health': [
-    'hotspots',
-    'cursed-files',
-    'dead-code',
-    'complexity-trend',
-    'rewrite-ratio',
-    'churn-velocity',
-    'blast-radius',
-  ],
-  'ownership-risk': ['bus-factor', 'coupling', 'ghost-files', 'knowledge-silos'],
-  'team-activity': ['contributors', 'co-authors', 'commit-timing', 'parallel-dev', 'shame'],
-  structure: ['age-map', 'languages', 'test-coverage', 'renames'],
-  risk: ['risk-register', 'bus-factor', 'ghost-files', 'knowledge-silos'],
-  'tech-debt': [
-    'debt-inventory',
-    'dead-code',
-    'complexity-trend',
-    'rewrite-ratio',
-    'churn-velocity',
-  ],
-};
-
-const navToGroupTab: Record<NavItem, { group: SidebarGroup; tab: BottomTab }> = {
-  dashboard: { group: 'overview', tab: 'hotspots' },
-  'health-score': { group: 'overview', tab: 'hotspots' },
-  hotspots: { group: 'code-health', tab: 'hotspots' },
-  'cursed-files': { group: 'code-health', tab: 'cursed-files' },
-  'dead-code': { group: 'code-health', tab: 'dead-code' },
-  complexity: { group: 'code-health', tab: 'complexity-trend' },
-  rewrites: { group: 'code-health', tab: 'rewrite-ratio' },
-  'bus-factor': { group: 'ownership-risk', tab: 'bus-factor' },
-  coupling: { group: 'ownership-risk', tab: 'coupling' },
-  'ghost-files': { group: 'ownership-risk', tab: 'ghost-files' },
-  knowledge: { group: 'ownership-risk', tab: 'knowledge-silos' },
-  contributors: { group: 'team-activity', tab: 'contributors' },
-  'co-authors': { group: 'team-activity', tab: 'co-authors' },
-  timing: { group: 'team-activity', tab: 'commit-timing' },
-  'parallel-dev': { group: 'team-activity', tab: 'parallel-dev' },
-  shame: { group: 'team-activity', tab: 'shame' },
-  'age-map': { group: 'structure', tab: 'age-map' },
-  languages: { group: 'structure', tab: 'languages' },
-  'test-coverage': { group: 'structure', tab: 'test-coverage' },
-  renames: { group: 'structure', tab: 'renames' },
-};
+import type { BottomTab, HeroViz, Metric, PresetId } from '../presets/types';
+import type { GitrelicReport } from '@gitrelic/core';
 
 export type InspectorTab = 'file' | 'contributors' | 'activity';
 
-export type HeroViz =
-  | 'treemap'
-  | 'ownership'
-  | 'coupling'
-  | 'commit-graph'
-  | 'scatter'
-  | 'timeline'
-  | 'swimlanes'
-  | 'risk-heatmap'
-  | 'ownership-sunburst'
-  | 'growth-timeline'
-  | 'debt-scatter';
-
-export type DashboardMode = 'overview' | 'risk' | 'tech-debt';
-
 export interface SelectionState {
+  // Preset state
+  activePresetId: PresetId;
+  heroOverride: HeroViz | null;
+  bottomTabOverride: BottomTab | null;
+
+  // Derived
+  activeHeroViz: HeroViz;
+  activeBottomTab: BottomTab;
+  heroAltTabs: HeroViz[];
+  bottomAltTabs: BottomTab[];
+  metrics: (report: GitrelicReport) => Metric[];
+
+  // Selection
   selectedFile: string | null;
   selectedContributor: string | null;
-  activeNavItem: NavItem;
-  activeGroup: SidebarGroup;
-  activeBottomTab: BottomTab;
   activeInspectorTab: InspectorTab;
-  activeHeroViz: HeroViz;
-  dashboardMode: DashboardMode;
+
+  // Actions
+  applyPreset: (id: PresetId) => void;
+  setHeroOverride: (viz: HeroViz) => void;
+  setBottomTabOverride: (tab: BottomTab) => void;
   selectFile: (file: string) => void;
   selectContributor: (email: string) => void;
   clearSelection: () => void;
-  navigateTo: (item: NavItem) => void;
-  setActiveBottomTab: (tab: BottomTab) => void;
   setActiveInspectorTab: (tab: InspectorTab) => void;
-  setActiveHeroViz: (viz: HeroViz) => void;
-  setDashboardMode: (mode: DashboardMode) => void;
 }
 
 export function useSelection(): SelectionState {
+  const [activePresetId, setActivePresetId] = useState<PresetId>('overview');
+  const [heroOverride, setHeroOverrideState] = useState<HeroViz | null>(null);
+  const [bottomTabOverride, setBottomTabOverrideState] = useState<BottomTab | null>(null);
+
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedContributor, setSelectedContributor] = useState<string | null>(null);
-  const [activeNavItem, setActiveNavItem] = useState<NavItem>('dashboard');
-  const [activeGroup, setActiveGroup] = useState<SidebarGroup>('overview');
-  const [activeBottomTab, setActiveBottomTab] = useState<BottomTab>('hotspots');
   const [activeInspectorTab, setActiveInspectorTab] = useState<InspectorTab>('file');
-  const [activeHeroViz, setActiveHeroViz] = useState<HeroViz>('treemap');
-  const [dashboardMode, setDashboardMode] = useState<DashboardMode>('overview');
+
+  const preset = PRESETS[activePresetId];
+
+  const applyPreset = useCallback((id: PresetId) => {
+    setActivePresetId(id);
+    setHeroOverrideState(null);
+    setBottomTabOverrideState(null);
+  }, []);
+
+  const setHeroOverride = useCallback((viz: HeroViz) => {
+    setHeroOverrideState(viz);
+  }, []);
+
+  const setBottomTabOverride = useCallback((tab: BottomTab) => {
+    setBottomTabOverrideState(tab);
+  }, []);
 
   const selectFile = useCallback((file: string) => {
     setSelectedFile(file);
@@ -165,55 +77,24 @@ export function useSelection(): SelectionState {
     setSelectedContributor(null);
   }, []);
 
-  const navigateTo = useCallback((item: NavItem) => {
-    setActiveNavItem(item);
-    if (item !== 'dashboard') {
-      setDashboardMode('overview');
-    }
-    const { group, tab } = navToGroupTab[item];
-    setActiveGroup(group);
-    setActiveBottomTab(tab);
-  }, []);
-
-  const handleSetDashboardMode = useCallback((mode: DashboardMode) => {
-    setDashboardMode(mode);
-    setActiveNavItem('dashboard');
-    const groupMap: Record<DashboardMode, SidebarGroup> = {
-      overview: 'overview',
-      risk: 'risk',
-      'tech-debt': 'tech-debt',
-    };
-    const tabMap: Record<DashboardMode, BottomTab> = {
-      overview: 'hotspots',
-      risk: 'risk-register',
-      'tech-debt': 'debt-inventory',
-    };
-    const vizMap: Record<DashboardMode, HeroViz> = {
-      overview: 'treemap',
-      risk: 'risk-heatmap',
-      'tech-debt': 'growth-timeline',
-    };
-    setActiveGroup(groupMap[mode]);
-    setActiveBottomTab(tabMap[mode]);
-    setActiveHeroViz(vizMap[mode]);
-  }, []);
-
   return {
+    activePresetId,
+    heroOverride,
+    bottomTabOverride,
+    activeHeroViz: heroOverride ?? preset.hero.defaultViz,
+    activeBottomTab: bottomTabOverride ?? preset.bottomPanel.defaultTab,
+    heroAltTabs: preset.hero.altTabs,
+    bottomAltTabs: preset.bottomPanel.altTabs,
+    metrics: preset.metrics,
     selectedFile,
     selectedContributor,
-    activeNavItem,
-    activeGroup,
-    activeBottomTab,
     activeInspectorTab,
+    applyPreset,
+    setHeroOverride,
+    setBottomTabOverride,
     selectFile,
     selectContributor,
     clearSelection,
-    navigateTo,
-    setActiveBottomTab,
     setActiveInspectorTab,
-    activeHeroViz,
-    setActiveHeroViz,
-    dashboardMode,
-    setDashboardMode: handleSetDashboardMode,
   };
 }

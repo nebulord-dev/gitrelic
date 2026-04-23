@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { GROUP_TABS } from '../../hooks/useSelection';
 import { AgeMapTab } from '../tabs/AgeMapTab';
 import { BlastRadiusTab } from '../tabs/BlastRadiusTab';
 import { BusFactorTab } from '../tabs/BusFactorTab';
@@ -24,17 +23,16 @@ import { RiskRegisterTab } from '../tabs/RiskRegisterTab';
 import { ShameTab } from '../tabs/ShameTab';
 import { TestCoverageTab } from '../tabs/TestCoverageTab';
 
-import type { BottomTab, SidebarGroup } from '../../hooks/useSelection';
+import type { BottomTab } from '../../presets/types';
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface BottomPanelProps {
   report: GitrelicReport;
-  activeGroup: SidebarGroup;
   activeTab: BottomTab;
+  altTabs: BottomTab[];
   onTabChange: (tab: BottomTab) => void;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
-  fillAvailable?: boolean;
 }
 
 const TAB_LABELS: Record<BottomTab, string> = {
@@ -129,12 +127,11 @@ const DEFAULT_HEIGHT = 320;
 
 export function BottomPanel({
   report,
-  activeGroup,
   activeTab,
+  altTabs,
   onTabChange,
   selectedFile,
   onSelectFile,
-  fillAvailable = false,
 }: BottomPanelProps) {
   const [height, setHeight] = useState(DEFAULT_HEIGHT);
   const dragRef = useRef<{ startY: number; startHeight: number } | null>(null);
@@ -166,19 +163,20 @@ export function BottomPanel({
     [height],
   );
 
-  const visibleTabs = GROUP_TABS[activeGroup];
+  const visibleTabs = altTabs;
 
   useEffect(() => {
     if (!visibleTabs.includes(activeTab)) {
       onTabChange(visibleTabs[0]);
     }
-  }, [activeGroup, activeTab, onTabChange, visibleTabs]);
+  }, [activeTab, onTabChange, visibleTabs]);
 
   return (
     <div
       style={{
         borderTop: '1px solid var(--border-primary)',
-        ...(fillAvailable ? { flex: 1, minHeight: 0 } : { height, flexShrink: 0 }),
+        height,
+        flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
         background: 'var(--surface-primary)',
@@ -186,20 +184,18 @@ export function BottomPanel({
       }}
     >
       {/* Resize handle */}
-      {!fillAvailable && (
-        <div
-          onMouseDown={handleMouseDown}
-          style={{
-            position: 'absolute',
-            top: -3,
-            left: 0,
-            right: 0,
-            height: 6,
-            cursor: 'row-resize',
-            zIndex: 10,
-          }}
-        />
-      )}
+      <div
+        onMouseDown={handleMouseDown}
+        style={{
+          position: 'absolute',
+          top: -3,
+          left: 0,
+          right: 0,
+          height: 6,
+          cursor: 'row-resize',
+          zIndex: 10,
+        }}
+      />
 
       {/* Tab bar */}
       <div

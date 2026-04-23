@@ -18,7 +18,7 @@ import { MetricsStrip } from './MetricsStrip';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 
-import type { DashboardMode, HeroViz } from '../../hooks/useSelection';
+import type { HeroViz } from '../../presets/types';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export type LayoutMode =
@@ -81,30 +81,19 @@ export function computeVisibility(mode: LayoutMode): PanelVisibility {
   }
 }
 
-function getHeroVizzes(mode: DashboardMode): { id: HeroViz; label: string }[] {
-  switch (mode) {
-    case 'risk':
-      return [
-        { id: 'risk-heatmap', label: 'Heatmap' },
-        { id: 'ownership-sunburst', label: 'Sunburst' },
-      ];
-    case 'tech-debt':
-      return [
-        { id: 'growth-timeline', label: 'Timeline' },
-        { id: 'debt-scatter', label: 'Scatter' },
-      ];
-    default:
-      return [
-        { id: 'treemap', label: 'Treemap' },
-        { id: 'ownership', label: 'Ownership' },
-        { id: 'coupling', label: 'Coupling' },
-        { id: 'commit-graph', label: 'Graph' },
-        { id: 'scatter', label: 'Scatter' },
-        { id: 'timeline', label: 'Timeline' },
-        { id: 'swimlanes', label: 'Swimlanes' },
-      ];
-  }
-}
+const HERO_LABELS: Record<HeroViz, string> = {
+  treemap: 'Treemap',
+  ownership: 'Ownership',
+  coupling: 'Coupling',
+  'commit-graph': 'Graph',
+  scatter: 'Scatter',
+  timeline: 'Timeline',
+  swimlanes: 'Swimlanes',
+  'risk-heatmap': 'Heatmap',
+  'ownership-sunburst': 'Sunburst',
+  'growth-timeline': 'Timeline',
+  'debt-scatter': 'Scatter',
+};
 
 interface ShellProps {
   report: GitrelicReport;
@@ -114,7 +103,7 @@ export function Shell({ report }: ShellProps) {
   const selection = useSelection();
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('default');
   const visibility = computeVisibility(layoutMode);
-  const heroVizzes = getHeroVizzes(selection.dashboardMode);
+  const heroVizzes = selection.heroAltTabs.map((id) => ({ id, label: HERO_LABELS[id] }));
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -166,10 +155,8 @@ export function Shell({ report }: ShellProps) {
         {visibility.sidebar && (
           <Sidebar
             report={report}
-            activeItem={selection.activeNavItem}
-            dashboardMode={selection.dashboardMode}
-            onNavigate={selection.navigateTo}
-            onDashboardMode={selection.setDashboardMode}
+            activePresetId={selection.activePresetId}
+            onApplyPreset={selection.applyPreset}
           />
         )}
 
@@ -182,9 +169,7 @@ export function Shell({ report }: ShellProps) {
             minWidth: 0,
           }}
         >
-          {visibility.metricsStrip && (
-            <MetricsStrip report={report} dashboardMode={selection.dashboardMode} />
-          )}
+          {visibility.metricsStrip && <MetricsStrip metrics={selection.metrics(report)} />}
 
           {/* Hero visualization */}
           {visibility.hero && (
@@ -221,7 +206,7 @@ export function Shell({ report }: ShellProps) {
                   {heroVizzes.map((viz) => (
                     <span
                       key={viz.id}
-                      onClick={() => selection.setActiveHeroViz(viz.id)}
+                      onClick={() => selection.setHeroOverride(viz.id)}
                       style={{
                         padding: '4px 10px',
                         borderRadius: 4,
@@ -332,12 +317,11 @@ export function Shell({ report }: ShellProps) {
           {visibility.bottomPanel && (
             <BottomPanel
               report={report}
-              activeGroup={selection.activeGroup}
               activeTab={selection.activeBottomTab}
-              onTabChange={selection.setActiveBottomTab}
+              altTabs={selection.bottomAltTabs}
+              onTabChange={selection.setBottomTabOverride}
               selectedFile={selection.selectedFile}
               onSelectFile={selection.selectFile}
-              fillAvailable={!visibility.hero}
             />
           )}
         </div>

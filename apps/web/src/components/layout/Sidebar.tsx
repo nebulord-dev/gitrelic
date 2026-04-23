@@ -1,99 +1,75 @@
-import type { DashboardMode, NavItem } from '../../hooks/useSelection';
+import { PRESETS } from '../../presets/registry';
+
+import type { PresetDefinition, PresetId, SidebarGroupLabel } from '../../presets/types';
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface SidebarProps {
   report: GitrelicReport;
-  activeItem: NavItem;
-  onNavigate: (item: NavItem) => void;
-  dashboardMode: DashboardMode;
-  onDashboardMode: (mode: DashboardMode) => void;
+  activePresetId: PresetId;
+  onApplyPreset: (id: PresetId) => void;
 }
 
 interface NavEntry {
-  id: NavItem;
+  id: PresetId;
   label: string;
   badge?: number;
 }
 
 interface NavGroup {
   label: string;
+  groupId: SidebarGroupLabel | 'dashboard-group';
   items: NavEntry[];
 }
 
-const DASHBOARD_SUB_ITEMS: { mode: DashboardMode; label: string }[] = [
-  { mode: 'overview', label: 'Overview' },
-  { mode: 'risk', label: 'Risk' },
-  { mode: 'tech-debt', label: 'Tech Debt' },
-];
-
 function getNavGroups(report: GitrelicReport): NavGroup[] {
+  const dashboardPresets = (['overview', 'risk', 'tech-debt'] as const).map((id) => ({
+    id,
+    label: PRESETS[id].label,
+  })) satisfies NavEntry[];
+
   return [
     {
       label: 'Overview',
-      items: [{ id: 'dashboard', label: 'Dashboard' }],
+      groupId: 'dashboard-group',
+      items: dashboardPresets,
     },
     {
       label: 'Code Health',
+      groupId: 'code-health',
       items: [
         {
           id: 'hotspots',
           label: 'Hotspots',
           badge: report.hotspots.topHotspots.filter((h) => h.category === 'critical').length,
         },
-        {
-          id: 'cursed-files',
-          label: 'Cursed Files',
-          badge: report.cursedFiles.length,
-        },
-        { id: 'dead-code', label: 'Stale Files', badge: report.deadCode.totalDeadFiles },
-        { id: 'complexity', label: 'Complexity' },
-        { id: 'rewrites', label: 'Rewrites' },
+        // NOTE: Stream 3 will add the other Code Health presets here.
       ],
     },
     {
       label: 'Ownership & Risk',
+      groupId: 'ownership-risk',
       items: [
         {
           id: 'bus-factor',
           label: 'Bus Factor',
           badge: report.busFactors.criticalFiles.length,
         },
-        { id: 'coupling', label: 'Coupling' },
-        { id: 'ghost-files', label: 'Ghost Files', badge: report.ghostFiles.totalGhostFiles },
-        { id: 'knowledge', label: 'Knowledge Silos' },
+        {
+          id: 'coupling',
+          label: 'Coupling',
+        },
       ],
     },
     {
       label: 'Team & Activity',
-      items: [
-        { id: 'contributors', label: 'Contributors' },
-        { id: 'co-authors', label: 'Co-Authors' },
-        { id: 'timing', label: 'Timing' },
-        { id: 'parallel-dev', label: 'Parallel Dev' },
-        { id: 'shame', label: 'Shame' },
-      ],
-    },
-    {
-      label: 'Structure',
-      items: [
-        { id: 'age-map', label: 'Age Map' },
-        { id: 'languages', label: 'Languages' },
-        { id: 'test-coverage', label: 'Test Coverage' },
-        { id: 'renames', label: 'Renames' },
-      ],
+      groupId: 'team-activity',
+      items: [{ id: 'contributors', label: 'Contributors' }],
     },
   ];
 }
 
-export function Sidebar({
-  report,
-  activeItem,
-  onNavigate,
-  dashboardMode,
-  onDashboardMode,
-}: SidebarProps) {
+export function Sidebar({ report, activePresetId, onApplyPreset }: SidebarProps) {
   const groups = getNavGroups(report);
-  const isDashboardExpanded = activeItem === 'dashboard';
 
   return (
     <nav
@@ -122,97 +98,43 @@ export function Sidebar({
             {group.label}
           </div>
           {group.items.map((item) => {
-            const isDashboard = item.id === 'dashboard';
-            const isActive = activeItem === item.id;
-
+            const isActive = activePresetId === item.id;
             return (
-              <div key={item.id}>
-                <button
-                  onClick={() => {
-                    if (isDashboard) {
-                      onDashboardMode('overview');
-                    } else {
-                      onNavigate(item.id);
-                    }
-                  }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    width: '100%',
-                    padding: '6px 8px',
-                    border: 'none',
-                    borderRadius: 6,
-                    cursor: 'pointer',
-                    fontSize: 12,
-                    textAlign: 'left',
-                    background: isActive ? 'var(--nav-item-active-bg)' : 'transparent',
-                    color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                    marginBottom: 2,
-                  }}
-                >
-                  <span style={{ flex: 1 }}>{item.label}</span>
-                  {isDashboard && (
-                    <span
-                      style={{
-                        fontSize: 10,
-                        display: 'inline-block',
-                        transform: isDashboardExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-                        transition: 'transform 0.15s ease',
-                        lineHeight: 1,
-                      }}
-                    >
-                      ▶
-                    </span>
-                  )}
-                  {!isDashboard && item.badge != null && item.badge > 0 && (
-                    <span
-                      style={{
-                        fontSize: 9,
-                        padding: '1px 5px',
-                        borderRadius: 8,
-                        fontWeight: 600,
-                        background: 'var(--nav-badge-critical)',
-                        color: '#fff',
-                      }}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
-                {isDashboard && isDashboardExpanded && (
-                  <div style={{ marginBottom: 2 }}>
-                    {DASHBOARD_SUB_ITEMS.map((sub) => {
-                      const isSubActive = dashboardMode === sub.mode;
-                      return (
-                        <button
-                          key={sub.mode}
-                          onClick={() => onDashboardMode(sub.mode)}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            width: '100%',
-                            paddingLeft: 32,
-                            paddingRight: 8,
-                            paddingTop: 5,
-                            paddingBottom: 5,
-                            border: 'none',
-                            borderRadius: 6,
-                            cursor: 'pointer',
-                            fontSize: 11,
-                            textAlign: 'left',
-                            background: isSubActive ? 'var(--nav-item-active-bg)' : 'transparent',
-                            color: isSubActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                            marginBottom: 2,
-                          }}
-                        >
-                          {sub.label}
-                        </button>
-                      );
-                    })}
-                  </div>
+              <button
+                key={item.id}
+                onClick={() => onApplyPreset(item.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  width: '100%',
+                  padding: '6px 8px',
+                  border: 'none',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  fontSize: 12,
+                  textAlign: 'left',
+                  background: isActive ? 'var(--nav-item-active-bg)' : 'transparent',
+                  color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                  marginBottom: 2,
+                }}
+              >
+                <span style={{ flex: 1 }}>{item.label}</span>
+                {item.badge != null && item.badge > 0 && (
+                  <span
+                    style={{
+                      fontSize: 9,
+                      padding: '1px 5px',
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      background: 'var(--nav-badge-critical)',
+                      color: '#fff',
+                    }}
+                  >
+                    {item.badge}
+                  </span>
                 )}
-              </div>
+              </button>
             );
           })}
         </div>
