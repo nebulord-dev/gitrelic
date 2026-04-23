@@ -32,7 +32,7 @@ export function LayoutControls({ mode, onModeChange }: LayoutControlsProps) {
         onClick={() => onModeChange(mode === 'fullscreen-hero' ? 'default' : 'fullscreen-hero')}
         style={iconButtonStyle(mode === 'fullscreen-hero')}
       >
-        ⬓
+        ⬒
       </button>
       <button
         aria-label="Fullscreen table"
@@ -41,7 +41,7 @@ export function LayoutControls({ mode, onModeChange }: LayoutControlsProps) {
         onClick={() => onModeChange(mode === 'fullscreen-table' ? 'default' : 'fullscreen-table')}
         style={iconButtonStyle(mode === 'fullscreen-table')}
       >
-        ◨
+        ⬓
       </button>
       <select
         aria-label="Layout mode"

@@ -75,6 +75,11 @@ Workspace names in `pnpm --filter <name>` commands: `@gitrelic/core`, `gitrelic`
 - Deployed to `nebulord-dev.github.io/gitrelic` via `.github/workflows/docs.yml` on `apps/docs/**` changes to `main`
 - **Excluded from root `pnpm build`** — docs has its own deploy workflow. `pnpm docs:dev` / `pnpm docs:build` to work locally.
 
+
+## IMPORTANT
+
+Add tests to all changes that can benefit from tests.  If a test is deemed not needed, explain why.
+
 ## Key Concepts
 
 ### Report flow
