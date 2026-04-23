@@ -19,7 +19,7 @@ function makeReport(): GitrelicReport {
     ghostFiles: { totalGhostFiles: 0 },
     knowledgeConcentration: { concentrationIndex: 0 },
     blastRadius: { files: [], topBlasters: [] },
-    complexityTrend: { growingFiles: [] },
+    complexityTrend: { files: [], growingFiles: [], shrinkingFiles: [] },
     rewriteRatio: { topRewriters: [] },
     churnVelocity: { acceleratingFiles: [] },
   } as unknown as GitrelicReport;

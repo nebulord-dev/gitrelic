@@ -1,5 +1,6 @@
 import { blastRadiusMetrics } from './metrics/blast-radius';
 import { busFactorMetrics } from './metrics/bus-factor';
+import { complexityTrendMetrics } from './metrics/complexity-trend';
 import { contributorsMetrics } from './metrics/contributors';
 import { couplingMetrics } from './metrics/coupling';
 import { cursedFilesMetrics } from './metrics/cursed-files';
@@ -176,5 +177,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['blast-radius'],
     },
     metrics: blastRadiusMetrics,
+  },
+  'complexity-trend': {
+    id: 'complexity-trend',
+    tier: 'analyzer',
+    label: 'Complexity Trend',
+    group: 'code-health',
+    hero: {
+      defaultViz: 'growth-timeline',
+      altTabs: ['growth-timeline', 'debt-scatter'],
+    },
+    bottomPanel: {
+      defaultTab: 'complexity-trend',
+      altTabs: ['complexity-trend'],
+    },
+    metrics: complexityTrendMetrics,
   },
 };

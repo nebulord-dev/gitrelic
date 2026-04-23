@@ -56,6 +56,11 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           id: 'blast-radius',
           label: 'Blast Radius',
         },
+        {
+          id: 'complexity-trend',
+          label: 'Complexity Trend',
+          badge: report.complexityTrend.growingFiles.length,
+        },
         // NOTE: Stream 3 will add the other Code Health presets here.
       ],
     },
