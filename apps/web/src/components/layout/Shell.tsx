@@ -337,6 +337,7 @@ export function Shell({ report }: ShellProps) {
               onTabChange={selection.setActiveBottomTab}
               selectedFile={selection.selectedFile}
               onSelectFile={selection.selectFile}
+              fillAvailable={!visibility.hero}
             />
           )}
         </div>
