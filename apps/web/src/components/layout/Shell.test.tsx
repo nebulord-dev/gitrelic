@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { normalizeReport } from '../../utils/normalizeReport';
@@ -94,5 +94,30 @@ describe('Shell keyboard shortcuts', () => {
     fireEvent.keyDown(window, { key: '.', metaKey: true, shiftKey: true });
     // Bottom panel hidden
     expect(container.querySelector('[style*="row-resize"]')).toBeNull();
+  });
+});
+
+describe('Shell sidebar → preset wiring', () => {
+  it('clicking Hotspots reshapes the hero to scatter', () => {
+    const { container, getByText } = render(<Shell report={makeMinimalReport()} />);
+    // Default hero label is "Treemap"
+    expect(getByText('Treemap')).toBeDefined();
+    // Narrow click to sidebar nav — "Hotspots" also appears as a bottom-panel tab label
+    const sidebar = container.querySelector('nav')!;
+    fireEvent.click(within(sidebar).getByText('Hotspots'));
+    // After applyPreset('hotspots'), the hero alt-tabs become scatter/treemap/risk-heatmap.
+    // The active tab should now be "Scatter".
+    expect(getByText('Scatter')).toBeDefined();
+  });
+
+  it('overrides clear when another preset is clicked', () => {
+    const { container, getByText } = render(<Shell report={makeMinimalReport()} />);
+    const sidebar = container.querySelector('nav')!;
+    fireEvent.click(within(sidebar).getByText('Hotspots'));
+    // Default hero for hotspots is Scatter. Override to Treemap.
+    fireEvent.click(getByText('Treemap'));
+    fireEvent.click(within(sidebar).getByText('Contributors'));
+    // Contributors preset default is Ownership. Treemap override should be gone.
+    expect(getByText('Ownership')).toBeDefined();
   });
 });
