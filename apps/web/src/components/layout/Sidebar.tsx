@@ -42,6 +42,11 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           label: 'Hotspots',
           badge: report.hotspots.topHotspots.filter((h) => h.category === 'critical').length,
         },
+        {
+          id: 'cursed-files',
+          label: 'Cursed Files',
+          badge: report.cursedFiles.filter((c) => c.curseScore >= 70).length,
+        },
         // NOTE: Stream 3 will add the other Code Health presets here.
       ],
     },
