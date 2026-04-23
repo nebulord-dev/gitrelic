@@ -22,7 +22,12 @@ export function cursedFilesMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Top Curse Score',
       value: cursedCount > 0 ? String(topScore) : '—',
-      color: topScore >= 70 ? 'var(--severity-critical)' : 'var(--severity-warning)',
+      color:
+        cursedCount === 0
+          ? 'var(--severity-healthy)'
+          : topScore >= 70
+            ? 'var(--severity-critical)'
+            : 'var(--severity-warning)',
     },
     {
       label: 'Critical (≥70)',
