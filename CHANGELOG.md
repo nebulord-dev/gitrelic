@@ -1,3 +1,10 @@
+# [0.4.0](https://github.com/nebulord-dev/gitrelic/compare/v0.3.0...v0.4.0) (2026-04-23)
+
+
+### Features
+
+* **web:** focus mode ([#27](https://github.com/nebulord-dev/gitrelic/issues/27)) ([9ba3b22](https://github.com/nebulord-dev/gitrelic/commit/9ba3b226f7d8e7a665985352c5b0195b3095669c))
+
 # [0.3.0](https://github.com/nebulord-dev/gitrelic/compare/v0.2.0...v0.3.0) (2026-04-18)
 
 
