@@ -2,7 +2,7 @@ import { fireEvent, render, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { normalizeReport } from '../../utils/normalizeReport';
-import { computeVisibility, Shell } from './Shell';
+import { computeVisibility, HERO_LABELS, Shell } from './Shell';
 
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -94,6 +94,30 @@ describe('Shell keyboard shortcuts', () => {
     fireEvent.keyDown(window, { key: '.', metaKey: true, shiftKey: true });
     // Bottom panel hidden
     expect(container.querySelector('[style*="row-resize"]')).toBeNull();
+  });
+
+  it('⌘⇧, enters fullscreen-table mode with a filled bottom panel', () => {
+    const { container } = render(<Shell report={makeMinimalReport()} />);
+    // Default: bottom panel uses a fixed height so the hero can take the remaining space
+    const defaultPanel = container.querySelector('[style*="row-resize"]')!.parentElement!;
+    expect(defaultPanel.style.height).toBe('320px');
+
+    fireEvent.keyDown(window, { key: ',', metaKey: true, shiftKey: true });
+
+    // In fullscreen-table the hero is hidden; the bottom panel must expand to fill
+    // or the viewport ends up with a 320px panel and a tall empty gap below it.
+    const fullPanel = container.querySelector('[style*="row-resize"]')!.parentElement!;
+    expect(fullPanel.style.flexGrow).toBe('1');
+    expect(fullPanel.style.height).toBe('');
+  });
+});
+
+describe('HERO_LABELS', () => {
+  it('maps every HeroViz to a unique display label', () => {
+    // A duplicate label (e.g. 'timeline' and 'growth-timeline' both showing 'Timeline')
+    // makes hero alt-tab buttons indistinguishable when a preset mixes them.
+    const labels = Object.values(HERO_LABELS);
+    expect(new Set(labels).size).toBe(labels.length);
   });
 });
 
