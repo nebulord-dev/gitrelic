@@ -1,3 +1,10 @@
+# [0.7.0](https://github.com/nebulord-dev/gitrelic/compare/v0.6.0...v0.7.0) (2026-04-23)
+
+
+### Features
+
+* **web:** add Wave A Tier 2 presets (5 presets) ([#31](https://github.com/nebulord-dev/gitrelic/issues/31)) ([91b3b7b](https://github.com/nebulord-dev/gitrelic/commit/91b3b7bf69507edfeb47fb2f0d1de4e965e9ab50)), closes [#30](https://github.com/nebulord-dev/gitrelic/issues/30)
+
 # [0.6.0](https://github.com/nebulord-dev/gitrelic/compare/v0.5.1...v0.6.0) (2026-04-23)
 
 
