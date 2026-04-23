@@ -1,4 +1,5 @@
 import { busFactorMetrics } from './metrics/bus-factor';
+import { couplingMetrics } from './metrics/coupling';
 import { hotspotsMetrics } from './metrics/hotspots';
 import { overviewMetrics } from './metrics/overview';
 import { riskMetrics } from './metrics/risk';
@@ -97,6 +98,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     },
     metrics: busFactorMetrics,
   },
-  coupling: undefined as unknown as PresetDefinition,
+  coupling: {
+    id: 'coupling',
+    tier: 'analyzer',
+    label: 'Coupling',
+    group: 'ownership-risk',
+    hero: {
+      defaultViz: 'coupling',
+      altTabs: ['coupling'],
+    },
+    bottomPanel: {
+      defaultTab: 'coupling',
+      altTabs: ['coupling'],
+    },
+    metrics: couplingMetrics,
+  },
   contributors: undefined as unknown as PresetDefinition,
 };

@@ -14,6 +14,7 @@ function makeReport(): GitrelicReport {
     hotspots: { files: [], topHotspots: [], summary: '' },
     cursedFiles: [],
     busFactors: { criticalFiles: [] },
+    coupling: { pairs: [], topPairs: [], fileProfiles: [], summary: '' },
     deadCode: { totalDeadFiles: 0, candidates: [] },
     ghostFiles: { totalGhostFiles: 0 },
     knowledgeConcentration: { concentrationIndex: 0 },
