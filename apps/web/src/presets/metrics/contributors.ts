@@ -3,7 +3,7 @@ import type { GitrelicReport } from '@gitrelic/core';
 
 export function contributorsMetrics(report: GitrelicReport): Metric[] {
   const totalAuthors = report.meta.totalAuthors;
-  const ghostCount = report.ghostFiles?.totalGhostFiles ?? 0;
+  const ghostCount = report.ghostFiles.totalGhostFiles;
   // Total commits across the repo as a rough activity indicator:
   const totalCommits = report.churn.files.reduce((sum, f) => sum + f.commitCount, 0);
 
