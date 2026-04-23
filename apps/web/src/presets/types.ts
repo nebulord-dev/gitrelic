@@ -59,7 +59,12 @@ export type AnalyzerPresetId =
   | 'bus-factor'
   | 'coupling'
   | 'contributors'
-  | 'cursed-files';
+  | 'cursed-files'
+  | 'dead-code'
+  | 'blast-radius'
+  | 'complexity-trend'
+  | 'knowledge-silos'
+  | 'parallel-dev';
 // NOTE: Stream 3 will extend AnalyzerPresetId with the remaining presets.
 
 export type PresetId = DashboardPresetId | AnalyzerPresetId;

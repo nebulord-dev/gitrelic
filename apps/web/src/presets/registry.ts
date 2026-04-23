@@ -1,9 +1,14 @@
+import { blastRadiusMetrics } from './metrics/blast-radius';
 import { busFactorMetrics } from './metrics/bus-factor';
+import { complexityTrendMetrics } from './metrics/complexity-trend';
 import { contributorsMetrics } from './metrics/contributors';
 import { couplingMetrics } from './metrics/coupling';
 import { cursedFilesMetrics } from './metrics/cursed-files';
+import { deadCodeMetrics } from './metrics/dead-code';
 import { hotspotsMetrics } from './metrics/hotspots';
+import { knowledgeSilosMetrics } from './metrics/knowledge-silos';
 import { overviewMetrics } from './metrics/overview';
+import { parallelDevMetrics } from './metrics/parallel-dev';
 import { riskMetrics } from './metrics/risk';
 import { techDebtMetrics } from './metrics/tech-debt';
 
@@ -144,5 +149,80 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['cursed-files'],
     },
     metrics: cursedFilesMetrics,
+  },
+  'dead-code': {
+    id: 'dead-code',
+    tier: 'analyzer',
+    label: 'Stale Files',
+    group: 'code-health',
+    hero: {
+      defaultViz: 'scatter',
+      altTabs: ['scatter', 'treemap'],
+    },
+    bottomPanel: {
+      defaultTab: 'dead-code',
+      altTabs: ['dead-code'],
+    },
+    metrics: deadCodeMetrics,
+  },
+  'blast-radius': {
+    id: 'blast-radius',
+    tier: 'analyzer',
+    label: 'Blast Radius',
+    group: 'code-health',
+    hero: {
+      defaultViz: 'scatter',
+      altTabs: ['scatter', 'coupling'],
+    },
+    bottomPanel: {
+      defaultTab: 'blast-radius',
+      altTabs: ['blast-radius'],
+    },
+    metrics: blastRadiusMetrics,
+  },
+  'complexity-trend': {
+    id: 'complexity-trend',
+    tier: 'analyzer',
+    label: 'Complexity Trend',
+    group: 'code-health',
+    hero: {
+      defaultViz: 'growth-timeline',
+      altTabs: ['growth-timeline', 'debt-scatter'],
+    },
+    bottomPanel: {
+      defaultTab: 'complexity-trend',
+      altTabs: ['complexity-trend'],
+    },
+    metrics: complexityTrendMetrics,
+  },
+  'knowledge-silos': {
+    id: 'knowledge-silos',
+    tier: 'analyzer',
+    label: 'Knowledge Silos',
+    group: 'ownership-risk',
+    hero: {
+      defaultViz: 'ownership-sunburst',
+      altTabs: ['ownership-sunburst', 'ownership'],
+    },
+    bottomPanel: {
+      defaultTab: 'knowledge-silos',
+      altTabs: ['knowledge-silos'],
+    },
+    metrics: knowledgeSilosMetrics,
+  },
+  'parallel-dev': {
+    id: 'parallel-dev',
+    tier: 'analyzer',
+    label: 'Parallel Dev',
+    group: 'team-activity',
+    hero: {
+      defaultViz: 'swimlanes',
+      altTabs: ['swimlanes', 'timeline'],
+    },
+    bottomPanel: {
+      defaultTab: 'parallel-dev',
+      altTabs: ['parallel-dev'],
+    },
+    metrics: parallelDevMetrics,
   },
 };

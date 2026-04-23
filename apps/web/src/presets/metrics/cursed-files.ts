@@ -6,7 +6,7 @@ import type { GitrelicReport } from '@gitrelic/core';
 export function cursedFilesMetrics(report: GitrelicReport): Metric[] {
   const cursed = report.cursedFiles;
   const cursedCount = cursed.length;
-  const topScore = cursed.length > 0 ? Math.max(...cursed.map((c) => c.curseScore)) : 0;
+  const topScore = cursed.reduce((max, c) => (c.curseScore > max ? c.curseScore : max), 0);
   const criticalCount = cursed.filter((c) => c.curseScore >= 70).length;
   const avgAuthors =
     cursed.length > 0

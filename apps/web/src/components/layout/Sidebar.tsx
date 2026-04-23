@@ -47,6 +47,20 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           label: 'Cursed Files',
           badge: report.cursedFiles.filter((c) => c.curseScore >= 70).length,
         },
+        {
+          id: 'dead-code',
+          label: 'Stale Files',
+          badge: report.deadCode.totalDeadFiles,
+        },
+        {
+          id: 'blast-radius',
+          label: 'Blast Radius',
+        },
+        {
+          id: 'complexity-trend',
+          label: 'Complexity Trend',
+          badge: report.complexityTrend.growingFiles.length,
+        },
         // NOTE: Stream 3 will add the other Code Health presets here.
       ],
     },
@@ -63,12 +77,24 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           id: 'coupling',
           label: 'Coupling',
         },
+        {
+          id: 'knowledge-silos',
+          label: 'Knowledge Silos',
+          badge: report.knowledgeConcentration.singleAuthorFiles,
+        },
       ],
     },
     {
       label: 'Team & Activity',
       groupId: 'team-activity',
-      items: [{ id: 'contributors', label: 'Contributors' }],
+      items: [
+        { id: 'contributors', label: 'Contributors' },
+        {
+          id: 'parallel-dev',
+          label: 'Parallel Dev',
+          badge: report.parallelDev.hotFiles.length,
+        },
+      ],
     },
   ];
 }
