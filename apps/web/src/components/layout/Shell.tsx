@@ -33,20 +33,51 @@ interface PanelVisibility {
   bottomPanel: boolean;
   inspector: boolean;
   metricsStrip: boolean;
+  hero: boolean;
 }
 
 export function computeVisibility(mode: LayoutMode): PanelVisibility {
   switch (mode) {
     case 'focus-canvas':
-      return { sidebar: false, bottomPanel: true, inspector: false, metricsStrip: true };
+      return {
+        sidebar: false,
+        bottomPanel: true,
+        inspector: false,
+        metricsStrip: true,
+        hero: true,
+      };
     case 'fullscreen-hero':
-      return { sidebar: false, bottomPanel: false, inspector: false, metricsStrip: false };
+      return {
+        sidebar: false,
+        bottomPanel: false,
+        inspector: false,
+        metricsStrip: false,
+        hero: true,
+      };
     case 'fullscreen-table':
-      return { sidebar: false, bottomPanel: true, inspector: false, metricsStrip: false };
+      return {
+        sidebar: false,
+        bottomPanel: true,
+        inspector: false,
+        metricsStrip: false,
+        hero: false,
+      };
     case 'canvas-minimal':
-      return { sidebar: false, bottomPanel: false, inspector: false, metricsStrip: true };
+      return {
+        sidebar: false,
+        bottomPanel: false,
+        inspector: false,
+        metricsStrip: true,
+        hero: true,
+      };
     default:
-      return { sidebar: true, bottomPanel: true, inspector: true, metricsStrip: true };
+      return {
+        sidebar: true,
+        bottomPanel: true,
+        inspector: true,
+        metricsStrip: true,
+        hero: true,
+      };
   }
 }
 
@@ -156,144 +187,146 @@ export function Shell({ report }: ShellProps) {
           )}
 
           {/* Hero visualization */}
-          <div
-            style={{
-              flex: 1,
-              minHeight: 0,
-              padding: 'var(--space-md)',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
+          {visibility.hero && (
             <div
               style={{
+                flex: 1,
+                minHeight: 0,
+                padding: 'var(--space-md)',
                 display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 12,
-                flexShrink: 0,
+                flexDirection: 'column',
               }}
             >
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                Repository Map
-              </span>
               <div
                 style={{
                   display: 'flex',
-                  gap: 2,
-                  background: 'var(--surface-tertiary)',
-                  borderRadius: 6,
-                  padding: 2,
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: 12,
+                  flexShrink: 0,
                 }}
               >
-                {heroVizzes.map((viz) => (
-                  <span
-                    key={viz.id}
-                    onClick={() => selection.setActiveHeroViz(viz.id)}
-                    style={{
-                      padding: '4px 10px',
-                      borderRadius: 4,
-                      fontSize: 10,
-                      cursor: 'pointer',
-                      color:
-                        selection.activeHeroViz === viz.id
-                          ? 'var(--text-primary)'
-                          : 'var(--text-secondary)',
-                      background:
-                        selection.activeHeroViz === viz.id
-                          ? 'var(--surface-elevated)'
-                          : 'transparent',
-                    }}
-                  >
-                    {viz.label}
-                  </span>
-                ))}
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                  Repository Map
+                </span>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 2,
+                    background: 'var(--surface-tertiary)',
+                    borderRadius: 6,
+                    padding: 2,
+                  }}
+                >
+                  {heroVizzes.map((viz) => (
+                    <span
+                      key={viz.id}
+                      onClick={() => selection.setActiveHeroViz(viz.id)}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: 4,
+                        fontSize: 10,
+                        cursor: 'pointer',
+                        color:
+                          selection.activeHeroViz === viz.id
+                            ? 'var(--text-primary)'
+                            : 'var(--text-secondary)',
+                        background:
+                          selection.activeHeroViz === viz.id
+                            ? 'var(--surface-elevated)'
+                            : 'transparent',
+                      }}
+                    >
+                      {viz.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div style={{ flex: 1, minHeight: 0 }}>
+                {selection.activeHeroViz === 'treemap' && (
+                  <ChurnTreemap
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                  />
+                )}
+                {selection.activeHeroViz === 'ownership' && (
+                  <OwnershipBubble
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                  />
+                )}
+                {selection.activeHeroViz === 'scatter' && (
+                  <HotspotScatter
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                  />
+                )}
+                {selection.activeHeroViz === 'timeline' && (
+                  <Timeline
+                    report={report}
+                    selectedContributor={selection.selectedContributor}
+                    onSelectContributor={selection.selectContributor}
+                  />
+                )}
+                {selection.activeHeroViz === 'swimlanes' && (
+                  <ContributorSwimlanes
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    selectedContributor={selection.selectedContributor}
+                    onSelectFile={selection.selectFile}
+                    onSelectContributor={selection.selectContributor}
+                  />
+                )}
+                {selection.activeHeroViz === 'coupling' && (
+                  <CouplingHeatmap
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                  />
+                )}
+                {selection.activeHeroViz === 'commit-graph' && (
+                  <CommitGraph
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                  />
+                )}
+                {selection.activeHeroViz === 'risk-heatmap' && (
+                  <RiskHeatmap
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                  />
+                )}
+                {selection.activeHeroViz === 'ownership-sunburst' && (
+                  <OwnershipSunburst
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    selectedContributor={selection.selectedContributor}
+                    onSelectFile={selection.selectFile}
+                    onSelectContributor={selection.selectContributor}
+                  />
+                )}
+                {selection.activeHeroViz === 'growth-timeline' && (
+                  <GrowthTimeline
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                  />
+                )}
+                {selection.activeHeroViz === 'debt-scatter' && (
+                  <DebtScatter
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                  />
+                )}
               </div>
             </div>
-            <div style={{ flex: 1, minHeight: 0 }}>
-              {selection.activeHeroViz === 'treemap' && (
-                <ChurnTreemap
-                  report={report}
-                  selectedFile={selection.selectedFile}
-                  onSelectFile={selection.selectFile}
-                />
-              )}
-              {selection.activeHeroViz === 'ownership' && (
-                <OwnershipBubble
-                  report={report}
-                  selectedFile={selection.selectedFile}
-                  onSelectFile={selection.selectFile}
-                />
-              )}
-              {selection.activeHeroViz === 'scatter' && (
-                <HotspotScatter
-                  report={report}
-                  selectedFile={selection.selectedFile}
-                  onSelectFile={selection.selectFile}
-                />
-              )}
-              {selection.activeHeroViz === 'timeline' && (
-                <Timeline
-                  report={report}
-                  selectedContributor={selection.selectedContributor}
-                  onSelectContributor={selection.selectContributor}
-                />
-              )}
-              {selection.activeHeroViz === 'swimlanes' && (
-                <ContributorSwimlanes
-                  report={report}
-                  selectedFile={selection.selectedFile}
-                  selectedContributor={selection.selectedContributor}
-                  onSelectFile={selection.selectFile}
-                  onSelectContributor={selection.selectContributor}
-                />
-              )}
-              {selection.activeHeroViz === 'coupling' && (
-                <CouplingHeatmap
-                  report={report}
-                  selectedFile={selection.selectedFile}
-                  onSelectFile={selection.selectFile}
-                />
-              )}
-              {selection.activeHeroViz === 'commit-graph' && (
-                <CommitGraph
-                  report={report}
-                  selectedFile={selection.selectedFile}
-                  onSelectFile={selection.selectFile}
-                />
-              )}
-              {selection.activeHeroViz === 'risk-heatmap' && (
-                <RiskHeatmap
-                  report={report}
-                  selectedFile={selection.selectedFile}
-                  onSelectFile={selection.selectFile}
-                />
-              )}
-              {selection.activeHeroViz === 'ownership-sunburst' && (
-                <OwnershipSunburst
-                  report={report}
-                  selectedFile={selection.selectedFile}
-                  selectedContributor={selection.selectedContributor}
-                  onSelectFile={selection.selectFile}
-                  onSelectContributor={selection.selectContributor}
-                />
-              )}
-              {selection.activeHeroViz === 'growth-timeline' && (
-                <GrowthTimeline
-                  report={report}
-                  selectedFile={selection.selectedFile}
-                  onSelectFile={selection.selectFile}
-                />
-              )}
-              {selection.activeHeroViz === 'debt-scatter' && (
-                <DebtScatter
-                  report={report}
-                  selectedFile={selection.selectedFile}
-                  onSelectFile={selection.selectFile}
-                />
-              )}
-            </div>
-          </div>
+          )}
 
           {/* Bottom panel */}
           {visibility.bottomPanel && (

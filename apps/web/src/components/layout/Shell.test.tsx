@@ -26,6 +26,7 @@ describe('computeVisibility', () => {
       bottomPanel: true,
       inspector: true,
       metricsStrip: true,
+      hero: true,
     });
   });
 
@@ -35,6 +36,7 @@ describe('computeVisibility', () => {
       bottomPanel: true,
       inspector: false,
       metricsStrip: true,
+      hero: true,
     });
   });
 
@@ -44,6 +46,7 @@ describe('computeVisibility', () => {
       bottomPanel: false,
       inspector: false,
       metricsStrip: false,
+      hero: true,
     });
   });
 
@@ -53,6 +56,7 @@ describe('computeVisibility', () => {
       bottomPanel: true,
       inspector: false,
       metricsStrip: false,
+      hero: false,
     });
   });
 
@@ -62,6 +66,7 @@ describe('computeVisibility', () => {
       bottomPanel: false,
       inspector: false,
       metricsStrip: true,
+      hero: true,
     });
   });
 });
