@@ -6,6 +6,7 @@ import { couplingMetrics } from './metrics/coupling';
 import { cursedFilesMetrics } from './metrics/cursed-files';
 import { deadCodeMetrics } from './metrics/dead-code';
 import { hotspotsMetrics } from './metrics/hotspots';
+import { knowledgeSilosMetrics } from './metrics/knowledge-silos';
 import { overviewMetrics } from './metrics/overview';
 import { riskMetrics } from './metrics/risk';
 import { techDebtMetrics } from './metrics/tech-debt';
@@ -192,5 +193,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['complexity-trend'],
     },
     metrics: complexityTrendMetrics,
+  },
+  'knowledge-silos': {
+    id: 'knowledge-silos',
+    tier: 'analyzer',
+    label: 'Knowledge Silos',
+    group: 'ownership-risk',
+    hero: {
+      defaultViz: 'ownership-sunburst',
+      altTabs: ['ownership-sunburst', 'ownership'],
+    },
+    bottomPanel: {
+      defaultTab: 'knowledge-silos',
+      altTabs: ['knowledge-silos'],
+    },
+    metrics: knowledgeSilosMetrics,
   },
 };

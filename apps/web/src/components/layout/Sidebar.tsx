@@ -77,6 +77,11 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           id: 'coupling',
           label: 'Coupling',
         },
+        {
+          id: 'knowledge-silos',
+          label: 'Knowledge Silos',
+          badge: report.knowledgeConcentration.singleAuthorFiles,
+        },
       ],
     },
     {
