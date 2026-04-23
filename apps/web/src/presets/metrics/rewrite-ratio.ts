@@ -6,10 +6,7 @@ import type { GitrelicReport } from '@gitrelic/core';
 export function rewriteRatioMetrics(report: GitrelicReport): Metric[] {
   const { files, topRewriters } = report.rewriteRatio;
   const topScore = topRewriters[0]?.rewriteScore ?? 0;
-  const avgRatio =
-    files.length > 0
-      ? Math.round((files.reduce((sum, f) => sum + f.ratio, 0) / files.length) * 100) / 100
-      : 0;
+  const avgRatio = files.length > 0 ? files.reduce((sum, f) => sum + f.ratio, 0) / files.length : 0;
 
   return [
     {
@@ -20,7 +17,9 @@ export function rewriteRatioMetrics(report: GitrelicReport): Metric[] {
           ? 'var(--severity-healthy)'
           : topScore >= 70
             ? 'var(--severity-critical)'
-            : 'var(--severity-warning)',
+            : topScore >= 30
+              ? 'var(--severity-warning)'
+              : 'var(--severity-healthy)',
     },
     {
       label: 'High Rewriters',
@@ -29,7 +28,7 @@ export function rewriteRatioMetrics(report: GitrelicReport): Metric[] {
     },
     {
       label: 'Avg Ratio',
-      value: files.length > 0 ? String(avgRatio) : '—',
+      value: files.length > 0 ? avgRatio.toFixed(2) : '—',
       color: 'var(--accent-primary)',
     },
     {

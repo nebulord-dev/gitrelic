@@ -11,7 +11,8 @@ export function ageMapMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Median Age (days)',
       value: files.length > 0 ? fmt(medianAgeDays) : '—',
-      color: medianAgeDays > 365 ? 'var(--severity-warning)' : 'var(--text-primary)',
+      color:
+        files.length > 0 && medianAgeDays > 365 ? 'var(--severity-warning)' : 'var(--text-primary)',
     },
     {
       label: 'Ancient Files',

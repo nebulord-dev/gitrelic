@@ -31,6 +31,7 @@ describe('ageMapMetrics', () => {
     const metrics = ageMapMetrics(makeReport({}));
     expect(metrics).toHaveLength(4);
     expect(metrics[0].value).toBe('—');
+    expect(metrics[0].color).toBe('var(--text-primary)');
     expect(metrics[1].value).toBe('0');
     expect(metrics[1].color).toBe('var(--severity-healthy)');
     expect(metrics[2].color).toBe('var(--severity-healthy)');
