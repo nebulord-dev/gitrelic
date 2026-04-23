@@ -61,6 +61,16 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           label: 'Complexity Trend',
           badge: report.complexityTrend.growingFiles.length,
         },
+        {
+          id: 'age-map',
+          label: 'Age Map',
+          badge: report.ageMap.ancientFiles.length,
+        },
+        {
+          id: 'rewrite-ratio',
+          label: 'Rewrite Ratio',
+          badge: report.rewriteRatio.topRewriters.length,
+        },
         // NOTE: Stream 3 will add the other Code Health presets here.
       ],
     },
@@ -93,6 +103,18 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           id: 'parallel-dev',
           label: 'Parallel Dev',
           badge: report.parallelDev.hotFiles.length,
+        },
+      ],
+    },
+    {
+      label: 'Structure',
+      groupId: 'structure',
+      items: [
+        { id: 'languages', label: 'Languages' },
+        {
+          id: 'test-coverage',
+          label: 'Test Coverage',
+          badge: report.testCoverage.uncoveredDirectories.length,
         },
       ],
     },

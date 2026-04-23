@@ -1,3 +1,4 @@
+import { ageMapMetrics } from './metrics/age-map';
 import { blastRadiusMetrics } from './metrics/blast-radius';
 import { busFactorMetrics } from './metrics/bus-factor';
 import { complexityTrendMetrics } from './metrics/complexity-trend';
@@ -7,10 +8,13 @@ import { cursedFilesMetrics } from './metrics/cursed-files';
 import { deadCodeMetrics } from './metrics/dead-code';
 import { hotspotsMetrics } from './metrics/hotspots';
 import { knowledgeSilosMetrics } from './metrics/knowledge-silos';
+import { languagesMetrics } from './metrics/languages';
 import { overviewMetrics } from './metrics/overview';
 import { parallelDevMetrics } from './metrics/parallel-dev';
+import { rewriteRatioMetrics } from './metrics/rewrite-ratio';
 import { riskMetrics } from './metrics/risk';
 import { techDebtMetrics } from './metrics/tech-debt';
+import { testCoverageMetrics } from './metrics/test-coverage';
 
 import type { PresetDefinition, PresetId } from './types';
 
@@ -224,5 +228,65 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['parallel-dev'],
     },
     metrics: parallelDevMetrics,
+  },
+  'age-map': {
+    id: 'age-map',
+    tier: 'analyzer',
+    label: 'Age Map',
+    group: 'code-health',
+    hero: {
+      defaultViz: 'treemap',
+      altTabs: ['treemap', 'scatter'],
+    },
+    bottomPanel: {
+      defaultTab: 'age-map',
+      altTabs: ['age-map'],
+    },
+    metrics: ageMapMetrics,
+  },
+  languages: {
+    id: 'languages',
+    tier: 'analyzer',
+    label: 'Languages',
+    group: 'structure',
+    hero: {
+      defaultViz: 'treemap',
+      altTabs: ['treemap'],
+    },
+    bottomPanel: {
+      defaultTab: 'languages',
+      altTabs: ['languages'],
+    },
+    metrics: languagesMetrics,
+  },
+  'test-coverage': {
+    id: 'test-coverage',
+    tier: 'analyzer',
+    label: 'Test Coverage',
+    group: 'structure',
+    hero: {
+      defaultViz: 'treemap',
+      altTabs: ['treemap'],
+    },
+    bottomPanel: {
+      defaultTab: 'test-coverage',
+      altTabs: ['test-coverage'],
+    },
+    metrics: testCoverageMetrics,
+  },
+  'rewrite-ratio': {
+    id: 'rewrite-ratio',
+    tier: 'analyzer',
+    label: 'Rewrite Ratio',
+    group: 'code-health',
+    hero: {
+      defaultViz: 'scatter',
+      altTabs: ['scatter', 'debt-scatter'],
+    },
+    bottomPanel: {
+      defaultTab: 'rewrite-ratio',
+      altTabs: ['rewrite-ratio'],
+    },
+    metrics: rewriteRatioMetrics,
   },
 };

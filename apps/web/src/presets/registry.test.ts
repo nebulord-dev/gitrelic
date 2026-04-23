@@ -19,9 +19,11 @@ function makeReport(): GitrelicReport {
     ghostFiles: { totalGhostFiles: 0 },
     knowledgeConcentration: { singleAuthorFiles: 0, totalFiles: 0, concentrationIndex: 0 },
     parallelDev: { files: [], hotFiles: [], totalParallelFiles: 0 },
+    ageMap: { files: [], staleFiles: [], ancientFiles: [], medianAgeDays: 0 },
+    testCoverage: { directories: [], uncoveredDirectories: [], overallRatio: 0 },
     blastRadius: { files: [], topBlasters: [] },
     complexityTrend: { files: [], growingFiles: [], shrinkingFiles: [] },
-    rewriteRatio: { topRewriters: [] },
+    rewriteRatio: { files: [], topRewriters: [] },
     churnVelocity: { acceleratingFiles: [] },
   } as unknown as GitrelicReport;
 }
