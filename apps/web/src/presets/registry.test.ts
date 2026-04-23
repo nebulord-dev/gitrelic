@@ -25,6 +25,13 @@ function makeReport(): GitrelicReport {
     complexityTrend: { files: [], growingFiles: [], shrinkingFiles: [] },
     rewriteRatio: { files: [], topRewriters: [] },
     churnVelocity: { acceleratingFiles: [] },
+    commitTiming: {
+      files: [],
+      stressFiles: [],
+      repoLateNightPercent: 0,
+      repoWeekendPercent: 0,
+      summary: '',
+    },
   } as unknown as GitrelicReport;
 }
 

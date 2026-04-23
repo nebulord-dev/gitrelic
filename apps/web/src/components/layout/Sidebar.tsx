@@ -104,6 +104,11 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           label: 'Parallel Dev',
           badge: report.parallelDev.hotFiles.length,
         },
+        {
+          id: 'commit-timing',
+          label: 'Commit Timing',
+          badge: report.commitTiming.stressFiles.filter((f) => f.stressScore > 50).length,
+        },
       ],
     },
     {
