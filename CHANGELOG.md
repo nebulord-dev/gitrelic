@@ -1,3 +1,10 @@
+# [0.6.0](https://github.com/nebulord-dev/gitrelic/compare/v0.5.1...v0.6.0) (2026-04-23)
+
+
+### Features
+
+* **web:** add Cursed Files Tier 2 preset ([#30](https://github.com/nebulord-dev/gitrelic/issues/30)) ([5d9aa24](https://github.com/nebulord-dev/gitrelic/commit/5d9aa242f45052c55eb352d06aacc01457eed452))
+
 ## [0.5.1](https://github.com/nebulord-dev/gitrelic/compare/v0.5.0...v0.5.1) (2026-04-23)
 
 
