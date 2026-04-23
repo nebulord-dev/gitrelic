@@ -61,6 +61,11 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           label: 'Complexity Trend',
           badge: report.complexityTrend.growingFiles.length,
         },
+        {
+          id: 'age-map',
+          label: 'Age Map',
+          badge: report.ageMap.ancientFiles.length,
+        },
         // NOTE: Stream 3 will add the other Code Health presets here.
       ],
     },

@@ -1,3 +1,4 @@
+import { ageMapMetrics } from './metrics/age-map';
 import { blastRadiusMetrics } from './metrics/blast-radius';
 import { busFactorMetrics } from './metrics/bus-factor';
 import { complexityTrendMetrics } from './metrics/complexity-trend';
@@ -224,5 +225,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['parallel-dev'],
     },
     metrics: parallelDevMetrics,
+  },
+  'age-map': {
+    id: 'age-map',
+    tier: 'analyzer',
+    label: 'Age Map',
+    group: 'code-health',
+    hero: {
+      defaultViz: 'treemap',
+      altTabs: ['treemap', 'scatter'],
+    },
+    bottomPanel: {
+      defaultTab: 'age-map',
+      altTabs: ['age-map'],
+    },
+    metrics: ageMapMetrics,
   },
 };
