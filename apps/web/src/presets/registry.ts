@@ -1,4 +1,5 @@
 import { busFactorMetrics } from './metrics/bus-factor';
+import { contributorsMetrics } from './metrics/contributors';
 import { couplingMetrics } from './metrics/coupling';
 import { hotspotsMetrics } from './metrics/hotspots';
 import { overviewMetrics } from './metrics/overview';
@@ -113,5 +114,19 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     },
     metrics: couplingMetrics,
   },
-  contributors: undefined as unknown as PresetDefinition,
+  contributors: {
+    id: 'contributors',
+    tier: 'analyzer',
+    label: 'Contributors',
+    group: 'team-activity',
+    hero: {
+      defaultViz: 'ownership',
+      altTabs: ['ownership', 'swimlanes', 'ownership-sunburst'],
+    },
+    bottomPanel: {
+      defaultTab: 'contributors',
+      altTabs: ['contributors'],
+    },
+    metrics: contributorsMetrics,
+  },
 };
