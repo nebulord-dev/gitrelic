@@ -1,3 +1,10 @@
+## [0.4.1](https://github.com/nebulord-dev/gitrelic/compare/v0.4.0...v0.4.1) (2026-04-23)
+
+
+### Bug Fixes
+
+* update icons in top bar ([b5be81a](https://github.com/nebulord-dev/gitrelic/commit/b5be81adf49ebd370ff3e3abbeeb11df370caf64))
+
 # [0.4.0](https://github.com/nebulord-dev/gitrelic/compare/v0.3.0...v0.4.0) (2026-04-23)
 
 
