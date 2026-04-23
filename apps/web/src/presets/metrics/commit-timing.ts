@@ -3,15 +3,18 @@ import { fmt } from '../../components/theme';
 import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 
+const STRESS_THRESHOLD = 50;
+
 export function commitTimingMetrics(report: GitrelicReport): Metric[] {
   const { stressFiles, repoLateNightPercent, repoWeekendPercent } = report.commitTiming;
   const topStress = stressFiles[0];
   const topStressScore = topStress?.stressScore ?? 0;
+  const stressedCount = stressFiles.filter((f) => f.stressScore > STRESS_THRESHOLD).length;
 
   return [
     {
       label: 'Late Night %',
-      value: `${repoLateNightPercent.toFixed(0)}%`,
+      value: `${repoLateNightPercent}%`,
       color:
         repoLateNightPercent >= 20
           ? 'var(--severity-critical)'
@@ -21,7 +24,7 @@ export function commitTimingMetrics(report: GitrelicReport): Metric[] {
     },
     {
       label: 'Weekend %',
-      value: `${repoWeekendPercent.toFixed(0)}%`,
+      value: `${repoWeekendPercent}%`,
       color:
         repoWeekendPercent >= 20
           ? 'var(--severity-critical)'
@@ -31,8 +34,13 @@ export function commitTimingMetrics(report: GitrelicReport): Metric[] {
     },
     {
       label: 'Stress Files',
-      value: fmt(stressFiles.length),
-      color: stressFiles.length > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+      value: fmt(stressedCount),
+      color:
+        stressedCount >= 5
+          ? 'var(--severity-critical)'
+          : stressedCount > 0
+            ? 'var(--severity-warning)'
+            : 'var(--severity-healthy)',
     },
     {
       label: 'Top Stress',
@@ -41,7 +49,9 @@ export function commitTimingMetrics(report: GitrelicReport): Metric[] {
         ? 'var(--severity-healthy)'
         : topStressScore >= 70
           ? 'var(--severity-critical)'
-          : 'var(--severity-warning)',
+          : topStressScore > STRESS_THRESHOLD
+            ? 'var(--severity-warning)'
+            : 'var(--severity-healthy)',
     },
   ];
 }

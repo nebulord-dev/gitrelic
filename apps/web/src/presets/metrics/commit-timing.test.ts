@@ -56,25 +56,66 @@ describe('commitTimingMetrics', () => {
     expect(metrics[0].color).toBe('var(--severity-critical)');
   });
 
+  it('marks Weekend % as warning between 10 and 20 percent', () => {
+    const metrics = commitTimingMetrics(makeReport({ repoWeekendPercent: 15 }));
+    expect(metrics[1].value).toBe('15%');
+    expect(metrics[1].color).toBe('var(--severity-warning)');
+  });
+
   it('marks Weekend % as critical at or above 20 percent', () => {
     const metrics = commitTimingMetrics(makeReport({ repoWeekendPercent: 22 }));
     expect(metrics[1].value).toBe('22%');
     expect(metrics[1].color).toBe('var(--severity-critical)');
   });
 
+  it('counts only files with stressScore above the 50 threshold', () => {
+    const stressFiles = [
+      makeFile({ file: 'a.ts', stressScore: 82 }),
+      makeFile({ file: 'b.ts', stressScore: 30 }),
+      makeFile({ file: 'c.ts', stressScore: 51 }),
+    ];
+    const metrics = commitTimingMetrics(makeReport({ stressFiles, files: stressFiles }));
+    expect(metrics[2].value).toBe('2');
+    expect(metrics[2].color).toBe('var(--severity-warning)');
+  });
+
+  it('keeps Stress Files healthy when no file exceeds the threshold even if the list is non-empty', () => {
+    const stressFiles = [
+      makeFile({ stressScore: 40 }),
+      makeFile({ stressScore: 50 }), // boundary — must be strictly greater than 50
+    ];
+    const metrics = commitTimingMetrics(makeReport({ stressFiles, files: stressFiles }));
+    expect(metrics[2].value).toBe('0');
+    expect(metrics[2].color).toBe('var(--severity-healthy)');
+  });
+
+  it('marks Stress Files as critical with 5 or more stressed files', () => {
+    const stressFiles = Array.from({ length: 6 }, (_, i) =>
+      makeFile({ file: `f${i}.ts`, stressScore: 60 + i }),
+    );
+    const metrics = commitTimingMetrics(makeReport({ stressFiles, files: stressFiles }));
+    expect(metrics[2].value).toBe('6');
+    expect(metrics[2].color).toBe('var(--severity-critical)');
+  });
+
   it('marks Top Stress as critical at or above 70', () => {
     const stressFiles = [makeFile({ stressScore: 82 })];
     const metrics = commitTimingMetrics(makeReport({ stressFiles, files: stressFiles }));
-    expect(metrics[2].value).toBe('1');
-    expect(metrics[2].color).toBe('var(--severity-warning)');
     expect(metrics[3].value).toBe('82');
     expect(metrics[3].color).toBe('var(--severity-critical)');
   });
 
-  it('marks Top Stress as warning below the 70 threshold', () => {
+  it('marks Top Stress as warning above the 50 threshold but below 70', () => {
     const stressFiles = [makeFile({ stressScore: 55 })];
     const metrics = commitTimingMetrics(makeReport({ stressFiles, files: stressFiles }));
     expect(metrics[3].value).toBe('55');
     expect(metrics[3].color).toBe('var(--severity-warning)');
+  });
+
+  it('keeps Top Stress healthy when the top score is at or below the 50 threshold', () => {
+    const stressFiles = [makeFile({ stressScore: 45 })];
+    const metrics = commitTimingMetrics(makeReport({ stressFiles, files: stressFiles }));
+    expect(metrics[3].value).toBe('45');
+    expect(metrics[3].color).toBe('var(--severity-healthy)');
   });
 });
