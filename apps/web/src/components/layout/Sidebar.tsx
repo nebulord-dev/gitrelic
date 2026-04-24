@@ -136,6 +136,11 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           label: 'Test Coverage',
           badge: report.testCoverage.uncoveredDirectories.length,
         },
+        {
+          id: 'renames',
+          label: 'Renames',
+          badge: report.renameTracking.filesWithRenames,
+        },
       ],
     },
   ];

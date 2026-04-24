@@ -14,6 +14,7 @@ import { knowledgeSilosMetrics } from './metrics/knowledge-silos';
 import { languagesMetrics } from './metrics/languages';
 import { overviewMetrics } from './metrics/overview';
 import { parallelDevMetrics } from './metrics/parallel-dev';
+import { renamesMetrics } from './metrics/renames';
 import { rewriteRatioMetrics } from './metrics/rewrite-ratio';
 import { riskMetrics } from './metrics/risk';
 import { shameMetrics } from './metrics/shame';
@@ -352,5 +353,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['shame'],
     },
     metrics: shameMetrics,
+  },
+  renames: {
+    id: 'renames',
+    tier: 'analyzer',
+    label: 'Renames',
+    group: 'structure',
+    hero: {
+      defaultViz: 'rename-sankey',
+      altTabs: ['rename-sankey'],
+    },
+    bottomPanel: {
+      defaultTab: 'renames',
+      altTabs: ['renames'],
+    },
+    metrics: renamesMetrics,
   },
 };

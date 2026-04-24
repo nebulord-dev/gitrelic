@@ -34,6 +34,13 @@ function makeReport(): GitrelicReport {
     },
     coAuthors: { pairs: [], authorStats: [], totalCoAuthoredCommits: 0, summary: '' },
     forensics: { files: [], shameLeaderboard: [], totalShameCommits: 0, summary: '' },
+    renameTracking: {
+      renames: [],
+      chains: [],
+      totalRenames: 0,
+      filesWithRenames: 0,
+      summary: '',
+    },
   } as unknown as GitrelicReport;
 }
 
