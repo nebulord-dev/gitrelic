@@ -114,6 +114,11 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           label: 'Commit Timing',
           badge: report.commitTiming.stressFiles.filter((f) => f.stressScore > 50).length,
         },
+        {
+          id: 'co-authors',
+          label: 'Co-Authors',
+          badge: report.coAuthors.pairs.length,
+        },
       ],
     },
     {
