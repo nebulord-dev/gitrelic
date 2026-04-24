@@ -1,3 +1,10 @@
+## [0.13.1](https://github.com/nebulord-dev/gitrelic/compare/v0.13.0...v0.13.1) (2026-04-24)
+
+
+### Bug Fixes
+
+* **web:** disambiguate same-basename sankey nodes by path suffix ([#38](https://github.com/nebulord-dev/gitrelic/issues/38)) ([d5e3948](https://github.com/nebulord-dev/gitrelic/commit/d5e3948837c5c84174f2712f438f4c2ef238402d)), closes [throu#prepareSankeyData](https://github.com/throu/issues/prepareSankeyData)
+
 # [0.13.0](https://github.com/nebulord-dev/gitrelic/compare/v0.12.0...v0.13.0) (2026-04-24)
 
 
