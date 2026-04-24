@@ -1,6 +1,7 @@
 import { ageMapMetrics } from './metrics/age-map';
 import { blastRadiusMetrics } from './metrics/blast-radius';
 import { busFactorMetrics } from './metrics/bus-factor';
+import { coAuthorsMetrics } from './metrics/co-authors';
 import { commitTimingMetrics } from './metrics/commit-timing';
 import { complexityTrendMetrics } from './metrics/complexity-trend';
 import { contributorsMetrics } from './metrics/contributors';
@@ -320,5 +321,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['ghost-files'],
     },
     metrics: ghostFilesMetrics,
+  },
+  'co-authors': {
+    id: 'co-authors',
+    tier: 'analyzer',
+    label: 'Co-Authors',
+    group: 'team-activity',
+    hero: {
+      defaultViz: 'author-force-graph',
+      altTabs: ['author-force-graph'],
+    },
+    bottomPanel: {
+      defaultTab: 'co-authors',
+      altTabs: ['co-authors'],
+    },
+    metrics: coAuthorsMetrics,
   },
 };

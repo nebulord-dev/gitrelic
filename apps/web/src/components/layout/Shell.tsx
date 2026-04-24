@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { useSelection } from '../../hooks/useSelection';
+import { AuthorForceGraph } from '../hero/AuthorForceGraph';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
 import { CommitGraph } from '../hero/CommitGraph';
 import { ContributorSwimlanes } from '../hero/ContributorSwimlanes';
@@ -92,6 +93,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'risk-heatmap': 'Heatmap',
   'ownership-sunburst': 'Sunburst',
   'ownership-sunburst-ghosts': 'Ghosts',
+  'author-force-graph': 'Pairs',
   'growth-timeline': 'Growth',
   'debt-scatter': 'Debt',
 };
@@ -304,6 +306,13 @@ export function Shell({ report }: ShellProps) {
                     onSelectFile={selection.selectFile}
                     onSelectContributor={selection.selectContributor}
                     mode="ghost"
+                  />
+                )}
+                {selection.activeHeroViz === 'author-force-graph' && (
+                  <AuthorForceGraph
+                    report={report}
+                    selectedContributor={selection.selectedContributor}
+                    onSelectContributor={selection.selectContributor}
                   />
                 )}
                 {selection.activeHeroViz === 'growth-timeline' && (

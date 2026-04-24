@@ -32,6 +32,7 @@ function makeReport(): GitrelicReport {
       repoWeekendPercent: 0,
       summary: '',
     },
+    coAuthors: { pairs: [], authorStats: [], totalCoAuthoredCommits: 0, summary: '' },
   } as unknown as GitrelicReport;
 }
 
