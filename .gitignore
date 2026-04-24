@@ -10,7 +10,7 @@ coverage/
 .superpowers/
 .serena
 .claude/worktrees/
-docs/
+
 .claude/projects/
 .sickbay/history.json
 .sickbay/dep-tree.json
