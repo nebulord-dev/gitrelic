@@ -1,3 +1,10 @@
+# [0.11.0](https://github.com/nebulord-dev/gitrelic/compare/v0.10.0...v0.11.0) (2026-04-24)
+
+
+### Features
+
+* **web:** add Co-Authors Tier 2 preset (Wave D) ([#35](https://github.com/nebulord-dev/gitrelic/issues/35)) ([dc5fadb](https://github.com/nebulord-dev/gitrelic/commit/dc5fadbf1a33fb809b7228040552dc1fc591cc6f))
+
 # [0.10.0](https://github.com/nebulord-dev/gitrelic/compare/v0.9.0...v0.10.0) (2026-04-24)
 
 
