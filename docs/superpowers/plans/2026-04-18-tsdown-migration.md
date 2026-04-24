@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-04-18-tsdown-migration-design.md`
 
+> **Path convention:** `<nebulord>` refers to the parent directory containing `gitrelic/` (and sibling repos like `sickbay/`). Substitute your own absolute path when executing.
+
 ---
 
 ## File Map
@@ -25,7 +27,7 @@
 | Modify | `.claude/skills/audit-architecture/SKILL.md` | Update tsup → tsdown references |
 | Modify | `.claude/skills/audit-cli/SKILL.md` | Update tsup → tsdown references |
 | Modify | `.claude/skills/prime/SKILL.md` | Update tsup → tsdown reference |
-| Modify | `/Users/tracericochet/Desktop/nebulord/CLAUDE.md` | Update build tool reference in shared stack table |
+| Modify | `<nebulord>/CLAUDE.md` | Update build tool reference in shared stack table |
 
 ---
 
@@ -166,7 +168,7 @@ git commit -m "chore(cli): migrate tsup → tsdown"
 - Modify: `.claude/skills/audit-architecture/SKILL.md`
 - Modify: `.claude/skills/audit-cli/SKILL.md`
 - Modify: `.claude/skills/prime/SKILL.md`
-- Modify: `/Users/tracericochet/Desktop/nebulord/CLAUDE.md:23`
+- Modify: `<nebulord>/CLAUDE.md:23`
 
 - [ ] **Step 1: Update copy-web-dist.mjs comments**
 
@@ -195,7 +197,7 @@ Line 105: `tsup for bundling core/cli` → `tsdown for bundling core/cli`
 
 - [ ] **Step 5: Update root CLAUDE.md (separate repo)**
 
-In `/Users/tracericochet/Desktop/nebulord/CLAUDE.md`, line 23:
+In `<nebulord>/CLAUDE.md`, line 23:
 `| Build | tsup | tsup (core), Vite (extension) |` → `| Build | tsdown | tsup (core), Vite (extension) |`
 
 Note: only the first column (GitRelic) changes. The second column describes Darkstar, which still uses tsup.
@@ -203,10 +205,10 @@ Note: only the first column (GitRelic) changes. The second column describes Dark
 This file is in the parent `nebulord` repo, not the gitrelic repo. Commit separately:
 
 ```bash
-cd /Users/tracericochet/Desktop/nebulord
+cd <nebulord>
 git add CLAUDE.md
 git commit -m "docs: update gitrelic build tool tsup → tsdown"
-cd /Users/tracericochet/Desktop/nebulord/gitrelic
+cd <nebulord>/gitrelic
 ```
 
 - [ ] **Step 6: Commit gitrelic docs changes**

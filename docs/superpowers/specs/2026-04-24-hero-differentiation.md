@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-24
 **Status:** Deferred backlog item — open after the preset initiative settles
-**Context for future me / different machine:** `docs/` is gitignored, so this file lives only on the machine that created it. If you're reading this on a fresh checkout and it isn't here, it's tracked in the session history of the conversation where we discussed it.
+**Tracked in git as of 2026-04-24** (PR #39 un-ignored `docs/` alongside adding this file).
 
 ## Problem
 
