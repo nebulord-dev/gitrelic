@@ -204,7 +204,8 @@ export function AuthorForceGraph({
         >
           <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.node.label}</div>
           <div style={{ color: 'var(--text-secondary)' }}>
-            {tooltip.node.coAuthoredCommits} co-commits · {tooltip.node.partnerCount} partner
+            {tooltip.node.coAuthoredCommits} co-commit
+            {tooltip.node.coAuthoredCommits !== 1 ? 's' : ''} · {tooltip.node.partnerCount} partner
             {tooltip.node.partnerCount !== 1 ? 's' : ''}
           </div>
           {tooltip.node.primaryPartner && (
