@@ -1,3 +1,10 @@
+# [0.12.0](https://github.com/nebulord-dev/gitrelic/compare/v0.11.0...v0.12.0) (2026-04-24)
+
+
+### Features
+
+* **web:** add Shame Tier 2 preset ([#36](https://github.com/nebulord-dev/gitrelic/issues/36)) ([0fed54a](https://github.com/nebulord-dev/gitrelic/commit/0fed54a1e015bc59e1c3477a8e9503429eea5920))
+
 # [0.11.0](https://github.com/nebulord-dev/gitrelic/compare/v0.10.0...v0.11.0) (2026-04-24)
 
 
