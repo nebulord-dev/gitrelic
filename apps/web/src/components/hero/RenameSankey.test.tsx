@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { prepareSankeyData } from './RenameSankey';
+import { computeDisplayName, prepareSankeyData } from './RenameSankey';
 
 import type { FileRenameChain, GitrelicReport } from '@gitrelic/core';
 
@@ -118,5 +118,57 @@ describe('prepareSankeyData', () => {
     const { nodes, links } = prepareSankeyData(makeReport(chains));
     expect(nodes).toEqual([]);
     expect(links).toEqual([]);
+  });
+
+  it('uses basename as displayName when every chain basename is unique', () => {
+    const chain = makeChain('new.ts', ['old.ts']);
+    const { nodes } = prepareSankeyData(makeReport([chain]));
+    expect(nodes.map((n) => n.displayName)).toEqual(['old.ts', 'new.ts']);
+  });
+
+  it('extends displayName with parent dir when chain paths share a basename', () => {
+    const chain = makeChain('packages/web/Panel.tsx', [
+      'packages/cli/Panel.tsx',
+      'packages/core/Panel.tsx',
+    ]);
+    const { nodes } = prepareSankeyData(makeReport([chain]));
+    const byPath = new Map(nodes.map((n) => [n.name, n.displayName]));
+    expect(byPath.get('packages/cli/Panel.tsx')).toBe('cli/Panel.tsx');
+    expect(byPath.get('packages/core/Panel.tsx')).toBe('core/Panel.tsx');
+    expect(byPath.get('packages/web/Panel.tsx')).toBe('web/Panel.tsx');
+  });
+
+  it('walks deeper into the path when shallow parent dirs also match', () => {
+    const chain = makeChain('a/b/d/Foo.ts', ['a/b/c/Foo.ts']);
+    const { nodes } = prepareSankeyData(makeReport([chain]));
+    const byPath = new Map(nodes.map((n) => [n.name, n.displayName]));
+    expect(byPath.get('a/b/c/Foo.ts')).toBe('c/Foo.ts');
+    expect(byPath.get('a/b/d/Foo.ts')).toBe('d/Foo.ts');
+  });
+
+  it('only adds path context when needed — mixed basenames stay short', () => {
+    const chain = makeChain('lib/Renamed.tsx', ['lib/Original.tsx']);
+    const { nodes } = prepareSankeyData(makeReport([chain]));
+    const byPath = new Map(nodes.map((n) => [n.name, n.displayName]));
+    expect(byPath.get('lib/Original.tsx')).toBe('Original.tsx');
+    expect(byPath.get('lib/Renamed.tsx')).toBe('Renamed.tsx');
+  });
+});
+
+describe('computeDisplayName', () => {
+  it('returns the basename when no peer shares it', () => {
+    expect(computeDisplayName('src/a.ts', ['src/b.ts'])).toBe('a.ts');
+  });
+
+  it('walks up a directory when peers share the basename', () => {
+    expect(computeDisplayName('cli/Foo.ts', ['cli/Foo.ts', 'web/Foo.ts'])).toBe('cli/Foo.ts');
+  });
+
+  it('falls back to the longest segment count needed when one path is a suffix of another', () => {
+    expect(computeDisplayName('nested/Foo.ts', ['nested/Foo.ts', 'Foo.ts'])).toBe('nested/Foo.ts');
+  });
+
+  it('handles a single-path chain by returning the basename', () => {
+    expect(computeDisplayName('only/Foo.ts', ['only/Foo.ts'])).toBe('Foo.ts');
   });
 });

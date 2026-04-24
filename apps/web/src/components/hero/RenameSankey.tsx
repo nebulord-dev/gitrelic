@@ -6,8 +6,33 @@ import type { GitrelicReport } from '@gitrelic/core';
 
 export interface RenameSankeyNode {
   name: string;
+  displayName: string;
   currentPath: string;
   isTerminus: boolean;
+}
+
+function suffixDepthToDistinguish(target: string, peer: string): number {
+  const tSeg = target.split('/');
+  const pSeg = peer.split('/');
+  const minLen = Math.min(tSeg.length, pSeg.length);
+  for (let i = 0; i < minLen; i++) {
+    if (tSeg[tSeg.length - 1 - i] !== pSeg[pSeg.length - 1 - i]) {
+      return i + 1;
+    }
+  }
+  return minLen + 1;
+}
+
+export function computeDisplayName(target: string, chainPaths: string[]): string {
+  const tSeg = target.split('/');
+  if (tSeg.length === 0) return target;
+  let depth = 1;
+  for (const peer of chainPaths) {
+    if (peer === target) continue;
+    const d = suffixDepthToDistinguish(target, peer);
+    if (d > depth) depth = d;
+  }
+  return tSeg.slice(-depth).join('/');
 }
 
 export interface RenameSankeyLink {
@@ -33,7 +58,12 @@ export function prepareSankeyData(
   const links: RenameSankeyLink[] = [];
   const nodeIndex = new Map<string, number>();
 
-  function addNode(name: string, currentPath: string, isTerminus: boolean): number {
+  function addNode(
+    name: string,
+    displayName: string,
+    currentPath: string,
+    isTerminus: boolean,
+  ): number {
     const existing = nodeIndex.get(name);
     if (existing != null) {
       if (isTerminus && !nodes[existing].isTerminus) {
@@ -42,7 +72,7 @@ export function prepareSankeyData(
       return existing;
     }
     const index = nodes.length;
-    nodes.push({ name, currentPath, isTerminus });
+    nodes.push({ name, displayName, currentPath, isTerminus });
     nodeIndex.set(name, index);
     return index;
   }
@@ -51,7 +81,7 @@ export function prepareSankeyData(
     if (chain.previousNames.length === 0) continue;
     const path = [...chain.previousNames, chain.currentPath];
     const indices = path.map((name) =>
-      addNode(name, chain.currentPath, name === chain.currentPath),
+      addNode(name, computeDisplayName(name, path), chain.currentPath, name === chain.currentPath),
     );
     for (let i = 0; i < indices.length - 1; i++) {
       links.push({ source: indices[i], target: indices[i + 1], value: 1 });
@@ -59,11 +89,6 @@ export function prepareSankeyData(
   }
 
   return { nodes, links };
-}
-
-function fileName(path: string): string {
-  const basename = path.split('/').pop();
-  return basename && basename.length > 0 ? basename : path;
 }
 
 interface RenameSankeyProps {
@@ -194,7 +219,7 @@ export function RenameSankey({ report, selectedFile, onSelectFile }: RenameSanke
                 fill="var(--text-secondary)"
                 style={{ pointerEvents: 'none' }}
               >
-                {fileName(n.name)}
+                {n.displayName}
               </text>
             </g>
           );
