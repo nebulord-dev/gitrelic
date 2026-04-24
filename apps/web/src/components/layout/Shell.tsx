@@ -91,6 +91,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   swimlanes: 'Swimlanes',
   'risk-heatmap': 'Heatmap',
   'ownership-sunburst': 'Sunburst',
+  'ownership-sunburst-ghosts': 'Ghosts',
   'growth-timeline': 'Growth',
   'debt-scatter': 'Debt',
 };
@@ -293,6 +294,16 @@ export function Shell({ report }: ShellProps) {
                     selectedContributor={selection.selectedContributor}
                     onSelectFile={selection.selectFile}
                     onSelectContributor={selection.selectContributor}
+                  />
+                )}
+                {selection.activeHeroViz === 'ownership-sunburst-ghosts' && (
+                  <OwnershipSunburst
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    selectedContributor={selection.selectedContributor}
+                    onSelectFile={selection.selectFile}
+                    onSelectContributor={selection.selectContributor}
+                    mode="ghost"
                   />
                 )}
                 {selection.activeHeroViz === 'growth-timeline' && (

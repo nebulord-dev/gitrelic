@@ -92,6 +92,11 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           label: 'Knowledge Silos',
           badge: report.knowledgeConcentration.singleAuthorFiles,
         },
+        {
+          id: 'ghost-files',
+          label: 'Ghost Files',
+          badge: report.ghostFiles.totalGhostFiles,
+        },
       ],
     },
     {

@@ -19,6 +19,7 @@ export type HeroViz =
   | 'swimlanes'
   | 'risk-heatmap'
   | 'ownership-sunburst'
+  | 'ownership-sunburst-ghosts'
   | 'growth-timeline'
   | 'debt-scatter';
 
@@ -69,7 +70,8 @@ export type AnalyzerPresetId =
   | 'languages'
   | 'test-coverage'
   | 'rewrite-ratio'
-  | 'commit-timing';
+  | 'commit-timing'
+  | 'ghost-files';
 // NOTE: Stream 3 will extend AnalyzerPresetId with the remaining presets.
 
 export type PresetId = DashboardPresetId | AnalyzerPresetId;

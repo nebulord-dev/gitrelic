@@ -14,6 +14,7 @@ interface OwnershipSunburstProps {
   selectedContributor: string | null;
   onSelectFile: (file: string) => void;
   onSelectContributor: (email: string) => void;
+  mode?: 'all' | 'ghost';
 }
 
 interface SunburstNode {
@@ -48,6 +49,7 @@ export function OwnershipSunburst({
   selectedContributor,
   onSelectFile,
   onSelectContributor,
+  mode = 'all',
 }: OwnershipSunburstProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 600, height: 400 });
@@ -72,6 +74,8 @@ export function OwnershipSunburst({
       locMap.set(f.file, f.lines);
     }
 
+    const ghostSet = mode === 'ghost' ? new Set(report.ghostFiles.files.map((f) => f.file)) : null;
+
     // Group files by dominantAuthor
     const authorMap = new Map<
       string,
@@ -79,6 +83,7 @@ export function OwnershipSunburst({
     >();
 
     for (const f of report.busFactors.files) {
+      if (ghostSet && !ghostSet.has(f.file)) continue;
       const author = f.dominantAuthor;
       if (!authorMap.has(author)) {
         authorMap.set(author, { files: [] });
@@ -105,7 +110,17 @@ export function OwnershipSunburst({
     }
 
     return { name: 'root', children: authorNodes };
-  }, [report]);
+  }, [report, mode]);
+
+  const totalFiles = useMemo(() => {
+    if (mode !== 'ghost') return report.busFactors.files.length;
+    const ghostSet = new Set(report.ghostFiles.files.map((f) => f.file));
+    let count = 0;
+    for (const f of report.busFactors.files) {
+      if (ghostSet.has(f.file)) count += 1;
+    }
+    return count;
+  }, [report, mode]);
 
   // Build layout
   const { nodes, authorNames } = useMemo(() => {
@@ -213,7 +228,7 @@ export function OwnershipSunburst({
           fill="var(--text-primary)"
           style={{ pointerEvents: 'none' }}
         >
-          Ownership
+          {mode === 'ghost' ? 'Ghost Ownership' : 'Ownership'}
         </text>
         <text
           x={cx}
@@ -224,7 +239,7 @@ export function OwnershipSunburst({
           fill="var(--text-secondary)"
           style={{ pointerEvents: 'none' }}
         >
-          {report.busFactors.files.length} files
+          {totalFiles} files
         </text>
 
         {/* Risk legend */}
