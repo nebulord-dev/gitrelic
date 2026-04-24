@@ -7,6 +7,7 @@ import { contributorsMetrics } from './metrics/contributors';
 import { couplingMetrics } from './metrics/coupling';
 import { cursedFilesMetrics } from './metrics/cursed-files';
 import { deadCodeMetrics } from './metrics/dead-code';
+import { ghostFilesMetrics } from './metrics/ghost-files';
 import { hotspotsMetrics } from './metrics/hotspots';
 import { knowledgeSilosMetrics } from './metrics/knowledge-silos';
 import { languagesMetrics } from './metrics/languages';
@@ -304,5 +305,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['commit-timing'],
     },
     metrics: commitTimingMetrics,
+  },
+  'ghost-files': {
+    id: 'ghost-files',
+    tier: 'analyzer',
+    label: 'Ghost Files',
+    group: 'ownership-risk',
+    hero: {
+      defaultViz: 'ownership-sunburst-ghosts',
+      altTabs: ['ownership-sunburst-ghosts', 'ownership-sunburst', 'ownership'],
+    },
+    bottomPanel: {
+      defaultTab: 'ghost-files',
+      altTabs: ['ghost-files'],
+    },
+    metrics: ghostFilesMetrics,
   },
 };
