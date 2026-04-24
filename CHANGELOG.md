@@ -1,3 +1,10 @@
+# [0.13.0](https://github.com/nebulord-dev/gitrelic/compare/v0.12.0...v0.13.0) (2026-04-24)
+
+
+### Features
+
+* **web:** add Renames Tier 2 preset ([#37](https://github.com/nebulord-dev/gitrelic/issues/37)) ([d91549b](https://github.com/nebulord-dev/gitrelic/commit/d91549bb4b805ef9ec93944f494e0b66de313e7c))
+
 # [0.12.0](https://github.com/nebulord-dev/gitrelic/compare/v0.11.0...v0.12.0) (2026-04-24)
 
 
