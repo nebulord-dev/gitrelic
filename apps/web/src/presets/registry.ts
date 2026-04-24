@@ -16,6 +16,7 @@ import { overviewMetrics } from './metrics/overview';
 import { parallelDevMetrics } from './metrics/parallel-dev';
 import { rewriteRatioMetrics } from './metrics/rewrite-ratio';
 import { riskMetrics } from './metrics/risk';
+import { shameMetrics } from './metrics/shame';
 import { techDebtMetrics } from './metrics/tech-debt';
 import { testCoverageMetrics } from './metrics/test-coverage';
 
@@ -336,5 +337,20 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['co-authors'],
     },
     metrics: coAuthorsMetrics,
+  },
+  shame: {
+    id: 'shame',
+    tier: 'analyzer',
+    label: 'Shame',
+    group: 'code-health',
+    hero: {
+      defaultViz: 'shame-leaderboard',
+      altTabs: ['shame-leaderboard'],
+    },
+    bottomPanel: {
+      defaultTab: 'shame',
+      altTabs: ['shame'],
+    },
+    metrics: shameMetrics,
   },
 };

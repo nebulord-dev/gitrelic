@@ -21,6 +21,7 @@ export type HeroViz =
   | 'ownership-sunburst'
   | 'ownership-sunburst-ghosts'
   | 'author-force-graph'
+  | 'shame-leaderboard'
   | 'growth-timeline'
   | 'debt-scatter';
 
@@ -73,7 +74,8 @@ export type AnalyzerPresetId =
   | 'rewrite-ratio'
   | 'commit-timing'
   | 'ghost-files'
-  | 'co-authors';
+  | 'co-authors'
+  | 'shame';
 // NOTE: Stream 3 will extend AnalyzerPresetId with the remaining presets.
 
 export type PresetId = DashboardPresetId | AnalyzerPresetId;

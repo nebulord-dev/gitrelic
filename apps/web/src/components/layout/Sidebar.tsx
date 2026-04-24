@@ -71,6 +71,11 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           label: 'Rewrite Ratio',
           badge: report.rewriteRatio.topRewriters.length,
         },
+        {
+          id: 'shame',
+          label: 'Shame',
+          badge: report.forensics.files.filter((f) => f.shameScore >= 70).length,
+        },
         // NOTE: Stream 3 will add the other Code Health presets here.
       ],
     },
