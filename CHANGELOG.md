@@ -1,3 +1,10 @@
+# [0.10.0](https://github.com/nebulord-dev/gitrelic/compare/v0.9.0...v0.10.0) (2026-04-24)
+
+
+### Features
+
+* **web:** add Ghost Files Tier 2 preset ([#34](https://github.com/nebulord-dev/gitrelic/issues/34)) ([5fbd0fb](https://github.com/nebulord-dev/gitrelic/commit/5fbd0fb6c4c535346247239c682050135046609b))
+
 # [0.9.0](https://github.com/nebulord-dev/gitrelic/compare/v0.8.0...v0.9.0) (2026-04-23)
 
 
