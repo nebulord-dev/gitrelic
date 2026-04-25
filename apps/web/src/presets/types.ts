@@ -30,7 +30,8 @@ export type HeroViz =
   | 'growth-timeline'
   | 'debt-scatter'
   | 'rewrite-diverging-bar'
-  | 'staleness-scatter';
+  | 'staleness-scatter'
+  | 'blast-scatter';
 
 export type BottomTab =
   | 'hotspots'
