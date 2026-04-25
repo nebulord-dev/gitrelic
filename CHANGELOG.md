@@ -1,3 +1,10 @@
+# [0.21.0](https://github.com/nebulord-dev/gitrelic/compare/v0.20.0...v0.21.0) (2026-04-25)
+
+
+### Features
+
+* **web:** bespoke hero for test-coverage (by-directory bar) ([#47](https://github.com/nebulord-dev/gitrelic/issues/47)) ([f3bac5e](https://github.com/nebulord-dev/gitrelic/commit/f3bac5ef74026e69ed2c6c9eb3eec7e3c07e5709)), closes [#40](https://github.com/nebulord-dev/gitrelic/issues/40) [#d27b22](https://github.com/nebulord-dev/gitrelic/issues/d27b22)
+
 # [0.20.0](https://github.com/nebulord-dev/gitrelic/compare/v0.19.0...v0.20.0) (2026-04-25)
 
 
