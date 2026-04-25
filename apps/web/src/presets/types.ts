@@ -32,7 +32,8 @@ export type HeroViz =
   | 'rewrite-diverging-bar'
   | 'staleness-scatter'
   | 'blast-scatter'
-  | 'languages-stacked';
+  | 'languages-stacked'
+  | 'test-coverage-by-dir';
 
 export type BottomTab =
   | 'hotspots'

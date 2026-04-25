@@ -19,6 +19,7 @@ import { RewriteDivergingBar } from '../hero/RewriteDivergingBar';
 import { RiskHeatmap } from '../hero/RiskHeatmap';
 import { ShameLeaderboard } from '../hero/ShameLeaderboard';
 import { StalenessScatter } from '../hero/StalenessScatter';
+import { TestCoverageByDir } from '../hero/TestCoverageByDir';
 import { Timeline } from '../hero/Timeline';
 import { BottomPanel } from './BottomPanel';
 import { InspectorPanel } from './InspectorPanel';
@@ -113,6 +114,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'staleness-scatter': 'Staleness',
   'blast-scatter': 'Blast',
   'languages-stacked': 'Stacked',
+  'test-coverage-by-dir': 'By Dir',
 };
 
 interface ShellProps {
@@ -416,6 +418,9 @@ export function Shell({ report }: ShellProps) {
                 )}
                 {selection.activeHeroViz === 'languages-stacked' && (
                   <LanguagesStackedBar report={report} />
+                )}
+                {selection.activeHeroViz === 'test-coverage-by-dir' && (
+                  <TestCoverageByDir report={report} />
                 )}
               </div>
             </div>

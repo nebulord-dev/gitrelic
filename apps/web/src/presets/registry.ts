@@ -271,7 +271,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     group: 'structure',
     hero: {
       defaultViz: 'treemap-test',
-      altTabs: ['treemap-test'],
+      altTabs: ['treemap-test', 'test-coverage-by-dir'],
     },
     bottomPanel: {
       defaultTab: 'test-coverage',
