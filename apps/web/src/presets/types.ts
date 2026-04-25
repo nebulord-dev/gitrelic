@@ -29,7 +29,8 @@ export type HeroViz =
   | 'rename-sankey'
   | 'growth-timeline'
   | 'debt-scatter'
-  | 'rewrite-diverging-bar';
+  | 'rewrite-diverging-bar'
+  | 'staleness-scatter';
 
 export type BottomTab =
   | 'hotspots'

@@ -16,6 +16,7 @@ import { RenameSankey } from '../hero/RenameSankey';
 import { RewriteDivergingBar } from '../hero/RewriteDivergingBar';
 import { RiskHeatmap } from '../hero/RiskHeatmap';
 import { ShameLeaderboard } from '../hero/ShameLeaderboard';
+import { StalenessScatter } from '../hero/StalenessScatter';
 import { Timeline } from '../hero/Timeline';
 import { BottomPanel } from './BottomPanel';
 import { InspectorPanel } from './InspectorPanel';
@@ -107,6 +108,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'growth-timeline': 'Growth',
   'debt-scatter': 'Debt',
   'rewrite-diverging-bar': 'Rewrites',
+  'staleness-scatter': 'Staleness',
 };
 
 interface ShellProps {
@@ -389,6 +391,13 @@ export function Shell({ report }: ShellProps) {
                 )}
                 {selection.activeHeroViz === 'rewrite-diverging-bar' && (
                   <RewriteDivergingBar
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                  />
+                )}
+                {selection.activeHeroViz === 'staleness-scatter' && (
+                  <StalenessScatter
                     report={report}
                     selectedFile={selection.selectedFile}
                     onSelectFile={selection.selectFile}

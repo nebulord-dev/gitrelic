@@ -165,8 +165,8 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     label: 'Stale Files',
     group: 'code-health',
     hero: {
-      defaultViz: 'scatter',
-      altTabs: ['scatter', 'treemap'],
+      defaultViz: 'staleness-scatter',
+      altTabs: ['staleness-scatter', 'scatter', 'treemap'],
     },
     bottomPanel: {
       defaultTab: 'dead-code',
