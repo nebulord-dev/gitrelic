@@ -77,9 +77,29 @@ No new config surface on `PresetDefinition`. The pattern matches the existing `o
 
 | Token | colorBy | Source field | Legend |
 |---|---|---|---|
-| `treemap` (existing) | `churn` | `hotspots.files[].category` | critical / high / med / low |
-| `treemap-age` *(new)* | `age` | `ageMap.files[].lastCommitAge` (days, bucketed) | fresh / recent / aging / stale |
-| `treemap-test` *(new)* | `test-proximity` | `testCoverage.files[].hasTestSibling` (binary) | tested / untested |
+| `treemap` (existing) | `churn` | `hotspots.files[].category` (`HotspotCategory`) | critical / warning / moderate / low |
+| `treemap-age` *(new)* | `age` | `ageMap.files[].status` (`AgeStatus` — analyzer already buckets) | fresh / aging / stale / ancient |
+| `treemap-test` *(new)* | `test-proximity` | `testCoverage.files[].hasTestSibling` (binary) — **requires core extension, see below** | tested / untested |
+
+**Core extension required for `treemap-test`.** Today's `TestCoverageProxyReport` exposes only `directories: DirectoryCoverage[]` — there is no per-file array. The analyzer already inspects every source file internally (matching extensions to find sibling tests); we extend it to emit a `files: TestCoverageFile[]` record alongside the existing directory aggregates:
+
+```ts
+// packages/core/src/types.ts
+export interface TestCoverageFile {
+  file: string;
+  hasTestSibling: boolean;
+}
+
+export interface TestCoverageProxyReport {
+  directories: DirectoryCoverage[];          // unchanged
+  uncoveredDirectories: DirectoryCoverage[]; // unchanged
+  files: TestCoverageFile[];                 // NEW
+  overallRatio: number;
+  summary: string;
+}
+```
+
+This extension lands in **PR 1** alongside the colorBy work so the data and the consumer ship together. `apps/web/src/utils/normalizeReport.ts` defaults `files: []` for older reports.
 
 **Tiny-cell rule:** treemap encoding is color-only. No text labels at small sizes. This rules out three-state encodings that would need text disambiguation (e.g., partial-coverage). Test-coverage encoding stays binary.
 
@@ -94,22 +114,22 @@ No new config surface on `PresetDefinition`. The pattern matches the existing `o
 
 Each is a new component under `apps/web/src/components/hero/` following the existing `(report, selectedFile, onSelectFile)` props pattern. SVG only, using d3 packages already bundled (`d3-shape`, `d3-scale`, `d3-array`). No new dependencies.
 
-| Token | Component | Owner preset | Notes |
+| Token | Component | Owner preset | Data source |
 |---|---|---|---|
-| `rewrite-diverging-bar` | `RewriteDivergingBar.tsx` | Rewrite Ratio | Files ranked by rewrite ratio; deletions left of zero-axis, insertions right. May need `rewriteRatio.files[].insertions/deletions` exposed in core types if not already. |
-| `staleness-scatter` | `StalenessScatter.tsx` | Dead Code | X = days since last touch · Y = LOC · color = age tier. Verify `deadCode.files[].daysSinceLastTouch` exists. |
-| `blast-scatter` | `BlastScatter.tsx` | Blast Radius | X = blast score · Y = avg co-changed file count · color = severity. Verify `blastRadius.files[].coChangedCount` exists. |
-| `ownership-bar` | `OwnershipBar.tsx` | Bus Factor | One row per critical file; bar = dominant-author share; color = risk tier. Uses existing `busFactors.files[].dominantAuthor`. |
-| `ownership-sunburst-silos` | reuse `OwnershipSunburst` w/ extended `mode` | Knowledge Silos | Extend `mode` prop from `'all' \| 'ghost'` to `'all' \| 'ghost' \| 'single-author'`. Filters to files with one dominant author. |
-| `languages-stacked` | `LanguagesStackedBar.tsx` | Languages (primary) | Rows = top-level directories; segments = language LOC. Click row → Inspector lists files. Uses `loc.files[].{lines,language}`. |
-| `test-coverage-by-dir` | `TestCoverageByDir.tsx` | Test Coverage (alt) | Coverage % per directory, sorted worst-first; row color = coverage tier. Aggregates `testCoverage.files[]` by parent dir. |
+| `rewrite-diverging-bar` | `RewriteDivergingBar.tsx` | Rewrite Ratio | `rewriteRatio.files[].{totalInsertions, totalDeletions, ratio, rewriteScore}`. Files ranked by `rewriteScore`; deletions left of zero-axis, insertions right. No core change. |
+| `staleness-scatter` | `StalenessScatter.tsx` | Dead Code | `deadCode.candidates[].{ageInDays, loc, lastCommitDate, language}`. X = `ageInDays` · Y = `loc` · color = age tier. No core change. |
+| `blast-scatter` | `BlastScatter.tsx` | Blast Radius | `blastRadius.files[].{blastScore, avgCoChangedFiles, maxCoChangedFiles}`. X = `blastScore` · Y = `avgCoChangedFiles` · color = severity. No core change. |
+| `ownership-bar` | `OwnershipBar.tsx` | Bus Factor | `busFactors.criticalFiles[].{dominantAuthor, dominantAuthorPercent, risk}`. One row per critical file; bar = `dominantAuthorPercent`; color = `risk` tier. No core change. |
+| `ownership-sunburst-silos` | reuse `OwnershipSunburst` w/ extended `mode` | Knowledge Silos | Filters to single-author files derived from `busFactors.files[]` where `dominantAuthorPercent > 80` (matches the threshold `KnowledgeConcentrationReport.singleAuthorFiles` is computed from). `KnowledgeConcentrationReport` itself has only aggregates, so the per-file source is `busFactors`. Extend `OwnershipSunburst.mode` from `'all' \| 'ghost'` to `'all' \| 'ghost' \| 'single-author'`. |
+| `languages-stacked` | `LanguagesStackedBar.tsx` | Languages (primary) | `loc.files[].{file, lines, language}`. Rows = top-level directories (derived from `file` path); segments = language LOC. Click row → Inspector lists files. No core change. |
+| `test-coverage-by-dir` | `TestCoverageByDir.tsx` | Test Coverage (alt) | `testCoverage.directories[].{directory, sourceFiles, testFiles, coverageRatio}`. Coverage % per directory, sorted worst-first; row color = coverage tier. No core change (uses existing `directories[]`). |
 
 **Languages preset rewiring (PR 7):** `defaultViz: 'languages-stacked'`, alts `['languages-stacked', 'treemap']`.
 **Test Coverage preset rewiring (PR 8):** `altTabs: ['treemap-test', 'test-coverage-by-dir']`.
 
 ### Sequencing — 8 PRs
 
-1. **Pass 1** — `ChurnTreemap` `colorBy` + tokens `treemap-age`, `treemap-test`. Wires Age Map, Test Coverage primary, Cursed Files default flip. **One batch.** Must land first; later PRs may register tokens introduced here in alt-tabs.
+1. **Pass 1** — Extend `TestCoverageProxyReport` with per-file `files[]` array (core analyzer + types + normalizeReport). Add `colorBy` to `ChurnTreemap` + tokens `treemap-age`, `treemap-test`. Wire Age Map, Test Coverage primary, Cursed Files default flip. **One batch** because the core extension and its sole consumer should ship atomically. Must land first; later PRs may register tokens introduced here in alt-tabs.
 2. **Knowledge Silos** — `OwnershipSunburst` `mode='single-author'` extension + `ownership-sunburst-silos` token. Smallest PR; warm-up that validates the per-PR recipe still flows post-presets.
 3. **Bus Factor** — `OwnershipBar.tsx`.
 4. **Rewrite Ratio** — `RewriteDivergingBar.tsx`.
