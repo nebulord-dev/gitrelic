@@ -9,6 +9,7 @@ import { CouplingHeatmap } from '../hero/CouplingHeatmap';
 import { DebtScatter } from '../hero/DebtScatter';
 import { GrowthTimeline } from '../hero/GrowthTimeline';
 import { HotspotScatter } from '../hero/HotspotScatter';
+import { OwnershipBar } from '../hero/OwnershipBar';
 import { OwnershipBubble } from '../hero/OwnershipBubble';
 import { OwnershipSunburst } from '../hero/OwnershipSunburst';
 import { RenameSankey } from '../hero/RenameSankey';
@@ -89,6 +90,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'treemap-age': 'Age',
   'treemap-test': 'Coverage',
   ownership: 'Ownership',
+  'ownership-bar': 'Bus Bar',
   coupling: 'Coupling',
   'commit-graph': 'Graph',
   scatter: 'Scatter',
@@ -263,6 +265,13 @@ export function Shell({ report }: ShellProps) {
                 )}
                 {selection.activeHeroViz === 'ownership' && (
                   <OwnershipBubble
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                  />
+                )}
+                {selection.activeHeroViz === 'ownership-bar' && (
+                  <OwnershipBar
                     report={report}
                     selectedFile={selection.selectedFile}
                     onSelectFile={selection.selectFile}

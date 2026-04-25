@@ -14,6 +14,7 @@ export type HeroViz =
   | 'treemap-age'
   | 'treemap-test'
   | 'ownership'
+  | 'ownership-bar'
   | 'coupling'
   | 'commit-graph'
   | 'scatter'
