@@ -85,10 +85,4 @@ describe('colorByMode', () => {
       expect(unknown).not.toBe(untested);
     });
   });
-
-  it('exposes a legend definition for each mode', () => {
-    expect(colorByMode.churn.legend.length).toBeGreaterThan(0);
-    expect(colorByMode.age.legend.length).toBeGreaterThan(0);
-    expect(colorByMode['test-proximity'].legend.length).toBeGreaterThan(0);
-  });
 });

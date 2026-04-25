@@ -4,19 +4,13 @@ import { hierarchy, treemap, treemapSquarify } from 'd3-hierarchy';
 
 import { categoryColor } from '../../utils/colors';
 
-import type { GitrelicReport } from '@gitrelic/core';
+import type { AgeStatus, GitrelicReport } from '@gitrelic/core';
 import type { HierarchyRectangularNode } from 'd3-hierarchy';
 
 export type TreemapColorBy = 'churn' | 'age' | 'test-proximity';
 
-interface LegendEntry {
-  label: string;
-  color: string;
-}
-
 interface ColorMode {
   fill: (filePath: string, report: GitrelicReport) => string;
-  legend: LegendEntry[];
 }
 
 const AGE_COLORS = {
@@ -32,42 +26,37 @@ const TEST_COLORS = {
   unknown: '#3a3a3a',
 } as const;
 
+function churnFillFor(category: string | undefined): string {
+  return categoryColor(category ?? 'low', 0.35);
+}
+
+function ageFillFor(status: AgeStatus | undefined): string {
+  return AGE_COLORS[status ?? 'aging'];
+}
+
+function testFillFor(hasSibling: boolean | undefined): string {
+  if (hasSibling === undefined) return TEST_COLORS.unknown;
+  return hasSibling ? TEST_COLORS.tested : TEST_COLORS.untested;
+}
+
 export const colorByMode: Record<TreemapColorBy, ColorMode> = {
   churn: {
     fill: (file, report) => {
       const h = report.hotspots.files.find((f) => f.file === file);
-      return categoryColor(h?.category ?? 'low', 0.35);
+      return churnFillFor(h?.category);
     },
-    legend: [
-      { label: 'critical', color: categoryColor('critical', 0.35) },
-      { label: 'warning', color: categoryColor('warning', 0.35) },
-      { label: 'moderate', color: categoryColor('moderate', 0.35) },
-      { label: 'low', color: categoryColor('low', 0.35) },
-    ],
   },
   age: {
     fill: (file, report) => {
       const a = report.ageMap.files.find((f) => f.file === file);
-      return AGE_COLORS[a?.status ?? 'aging'];
+      return ageFillFor(a?.status);
     },
-    legend: [
-      { label: 'fresh', color: AGE_COLORS.fresh },
-      { label: 'aging', color: AGE_COLORS.aging },
-      { label: 'stale', color: AGE_COLORS.stale },
-      { label: 'ancient', color: AGE_COLORS.ancient },
-    ],
   },
   'test-proximity': {
     fill: (file, report) => {
       const t = report.testCoverage.files.find((f) => f.file === file);
-      if (t === undefined) return TEST_COLORS.unknown;
-      return t.hasTestSibling ? TEST_COLORS.tested : TEST_COLORS.untested;
+      return testFillFor(t?.hasTestSibling);
     },
-    legend: [
-      { label: 'tested', color: TEST_COLORS.tested },
-      { label: 'untested', color: TEST_COLORS.untested },
-      { label: 'unknown', color: TEST_COLORS.unknown },
-    ],
   },
 };
 
@@ -164,7 +153,17 @@ export function ChurnTreemap({
     return layout(root).leaves() as HierarchyRectangularNode<TreeNode>[];
   }, [report, dims.width, dims.height]);
 
-  const mode = colorByMode[colorBy];
+  const ageIndex = useMemo(() => {
+    const m = new Map<string, AgeStatus>();
+    for (const f of report.ageMap.files) m.set(f.file, f.status);
+    return m;
+  }, [report.ageMap.files]);
+
+  const testIndex = useMemo(() => {
+    const m = new Map<string, boolean>();
+    for (const f of report.testCoverage.files) m.set(f.file, f.hasTestSibling);
+    return m;
+  }, [report.testCoverage.files]);
 
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -178,7 +177,12 @@ export function ChurnTreemap({
 
           const isSelected = selectedFile === d.fullPath;
           const showLabel = w > 40 && h > 16;
-          const fillColor = mode.fill(d.fullPath, report);
+          const fillColor =
+            colorBy === 'churn'
+              ? churnFillFor(d.category)
+              : colorBy === 'age'
+                ? ageFillFor(ageIndex.get(d.fullPath))
+                : testFillFor(testIndex.get(d.fullPath));
 
           return (
             <g
