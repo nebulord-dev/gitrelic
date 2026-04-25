@@ -2313,6 +2313,32 @@ exports[`fixture regression > test coverage report is stable 1`] = `
       "testFiles": 0,
     },
   ],
+  "files": [
+    {
+      "file": "src/api.ts",
+      "hasTestSibling": true,
+    },
+    {
+      "file": "src/auth.ts",
+      "hasTestSibling": false,
+    },
+    {
+      "file": "src/config.ts",
+      "hasTestSibling": false,
+    },
+    {
+      "file": "src/helpers.ts",
+      "hasTestSibling": false,
+    },
+    {
+      "file": "src/index.ts",
+      "hasTestSibling": false,
+    },
+    {
+      "file": "src/types.ts",
+      "hasTestSibling": false,
+    },
+  ],
   "overallRatio": 0.17,
   "summary": "1 directory with source files but no tests",
   "uncoveredDirectories": [

@@ -4,13 +4,67 @@ import { hierarchy, treemap, treemapSquarify } from 'd3-hierarchy';
 
 import { categoryColor } from '../../utils/colors';
 
-import type { GitrelicReport } from '@gitrelic/core';
+import type { AgeStatus, GitrelicReport } from '@gitrelic/core';
 import type { HierarchyRectangularNode } from 'd3-hierarchy';
+
+export type TreemapColorBy = 'churn' | 'age' | 'test-proximity';
+
+interface ColorMode {
+  fill: (filePath: string, report: GitrelicReport) => string;
+}
+
+const AGE_COLORS = {
+  fresh: '#1f4e7a',
+  aging: '#3a6b8c',
+  stale: '#7a4a1f',
+  ancient: '#a06222',
+} as const;
+
+const TEST_COLORS = {
+  tested: '#2f5a2f',
+  untested: '#7a1f1f',
+  unknown: '#3a3a3a',
+} as const;
+
+function churnFillFor(category: string | undefined): string {
+  return categoryColor(category ?? 'low', 0.35);
+}
+
+function ageFillFor(status: AgeStatus | undefined): string {
+  return AGE_COLORS[status ?? 'aging'];
+}
+
+function testFillFor(hasSibling: boolean | undefined): string {
+  if (hasSibling === undefined) return TEST_COLORS.unknown;
+  return hasSibling ? TEST_COLORS.tested : TEST_COLORS.untested;
+}
+
+export const colorByMode: Record<TreemapColorBy, ColorMode> = {
+  churn: {
+    fill: (file, report) => {
+      const h = report.hotspots.files.find((f) => f.file === file);
+      return churnFillFor(h?.category);
+    },
+  },
+  age: {
+    fill: (file, report) => {
+      const a = report.ageMap.files.find((f) => f.file === file);
+      return ageFillFor(a?.status);
+    },
+  },
+  'test-proximity': {
+    fill: (file, report) => {
+      const t = report.testCoverage.files.find((f) => f.file === file);
+      return testFillFor(t?.hasTestSibling);
+    },
+  },
+};
 
 interface ChurnTreemapProps {
   report: GitrelicReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
+  colorBy?: TreemapColorBy;
 }
 
 interface TreeNode {
@@ -66,7 +120,12 @@ function buildTree(report: GitrelicReport): TreeNode {
   return root;
 }
 
-export function ChurnTreemap({ report, selectedFile, onSelectFile }: ChurnTreemapProps) {
+export function ChurnTreemap({
+  report,
+  selectedFile,
+  onSelectFile,
+  colorBy = 'churn',
+}: ChurnTreemapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
 
@@ -94,6 +153,18 @@ export function ChurnTreemap({ report, selectedFile, onSelectFile }: ChurnTreema
     return layout(root).leaves() as HierarchyRectangularNode<TreeNode>[];
   }, [report, dims.width, dims.height]);
 
+  const ageIndex = useMemo(() => {
+    const m = new Map<string, AgeStatus>();
+    for (const f of report.ageMap.files) m.set(f.file, f.status);
+    return m;
+  }, [report.ageMap.files]);
+
+  const testIndex = useMemo(() => {
+    const m = new Map<string, boolean>();
+    for (const f of report.testCoverage.files) m.set(f.file, f.hasTestSibling);
+    return m;
+  }, [report.testCoverage.files]);
+
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
       <svg width={dims.width} height={dims.height}>
@@ -106,6 +177,12 @@ export function ChurnTreemap({ report, selectedFile, onSelectFile }: ChurnTreema
 
           const isSelected = selectedFile === d.fullPath;
           const showLabel = w > 40 && h > 16;
+          const fillColor =
+            colorBy === 'churn'
+              ? churnFillFor(d.category)
+              : colorBy === 'age'
+                ? ageFillFor(ageIndex.get(d.fullPath))
+                : testFillFor(testIndex.get(d.fullPath));
 
           return (
             <g
@@ -118,10 +195,8 @@ export function ChurnTreemap({ report, selectedFile, onSelectFile }: ChurnTreema
                 y={leaf.y0}
                 width={w}
                 height={h}
-                fill={categoryColor(d.category ?? 'low', 0.35)}
-                stroke={
-                  isSelected ? 'var(--accent-primary)' : categoryColor(d.category ?? 'low', 0.3)
-                }
+                fill={fillColor}
+                stroke={isSelected ? 'var(--accent-primary)' : fillColor}
                 strokeWidth={isSelected ? 2 : 1}
                 rx={2}
               />
@@ -136,7 +211,7 @@ export function ChurnTreemap({ report, selectedFile, onSelectFile }: ChurnTreema
                   {d.name}
                 </text>
               )}
-              {showLabel && h > 28 && (
+              {showLabel && colorBy === 'churn' && h > 28 && (
                 <text
                   x={leaf.x0 + 4}
                   y={leaf.y0 + 23}

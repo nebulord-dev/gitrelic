@@ -43,11 +43,52 @@ describe('analyzeTestCoverage', () => {
     const result = analyzeTestCoverage([]);
     expect(result.directories).toHaveLength(0);
     expect(result.overallRatio).toBe(0);
+    expect(result.files).toHaveLength(0);
   });
 
   it('produces a summary', () => {
     const files = ['src/a.ts', 'src/a.test.ts'];
     const result = analyzeTestCoverage(files);
     expect(result.summary).toBeTruthy();
+  });
+});
+
+describe('analyzeTestCoverage — files[]', () => {
+  it('marks a source file as hasTestSibling when a sibling test exists in the same dir', () => {
+    const files = ['src/a.ts', 'src/a.test.ts', 'src/b.ts'];
+    const { files: perFile } = analyzeTestCoverage(files);
+    const a = perFile.find((f) => f.file === 'src/a.ts')!;
+    const b = perFile.find((f) => f.file === 'src/b.ts')!;
+    expect(a.hasTestSibling).toBe(true);
+    expect(b.hasTestSibling).toBe(false);
+  });
+
+  it('detects siblings across .spec naming', () => {
+    const files = ['lib/util.ts', 'lib/util.spec.ts'];
+    const { files: perFile } = analyzeTestCoverage(files);
+    expect(perFile.find((f) => f.file === 'lib/util.ts')!.hasTestSibling).toBe(true);
+  });
+
+  it('detects siblings under a __tests__ subdirectory', () => {
+    const files = ['src/foo.ts', 'src/__tests__/foo.test.ts'];
+    const { files: perFile } = analyzeTestCoverage(files);
+    expect(perFile.find((f) => f.file === 'src/foo.ts')!.hasTestSibling).toBe(true);
+  });
+
+  it('does not include test files themselves in files[]', () => {
+    const files = ['src/a.ts', 'src/a.test.ts'];
+    const { files: perFile } = analyzeTestCoverage(files);
+    expect(perFile.map((f) => f.file)).toEqual(['src/a.ts']);
+  });
+
+  it('does not include non-code files in files[]', () => {
+    const files = ['src/a.ts', 'src/readme.md', 'src/style.css'];
+    const { files: perFile } = analyzeTestCoverage(files);
+    expect(perFile.map((f) => f.file)).toEqual(['src/a.ts']);
+  });
+
+  it('returns empty files[] when only a test file is tracked', () => {
+    const { files: perFile } = analyzeTestCoverage(['src/orphan.test.ts']);
+    expect(perFile).toHaveLength(0);
   });
 });

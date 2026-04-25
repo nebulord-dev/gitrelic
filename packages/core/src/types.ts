@@ -335,9 +335,15 @@ export interface DirectoryCoverage {
   hasTests: boolean;
 }
 
+export interface TestCoverageFile {
+  file: string;
+  hasTestSibling: boolean;
+}
+
 export interface TestCoverageProxyReport {
   directories: DirectoryCoverage[];
   uncoveredDirectories: DirectoryCoverage[]; // directories with 0 test files
+  files: TestCoverageFile[];
   overallRatio: number; // repo-wide test/source ratio
   summary: string;
 }

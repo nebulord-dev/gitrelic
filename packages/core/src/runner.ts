@@ -173,6 +173,7 @@ const EMPTY_DEAD_CODE: DeadCodeReport = {
 const EMPTY_TEST_COVERAGE: TestCoverageProxyReport = {
   directories: [],
   uncoveredDirectories: [],
+  files: [],
   overallRatio: 0,
   summary: 'unavailable',
 };

@@ -114,11 +114,12 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       totalDeadLines: 0,
       summary: 'Not available',
     },
-    testCoverage: raw.testCoverage ?? {
-      directories: [],
-      uncoveredDirectories: [],
-      overallRatio: 0,
-      summary: 'Not available',
+    testCoverage: {
+      directories: raw.testCoverage?.directories ?? [],
+      uncoveredDirectories: raw.testCoverage?.uncoveredDirectories ?? [],
+      files: raw.testCoverage?.files ?? [],
+      overallRatio: raw.testCoverage?.overallRatio ?? 0,
+      summary: raw.testCoverage?.summary ?? 'Not available',
     },
     ghostFiles: raw.ghostFiles ?? {
       files: [],
