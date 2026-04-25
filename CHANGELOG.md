@@ -1,3 +1,10 @@
+# [0.16.0](https://github.com/nebulord-dev/gitrelic/compare/v0.15.0...v0.16.0) (2026-04-25)
+
+
+### Features
+
+* **web:** bespoke hero for bus-factor (ownership-bar) ([#42](https://github.com/nebulord-dev/gitrelic/issues/42)) ([fcda7d3](https://github.com/nebulord-dev/gitrelic/commit/fcda7d33927c0f3d730c74bcf5dd4e2224292266))
+
 # [0.15.0](https://github.com/nebulord-dev/gitrelic/compare/v0.14.0...v0.15.0) (2026-04-25)
 
 
