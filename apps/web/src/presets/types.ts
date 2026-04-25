@@ -22,6 +22,7 @@ export type HeroViz =
   | 'risk-heatmap'
   | 'ownership-sunburst'
   | 'ownership-sunburst-ghosts'
+  | 'ownership-sunburst-silos'
   | 'author-force-graph'
   | 'shame-leaderboard'
   | 'rename-sankey'

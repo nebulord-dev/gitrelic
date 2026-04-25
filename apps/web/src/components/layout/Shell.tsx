@@ -97,6 +97,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'risk-heatmap': 'Heatmap',
   'ownership-sunburst': 'Sunburst',
   'ownership-sunburst-ghosts': 'Ghosts',
+  'ownership-sunburst-silos': 'Silos',
   'author-force-graph': 'Pairs',
   'shame-leaderboard': 'Shame',
   'rename-sankey': 'Sankey',
@@ -328,6 +329,16 @@ export function Shell({ report }: ShellProps) {
                     onSelectFile={selection.selectFile}
                     onSelectContributor={selection.selectContributor}
                     mode="ghost"
+                  />
+                )}
+                {selection.activeHeroViz === 'ownership-sunburst-silos' && (
+                  <OwnershipSunburst
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    selectedContributor={selection.selectedContributor}
+                    onSelectFile={selection.selectFile}
+                    onSelectContributor={selection.selectContributor}
+                    mode="single-author"
                   />
                 )}
                 {selection.activeHeroViz === 'author-force-graph' && (
