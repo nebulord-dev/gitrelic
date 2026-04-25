@@ -1,3 +1,10 @@
+# [0.14.0](https://github.com/nebulord-dev/gitrelic/compare/v0.13.1...v0.14.0) (2026-04-25)
+
+
+### Features
+
+* **web:** treemap colorBy modes — Pass 1 of hero differentiation ([#40](https://github.com/nebulord-dev/gitrelic/issues/40)) ([f0b216a](https://github.com/nebulord-dev/gitrelic/commit/f0b216a533991bf66516dd8b3d08ec023cd08243))
+
 ## [0.13.1](https://github.com/nebulord-dev/gitrelic/compare/v0.13.0...v0.13.1) (2026-04-24)
 
 
