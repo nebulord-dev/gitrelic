@@ -10,6 +10,7 @@ import { CouplingHeatmap } from '../hero/CouplingHeatmap';
 import { DebtScatter } from '../hero/DebtScatter';
 import { GrowthTimeline } from '../hero/GrowthTimeline';
 import { HotspotScatter } from '../hero/HotspotScatter';
+import { LanguagesStackedBar } from '../hero/LanguagesStackedBar';
 import { OwnershipBar } from '../hero/OwnershipBar';
 import { OwnershipBubble } from '../hero/OwnershipBubble';
 import { OwnershipSunburst } from '../hero/OwnershipSunburst';
@@ -111,6 +112,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'rewrite-diverging-bar': 'Rewrites',
   'staleness-scatter': 'Staleness',
   'blast-scatter': 'Blast',
+  'languages-stacked': 'Stacked',
 };
 
 interface ShellProps {
@@ -411,6 +413,9 @@ export function Shell({ report }: ShellProps) {
                     selectedFile={selection.selectedFile}
                     onSelectFile={selection.selectFile}
                   />
+                )}
+                {selection.activeHeroViz === 'languages-stacked' && (
+                  <LanguagesStackedBar report={report} />
                 )}
               </div>
             </div>

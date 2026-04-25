@@ -31,7 +31,8 @@ export type HeroViz =
   | 'debt-scatter'
   | 'rewrite-diverging-bar'
   | 'staleness-scatter'
-  | 'blast-scatter';
+  | 'blast-scatter'
+  | 'languages-stacked';
 
 export type BottomTab =
   | 'hotspots'
