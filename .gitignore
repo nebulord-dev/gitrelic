@@ -11,6 +11,7 @@ coverage/
 .serena
 .claude/worktrees/
 .claude/projects/
+.claude/scheduled_tasks.lock
 .sickbay/history.json
 .sickbay/dep-tree.json
 .sickbay/cache/
