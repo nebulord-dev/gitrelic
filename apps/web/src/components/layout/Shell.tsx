@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { useSelection } from '../../hooks/useSelection';
 import { AuthorForceGraph } from '../hero/AuthorForceGraph';
+import { BlastScatter } from '../hero/BlastScatter';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
 import { CommitGraph } from '../hero/CommitGraph';
 import { ContributorSwimlanes } from '../hero/ContributorSwimlanes';
@@ -109,6 +110,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'debt-scatter': 'Debt',
   'rewrite-diverging-bar': 'Rewrites',
   'staleness-scatter': 'Staleness',
+  'blast-scatter': 'Blast',
 };
 
 interface ShellProps {
@@ -398,6 +400,13 @@ export function Shell({ report }: ShellProps) {
                 )}
                 {selection.activeHeroViz === 'staleness-scatter' && (
                   <StalenessScatter
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                  />
+                )}
+                {selection.activeHeroViz === 'blast-scatter' && (
+                  <BlastScatter
                     report={report}
                     selectedFile={selection.selectedFile}
                     onSelectFile={selection.selectFile}
