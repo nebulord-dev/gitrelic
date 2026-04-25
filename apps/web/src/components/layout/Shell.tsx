@@ -13,6 +13,7 @@ import { OwnershipBar } from '../hero/OwnershipBar';
 import { OwnershipBubble } from '../hero/OwnershipBubble';
 import { OwnershipSunburst } from '../hero/OwnershipSunburst';
 import { RenameSankey } from '../hero/RenameSankey';
+import { RewriteDivergingBar } from '../hero/RewriteDivergingBar';
 import { RiskHeatmap } from '../hero/RiskHeatmap';
 import { ShameLeaderboard } from '../hero/ShameLeaderboard';
 import { Timeline } from '../hero/Timeline';
@@ -105,6 +106,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'rename-sankey': 'Sankey',
   'growth-timeline': 'Growth',
   'debt-scatter': 'Debt',
+  'rewrite-diverging-bar': 'Rewrites',
 };
 
 interface ShellProps {
@@ -380,6 +382,13 @@ export function Shell({ report }: ShellProps) {
                 )}
                 {selection.activeHeroViz === 'debt-scatter' && (
                   <DebtScatter
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                  />
+                )}
+                {selection.activeHeroViz === 'rewrite-diverging-bar' && (
+                  <RewriteDivergingBar
                     report={report}
                     selectedFile={selection.selectedFile}
                     onSelectFile={selection.selectFile}

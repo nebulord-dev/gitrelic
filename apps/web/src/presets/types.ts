@@ -28,7 +28,8 @@ export type HeroViz =
   | 'shame-leaderboard'
   | 'rename-sankey'
   | 'growth-timeline'
-  | 'debt-scatter';
+  | 'debt-scatter'
+  | 'rewrite-diverging-bar';
 
 export type BottomTab =
   | 'hotspots'
