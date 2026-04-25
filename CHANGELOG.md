@@ -1,3 +1,10 @@
+# [0.18.0](https://github.com/nebulord-dev/gitrelic/compare/v0.17.0...v0.18.0) (2026-04-25)
+
+
+### Features
+
+* **web:** bespoke hero for dead-code (staleness-scatter) ([#44](https://github.com/nebulord-dev/gitrelic/issues/44)) ([1543423](https://github.com/nebulord-dev/gitrelic/commit/1543423262c7da8887b4d4068aebc5ccfb3ced8d)), closes [#d27b22](https://github.com/nebulord-dev/gitrelic/issues/d27b22) [hi#risk](https://github.com/hi/issues/risk)
+
 # [0.17.0](https://github.com/nebulord-dev/gitrelic/compare/v0.16.0...v0.17.0) (2026-04-25)
 
 
