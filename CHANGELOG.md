@@ -1,3 +1,10 @@
+# [0.17.0](https://github.com/nebulord-dev/gitrelic/compare/v0.16.0...v0.17.0) (2026-04-25)
+
+
+### Features
+
+* **web:** bespoke hero for rewrite-ratio (diverging bar) ([#43](https://github.com/nebulord-dev/gitrelic/issues/43)) ([49560bd](https://github.com/nebulord-dev/gitrelic/commit/49560bd19f18e3520280543247fd05ddf24d7c36))
+
 # [0.16.0](https://github.com/nebulord-dev/gitrelic/compare/v0.15.0...v0.16.0) (2026-04-25)
 
 
