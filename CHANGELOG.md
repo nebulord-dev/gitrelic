@@ -1,3 +1,10 @@
+# [0.15.0](https://github.com/nebulord-dev/gitrelic/compare/v0.14.0...v0.15.0) (2026-04-25)
+
+
+### Features
+
+* **web:** bespoke hero for knowledge-silos (single-author sunburst mode) ([#41](https://github.com/nebulord-dev/gitrelic/issues/41)) ([0318937](https://github.com/nebulord-dev/gitrelic/commit/0318937ec47bc70e078e12f40c851b398bbf19ea))
+
 # [0.14.0](https://github.com/nebulord-dev/gitrelic/compare/v0.13.1...v0.14.0) (2026-04-25)
 
 
