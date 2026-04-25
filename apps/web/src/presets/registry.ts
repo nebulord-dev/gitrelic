@@ -285,8 +285,8 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     label: 'Rewrite Ratio',
     group: 'code-health',
     hero: {
-      defaultViz: 'scatter',
-      altTabs: ['scatter', 'debt-scatter'],
+      defaultViz: 'rewrite-diverging-bar',
+      altTabs: ['rewrite-diverging-bar', 'scatter', 'debt-scatter'],
     },
     bottomPanel: {
       defaultTab: 'rewrite-ratio',
