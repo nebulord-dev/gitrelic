@@ -1,3 +1,10 @@
+# [0.20.0](https://github.com/nebulord-dev/gitrelic/compare/v0.19.0...v0.20.0) (2026-04-25)
+
+
+### Features
+
+* **web:** bespoke hero for languages (stacked bar by directory) ([#46](https://github.com/nebulord-dev/gitrelic/issues/46)) ([a06d024](https://github.com/nebulord-dev/gitrelic/commit/a06d0243dbc96607b5c904f31a4154a684955848))
+
 # [0.19.0](https://github.com/nebulord-dev/gitrelic/compare/v0.18.0...v0.19.0) (2026-04-25)
 
 
