@@ -11,6 +11,8 @@ export type SidebarGroupLabel =
 
 export type HeroViz =
   | 'treemap'
+  | 'treemap-age'
+  | 'treemap-test'
   | 'ownership'
   | 'coupling'
   | 'commit-graph'

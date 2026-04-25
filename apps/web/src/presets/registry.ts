@@ -150,8 +150,8 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     label: 'Cursed Files',
     group: 'code-health',
     hero: {
-      defaultViz: 'risk-heatmap',
-      altTabs: ['risk-heatmap', 'treemap', 'scatter'],
+      defaultViz: 'treemap',
+      altTabs: ['treemap', 'risk-heatmap', 'scatter'],
     },
     bottomPanel: {
       defaultTab: 'cursed-files',
@@ -240,8 +240,8 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     label: 'Age Map',
     group: 'code-health',
     hero: {
-      defaultViz: 'treemap',
-      altTabs: ['treemap', 'scatter'],
+      defaultViz: 'treemap-age',
+      altTabs: ['treemap-age', 'treemap'],
     },
     bottomPanel: {
       defaultTab: 'age-map',
@@ -270,8 +270,8 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     label: 'Test Coverage',
     group: 'structure',
     hero: {
-      defaultViz: 'treemap',
-      altTabs: ['treemap'],
+      defaultViz: 'treemap-test',
+      altTabs: ['treemap-test'],
     },
     bottomPanel: {
       defaultTab: 'test-coverage',

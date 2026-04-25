@@ -86,6 +86,8 @@ export function computeVisibility(mode: LayoutMode): PanelVisibility {
 
 export const HERO_LABELS: Record<HeroViz, string> = {
   treemap: 'Treemap',
+  'treemap-age': 'Age',
+  'treemap-test': 'Coverage',
   ownership: 'Ownership',
   coupling: 'Coupling',
   'commit-graph': 'Graph',
@@ -240,6 +242,22 @@ export function Shell({ report }: ShellProps) {
                     report={report}
                     selectedFile={selection.selectedFile}
                     onSelectFile={selection.selectFile}
+                  />
+                )}
+                {selection.activeHeroViz === 'treemap-age' && (
+                  <ChurnTreemap
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                    colorBy="age"
+                  />
+                )}
+                {selection.activeHeroViz === 'treemap-test' && (
+                  <ChurnTreemap
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                    colorBy="test-proximity"
                   />
                 )}
                 {selection.activeHeroViz === 'ownership' && (
