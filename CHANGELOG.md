@@ -1,3 +1,10 @@
+# [0.19.0](https://github.com/nebulord-dev/gitrelic/compare/v0.18.0...v0.19.0) (2026-04-25)
+
+
+### Features
+
+* **web:** bespoke hero for blast-radius (blast-scatter) ([#45](https://github.com/nebulord-dev/gitrelic/issues/45)) ([51aa6ef](https://github.com/nebulord-dev/gitrelic/commit/51aa6efb3f1ca5ab8bac3c5c42933ddd1c1f28ed)), closes [#d27b22](https://github.com/nebulord-dev/gitrelic/issues/d27b22) [hi#cascade-risk](https://github.com/hi/issues/cascade-risk) [#44](https://github.com/nebulord-dev/gitrelic/issues/44)
+
 # [0.18.0](https://github.com/nebulord-dev/gitrelic/compare/v0.17.0...v0.18.0) (2026-04-25)
 
 
