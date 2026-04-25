@@ -6,6 +6,7 @@ export interface OwnershipBarRow {
   file: string;
   name: string;
   dominantAuthor: string;
+  dominantAuthorName: string;
   dominantAuthorPercent: number;
   risk: BusFactorRisk;
 }
@@ -16,10 +17,12 @@ export function prepareOwnershipBarData(report: GitrelicReport, topN = 30): Owne
     .slice(0, topN)
     .map((f) => {
       const basename = f.file.split('/').pop();
+      const localPart = f.dominantAuthor.split('@')[0];
       return {
         file: f.file,
         name: basename && basename.length > 0 ? basename : f.file,
         dominantAuthor: f.dominantAuthor,
+        dominantAuthorName: localPart && localPart.length > 0 ? localPart : f.dominantAuthor,
         dominantAuthorPercent: f.dominantAuthorPercent,
         risk: f.risk,
       };
@@ -84,7 +87,7 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
   }
 
   const labelWidth = 220;
-  const rightPad = 110;
+  const rightPad = 160;
   const topPad = 16;
   const bottomPad = 16;
   const available = Math.max(120, dims.width - labelWidth - rightPad);
@@ -153,7 +156,7 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
                 fontWeight={600}
                 style={{ pointerEvents: 'none' }}
               >
-                {row.dominantAuthorPercent}%
+                {row.dominantAuthorName} {row.dominantAuthorPercent}%
               </text>
             </g>
           );

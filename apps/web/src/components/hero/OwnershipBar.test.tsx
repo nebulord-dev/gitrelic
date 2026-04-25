@@ -61,6 +61,39 @@ describe('prepareOwnershipBarData', () => {
     expect(prepareOwnershipBarData(makeReport([]))).toEqual([]);
   });
 
+  it('derives dominantAuthorName from the local-part of the email', () => {
+    const rows = prepareOwnershipBarData(
+      makeReport([
+        {
+          file: 'a',
+          dominantAuthor: 'alice@example.com',
+          dominantAuthorPercent: 90,
+          risk: 'critical',
+          uniqueAuthors: 1,
+          authors: [],
+        },
+      ]),
+    );
+    expect(rows[0].dominantAuthorName).toBe('alice');
+    expect(rows[0].dominantAuthor).toBe('alice@example.com');
+  });
+
+  it('falls back to the raw author string when no @ is present', () => {
+    const rows = prepareOwnershipBarData(
+      makeReport([
+        {
+          file: 'a',
+          dominantAuthor: 'darthdan',
+          dominantAuthorPercent: 90,
+          risk: 'critical',
+          uniqueAuthors: 1,
+          authors: [],
+        },
+      ]),
+    );
+    expect(rows[0].dominantAuthorName).toBe('darthdan');
+  });
+
   it('does not mutate the input criticalFiles array', () => {
     const original: CriticalFixture[] = [
       {
