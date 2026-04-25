@@ -8,13 +8,17 @@ import { authorColor } from '../../utils/colors';
 import type { GitrelicReport } from '@gitrelic/core';
 import type { HierarchyRectangularNode } from 'd3-hierarchy';
 
+export type SunburstMode = 'all' | 'ghost' | 'single-author';
+
+const SILOS_THRESHOLD = 80;
+
 interface OwnershipSunburstProps {
   report: GitrelicReport;
   selectedFile: string | null;
   selectedContributor: string | null;
   onSelectFile: (file: string) => void;
   onSelectContributor: (email: string) => void;
-  mode?: 'all' | 'ghost';
+  mode?: SunburstMode;
 }
 
 interface SunburstNode {
@@ -24,6 +28,77 @@ interface SunburstNode {
   risk?: string;
   value?: number;
   children?: SunburstNode[];
+}
+
+function filterSetForMode(report: GitrelicReport, mode: SunburstMode): Set<string> | null {
+  if (mode === 'ghost') return new Set(report.ghostFiles.files.map((f) => f.file));
+  if (mode === 'single-author') {
+    return new Set(
+      report.busFactors.files
+        .filter((f) => f.dominantAuthorPercent > SILOS_THRESHOLD)
+        .map((f) => f.file),
+    );
+  }
+  return null;
+}
+
+export function prepareSunburstData(report: GitrelicReport, mode: SunburstMode): SunburstNode {
+  const locMap = new Map<string, number>();
+  for (const f of report.loc.files) {
+    locMap.set(f.file, f.lines);
+  }
+
+  const filterSet = filterSetForMode(report, mode);
+
+  const authorMap = new Map<
+    string,
+    { files: Array<{ file: string; risk: string; loc: number }> }
+  >();
+
+  for (const f of report.busFactors.files) {
+    if (filterSet && !filterSet.has(f.file)) continue;
+    const author = f.dominantAuthor;
+    if (!authorMap.has(author)) {
+      authorMap.set(author, { files: [] });
+    }
+    authorMap.get(author)!.files.push({
+      file: f.file,
+      risk: f.risk,
+      loc: locMap.get(f.file) ?? 1,
+    });
+  }
+
+  const authorNodes: SunburstNode[] = [];
+  for (const [email, data] of authorMap) {
+    authorNodes.push({
+      name: email.split('@')[0],
+      email,
+      children: data.files.map((f) => ({
+        name: f.file.split('/').pop() ?? f.file,
+        file: f.file,
+        risk: f.risk,
+        value: Math.max(f.loc, 1),
+      })),
+    });
+  }
+
+  return { name: 'root', children: authorNodes };
+}
+
+export function countSunburstFiles(report: GitrelicReport, mode: SunburstMode): number {
+  const filterSet = filterSetForMode(report, mode);
+  if (!filterSet) return report.busFactors.files.length;
+  let count = 0;
+  for (const f of report.busFactors.files) {
+    if (filterSet.has(f.file)) count += 1;
+  }
+  return count;
+}
+
+function modeHeading(mode: SunburstMode): string {
+  if (mode === 'ghost') return 'Ghost Ownership';
+  if (mode === 'single-author') return 'Knowledge Silos';
+  return 'Ownership';
 }
 
 function riskColor(risk: string, opacity: number): string {
@@ -67,60 +142,8 @@ export function OwnershipSunburst({
 
   const radius = Math.min(dims.width, dims.height) / 2;
 
-  // Build the hierarchy data
-  const treeData = useMemo((): SunburstNode => {
-    const locMap = new Map<string, number>();
-    for (const f of report.loc.files) {
-      locMap.set(f.file, f.lines);
-    }
-
-    const ghostSet = mode === 'ghost' ? new Set(report.ghostFiles.files.map((f) => f.file)) : null;
-
-    // Group files by dominantAuthor
-    const authorMap = new Map<
-      string,
-      { files: Array<{ file: string; risk: string; loc: number }> }
-    >();
-
-    for (const f of report.busFactors.files) {
-      if (ghostSet && !ghostSet.has(f.file)) continue;
-      const author = f.dominantAuthor;
-      if (!authorMap.has(author)) {
-        authorMap.set(author, { files: [] });
-      }
-      authorMap.get(author)!.files.push({
-        file: f.file,
-        risk: f.risk,
-        loc: locMap.get(f.file) ?? 1,
-      });
-    }
-
-    const authorNodes: SunburstNode[] = [];
-    for (const [email, data] of authorMap) {
-      authorNodes.push({
-        name: email.split('@')[0],
-        email,
-        children: data.files.map((f) => ({
-          name: f.file.split('/').pop() ?? f.file,
-          file: f.file,
-          risk: f.risk,
-          value: Math.max(f.loc, 1),
-        })),
-      });
-    }
-
-    return { name: 'root', children: authorNodes };
-  }, [report, mode]);
-
-  const totalFiles = useMemo(() => {
-    if (mode !== 'ghost') return report.busFactors.files.length;
-    const ghostSet = new Set(report.ghostFiles.files.map((f) => f.file));
-    let count = 0;
-    for (const f of report.busFactors.files) {
-      if (ghostSet.has(f.file)) count += 1;
-    }
-    return count;
-  }, [report, mode]);
+  const treeData = useMemo(() => prepareSunburstData(report, mode), [report, mode]);
+  const totalFiles = useMemo(() => countSunburstFiles(report, mode), [report, mode]);
 
   // Build layout
   const { nodes, authorNames } = useMemo(() => {
@@ -228,7 +251,7 @@ export function OwnershipSunburst({
           fill="var(--text-primary)"
           style={{ pointerEvents: 'none' }}
         >
-          {mode === 'ghost' ? 'Ghost Ownership' : 'Ownership'}
+          {modeHeading(mode)}
         </text>
         <text
           x={cx}

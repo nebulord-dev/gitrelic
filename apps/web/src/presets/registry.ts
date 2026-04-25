@@ -210,8 +210,8 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     label: 'Knowledge Silos',
     group: 'ownership-risk',
     hero: {
-      defaultViz: 'ownership-sunburst',
-      altTabs: ['ownership-sunburst', 'ownership'],
+      defaultViz: 'ownership-sunburst-silos',
+      altTabs: ['ownership-sunburst-silos', 'ownership-sunburst', 'ownership'],
     },
     bottomPanel: {
       defaultTab: 'knowledge-silos',
