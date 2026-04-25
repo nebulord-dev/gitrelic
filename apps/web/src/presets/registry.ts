@@ -255,8 +255,8 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     label: 'Languages',
     group: 'structure',
     hero: {
-      defaultViz: 'treemap',
-      altTabs: ['treemap'],
+      defaultViz: 'languages-stacked',
+      altTabs: ['languages-stacked', 'treemap'],
     },
     bottomPanel: {
       defaultTab: 'languages',
