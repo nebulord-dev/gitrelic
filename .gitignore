@@ -9,6 +9,7 @@ dist/
 coverage/
 .superpowers/
 .serena
+.worktrees/
 .claude/worktrees/
 .claude/projects/
 .claude/scheduled_tasks.lock
