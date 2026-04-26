@@ -4,14 +4,15 @@ import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export function churnMetrics(report: GitrelicReport): Metric[] {
-  const files = report.churn.files;
-  const hotCount = report.churn.hotspotCount;
-  const topFile = report.churn.topFiles[0];
-  const totalCommits = files.reduce((sum, f) => sum + f.commitCount, 0);
-  const avgChurnScore =
-    files.length > 0
-      ? Math.round(files.reduce((sum, f) => sum + f.churnScore, 0) / files.length)
-      : 0;
+  const files = report.churn?.files ?? [];
+  const fileCount = files.length;
+  const hotCount = files.filter((f) => f.churnScore > 75).length;
+  const topCommitCount = files.reduce((max, f) => (f.commitCount > max ? f.commitCount : max), 0);
+  const totalCommits = report.commits?.length ?? 0;
+  const topFilePct =
+    fileCount > 0 && totalCommits > 0
+      ? Math.round((topCommitCount / totalCommits) * 1000) / 10
+      : null;
 
   return [
     {
@@ -20,19 +21,23 @@ export function churnMetrics(report: GitrelicReport): Metric[] {
       color: hotCount > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
     },
     {
-      label: 'Top Churn Score',
-      value: topFile ? String(Math.round(topFile.churnScore)) : '—',
+      label: 'Top Churn',
+      value: fileCount > 0 ? fmt(topCommitCount) : '—',
       color:
-        topFile && topFile.churnScore > 75 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
+        fileCount === 0
+          ? 'var(--severity-healthy)'
+          : hotCount > 0
+            ? 'var(--severity-critical)'
+            : 'var(--severity-warning)',
     },
     {
-      label: 'Avg Churn Score',
-      value: files.length > 0 ? String(avgChurnScore) : '—',
-      color: avgChurnScore > 50 ? 'var(--severity-warning)' : 'var(--text-primary)',
+      label: 'Top File %',
+      value: topFilePct != null ? `${topFilePct}%` : '—',
+      color: 'var(--accent-primary)',
     },
     {
-      label: 'Total Commits',
-      value: fmt(totalCommits),
+      label: 'Tracked Files',
+      value: fmt(fileCount),
       color: 'var(--accent-primary)',
     },
   ];
