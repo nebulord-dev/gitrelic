@@ -21,7 +21,7 @@ export function churnMetrics(report: GitrelicReport): Metric[] {
       color: hotCount > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
     },
     {
-      label: 'Top Churn',
+      label: 'Top File Commits',
       value: fileCount > 0 ? fmt(topCommitCount) : '—',
       color:
         fileCount === 0
@@ -31,7 +31,7 @@ export function churnMetrics(report: GitrelicReport): Metric[] {
             : 'var(--severity-warning)',
     },
     {
-      label: 'Top File %',
+      label: 'Top File Share',
       value: topFilePct != null ? `${topFilePct}%` : '—',
       color: 'var(--accent-primary)',
     },
