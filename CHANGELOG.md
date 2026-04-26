@@ -1,3 +1,13 @@
+# [0.22.0](https://github.com/nebulord-dev/gitrelic/compare/v0.21.0...v0.22.0) (2026-04-26)
+
+
+### Features
+
+* **web:** polish Bus Factor heatmap viz (RiskHeatmap) ([9605175](https://github.com/nebulord-dev/gitrelic/commit/9605175c6751df777ff8b93d00e6d57fa2180afd))
+* **web:** polish Bus Factor hero (OwnershipBar) ([0f06365](https://github.com/nebulord-dev/gitrelic/commit/0f063658469176f0efa8b4af834ece940c617533)), closes [hi#impact](https://github.com/hi/issues/impact)
+* **web:** polish Bus Factor ownership viz (OwnershipBubble) ([961c215](https://github.com/nebulord-dev/gitrelic/commit/961c2159f6fbb83018fbb13c3aa93e94134d6f37))
+* **web:** uncap analyzer tab tables and show full file lists ([223a30e](https://github.com/nebulord-dev/gitrelic/commit/223a30ef990a2dfcf3c23d48662373478cee5cec))
+
 # [0.21.0](https://github.com/nebulord-dev/gitrelic/compare/v0.20.0...v0.21.0) (2026-04-25)
 
 
