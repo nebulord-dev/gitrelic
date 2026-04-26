@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AgeMapTab } from '../tabs/AgeMapTab';
 import { BlastRadiusTab } from '../tabs/BlastRadiusTab';
 import { BusFactorTab } from '../tabs/BusFactorTab';
+import { ChurnTab } from '../tabs/ChurnTab';
 import { ChurnVelocityTab } from '../tabs/ChurnVelocityTab';
 import { CoAuthorsTab } from '../tabs/CoAuthorsTab';
 import { CommitTimingTab } from '../tabs/CommitTimingTab';
@@ -40,6 +41,7 @@ interface BottomPanelProps {
 
 const TAB_LABELS: Record<BottomTab, string> = {
   hotspots: 'Hotspots',
+  churn: 'Churn',
   'cursed-files': 'Cursed Files',
   'bus-factor': 'Bus Factor',
   coupling: 'Coupling',
@@ -79,6 +81,8 @@ function TabContent({
       return (
         <HotspotsTab report={report} selectedFile={selectedFile} onSelectFile={onSelectFile} />
       );
+    case 'churn':
+      return <ChurnTab report={report} selectedFile={selectedFile} onSelectFile={onSelectFile} />;
     case 'cursed-files':
       return <CursedFilesTab report={report} onSelectFile={onSelectFile} />;
     case 'bus-factor':

@@ -43,6 +43,11 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
           badge: report.hotspots.topHotspots.filter((h) => h.category === 'critical').length,
         },
         {
+          id: 'churn',
+          label: 'Churn',
+          badge: report.churn.files.filter((f) => f.churnScore > 75).length,
+        },
+        {
           id: 'cursed-files',
           label: 'Cursed Files',
           badge: report.cursedFiles.filter((c) => c.curseScore >= 70).length,
