@@ -129,9 +129,13 @@ The published `gitrelic` package relies on two invariants that CI enforces. Both
 
 Changes to either side (new core dep, removed core dep, web dist layout change) must keep both invariants intact in the same PR.
 
-## Task Management
+## Issue tracking
 
-Tasks are tracked in **Jira** (nebulord.atlassian.net, project KAN, epic KAN-6 for GitRelic). Use the Atlassian MCP tools to read and update tasks. Do not create or edit local task files.
+Issues live in Linear under the GitRelic team. The team backlog is hand-ordered
+— top of the list is the next thing to work on. When asked "what's next" or
+"pick up the next issue," look at the GitRelic backlog (sorted by manual order,
+not priority or date) and start with the topmost issue in Todo state.
+
 
 ## Build Commands
 
