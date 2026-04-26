@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 
+import { severityForChurn } from '../../utils/churn';
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath, fmt } from '../theme';
 
-import type { ChurnCategory, FileChurn, GitrelicReport } from '@gitrelic/core';
+import type { FileChurn, GitrelicReport } from '@gitrelic/core';
 
 interface ChurnTabProps {
   report: GitrelicReport;
@@ -15,25 +16,10 @@ interface ChurnTabProps {
 interface ChurnRow {
   file: string;
   commitCount: number;
-  category: ChurnCategory;
+  category: 'hot' | 'warm' | 'cold' | 'frozen';
   loc: number | null;
   uniqueAuthors: number | null;
   ageDays: number | null;
-}
-
-function severityForChurn(
-  category: ChurnCategory,
-): 'critical' | 'warning' | 'moderate' | 'healthy' {
-  switch (category) {
-    case 'hot':
-      return 'critical';
-    case 'warm':
-      return 'warning';
-    case 'cold':
-      return 'moderate';
-    case 'frozen':
-      return 'healthy';
-  }
 }
 
 function formatRelative(days: number | null): string {

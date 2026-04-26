@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
+import { severityForChurn } from '../../utils/churn';
 import { categoryColor } from '../../utils/colors';
 import { HeroCaption } from '../shared/HeroCaption';
 
@@ -43,24 +44,6 @@ export function prepareChurnBarData(report: GitrelicReport, topN = 100): ChurnBa
       category: f.category,
     };
   });
-}
-
-// Maps churn categories to the severity tokens used by `categoryColor` and the
-// shared `Badge` component, so ChurnBar tooltips and ChurnTab badges agree on
-// what `frozen` looks like.
-function severityForChurn(
-  category: ChurnCategory,
-): 'critical' | 'warning' | 'moderate' | 'healthy' {
-  switch (category) {
-    case 'hot':
-      return 'critical';
-    case 'warm':
-      return 'warning';
-    case 'cold':
-      return 'moderate';
-    case 'frozen':
-      return 'healthy';
-  }
 }
 
 function fillFor(category: ChurnCategory, opacity: number): string {
