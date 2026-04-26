@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildDirectoryBubbles } from './OwnershipBubble';
+import { buildDirectoryBubbles, fitLabel, fitSubLabel } from './OwnershipBubble';
 
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -150,5 +150,43 @@ describe('buildDirectoryBubbles', () => {
     // 3-part paths → use 2-level key
     expect(dirs.find((d) => d.dirPath === 'apps/web')).toBeDefined();
     expect(dirs.find((d) => d.dirPath === 'apps/cli')).toBeDefined();
+  });
+});
+
+describe('fitLabel', () => {
+  it('returns the text unchanged when it fits in the budget', () => {
+    expect(fitLabel('packages/core', 200, 12)).toBe('packages/core');
+  });
+
+  it('appends an ellipsis when the text exceeds the budget', () => {
+    const out = fitLabel('packages/react-server-dom-webpack', 30, 10);
+    expect(out.endsWith('…')).toBe(true);
+    expect(out.length).toBeLessThan('packages/react-server-dom-webpack'.length);
+  });
+
+  it('floors the budget at 4 chars so very tiny bubbles still get something', () => {
+    // radius=1, fontSize=20 → would compute zero chars; floor protects this.
+    const out = fitLabel('reallylongthing', 1, 20);
+    expect(out.length).toBeGreaterThan(0);
+    expect(out.endsWith('…')).toBe(true);
+  });
+});
+
+describe('fitSubLabel', () => {
+  it('returns full author + percent when both fit', () => {
+    expect(fitSubLabel('alice@example.com', 80, 200, 10)).toBe('alice@example.com 80%');
+  });
+
+  it('truncates only the author portion when the label is too long', () => {
+    const out = fitSubLabel('6425824+josephsavona@users.noreply.github.com', 28, 50, 10);
+    expect(out.endsWith(' 28%')).toBe(true);
+    expect(out.includes('…')).toBe(true);
+  });
+
+  it('falls back to just the percent when the bubble is too small for any author chars', () => {
+    // Tiny radius forces maxChars to floor at 4, and " 100%" alone is 5 chars,
+    // so authorBudget falls below 2 and we drop to percent-only.
+    const out = fitSubLabel('alice@example.com', 100, 8, 10);
+    expect(out).toBe('100%');
   });
 });

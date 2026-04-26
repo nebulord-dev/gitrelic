@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -128,6 +128,21 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
 
   const rows = useMemo(() => prepareRiskRows(report), [report]);
 
+  // Scroll the selected row into view when selection changes from outside —
+  // mirrors the OwnershipBar behavior so all heroes feel consistent.
+  useLayoutEffect(() => {
+    if (!selectedFile || !scrollRef.current) return;
+    const idx = rows.findIndex((r) => r.file === selectedFile);
+    if (idx < 0) return;
+    const rowTop = HEADER_HEIGHT + idx * CELL_HEIGHT;
+    const rowBottom = rowTop + CELL_HEIGHT;
+    const viewTop = scrollRef.current.scrollTop;
+    const viewBottom = viewTop + scrollRef.current.clientHeight;
+    if (rowTop < viewTop || rowBottom > viewBottom) {
+      scrollRef.current.scrollTo({ top: Math.max(0, rowTop - 40), behavior: 'smooth' });
+    }
+  }, [selectedFile, rows]);
+
   const cellWidth = (width - LABEL_WIDTH) / 4;
   const svgHeight = HEADER_HEIGHT + rows.length * CELL_HEIGHT;
 
@@ -241,6 +256,15 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
                                 value: val,
                               });
                             }
+                          }}
+                          onMouseMove={(e) => {
+                            const rect = containerRef.current?.getBoundingClientRect();
+                            if (!rect) return;
+                            setTooltip((prev) =>
+                              prev
+                                ? { ...prev, x: e.clientX - rect.left, y: e.clientY - rect.top }
+                                : prev,
+                            );
                           }}
                           onMouseLeave={() => setTooltip(null)}
                         />

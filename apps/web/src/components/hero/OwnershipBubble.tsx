@@ -35,14 +35,21 @@ function bubbleColor(author: string): string {
 
 // Trim a label to fit inside a bubble of the given radius at the given font
 // size. Adds an ellipsis when trimmed.
-function fitLabel(text: string, radius: number, fontSize: number): string {
+export function fitLabel(text: string, radius: number, fontSize: number): string {
   const maxChars = Math.max(4, Math.floor((radius * 1.7) / (fontSize * CHAR_WIDTH_FACTOR)));
   return text.length <= maxChars ? text : `${text.slice(0, Math.max(1, maxChars - 1))}…`;
 }
 
 // Same as fitLabel but preserves the trailing percent suffix; only the author
-// portion is trimmed when the combined label is too long.
-function fitSubLabel(author: string, percent: number, radius: number, fontSize: number): string {
+// portion is trimmed when the combined label is too long. Falls back to just
+// the percent when the bubble is too small to fit even one author character
+// plus the suffix.
+export function fitSubLabel(
+  author: string,
+  percent: number,
+  radius: number,
+  fontSize: number,
+): string {
   const suffix = ` ${percent}%`;
   const maxChars = Math.max(4, Math.floor((radius * 1.7) / (fontSize * CHAR_WIDTH_FACTOR)));
   if (author.length + suffix.length <= maxChars) return `${author}${suffix}`;
