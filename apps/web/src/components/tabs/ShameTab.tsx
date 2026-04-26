@@ -84,7 +84,7 @@ export function ShameTab({ report, onSelectFile }: ShameTabProps) {
 
   return (
     <SortableTable
-      data={report.forensics.shameLeaderboard}
+      data={report.forensics.files}
       columns={columns}
       rowKey={(f) => f.file}
       onRowClick={(f) => onSelectFile(f.file)}

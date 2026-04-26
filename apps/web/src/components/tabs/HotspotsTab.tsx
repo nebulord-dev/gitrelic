@@ -19,7 +19,7 @@ interface Signal {
 
 function getSignals(file: string, report: GitrelicReport): Signal[] {
   const signals: Signal[] = [];
-  const hotspot = report.hotspots.topHotspots.find((h) => h.file === file);
+  const hotspot = report.hotspots.files.find((h) => h.file === file);
   if (hotspot?.category === 'critical') signals.push({ label: 'critical' });
   else if (hotspot?.category === 'warning') signals.push({ label: 'warning' });
 
@@ -269,7 +269,7 @@ export function HotspotsTab({ report, selectedFile, onSelectFile }: HotspotsTabP
 
   return (
     <SortableTable
-      data={report.hotspots.topHotspots}
+      data={report.hotspots.files}
       columns={columns}
       rowKey={(h) => h.file}
       selectedKey={selectedFile}

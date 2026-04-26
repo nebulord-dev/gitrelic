@@ -94,7 +94,7 @@ export function BlastRadiusTab({ report, onSelectFile }: BlastRadiusTabProps) {
 
   return (
     <SortableTable
-      data={report.blastRadius.topBlasters}
+      data={report.blastRadius.files}
       columns={columns}
       rowKey={(f) => f.file}
       onRowClick={(f) => onSelectFile(f.file)}

@@ -85,7 +85,7 @@ export function ParallelDevTab({ report, onSelectFile }: ParallelDevTabProps) {
 
   return (
     <SortableTable
-      data={report.parallelDev.hotFiles}
+      data={report.parallelDev.files}
       columns={columns}
       rowKey={(f) => f.file}
       onRowClick={(f) => onSelectFile(f.file)}

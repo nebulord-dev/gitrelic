@@ -84,7 +84,7 @@ export function ComplexityTrendTab({ report, onSelectFile }: ComplexityTrendTabP
 
   return (
     <SortableTable
-      data={report.complexityTrend.growingFiles}
+      data={report.complexityTrend.files}
       columns={columns}
       rowKey={(f) => f.file}
       onRowClick={(f) => onSelectFile(f.file)}

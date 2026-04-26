@@ -88,7 +88,7 @@ export function ChurnVelocityTab({ report, onSelectFile }: ChurnVelocityTabProps
 
   return (
     <SortableTable
-      data={report.churnVelocity.acceleratingFiles}
+      data={report.churnVelocity.files}
       columns={columns}
       rowKey={(f) => f.file}
       onRowClick={(f) => onSelectFile(f.file)}

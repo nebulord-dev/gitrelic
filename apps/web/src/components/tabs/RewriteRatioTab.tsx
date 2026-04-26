@@ -98,7 +98,7 @@ export function RewriteRatioTab({ report, onSelectFile }: RewriteRatioTabProps) 
 
   return (
     <SortableTable
-      data={report.rewriteRatio.topRewriters}
+      data={report.rewriteRatio.files}
       columns={columns}
       rowKey={(f) => f.file}
       onRowClick={(f) => onSelectFile(f.file)}
