@@ -15,6 +15,7 @@ export type HeroViz =
   | 'treemap-test'
   | 'ownership'
   | 'ownership-bar'
+  | 'churn-bar'
   | 'coupling'
   | 'commit-graph'
   | 'scatter'
@@ -37,6 +38,7 @@ export type HeroViz =
 
 export type BottomTab =
   | 'hotspots'
+  | 'churn'
   | 'cursed-files'
   | 'bus-factor'
   | 'coupling'
@@ -69,6 +71,7 @@ export type DashboardPresetId = 'overview' | 'risk' | 'tech-debt';
 
 export type AnalyzerPresetId =
   | 'hotspots'
+  | 'churn'
   | 'bus-factor'
   | 'coupling'
   | 'contributors'

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSelection } from '../../hooks/useSelection';
 import { AuthorForceGraph } from '../hero/AuthorForceGraph';
 import { BlastScatter } from '../hero/BlastScatter';
+import { ChurnBar } from '../hero/ChurnBar';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
 import { CommitGraph } from '../hero/CommitGraph';
 import { ContributorSwimlanes } from '../hero/ContributorSwimlanes';
@@ -96,6 +97,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'treemap-test': 'Coverage',
   ownership: 'Ownership',
   'ownership-bar': 'Bus Bar',
+  'churn-bar': 'Top Churn',
   coupling: 'Coupling',
   'commit-graph': 'Graph',
   scatter: 'Scatter',
@@ -282,6 +284,13 @@ export function Shell({ report }: ShellProps) {
                 )}
                 {selection.activeHeroViz === 'ownership-bar' && (
                   <OwnershipBar
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                  />
+                )}
+                {selection.activeHeroViz === 'churn-bar' && (
+                  <ChurnBar
                     report={report}
                     selectedFile={selection.selectedFile}
                     onSelectFile={selection.selectFile}

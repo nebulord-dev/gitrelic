@@ -1,6 +1,7 @@
 import { ageMapMetrics } from './metrics/age-map';
 import { blastRadiusMetrics } from './metrics/blast-radius';
 import { busFactorMetrics } from './metrics/bus-factor';
+import { churnMetrics } from './metrics/churn';
 import { coAuthorsMetrics } from './metrics/co-authors';
 import { commitTimingMetrics } from './metrics/commit-timing';
 import { complexityTrendMetrics } from './metrics/complexity-trend';
@@ -158,6 +159,21 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['cursed-files'],
     },
     metrics: cursedFilesMetrics,
+  },
+  churn: {
+    id: 'churn',
+    tier: 'analyzer',
+    label: 'Churn',
+    group: 'code-health',
+    hero: {
+      defaultViz: 'churn-bar',
+      altTabs: ['churn-bar', 'treemap'],
+    },
+    bottomPanel: {
+      defaultTab: 'churn',
+      altTabs: ['churn'],
+    },
+    metrics: churnMetrics,
   },
   'dead-code': {
     id: 'dead-code',
