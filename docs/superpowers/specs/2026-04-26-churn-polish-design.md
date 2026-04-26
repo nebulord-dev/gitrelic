@@ -75,13 +75,21 @@ Currently:
 }
 ```
 
-Bring to parity with `BusFactorTab.tsx`:
+Bring to parity with `BusFactorTab.tsx` (which renders the author list inline inside `<Tooltip content={...}>` as a flex column of `<span>` elements — see `BusFactorTab.tsx` lines 67–71 for the exact pattern):
 
 ```tsx
 {
   key: 'authors',
   render: (r) => (
-    <Tooltip content={<AuthorList authors={...} />}>
+    <Tooltip
+      content={
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {(r.authors ?? []).map((a) => (
+            <span key={a}>{a}</span>
+          ))}
+        </div>
+      }
+    >
       <span>{r.uniqueAuthors ?? '—'}</span>
     </Tooltip>
   ),
