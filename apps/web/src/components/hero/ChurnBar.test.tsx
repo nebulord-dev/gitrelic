@@ -1,6 +1,7 @@
+import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { prepareChurnBarData } from './ChurnBar';
+import { ChurnBar, prepareChurnBarData } from './ChurnBar';
 
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -90,5 +91,12 @@ describe('prepareChurnBarData', () => {
     const beforeOrder = churnFiles.map((f) => f.file);
     prepareChurnBarData(makeReport(churnFiles));
     expect(churnFiles.map((f) => f.file)).toEqual(beforeOrder);
+  });
+});
+
+describe('ChurnBar', () => {
+  it('renders the empty state when there are no churned files', () => {
+    render(<ChurnBar report={makeReport([])} selectedFile={null} onSelectFile={() => {}} />);
+    expect(screen.getByText('No file churn detected.')).toBeTruthy();
   });
 });
