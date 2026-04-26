@@ -149,7 +149,7 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
             const isSelected = selectedFile === row.file;
             const color = fillFor(row.category, isSelected ? 0.9 : 0.7);
             const trailingLabel = truncateToFit(
-              `${row.commitCount.toLocaleString()} commits`,
+              `${row.commitCount.toLocaleString()} commit${row.commitCount === 1 ? '' : 's'}`,
               labelMaxChars,
             );
 
