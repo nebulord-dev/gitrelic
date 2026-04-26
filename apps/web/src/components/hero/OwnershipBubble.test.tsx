@@ -87,6 +87,29 @@ describe('buildDirectoryBubbles', () => {
     expect(rootDir!.totalLoc).toBe(100);
   });
 
+  it('flags directories with no bus-factor data as unknown / 0%', () => {
+    const report = makeReport({
+      loc: {
+        totalFiles: 1,
+        totalLines: 50,
+        files: [{ file: 'scripts/bench/index.js', lines: 50, language: 'JavaScript' }],
+        languages: [],
+        summary: '',
+      },
+      busFactors: {
+        files: [],
+        criticalFiles: [],
+        overallBusFactor: 0,
+        summary: '',
+      },
+    });
+    const dirs = buildDirectoryBubbles(report);
+    const benchDir = dirs.find((d) => d.dirPath === 'scripts/bench');
+    expect(benchDir).toBeDefined();
+    expect(benchDir!.dominantAuthor).toBe('unknown');
+    expect(benchDir!.dominantPercent).toBe(0);
+  });
+
   it('uses 2-level deep key for nested paths', () => {
     const report = makeReport({
       loc: {
