@@ -1,4 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+
+import { sortCriticalByImpact } from '../../utils/sortBusFactor';
+import { HeroCaption } from '../shared/HeroCaption';
 
 import type { BusFactorRisk, GitrelicReport } from '@gitrelic/core';
 
@@ -6,24 +9,39 @@ export interface OwnershipBarRow {
   file: string;
   name: string;
   dominantAuthor: string;
-  dominantAuthorName: string;
   dominantAuthorPercent: number;
+  commitCount: number;
   risk: BusFactorRisk;
 }
 
-export function prepareOwnershipBarData(report: GitrelicReport, topN = 30): OwnershipBarRow[] {
-  return [...report.busFactors.criticalFiles]
-    .sort((a, b) => b.dominantAuthorPercent - a.dominantAuthorPercent)
+const ROW_HEIGHT = 28;
+const BAR_HEIGHT = 18;
+const TOP_PAD = 12;
+const BOTTOM_PAD = 12;
+const LABEL_WIDTH = 220;
+// Empirical width of one char in the 10px monospace label font; over-estimates
+// slightly so the dynamic right-pad never crops a glyph.
+const CHAR_PX = 6.4;
+const LABEL_PAD_PX = 14;
+const MIN_RIGHT_PAD = 120;
+const MIN_BAR_LANE = 120;
+
+function truncateToFit(label: string, maxChars: number): string {
+  return label.length > maxChars ? `${label.slice(0, Math.max(1, maxChars - 1))}…` : label;
+}
+
+export function prepareOwnershipBarData(report: GitrelicReport, topN = 100): OwnershipBarRow[] {
+  const churnByFile = new Map((report.churn?.files ?? []).map((c) => [c.file, c.commitCount]));
+  return sortCriticalByImpact(report)
     .slice(0, topN)
     .map((f) => {
       const basename = f.file.split('/').pop();
-      const localPart = f.dominantAuthor.split('@')[0];
       return {
         file: f.file,
         name: basename && basename.length > 0 ? basename : f.file,
         dominantAuthor: f.dominantAuthor,
-        dominantAuthorName: localPart && localPart.length > 0 ? localPart : f.dominantAuthor,
         dominantAuthorPercent: f.dominantAuthorPercent,
+        commitCount: churnByFile.get(f.file) ?? 0,
         risk: f.risk,
       };
     });
@@ -50,22 +68,37 @@ interface OwnershipBarProps {
 
 export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBarProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dims, setDims] = useState({ width: 800, height: 400 });
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(800);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; row: OwnershipBarRow } | null>(
     null,
   );
 
+  const rows = useMemo(() => prepareOwnershipBarData(report), [report]);
+  const totalCriticalFiles = report.busFactors.criticalFiles.length;
+
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!scrollRef.current) return;
     const observer = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
-      setDims({ width, height });
+      setWidth(entries[0].contentRect.width);
     });
-    observer.observe(containerRef.current);
+    observer.observe(scrollRef.current);
     return () => observer.disconnect();
   }, []);
 
-  const rows = useMemo(() => prepareOwnershipBarData(report), [report]);
+  // Scroll the selected row into view when selection changes from outside.
+  useLayoutEffect(() => {
+    if (!selectedFile || !scrollRef.current) return;
+    const idx = rows.findIndex((r) => r.file === selectedFile);
+    if (idx < 0) return;
+    const rowTop = TOP_PAD + idx * ROW_HEIGHT;
+    const rowBottom = rowTop + ROW_HEIGHT;
+    const viewTop = scrollRef.current.scrollTop;
+    const viewBottom = viewTop + scrollRef.current.clientHeight;
+    if (rowTop < viewTop || rowBottom > viewBottom) {
+      scrollRef.current.scrollTo({ top: Math.max(0, rowTop - 40), behavior: 'smooth' });
+    }
+  }, [selectedFile, rows]);
 
   if (rows.length === 0) {
     return (
@@ -75,93 +108,144 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
           width: '100%',
           height: '100%',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--text-tertiary)',
-          fontSize: 12,
+          flexDirection: 'column',
         }}
       >
-        No critical-ownership files detected.
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--text-tertiary)',
+            fontSize: 12,
+          }}
+        >
+          No critical-ownership files detected.
+        </div>
+        <HeroCaption
+          primary="One row per critical file · bar = dominant-author share · color = risk tier"
+          subtitle="Critical = single-author file or one author owning ≥90% of commits."
+        />
       </div>
     );
   }
 
-  const labelWidth = 220;
-  const rightPad = 160;
-  const topPad = 16;
-  const bottomPad = 16;
-  const available = Math.max(120, dims.width - labelWidth - rightPad);
-  const rowHeight = Math.max(20, (dims.height - topPad - bottomPad) / Math.max(rows.length, 1));
-  const barHeight = Math.max(10, rowHeight - 6);
+  // Right-pad must fit the longest "{author} {percent}%" label across visible
+  // rows so emails aren't truncated when they don't have to be. When the
+  // longest label is so long it would shrink the bar lane below MIN_BAR_LANE,
+  // the pad is clamped and any over-long labels fall back to ellipsis.
+  const longestLabelChars = rows.reduce((max, r) => {
+    const len = `${r.dominantAuthor} ${r.dominantAuthorPercent}%`.length;
+    return len > max ? len : max;
+  }, 0);
+  const desiredRightPad = longestLabelChars * CHAR_PX + LABEL_PAD_PX;
+  const maxAllowedRightPad = Math.max(MIN_RIGHT_PAD, width - LABEL_WIDTH - MIN_BAR_LANE);
+  const rightPad = Math.max(MIN_RIGHT_PAD, Math.min(desiredRightPad, maxAllowedRightPad));
+  const available = Math.max(MIN_BAR_LANE, width - LABEL_WIDTH - rightPad);
+  const labelMaxChars = Math.max(8, Math.floor((rightPad - LABEL_PAD_PX) / CHAR_PX));
+  const chartHeight = TOP_PAD + rows.length * ROW_HEIGHT + BOTTOM_PAD;
+  const truncated = totalCriticalFiles > rows.length;
+  const subtitle = truncated
+    ? `Showing top ${rows.length} of ${totalCriticalFiles.toLocaleString()} critical files. Sorted by ownership share, tiebroken by commit count.`
+    : `${rows.length} critical file${rows.length === 1 ? '' : 's'}. Sorted by ownership share, tiebroken by commit count.`;
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <svg width={dims.width} height={dims.height}>
-        {rows.map((row, i) => {
-          const y = topPad + i * rowHeight;
-          const barWidth = Math.max(2, (row.dominantAuthorPercent / 100) * available);
-          const isSelected = selectedFile === row.file;
-          const color = riskColor(row.risk);
+    <div
+      ref={containerRef}
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <div ref={scrollRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+        <svg width={width} height={chartHeight} style={{ display: 'block' }}>
+          {rows.map((row, i) => {
+            const y = TOP_PAD + i * ROW_HEIGHT;
+            const barTop = y + (ROW_HEIGHT - BAR_HEIGHT) / 2;
+            const barWidth = Math.max(2, (row.dominantAuthorPercent / 100) * available);
+            const isSelected = selectedFile === row.file;
+            const color = riskColor(row.risk);
 
-          return (
-            <g
-              key={row.file}
-              onClick={() => onSelectFile(row.file)}
-              style={{ cursor: 'pointer' }}
-              onMouseEnter={(evt) => {
-                const rect = containerRef.current?.getBoundingClientRect();
-                if (!rect) return;
-                setTooltip({ x: evt.clientX - rect.left, y: evt.clientY - rect.top, row });
-              }}
-              onMouseLeave={() => setTooltip(null)}
-            >
-              <text
-                x={labelWidth - 8}
-                y={y + barHeight / 2}
-                textAnchor="end"
-                dominantBaseline="middle"
-                fontSize={10}
-                fontFamily="var(--font-mono)"
-                fill={isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)'}
+            return (
+              <g
+                key={row.file}
+                onClick={() => onSelectFile(row.file)}
+                style={{ cursor: 'pointer' }}
+                onMouseEnter={(evt) => {
+                  const rect = containerRef.current?.getBoundingClientRect();
+                  if (!rect) return;
+                  setTooltip({ x: evt.clientX - rect.left, y: evt.clientY - rect.top, row });
+                }}
+                onMouseMove={(evt) => {
+                  const rect = containerRef.current?.getBoundingClientRect();
+                  if (!rect) return;
+                  setTooltip((prev) =>
+                    prev
+                      ? { ...prev, x: evt.clientX - rect.left, y: evt.clientY - rect.top }
+                      : prev,
+                  );
+                }}
+                onMouseLeave={() => setTooltip(null)}
               >
-                {row.name}
-              </text>
-              <rect
-                x={labelWidth}
-                y={y}
-                width={available}
-                height={barHeight}
-                rx={2}
-                fill="var(--surface-secondary)"
-                fillOpacity={0.4}
-              />
-              <rect
-                x={labelWidth}
-                y={y}
-                width={barWidth}
-                height={barHeight}
-                rx={2}
-                fill={color}
-                fillOpacity={isSelected ? 0.9 : 0.7}
-                stroke={isSelected ? 'var(--accent-primary)' : 'transparent'}
-                strokeWidth={isSelected ? 1 : 0}
-              />
-              <text
-                x={labelWidth + available + 6}
-                y={y + barHeight / 2}
-                dominantBaseline="middle"
-                fontSize={10}
-                fontFamily="var(--font-mono)"
-                fill={color}
-                fontWeight={600}
-                style={{ pointerEvents: 'none' }}
-              >
-                {row.dominantAuthorName} {row.dominantAuthorPercent}%
-              </text>
-            </g>
-          );
-        })}
-      </svg>
+                <text
+                  x={LABEL_WIDTH - 8}
+                  y={barTop + BAR_HEIGHT / 2}
+                  textAnchor="end"
+                  dominantBaseline="middle"
+                  fontSize={10}
+                  fontFamily="var(--font-mono)"
+                  fill={isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)'}
+                >
+                  {row.name}
+                </text>
+                <rect
+                  x={LABEL_WIDTH}
+                  y={barTop}
+                  width={available}
+                  height={BAR_HEIGHT}
+                  rx={2}
+                  fill="var(--surface-secondary)"
+                  fillOpacity={0.4}
+                />
+                <rect
+                  x={LABEL_WIDTH}
+                  y={barTop}
+                  width={barWidth}
+                  height={BAR_HEIGHT}
+                  rx={2}
+                  fill={color}
+                  fillOpacity={isSelected ? 0.9 : 0.7}
+                  stroke={isSelected ? 'var(--accent-primary)' : 'transparent'}
+                  strokeWidth={isSelected ? 1 : 0}
+                />
+                <text
+                  x={LABEL_WIDTH + available + 6}
+                  y={barTop + BAR_HEIGHT / 2}
+                  dominantBaseline="middle"
+                  fontSize={10}
+                  fontFamily="var(--font-mono)"
+                  fill={color}
+                  fontWeight={600}
+                  style={{ pointerEvents: 'none' }}
+                >
+                  {truncateToFit(
+                    `${row.dominantAuthor} ${row.dominantAuthorPercent}%`,
+                    labelMaxChars,
+                  )}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+      <HeroCaption
+        primary="One row per critical file · bar = dominant-author share · color = risk tier"
+        subtitle={subtitle}
+      />
       {tooltip && (
         <div
           style={{
@@ -184,6 +268,11 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
           <div style={{ color: 'var(--text-secondary)' }}>
             {tooltip.row.dominantAuthor} owns {tooltip.row.dominantAuthorPercent}%
           </div>
+          {tooltip.row.commitCount > 0 && (
+            <div style={{ color: 'var(--text-secondary)' }}>
+              {tooltip.row.commitCount} commit{tooltip.row.commitCount === 1 ? '' : 's'}
+            </div>
+          )}
           <div
             style={{
               color: riskColor(tooltip.row.risk),

@@ -1,3 +1,6 @@
+import { useMemo } from 'react';
+
+import { sortCriticalByImpact } from '../../utils/sortBusFactor';
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { Tooltip } from '../shared/Tooltip';
@@ -11,6 +14,8 @@ interface BusFactorTabProps {
 }
 
 export function BusFactorTab({ report, onSelectFile }: BusFactorTabProps) {
+  const sortedCritical = useMemo(() => sortCriticalByImpact(report), [report]);
+
   const columns: Column<FileBusFactor>[] = [
     {
       key: 'file',
@@ -33,10 +38,20 @@ export function BusFactorTab({ report, onSelectFile }: BusFactorTabProps) {
     {
       key: 'dominant',
       label: 'Dominant Author',
-      width: '180px',
+      width: '260px',
       render: (f) => (
-        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-          {f.dominantAuthor.split('@')[0]} ({f.dominantAuthorPercent}%)
+        <span
+          title={`${f.dominantAuthor} (${f.dominantAuthorPercent}%)`}
+          style={{
+            fontSize: 11,
+            color: 'var(--text-secondary)',
+            display: 'block',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {f.dominantAuthor} ({f.dominantAuthorPercent}%)
         </span>
       ),
     },
@@ -51,7 +66,7 @@ export function BusFactorTab({ report, onSelectFile }: BusFactorTabProps) {
           content={
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {f.authors.map((a) => (
-                <span key={a}>{a.split('@')[0]}</span>
+                <span key={a}>{a}</span>
               ))}
             </div>
           }
@@ -86,7 +101,7 @@ export function BusFactorTab({ report, onSelectFile }: BusFactorTabProps) {
 
   return (
     <SortableTable
-      data={report.busFactors.criticalFiles}
+      data={sortedCritical}
       columns={columns}
       rowKey={(f) => f.file}
       onRowClick={(f) => onSelectFile(f.file)}
