@@ -13,9 +13,18 @@ interface CriticalFixture {
   authors: string[];
 }
 
-function makeReport(criticalFiles: CriticalFixture[]): GitrelicReport {
+interface ChurnFixture {
+  file: string;
+  commitCount: number;
+}
+
+function makeReport(
+  criticalFiles: CriticalFixture[],
+  churnFiles: ChurnFixture[] = [],
+): GitrelicReport {
   return {
     busFactors: { files: [], criticalFiles, overallBusFactor: 1, summary: '' },
+    churn: { files: churnFiles, topFiles: [], summary: '' },
   } as unknown as GitrelicReport;
 }
 
@@ -44,8 +53,67 @@ describe('prepareOwnershipBarData', () => {
     expect(rows.map((r) => r.file)).toEqual(['b', 'a']);
   });
 
-  it('caps at 30 rows by default', () => {
-    const many: CriticalFixture[] = Array.from({ length: 50 }, (_, i) => ({
+  it('breaks percent ties by commit count desc', () => {
+    const rows = prepareOwnershipBarData(
+      makeReport(
+        [
+          {
+            file: 'low-impact',
+            dominantAuthor: 'x',
+            dominantAuthorPercent: 100,
+            risk: 'critical',
+            uniqueAuthors: 1,
+            authors: [],
+          },
+          {
+            file: 'high-impact',
+            dominantAuthor: 'x',
+            dominantAuthorPercent: 100,
+            risk: 'critical',
+            uniqueAuthors: 1,
+            authors: [],
+          },
+        ],
+        [
+          { file: 'low-impact', commitCount: 2 },
+          { file: 'high-impact', commitCount: 47 },
+        ],
+      ),
+    );
+    expect(rows.map((r) => r.file)).toEqual(['high-impact', 'low-impact']);
+    expect(rows[0].commitCount).toBe(47);
+  });
+
+  it('treats missing churn data as zero commits when tiebreaking', () => {
+    const rows = prepareOwnershipBarData(
+      makeReport(
+        [
+          {
+            file: 'untracked',
+            dominantAuthor: 'x',
+            dominantAuthorPercent: 100,
+            risk: 'critical',
+            uniqueAuthors: 1,
+            authors: [],
+          },
+          {
+            file: 'tracked',
+            dominantAuthor: 'x',
+            dominantAuthorPercent: 100,
+            risk: 'critical',
+            uniqueAuthors: 1,
+            authors: [],
+          },
+        ],
+        [{ file: 'tracked', commitCount: 5 }],
+      ),
+    );
+    expect(rows[0].file).toBe('tracked');
+    expect(rows[1].commitCount).toBe(0);
+  });
+
+  it('caps at 100 rows by default', () => {
+    const many: CriticalFixture[] = Array.from({ length: 150 }, (_, i) => ({
       file: `f${i}`,
       dominantAuthor: 'x',
       dominantAuthorPercent: 90,
@@ -54,44 +122,39 @@ describe('prepareOwnershipBarData', () => {
       authors: [],
     }));
     const rows = prepareOwnershipBarData(makeReport(many));
-    expect(rows).toHaveLength(30);
+    expect(rows).toHaveLength(100);
+  });
+
+  it('honors a custom topN', () => {
+    const many: CriticalFixture[] = Array.from({ length: 20 }, (_, i) => ({
+      file: `f${i}`,
+      dominantAuthor: 'x',
+      dominantAuthorPercent: 90,
+      risk: 'high',
+      uniqueAuthors: 1,
+      authors: [],
+    }));
+    expect(prepareOwnershipBarData(makeReport(many), 5)).toHaveLength(5);
   });
 
   it('returns [] when criticalFiles is empty', () => {
     expect(prepareOwnershipBarData(makeReport([]))).toEqual([]);
   });
 
-  it('derives dominantAuthorName from the local-part of the email', () => {
+  it('preserves the full author email on the row', () => {
     const rows = prepareOwnershipBarData(
       makeReport([
         {
           file: 'a',
-          dominantAuthor: 'alice@example.com',
-          dominantAuthorPercent: 90,
+          dominantAuthor: 'mail@henrik-liebau.de',
+          dominantAuthorPercent: 100,
           risk: 'critical',
           uniqueAuthors: 1,
           authors: [],
         },
       ]),
     );
-    expect(rows[0].dominantAuthorName).toBe('alice');
-    expect(rows[0].dominantAuthor).toBe('alice@example.com');
-  });
-
-  it('falls back to the raw author string when no @ is present', () => {
-    const rows = prepareOwnershipBarData(
-      makeReport([
-        {
-          file: 'a',
-          dominantAuthor: 'darthdan',
-          dominantAuthorPercent: 90,
-          risk: 'critical',
-          uniqueAuthors: 1,
-          authors: [],
-        },
-      ]),
-    );
-    expect(rows[0].dominantAuthorName).toBe('darthdan');
+    expect(rows[0].dominantAuthor).toBe('mail@henrik-liebau.de');
   });
 
   it('does not mutate the input criticalFiles array', () => {

@@ -99,7 +99,7 @@ export function CommitTimingTab({ report, onSelectFile }: CommitTimingTabProps) 
 
   return (
     <SortableTable
-      data={report.commitTiming.stressFiles}
+      data={report.commitTiming.files}
       columns={columns}
       rowKey={(f) => f.file}
       onRowClick={(f) => onSelectFile(f.file)}

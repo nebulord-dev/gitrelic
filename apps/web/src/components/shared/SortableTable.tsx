@@ -30,7 +30,7 @@ export function SortableTable<T>({
   expandedKey,
   renderExpanded,
   onRowExpand,
-  maxRows = 50,
+  maxRows,
 }: SortableTableProps<T>) {
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
@@ -61,8 +61,10 @@ export function SortableTable<T>({
     }
   }
   const totalRows = sorted.length;
-  sorted = sorted.slice(0, maxRows);
-  const truncated = totalRows > maxRows;
+  const truncated = maxRows != null && totalRows > maxRows;
+  if (maxRows != null) {
+    sorted = sorted.slice(0, maxRows);
+  }
 
   return (
     <div>

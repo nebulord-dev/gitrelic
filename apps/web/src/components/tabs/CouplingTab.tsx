@@ -125,7 +125,7 @@ export function CouplingTab({ report, onSelectFile }: CouplingTabProps) {
 
   return (
     <SortableTable
-      data={report.coupling.topPairs}
+      data={report.coupling.pairs}
       columns={columns}
       rowKey={(p) => `${p.fileA}::${p.fileB}`}
     />
