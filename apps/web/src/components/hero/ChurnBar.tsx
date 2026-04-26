@@ -21,6 +21,9 @@ const LABEL_WIDTH = 220;
 // Same empirical char width used by OwnershipBar for the trailing label pad.
 const CHAR_PX = 6.4;
 const LABEL_PAD_PX = 14;
+// Tighter than OwnershipBar's 120 because "1,234 commits" is shorter than
+// OwnershipBar's "{author-email} {percent}%" — leaves more room for the bar
+// lane on narrow widths.
 const MIN_RIGHT_PAD = 90;
 const MIN_BAR_LANE = 120;
 
