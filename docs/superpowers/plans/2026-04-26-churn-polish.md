@@ -545,7 +545,7 @@ with:
 </span>
 ```
 
-Add an import at the top of the file: `import { PRESETS } from '../../presets/registry';` (verify it's not already imported).
+Add an import at the top of the file: `import { PRESETS } from '../../presets/registry';` (verified: NOT currently imported in `Shell.tsx`; you must add it).
 
 - [ ] **Step 4: Tighten the empty-state subtitle in ChurnBar**
 
@@ -1185,7 +1185,7 @@ Expected: 6 tests pass.
 
 In `apps/web/src/components/tabs/ChurnTab.tsx`:
 
-a) Remove the local `formatRelative` function definition (around lines 39–46).
+a) Remove the local `formatRelative` function definition (around lines 25–32 — the function is unique in the file, so search finds it).
 
 b) Add the import: `import { formatRelative } from '../../utils/relativeTime';`
 
@@ -1391,7 +1391,7 @@ Expected: 11–13 commits, ~10 files modified, ~5 new files.
 
 ## Risks & rollback
 
-- **`ChurnTreemap` `sizeBy` regression**: the prop default is `'loc'`, so all existing call sites (Overview / Hotspots / Cursed Files / Age Map / Test Coverage) keep their current behavior. If a snapshot test asserts on the inner `data.loc` field name (which we replaced with `data.value`), update the snapshot.
+- **`ChurnTreemap` `sizeBy` regression**: the prop default is `'loc'`, so all existing call sites (Overview / Hotspots / Cursed Files / Age Map / Test Coverage) keep their current behavior. Verified: no existing test touches `buildTree` or asserts on the internal map fields (only `colorByMode` is exercised), so the internal rename has zero test exposure.
 - **`Tooltip` import in ChurnTab**: `Tooltip` is already imported at runtime via `BusFactorTab`; the new import in ChurnTab is just a second consumer. No bundling concern.
 - **`heroLabel` widening**: `PresetDefinition`'s new optional field doesn't affect any other consumer. Default to `'Repository Map'` preserves Shell behavior on every preset that doesn't set it.
 - **A4 Churn Velocity link**: the brainstorm proposed three See-also links, but `'churn-velocity'` isn't a registered preset (only a tab inside Tech Debt). Plan ships only Hotspots + Cursed Files. If a Churn Velocity preset lands later, add it as a follow-up.
