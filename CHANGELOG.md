@@ -1,3 +1,19 @@
+# [0.23.0](https://github.com/nebulord-dev/gitrelic/compare/v0.22.0...v0.23.0) (2026-04-26)
+
+
+### Bug Fixes
+
+* **web:** pluralize 'commit/commits' in ChurnBar trailing label ([25bbf49](https://github.com/nebulord-dev/gitrelic/commit/25bbf495878f9d561048acc2406c893975e596da))
+* **web:** restore spec-correct churn metrics + add missing tests ([61be02e](https://github.com/nebulord-dev/gitrelic/commit/61be02eca4b3afde49278717b180fa7193a5bfde))
+
+
+### Features
+
+* **web:** add churn types to presets/types ([2a7d0c7](https://github.com/nebulord-dev/gitrelic/commit/2a7d0c7db3a8db5c0d5a69aa6e3c8f2c47161bc4))
+* **web:** add ChurnBar hero component ([0a7072b](https://github.com/nebulord-dev/gitrelic/commit/0a7072b911b6d29754edea33bb17a8a35084889c))
+* **web:** add ChurnTab bottom-panel table ([50632ca](https://github.com/nebulord-dev/gitrelic/commit/50632ca0f384d356f0417c9f2c22ab38c1428a38))
+* **web:** wire churn preset into registry, sidebar, BottomPanel, Shell ([ea390cc](https://github.com/nebulord-dev/gitrelic/commit/ea390cc57d1dfcc9df208460a758a56d50e5bfb7))
+
 # [0.22.0](https://github.com/nebulord-dev/gitrelic/compare/v0.21.0...v0.22.0) (2026-04-26)
 
 
