@@ -128,6 +128,7 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
   const rightPad = Math.max(MIN_RIGHT_PAD, Math.min(desiredRightPad, maxAllowedRightPad));
   const available = Math.max(MIN_BAR_LANE, width - LABEL_WIDTH - rightPad);
   const labelMaxChars = Math.max(8, Math.floor((rightPad - LABEL_PAD_PX) / CHAR_PX));
+  const basenameMaxChars = Math.max(8, Math.floor((LABEL_WIDTH - 8) / CHAR_PX));
   const chartHeight = TOP_PAD + rows.length * ROW_HEIGHT + BOTTOM_PAD;
   const truncated = totalChurnedFiles > rows.length;
   const subtitle = truncated
@@ -188,7 +189,7 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
                   fontFamily="var(--font-mono)"
                   fill={isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)'}
                 >
-                  {row.name}
+                  {truncateToFit(row.name, basenameMaxChars)}
                 </text>
                 <rect
                   x={LABEL_WIDTH}
@@ -215,7 +216,7 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
                   dominantBaseline="middle"
                   fontSize={10}
                   fontFamily="var(--font-mono)"
-                  fill="var(--text-secondary)"
+                  fill={fillFor(row.category, isSelected ? 1 : 0.85)}
                   style={{ pointerEvents: 'none' }}
                 >
                   {trailingLabel}
