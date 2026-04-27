@@ -24,7 +24,7 @@ import { RiskRegisterTab } from '../tabs/RiskRegisterTab';
 import { ShameTab } from '../tabs/ShameTab';
 import { TestCoverageTab } from '../tabs/TestCoverageTab';
 
-import type { BottomTab } from '../../presets/types';
+import type { BottomTab, PresetId } from '../../presets/types';
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface BottomPanelProps {
@@ -34,6 +34,7 @@ interface BottomPanelProps {
   onTabChange: (tab: BottomTab) => void;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
+  onApplyPreset?: (id: PresetId) => void;
   // When true, fill the available vertical space instead of a fixed height.
   // Used in fullscreen-table layout mode where the hero is hidden.
   fillAvailable?: boolean;
@@ -70,11 +71,13 @@ function TabContent({
   report,
   selectedFile,
   onSelectFile,
+  onApplyPreset,
 }: {
   tab: BottomTab;
   report: GitrelicReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
+  onApplyPreset?: (id: PresetId) => void;
 }) {
   switch (tab) {
     case 'hotspots':
@@ -82,7 +85,14 @@ function TabContent({
         <HotspotsTab report={report} selectedFile={selectedFile} onSelectFile={onSelectFile} />
       );
     case 'churn':
-      return <ChurnTab report={report} selectedFile={selectedFile} onSelectFile={onSelectFile} />;
+      return (
+        <ChurnTab
+          report={report}
+          selectedFile={selectedFile}
+          onSelectFile={onSelectFile}
+          onApplyPreset={onApplyPreset}
+        />
+      );
     case 'cursed-files':
       return <CursedFilesTab report={report} onSelectFile={onSelectFile} />;
     case 'bus-factor':
@@ -139,6 +149,7 @@ export function BottomPanel({
   onTabChange,
   selectedFile,
   onSelectFile,
+  onApplyPreset,
   fillAvailable = false,
 }: BottomPanelProps) {
   const [height, setHeight] = useState(DEFAULT_HEIGHT);
@@ -240,6 +251,7 @@ export function BottomPanel({
           report={report}
           selectedFile={selectedFile}
           onSelectFile={onSelectFile}
+          onApplyPreset={onApplyPreset}
         />
       </div>
     </div>

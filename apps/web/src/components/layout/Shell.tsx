@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { useSelection } from '../../hooks/useSelection';
+import { PRESETS } from '../../presets/registry';
 import { AuthorForceGraph } from '../hero/AuthorForceGraph';
 import { BlastScatter } from '../hero/BlastScatter';
 import { ChurnBar } from '../hero/ChurnBar';
@@ -95,6 +96,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   treemap: 'Treemap',
   'treemap-age': 'Age',
   'treemap-test': 'Coverage',
+  'treemap-bycommits': 'By Commits',
   ownership: 'Ownership',
   'ownership-bar': 'Bus Bar',
   'churn-bar': 'Top Churn',
@@ -216,7 +218,7 @@ export function Shell({ report }: ShellProps) {
                 }}
               >
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Repository Map
+                  {PRESETS[selection.activePresetId].heroLabel ?? 'Repository Map'}
                 </span>
                 <div
                   style={{
@@ -273,6 +275,16 @@ export function Shell({ report }: ShellProps) {
                     selectedFile={selection.selectedFile}
                     onSelectFile={selection.selectFile}
                     colorBy="test-proximity"
+                  />
+                )}
+                {selection.activeHeroViz === 'treemap-bycommits' && (
+                  <ChurnTreemap
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                    colorBy="churn"
+                    sizeBy="commits"
+                    legend="churn"
                   />
                 )}
                 {selection.activeHeroViz === 'ownership' && (
@@ -444,6 +456,7 @@ export function Shell({ report }: ShellProps) {
               onTabChange={selection.setBottomTabOverride}
               selectedFile={selection.selectedFile}
               onSelectFile={selection.selectFile}
+              onApplyPreset={selection.applyPreset}
               fillAvailable={!visibility.hero}
             />
           )}

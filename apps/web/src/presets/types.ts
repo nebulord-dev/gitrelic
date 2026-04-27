@@ -13,6 +13,7 @@ export type HeroViz =
   | 'treemap'
   | 'treemap-age'
   | 'treemap-test'
+  | 'treemap-bycommits'
   | 'ownership'
   | 'ownership-bar'
   | 'churn-bar'
@@ -98,6 +99,7 @@ export interface PresetDefinition {
   tier: PresetTier;
   label: string;
   group: SidebarGroupLabel;
+  heroLabel?: string;
   hero: {
     defaultViz: HeroViz;
     altTabs: HeroViz[];

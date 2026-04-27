@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { severityForChurn } from '../../utils/churn';
+import { churnCategoryDescription, severityForChurn } from '../../utils/churn';
 import { categoryColor } from '../../utils/colors';
+import { ChurnLegend } from '../shared/ChurnLegend';
 import { HeroCaption } from '../shared/HeroCaption';
 
 import type { ChurnCategory, GitrelicReport } from '@gitrelic/core';
@@ -21,6 +22,9 @@ const LABEL_WIDTH = 220;
 // Same empirical char width used by OwnershipBar for the trailing label pad.
 const CHAR_PX = 6.4;
 const LABEL_PAD_PX = 14;
+// Tighter than OwnershipBar's 120 because "1,234 commits" is shorter than
+// OwnershipBar's "{author-email} {percent}%" — leaves more room for the bar
+// lane on narrow widths.
 const MIN_RIGHT_PAD = 90;
 const MIN_BAR_LANE = 120;
 
@@ -105,9 +109,10 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
         >
           No file churn detected.
         </div>
+        <ChurnLegend />
         <HeroCaption
           primary="One row per file · bar = commit count · color = churn category"
-          subtitle="Churn = how many commits each file appears in."
+          subtitle="No commits touched any file in the analysis window. Try a longer history or a different branch."
         />
       </div>
     );
@@ -123,6 +128,7 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
   const rightPad = Math.max(MIN_RIGHT_PAD, Math.min(desiredRightPad, maxAllowedRightPad));
   const available = Math.max(MIN_BAR_LANE, width - LABEL_WIDTH - rightPad);
   const labelMaxChars = Math.max(8, Math.floor((rightPad - LABEL_PAD_PX) / CHAR_PX));
+  const basenameMaxChars = Math.max(8, Math.floor((LABEL_WIDTH - 8) / CHAR_PX));
   const chartHeight = TOP_PAD + rows.length * ROW_HEIGHT + BOTTOM_PAD;
   const truncated = totalChurnedFiles > rows.length;
   const subtitle = truncated
@@ -183,7 +189,7 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
                   fontFamily="var(--font-mono)"
                   fill={isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)'}
                 >
-                  {row.name}
+                  {truncateToFit(row.name, basenameMaxChars)}
                 </text>
                 <rect
                   x={LABEL_WIDTH}
@@ -210,7 +216,7 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
                   dominantBaseline="middle"
                   fontSize={10}
                   fontFamily="var(--font-mono)"
-                  fill="var(--text-secondary)"
+                  fill={fillFor(row.category, isSelected ? 1 : 0.85)}
                   style={{ pointerEvents: 'none' }}
                 >
                   {trailingLabel}
@@ -220,6 +226,7 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
           })}
         </svg>
       </div>
+      <ChurnLegend />
       <HeroCaption
         primary="One row per file · bar = commit count · color = churn category"
         subtitle={subtitle}
@@ -255,6 +262,9 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
             }}
           >
             {tooltip.row.category}
+          </div>
+          <div style={{ color: 'var(--text-tertiary)', fontSize: 9, marginTop: 1 }}>
+            {churnCategoryDescription(tooltip.row.category)}
           </div>
         </div>
       )}

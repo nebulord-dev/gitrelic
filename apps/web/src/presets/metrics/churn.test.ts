@@ -30,9 +30,9 @@ describe('churnMetrics', () => {
     expect(metrics).toHaveLength(4);
     expect(metrics[0]).toMatchObject({ label: 'Hot Files', value: '0' });
     expect(metrics[0].color).toBe('var(--severity-healthy)');
-    expect(metrics[1]).toMatchObject({ label: 'Top Churn', value: '—' });
+    expect(metrics[1]).toMatchObject({ label: 'Top File Commits', value: '—' });
     expect(metrics[1].color).toBe('var(--severity-healthy)');
-    expect(metrics[2]).toMatchObject({ label: 'Top File %', value: '—' });
+    expect(metrics[2]).toMatchObject({ label: 'Top File Share', value: '—' });
     expect(metrics[3]).toMatchObject({ label: 'Tracked Files', value: '0' });
   });
 
@@ -83,7 +83,7 @@ describe('churnMetrics', () => {
     expect(metrics[3].value).toBe('1,234');
   });
 
-  it('colors Top Churn warning when there is churn but no hot files', () => {
+  it('colors Top File Commits warning when there is churn but no hot files', () => {
     const metrics = churnMetrics(
       makeReport(
         [makeFile({ file: 'a.ts', commitCount: 30, churnScore: 50, category: 'warm' })],
