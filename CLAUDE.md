@@ -16,7 +16,7 @@ gitrelic              (CLI, the only published package; bundles core inline)
 @gitrelic/docs        (VitePress site; deploys separately via .github/workflows/docs.yml)
 ```
 
-Workspace names in `pnpm --filter <name>` commands: `@gitrelic/core`, `gitrelic` (NOT `@gitrelic/cli`), `@gitrelic/web`, `@gitrelic/docs`.
+Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `gitrelic` (NOT `@gitrelic/cli`), `@gitrelic/web`, `@gitrelic/docs`.
 
 ## Package Breakdown
 
@@ -136,6 +136,13 @@ Issues live in Linear under the GitRelic team. The team backlog is hand-ordered
 "pick up the next issue," look at the GitRelic backlog (sorted by manual order,
 not priority or date) and start with the topmost issue in Todo state.
 
+### Polish Initiative
+
+Issues prefixed `Polish: <analyzer>` belong to the Polish Initiative — a forensic pass
+to optimize each analyzer's hero graphs and bottom panels. Before working on any
+Polish ticket, read `docs/polish-pattern.md` — it maps each analyzer to its decided
+bottom-panel form (narrative-KPI, table, etc.) and lists per-analyzer specs. Update
+the doc when a polish ticket discovers the spec is wrong or when a new pattern emerges.
 
 ## Build Commands
 
