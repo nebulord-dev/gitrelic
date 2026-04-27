@@ -96,6 +96,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   treemap: 'Treemap',
   'treemap-age': 'Age',
   'treemap-test': 'Coverage',
+  'treemap-bycommits': 'By Commits',
   ownership: 'Ownership',
   'ownership-bar': 'Bus Bar',
   'churn-bar': 'Top Churn',
@@ -274,6 +275,16 @@ export function Shell({ report }: ShellProps) {
                     selectedFile={selection.selectedFile}
                     onSelectFile={selection.selectFile}
                     colorBy="test-proximity"
+                  />
+                )}
+                {selection.activeHeroViz === 'treemap-bycommits' && (
+                  <ChurnTreemap
+                    report={report}
+                    selectedFile={selection.selectedFile}
+                    onSelectFile={selection.selectFile}
+                    colorBy="churn"
+                    sizeBy="commits"
+                    legend="churn"
                   />
                 )}
                 {selection.activeHeroViz === 'ownership' && (

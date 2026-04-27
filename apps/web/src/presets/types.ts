@@ -13,6 +13,7 @@ export type HeroViz =
   | 'treemap'
   | 'treemap-age'
   | 'treemap-test'
+  | 'treemap-bycommits'
   | 'ownership'
   | 'ownership-bar'
   | 'churn-bar'
