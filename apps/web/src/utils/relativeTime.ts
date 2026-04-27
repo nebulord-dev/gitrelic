@@ -1,6 +1,4 @@
-// Human-readable age formatter used in tables ("Last Touched" column).
-// Buckets: null → '—', <1d → 'today', <30d → 'Xd ago',
-//          <365d → 'Xmo ago', 1–10y → 'X.Xy ago', 10+y → 'Xy ago'.
+// Bucketed age formatter for "Last Touched" columns.
 export function formatRelative(days: number | null): string {
   if (days == null) return '—';
   if (days < 1) return 'today';

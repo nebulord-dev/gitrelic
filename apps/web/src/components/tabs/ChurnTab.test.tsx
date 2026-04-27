@@ -50,4 +50,37 @@ describe('ChurnTab', () => {
     const text = container.textContent ?? '';
     expect(text.indexOf('big.ts')).toBeLessThan(text.indexOf('small.ts'));
   });
+
+  it('hides the See also footer when onApplyPreset is undefined', () => {
+    render(<ChurnTab report={makeReport()} selectedFile={null} onSelectFile={vi.fn()} />);
+    expect(screen.queryByText(/See also/)).toBeNull();
+  });
+
+  it('routes a Hotspots footer click to onApplyPreset', () => {
+    const onApplyPreset = vi.fn();
+    render(
+      <ChurnTab
+        report={makeReport()}
+        selectedFile={null}
+        onSelectFile={vi.fn()}
+        onApplyPreset={onApplyPreset}
+      />,
+    );
+    screen.getByText('Hotspots').click();
+    expect(onApplyPreset).toHaveBeenCalledWith('hotspots');
+  });
+
+  it('routes a Cursed Files footer click to onApplyPreset', () => {
+    const onApplyPreset = vi.fn();
+    render(
+      <ChurnTab
+        report={makeReport()}
+        selectedFile={null}
+        onSelectFile={vi.fn()}
+        onApplyPreset={onApplyPreset}
+      />,
+    );
+    screen.getByText('Cursed Files').click();
+    expect(onApplyPreset).toHaveBeenCalledWith('cursed-files');
+  });
 });

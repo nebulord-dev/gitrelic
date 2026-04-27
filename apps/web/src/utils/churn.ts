@@ -1,9 +1,6 @@
 import type { ChurnCategory } from '@gitrelic/core';
 
-// Maps churn categories to the severity tokens used by the shared `Badge`
-// component and the `categoryColor` palette, so all churn surfaces
-// (ChurnBar tooltips, ChurnTab badges, future ones) agree on what
-// each category looks like.
+// Maps ChurnCategory → BadgeVariant token, shared by ChurnBar and ChurnTab.
 export function severityForChurn(
   category: ChurnCategory,
 ): 'critical' | 'warning' | 'moderate' | 'healthy' {
@@ -19,8 +16,7 @@ export function severityForChurn(
   }
 }
 
-// Short human-readable description of each churn band, suitable for tooltips
-// and explanations. Lines up with the thresholds shown in ChurnLegend.
+// Human-readable band description; thresholds match ChurnLegend.
 export function churnCategoryDescription(category: ChurnCategory): string {
   switch (category) {
     case 'hot':

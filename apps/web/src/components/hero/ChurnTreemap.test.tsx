@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { cleanup, render } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { categoryColor } from '../../utils/colors';
-import { colorByMode } from './ChurnTreemap';
+import { ChurnTreemap, colorByMode } from './ChurnTreemap';
 
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -84,5 +85,55 @@ describe('colorByMode', () => {
       expect(unknown).not.toBe(tested);
       expect(unknown).not.toBe(untested);
     });
+  });
+});
+
+describe('ChurnTreemap render', () => {
+  afterEach(() => cleanup());
+
+  function makeRenderableReport(): GitrelicReport {
+    return {
+      hotspots: { files: [], topHotspots: [], summary: '' },
+      ageMap: { files: [], staleFiles: [], ancientFiles: [], medianAgeDays: 0, summary: '' },
+      testCoverage: {
+        directories: [],
+        uncoveredDirectories: [],
+        files: [],
+        overallRatio: 0,
+        summary: '',
+      },
+      loc: {
+        files: [
+          { file: 'a.ts', lines: 100 },
+          { file: 'b.ts', lines: 50 },
+        ],
+      },
+      churn: {
+        files: [
+          { file: 'a.ts', commitCount: 30, churnScore: 80, category: 'hot' },
+          { file: 'b.ts', commitCount: 5, churnScore: 20, category: 'cold' },
+        ],
+      },
+    } as unknown as GitrelicReport;
+  }
+
+  it('renders an SVG when sizeBy="commits"', () => {
+    const { container } = render(
+      <ChurnTreemap
+        report={makeRenderableReport()}
+        selectedFile={null}
+        onSelectFile={() => {}}
+        sizeBy="commits"
+        legend="churn"
+      />,
+    );
+    expect(container.querySelector('svg')).toBeTruthy();
+  });
+
+  it('renders an SVG with the default sizeBy="loc" too (back-compat)', () => {
+    const { container } = render(
+      <ChurnTreemap report={makeRenderableReport()} selectedFile={null} onSelectFile={() => {}} />,
+    );
+    expect(container.querySelector('svg')).toBeTruthy();
   });
 });
