@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { severityForChurn } from '../../utils/churn';
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
+import { Tooltip } from '../shared/Tooltip';
 import { fileName, filePath, fmt } from '../theme';
 
 import type { FileChurn, GitrelicReport } from '@gitrelic/core';
@@ -19,6 +20,7 @@ interface ChurnRow {
   category: 'hot' | 'warm' | 'cold' | 'frozen';
   loc: number | null;
   uniqueAuthors: number | null;
+  authors: string[] | null;
   ageDays: number | null;
 }
 
@@ -33,17 +35,26 @@ function formatRelative(days: number | null): string {
 
 function buildRows(report: GitrelicReport): ChurnRow[] {
   const locByFile = new Map(report.loc.files.map((f) => [f.file, f.lines]));
-  const bfByFile = new Map(report.busFactors.files.map((f) => [f.file, f.uniqueAuthors]));
+  const bfByFile = new Map(
+    report.busFactors.files.map((f) => [
+      f.file,
+      { uniqueAuthors: f.uniqueAuthors, authors: f.authors },
+    ]),
+  );
   const ageByFile = new Map(report.ageMap.files.map((f) => [f.file, f.ageInDays]));
 
-  return (report.churn?.files ?? []).map((f: FileChurn) => ({
-    file: f.file,
-    commitCount: f.commitCount,
-    category: f.category,
-    loc: locByFile.get(f.file) ?? null,
-    uniqueAuthors: bfByFile.get(f.file) ?? null,
-    ageDays: ageByFile.get(f.file) ?? null,
-  }));
+  return (report.churn?.files ?? []).map((f: FileChurn) => {
+    const bf = bfByFile.get(f.file);
+    return {
+      file: f.file,
+      commitCount: f.commitCount,
+      category: f.category,
+      loc: locByFile.get(f.file) ?? null,
+      uniqueAuthors: bf?.uniqueAuthors ?? null,
+      authors: bf?.authors ?? null,
+      ageDays: ageByFile.get(f.file) ?? null,
+    };
+  });
 }
 
 export function ChurnTab({ report, selectedFile, onSelectFile }: ChurnTabProps) {
@@ -96,13 +107,40 @@ export function ChurnTab({ report, selectedFile, onSelectFile }: ChurnTabProps) 
       width: '70px',
       align: 'right',
       sortValue: (r) => r.uniqueAuthors ?? -1,
-      render: (r) => (
-        <span
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-        >
-          {r.uniqueAuthors != null ? r.uniqueAuthors : '—'}
-        </span>
-      ),
+      render: (r) => {
+        const authors = r.authors ?? [];
+        return authors.length > 0 ? (
+          <Tooltip
+            content={
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {authors.map((a) => (
+                  <span key={a}>{a}</span>
+                ))}
+              </div>
+            }
+          >
+            <span
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 11,
+                color: 'var(--text-secondary)',
+              }}
+            >
+              {r.uniqueAuthors ?? '—'}
+            </span>
+          </Tooltip>
+        ) : (
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              color: 'var(--text-secondary)',
+            }}
+          >
+            —
+          </span>
+        );
+      },
     },
     {
       key: 'lastTouched',
