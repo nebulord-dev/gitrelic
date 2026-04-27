@@ -29,7 +29,7 @@ export function TopBar({ report, layoutMode, onLayoutModeChange }: TopBarProps) 
         <span
           style={{
             fontWeight: 700,
-            fontSize: 13,
+            fontSize: 14,
             letterSpacing: 1,
             color: 'var(--text-primary)',
           }}
@@ -37,17 +37,17 @@ export function TopBar({ report, layoutMode, onLayoutModeChange }: TopBarProps) 
           GITRELIC
         </span>
         {meta.gitrelicVersion && (
-          <span style={{ color: 'var(--text-tertiary)', fontSize: 9 }}>
+          <span style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>
             v{meta.gitrelicVersion}
           </span>
         )}
-        <span style={{ color: 'var(--accent-primary)', fontSize: 12 }}>{repoName}</span>
+        <span style={{ color: 'var(--accent-primary)', fontSize: 14 }}>{repoName}</span>
         {meta.analyzedBranch && (
-          <span style={{ color: 'var(--text-secondary)', fontSize: 11 }}>
+          <span style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
             {meta.analyzedBranch}
           </span>
         )}
-        <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>
+        <span style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>
           • {fmt(meta.totalCommits)} commits • {fmt(meta.totalAuthors)} authors •{' '}
           {new Date(meta.firstCommit).toLocaleDateString()} –{' '}
           {new Date(meta.lastCommit).toLocaleDateString()}
