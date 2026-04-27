@@ -18,3 +18,18 @@ export function severityForChurn(
       return 'healthy';
   }
 }
+
+// Short human-readable description of each churn band, suitable for tooltips
+// and explanations. Lines up with the thresholds shown in ChurnLegend.
+export function churnCategoryDescription(category: ChurnCategory): string {
+  switch (category) {
+    case 'hot':
+      return 'top tier — 76+ churn score';
+    case 'warm':
+      return 'mid-high tier — 41–75 churn score';
+    case 'cold':
+      return 'low tier — 11–40 churn score';
+    case 'frozen':
+      return 'rarely touched — ≤10 churn score';
+  }
+}
