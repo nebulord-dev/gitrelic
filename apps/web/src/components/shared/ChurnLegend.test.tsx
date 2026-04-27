@@ -18,9 +18,9 @@ describe('ChurnLegend', () => {
 
   it('renders threshold strings next to labels', () => {
     render(<ChurnLegend />);
-    expect(screen.getByText(/≥75/)).toBeTruthy();
-    expect(screen.getByText(/40–75/)).toBeTruthy();
-    expect(screen.getByText(/10–40/)).toBeTruthy();
+    expect(screen.getByText(/76\+/)).toBeTruthy();
+    expect(screen.getByText(/41–75/)).toBeTruthy();
+    expect(screen.getByText(/11–40/)).toBeTruthy();
     expect(screen.getByText(/≤10/)).toBeTruthy();
   });
 });

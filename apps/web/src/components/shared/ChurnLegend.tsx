@@ -41,9 +41,9 @@ export function ChurnLegend() {
         padding: '4px 16px',
       }}
     >
-      <Swatch category="hot" label="hot" range="≥75" />
-      <Swatch category="warm" label="warm" range="40–75" />
-      <Swatch category="cold" label="cold" range="10–40" />
+      <Swatch category="hot" label="hot" range="76+" />
+      <Swatch category="warm" label="warm" range="41–75" />
+      <Swatch category="cold" label="cold" range="11–40" />
       <Swatch category="frozen" label="frozen" range="≤10" />
     </div>
   );
