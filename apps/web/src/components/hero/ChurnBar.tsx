@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { severityForChurn } from '../../utils/churn';
+import { churnCategoryDescription, severityForChurn } from '../../utils/churn';
 import { categoryColor } from '../../utils/colors';
+import { ChurnLegend } from '../shared/ChurnLegend';
 import { HeroCaption } from '../shared/HeroCaption';
 
 import type { ChurnCategory, GitrelicReport } from '@gitrelic/core';
@@ -108,6 +109,7 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
         >
           No file churn detected.
         </div>
+        <ChurnLegend />
         <HeroCaption
           primary="One row per file · bar = commit count · color = churn category"
           subtitle="Churn = how many commits each file appears in."
@@ -223,6 +225,7 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
           })}
         </svg>
       </div>
+      <ChurnLegend />
       <HeroCaption
         primary="One row per file · bar = commit count · color = churn category"
         subtitle={subtitle}
@@ -258,6 +261,9 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
             }}
           >
             {tooltip.row.category}
+          </div>
+          <div style={{ color: 'var(--text-tertiary)', fontSize: 9, marginTop: 1 }}>
+            {churnCategoryDescription(tooltip.row.category)}
           </div>
         </div>
       )}
