@@ -1,6 +1,7 @@
 import { type CSSProperties, useMemo } from 'react';
 
 import { severityForChurn } from '../../utils/churn';
+import { formatRelative } from '../../utils/relativeTime';
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { Tooltip } from '../shared/Tooltip';
@@ -35,15 +36,6 @@ const linkStyle: CSSProperties = {
   padding: 0,
   textDecoration: 'underline',
 };
-
-function formatRelative(days: number | null): string {
-  if (days == null) return '—';
-  if (days < 1) return 'today';
-  if (days < 30) return `${Math.round(days)}d ago`;
-  if (days < 365) return `${Math.round(days / 30)}mo ago`;
-  const years = days / 365;
-  return `${years.toFixed(years >= 10 ? 0 : 1)}y ago`;
-}
 
 function buildRows(report: GitrelicReport): ChurnRow[] {
   const locByFile = new Map(report.loc.files.map((f) => [f.file, f.lines]));
