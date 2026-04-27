@@ -1,3 +1,23 @@
+# [0.24.0](https://github.com/nebulord-dev/gitrelic/compare/v0.23.0...v0.24.0) (2026-04-27)
+
+
+### Bug Fixes
+
+* **web:** correct ChurnLegend threshold ranges ([2c2e089](https://github.com/nebulord-dev/gitrelic/commit/2c2e0894247589afe44824415dd59c8fbb2863bd))
+* **web:** right-ellipsis basenames + severity-tint trailing label ([7df07b1](https://github.com/nebulord-dev/gitrelic/commit/7df07b1392c8562b6e0d548a347885fa1252e230))
+
+
+### Features
+
+* **web:** add churnCategoryDescription helper ([f3c1d13](https://github.com/nebulord-dev/gitrelic/commit/f3c1d13fb6dc41bf3c1c77789a65d78c9faa1b8a))
+* **web:** add ChurnLegend shared component ([ac15bdd](https://github.com/nebulord-dev/gitrelic/commit/ac15bddbeccd513ffd5d4f6bab13b14bf5475aee))
+* **web:** authors tooltip in ChurnTab ([d15c247](https://github.com/nebulord-dev/gitrelic/commit/d15c247c6b732e9cec6874624d311749f1571f4c))
+* **web:** clarify churn metric tile copy ([81bf7ac](https://github.com/nebulord-dev/gitrelic/commit/81bf7ac8d63235823170f08afec76d31f7b0f7c5))
+* **web:** differentiated Churn treemap (sizeBy=commits) ([7d19669](https://github.com/nebulord-dev/gitrelic/commit/7d1966917b31c07fe46e3ee43b903323cc2ed8dc))
+* **web:** mount ChurnLegend + describe categories in tooltip ([b99601f](https://github.com/nebulord-dev/gitrelic/commit/b99601f53128c2965ce44373070154ec25e75066))
+* **web:** per-preset hero label + Churn empty-state copy ([aca0328](https://github.com/nebulord-dev/gitrelic/commit/aca0328e9e9b4f710ab4d45da8f446299a936287))
+* **web:** see-also footer on ChurnTab ([4519bd9](https://github.com/nebulord-dev/gitrelic/commit/4519bd9b5438f5623021f21ecca94a98b4180243))
+
 # [0.23.0](https://github.com/nebulord-dev/gitrelic/compare/v0.22.0...v0.23.0) (2026-04-26)
 
 
