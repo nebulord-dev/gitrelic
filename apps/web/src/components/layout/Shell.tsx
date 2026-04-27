@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { useSelection } from '../../hooks/useSelection';
+import { PRESETS } from '../../presets/registry';
 import { AuthorForceGraph } from '../hero/AuthorForceGraph';
 import { BlastScatter } from '../hero/BlastScatter';
 import { ChurnBar } from '../hero/ChurnBar';
@@ -216,7 +217,7 @@ export function Shell({ report }: ShellProps) {
                 }}
               >
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Repository Map
+                  {PRESETS[selection.activePresetId].heroLabel ?? 'Repository Map'}
                 </span>
                 <div
                   style={{

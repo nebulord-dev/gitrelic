@@ -98,6 +98,7 @@ export interface PresetDefinition {
   tier: PresetTier;
   label: string;
   group: SidebarGroupLabel;
+  heroLabel?: string;
   hero: {
     defaultViz: HeroViz;
     altTabs: HeroViz[];

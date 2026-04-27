@@ -165,6 +165,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     tier: 'analyzer',
     label: 'Churn',
     group: 'code-health',
+    heroLabel: 'Churn — file commit frequency',
     hero: {
       defaultViz: 'churn-bar',
       altTabs: ['churn-bar', 'treemap'],

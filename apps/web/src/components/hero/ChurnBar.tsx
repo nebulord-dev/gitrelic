@@ -112,7 +112,7 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
         <ChurnLegend />
         <HeroCaption
           primary="One row per file · bar = commit count · color = churn category"
-          subtitle="Churn = how many commits each file appears in."
+          subtitle="No commits touched any file in the analysis window. Try a longer history or a different branch."
         />
       </div>
     );
