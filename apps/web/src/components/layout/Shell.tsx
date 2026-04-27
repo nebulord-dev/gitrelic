@@ -456,6 +456,7 @@ export function Shell({ report }: ShellProps) {
               onTabChange={selection.setBottomTabOverride}
               selectedFile={selection.selectedFile}
               onSelectFile={selection.selectFile}
+              onApplyPreset={selection.applyPreset}
               fillAvailable={!visibility.hero}
             />
           )}

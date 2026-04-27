@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { type CSSProperties, useMemo } from 'react';
 
 import { severityForChurn } from '../../utils/churn';
 import Badge from '../shared/Badge';
@@ -6,12 +6,14 @@ import { type Column, SortableTable } from '../shared/SortableTable';
 import { Tooltip } from '../shared/Tooltip';
 import { fileName, filePath, fmt } from '../theme';
 
+import type { PresetId } from '../../presets/types';
 import type { FileChurn, GitrelicReport } from '@gitrelic/core';
 
 interface ChurnTabProps {
   report: GitrelicReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
+  onApplyPreset?: (id: PresetId) => void;
 }
 
 interface ChurnRow {
@@ -23,6 +25,16 @@ interface ChurnRow {
   authors: string[] | null;
   ageDays: number | null;
 }
+
+const linkStyle: CSSProperties = {
+  background: 'none',
+  border: 'none',
+  color: 'var(--accent-primary)',
+  fontSize: 10,
+  cursor: 'pointer',
+  padding: 0,
+  textDecoration: 'underline',
+};
 
 function formatRelative(days: number | null): string {
   if (days == null) return '—';
@@ -57,7 +69,7 @@ function buildRows(report: GitrelicReport): ChurnRow[] {
   });
 }
 
-export function ChurnTab({ report, selectedFile, onSelectFile }: ChurnTabProps) {
+export function ChurnTab({ report, selectedFile, onSelectFile, onApplyPreset }: ChurnTabProps) {
   const rows = useMemo(() => buildRows(report), [report]);
 
   const columns: Column<ChurnRow>[] = [
@@ -169,12 +181,35 @@ export function ChurnTab({ report, selectedFile, onSelectFile }: ChurnTabProps) 
   const sorted = useMemo(() => [...rows].sort((a, b) => b.commitCount - a.commitCount), [rows]);
 
   return (
-    <SortableTable
-      data={sorted}
-      columns={columns}
-      rowKey={(r) => r.file}
-      selectedKey={selectedFile}
-      onRowClick={(r) => onSelectFile(r.file)}
-    />
+    <>
+      <SortableTable
+        data={sorted}
+        columns={columns}
+        rowKey={(r) => r.file}
+        selectedKey={selectedFile}
+        onRowClick={(r) => onSelectFile(r.file)}
+      />
+      {onApplyPreset && (
+        <div
+          style={{
+            padding: '8px 4px 4px',
+            fontSize: 10,
+            color: 'var(--text-tertiary)',
+            display: 'flex',
+            gap: 8,
+            alignItems: 'center',
+          }}
+        >
+          See also:{' '}
+          <button onClick={() => onApplyPreset('hotspots')} style={linkStyle}>
+            Hotspots
+          </button>
+          ·
+          <button onClick={() => onApplyPreset('cursed-files')} style={linkStyle}>
+            Cursed Files
+          </button>
+        </div>
+      )}
+    </>
   );
 }
