@@ -33,8 +33,10 @@ function formatShare(share: number): string {
 }
 
 export function ChurnTab({ report, onApplyPreset }: ChurnTabProps) {
-  const files = report.churn?.files ?? [];
-  const rows = useMemo(() => aggregateChurnByDirectory(files), [files]);
+  const rows = useMemo(
+    () => aggregateChurnByDirectory(report.churn?.files ?? []),
+    [report.churn?.files],
+  );
 
   const columns: Column<DirectoryChurnRow>[] = [
     {
