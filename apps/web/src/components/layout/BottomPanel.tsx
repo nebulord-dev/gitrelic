@@ -85,14 +85,7 @@ function TabContent({
         <HotspotsTab report={report} selectedFile={selectedFile} onSelectFile={onSelectFile} />
       );
     case 'churn':
-      return (
-        <ChurnTab
-          report={report}
-          selectedFile={selectedFile}
-          onSelectFile={onSelectFile}
-          onApplyPreset={onApplyPreset}
-        />
-      );
+      return <ChurnTab report={report} onApplyPreset={onApplyPreset} />;
     case 'cursed-files':
       return <CursedFilesTab report={report} onSelectFile={onSelectFile} />;
     case 'bus-factor':
