@@ -1,3 +1,10 @@
+# [0.26.0](https://github.com/nebulord-dev/gitrelic/compare/v0.25.0...v0.26.0) (2026-04-28)
+
+
+### Features
+
+* directory rollup, source/test split, docs (RELIC-303) ([#52](https://github.com/nebulord-dev/gitrelic/issues/52)) ([a052f14](https://github.com/nebulord-dev/gitrelic/commit/a052f147189d804860f4eb4eb3c8548020eee470))
+
 # [0.25.0](https://github.com/nebulord-dev/gitrelic/compare/v0.24.0...v0.25.0) (2026-04-28)
 
 
