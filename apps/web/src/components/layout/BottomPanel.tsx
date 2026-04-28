@@ -120,7 +120,7 @@ function TabContent({
     case 'ghost-files':
       return <GhostFilesTab report={report} onSelectFile={onSelectFile} />;
     case 'knowledge-silos':
-      return <KnowledgeSilosTab report={report} />;
+      return <KnowledgeSilosTab report={report} onApplyPreset={onApplyPreset} />;
     case 'co-authors':
       return <CoAuthorsTab report={report} />;
     case 'commit-timing':
