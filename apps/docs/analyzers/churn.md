@@ -28,6 +28,21 @@ If you only have ten seconds:
 
 ## How churn is measured
 
+The full pipeline, from raw git output to the three dashboard surfaces:
+
+```mermaid
+flowchart LR
+    G[("git log --no-merges --numstat")] --> A[analyzeChurn]
+    A --> R[("ChurnReport.files[]")]
+    R --> H["Top Churn hero<br/>per-file leaderboard"]
+    R --> B["Bottom panel<br/>Source · Test Files tabs"]
+    R --> I["Inspector<br/>per-file detail"]
+    H -.click row.-> I
+    B -.click row.-> I
+```
+
+The analyzer's job ends at `ChurnReport.files[]` — everything to the left is `analyzeChurn`'s logic, everything to the right is dashboard rendering. This section documents the analyzer's side; see [Reading the surfaces](#reading-the-surfaces) for the rendering side.
+
 The runner calls `git log --format=… --numstat --no-merges` for the analyzed branch, parses each commit's changed-file list, and counts how many commits each file appears in. That count becomes `commitCount` in the report and feeds every surface on the page.
 
 A few specifics worth knowing:
