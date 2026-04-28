@@ -82,10 +82,12 @@ The four analyzers in Batch 1 all share the "table is rotated hero" pathology. T
 
 ### `churn`
 
-- **Bottom panel:** Table (directory roll-up). Different unit of analysis from the per-file hero — answers "where in the codebase does churn live?"
+- **Bottom panel:** Table (directory roll-up), **split into two BottomTabs** sharing one component (`Churn` / `Test Files`). Different unit of analysis from the per-file hero — answers "where in the codebase does churn live?" — and isolates source-vs-test churn so neither story drowns out the other.
 - **Columns:** Directory · Commits · Share (% of all repo commits) · Files · Top file.
-- **Aggregation:** Group by each file's immediate parent directory; sort by total commit count desc; show top ~10.
+- **Aggregation:** Group by each file's immediate parent directory; sort by total commit count desc; show top ~10. Same util feeds both tabs with a path-classifier pre-filter.
+- **Test classification:** `apps/web/src/utils/isTestPath.ts` — segments `__tests__/`, `__snapshots__/`, `__fixtures__/`, `tests/`, `cypress/`; basename patterns `.test.`, `.spec.`. Conservative; designed to be liftable to core later as a repo-level `testPaths` config that other analyzers (test-coverage, age-map, complexity-trend, blast-radius) can share.
 - **Why not narrative-KPI:** the metrics strip already shows `Top File Commits` and `Top File Share` — a narrative-KPI would be a third copy of the same number. Inspector already shows per-file detail (LOC, authors, age, category). The per-directory lens is the only one missing from the screen.
+- **Why split tabs not filter:** test-heavy repos (React's `__tests__/fixtures/compiler` at 24% / 984 files) drown out the source story when conflated. Splitting preserves both signals without forcing a global filter decision.
 - **See also:** Hotspots, Cursed Files. Sticky to the bottom of the panel.
 - **Backend changes:** None — derived from `report.churn.files[]` in the frontend.
 - **Removes:** ChurnTab's per-file SortableTable + cross-analyzer join (loc + bus factor + age map, ~90 lines). All redundant with the Inspector.
