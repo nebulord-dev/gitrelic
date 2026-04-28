@@ -26,6 +26,9 @@ describe('KnowledgeSilosTab', () => {
     expect(screen.getByText('Concentration Index')).toBeTruthy();
     expect(screen.getByText('Bus Factor')).toBeTruthy();
     expect(screen.getByText('Ghost Files')).toBeTruthy();
+    expect(
+      screen.getByText('of 2792 files have a single dominant author (80%+ commits)'),
+    ).toBeTruthy();
   });
 
   it('routes Bus Factor click to onApplyPreset("bus-factor")', () => {
