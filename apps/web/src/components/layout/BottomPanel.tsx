@@ -34,7 +34,7 @@ interface BottomPanelProps {
   onTabChange: (tab: BottomTab) => void;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
-  onApplyPreset?: (id: PresetId) => void;
+  onApplyPreset: (id: PresetId) => void;
   // When true, fill the available vertical space instead of a fixed height.
   // Used in fullscreen-table layout mode where the hero is hidden.
   fillAvailable?: boolean;
@@ -77,7 +77,7 @@ function TabContent({
   report: GitrelicReport;
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
-  onApplyPreset?: (id: PresetId) => void;
+  onApplyPreset: (id: PresetId) => void;
 }) {
   switch (tab) {
     case 'hotspots':
