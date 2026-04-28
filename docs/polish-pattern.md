@@ -78,17 +78,17 @@ Every analyzer's report already produces:
 
 ## Mapped so far (Batch 1)
 
-The four analyzers in Batch 1 all share the "table is rotated hero" pathology. All four get narrative-KPI bottom panels.
+The four analyzers in Batch 1 all share the "table is rotated hero" pathology. Three of them (`forensics`, `blast-radius`, `rewrite-ratio`) get narrative-KPI bottom panels. **`churn`** moved to a directory roll-up table after evaluating against the rendered Churn page — its candidate narrative-KPI numbers (`Top File Commits`, `Top File Share`) are already shown in the metrics strip, leaving the directory lens as the only churn-specific story the screen doesn't already tell.
 
 ### `churn`
 
-- **Bottom panel:** Narrative-KPI.
-- **Big number:** Top file's % of all commits (already in `summary`).
-- **Sub-content:** Category-count breakdown (`98 hot · 442 warm · 1,253 cold · 999 frozen` — derived from existing `category` field).
-- **Optional secondary visual:** Horizontal stacked bar showing the four category counts as proportions. Cheap, tells the distribution story the hero hides.
-- **See also:** Hotspots, Cursed Files.
-- **Backend changes:** None.
-- **Removes:** ChurnTab's cross-analyzer table-building (loc + bus factor + age map join, ~90 lines). All of it is in the Inspector already.
+- **Bottom panel:** Table (directory roll-up). Different unit of analysis from the per-file hero — answers "where in the codebase does churn live?"
+- **Columns:** Directory · Commits · Share (% of all repo commits) · Files · Top file.
+- **Aggregation:** Group by each file's immediate parent directory; sort by total commit count desc; show top ~10.
+- **Why not narrative-KPI:** the metrics strip already shows `Top File Commits` and `Top File Share` — a narrative-KPI would be a third copy of the same number. Inspector already shows per-file detail (LOC, authors, age, category). The per-directory lens is the only one missing from the screen.
+- **See also:** Hotspots, Cursed Files. Sticky to the bottom of the panel.
+- **Backend changes:** None — derived from `report.churn.files[]` in the frontend.
+- **Removes:** ChurnTab's per-file SortableTable + cross-analyzer join (loc + bus factor + age map, ~90 lines). All redundant with the Inspector.
 
 ### `forensics` (Shame tab)
 
