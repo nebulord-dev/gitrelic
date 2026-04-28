@@ -1,3 +1,10 @@
+# [0.25.0](https://github.com/nebulord-dev/gitrelic/compare/v0.24.0...v0.25.0) (2026-04-28)
+
+
+### Features
+
+* **web:** lift narrative-KPI into shared component (RELIC-332) ([#51](https://github.com/nebulord-dev/gitrelic/issues/51)) ([edbb087](https://github.com/nebulord-dev/gitrelic/commit/edbb087aef5c38ceb7c8629b575015e130fa4953))
+
 # [0.24.0](https://github.com/nebulord-dev/gitrelic/compare/v0.23.0...v0.24.0) (2026-04-27)
 
 
