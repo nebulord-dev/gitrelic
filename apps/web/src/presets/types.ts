@@ -40,6 +40,7 @@ export type HeroViz =
 export type BottomTab =
   | 'hotspots'
   | 'churn'
+  | 'churn-tests'
   | 'cursed-files'
   | 'bus-factor'
   | 'coupling'

@@ -172,7 +172,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     },
     bottomPanel: {
       defaultTab: 'churn',
-      altTabs: ['churn'],
+      altTabs: ['churn', 'churn-tests'],
     },
     metrics: churnMetrics,
   },

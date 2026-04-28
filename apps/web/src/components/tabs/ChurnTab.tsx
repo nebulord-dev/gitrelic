@@ -1,15 +1,19 @@
 import { type CSSProperties, useMemo } from 'react';
 
 import { aggregateChurnByDirectory, type DirectoryChurnRow } from '../../utils/churnByDirectory';
+import { isTestPath } from '../../utils/isTestPath';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fmt } from '../theme';
 
 import type { PresetId } from '../../presets/types';
 import type { GitrelicReport } from '@gitrelic/core';
 
+export type ChurnTabMode = 'source' | 'tests';
+
 interface ChurnTabProps {
   report: GitrelicReport;
   onApplyPreset: (id: PresetId) => void;
+  mode: ChurnTabMode;
 }
 
 const linkStyle: CSSProperties = {
@@ -28,15 +32,31 @@ const numericCellStyle: CSSProperties = {
   color: 'var(--text-secondary)',
 };
 
+const emptyStateStyle: CSSProperties = {
+  padding: '24px 12px',
+  fontSize: 11,
+  color: 'var(--text-tertiary)',
+  textAlign: 'center',
+};
+
 function formatShare(share: number): string {
   return `${(share * 100).toFixed(1)}%`;
 }
 
-export function ChurnTab({ report, onApplyPreset }: ChurnTabProps) {
-  const rows = useMemo(
-    () => aggregateChurnByDirectory(report.churn?.files ?? []),
-    [report.churn?.files],
-  );
+function emptyStateCopy(mode: ChurnTabMode): string {
+  return mode === 'tests'
+    ? 'No test files detected in the analysis window. Looking for __tests__/, __snapshots__/, __fixtures__/, tests/, cypress/ paths and .test./.spec. basenames.'
+    : 'No source files detected in the analysis window.';
+}
+
+export function ChurnTab({ report, onApplyPreset, mode }: ChurnTabProps) {
+  const rows = useMemo(() => {
+    const files = report.churn?.files ?? [];
+    const filtered = files.filter((f) =>
+      mode === 'tests' ? isTestPath(f.file) : !isTestPath(f.file),
+    );
+    return aggregateChurnByDirectory(filtered);
+  }, [report.churn?.files, mode]);
 
   const columns: Column<DirectoryChurnRow>[] = [
     {
@@ -86,7 +106,11 @@ export function ChurnTab({ report, onApplyPreset }: ChurnTabProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
       <div style={{ flex: 1 }}>
-        <SortableTable data={rows} columns={columns} rowKey={(r) => r.directory} />
+        {rows.length === 0 ? (
+          <div style={emptyStateStyle}>{emptyStateCopy(mode)}</div>
+        ) : (
+          <SortableTable data={rows} columns={columns} rowKey={(r) => r.directory} />
+        )}
       </div>
       <div
         style={{
