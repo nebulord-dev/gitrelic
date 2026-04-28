@@ -48,7 +48,7 @@ Default to **narrative-KPI** when in doubt. The hero shows the ranked list; the 
 
 ## The narrative-KPI pattern
 
-Reference implementation: `apps/web/src/components/tabs/KnowledgeSilosTab.tsx` (~60 lines, prop-driven, no SortableTable).
+Reference implementation: `apps/web/src/components/shared/NarrativeKPI.tsx` (the shared layout). Reference consumer: `apps/web/src/components/tabs/KnowledgeSilosTab.tsx`.
 
 Anatomy:
 
