@@ -117,20 +117,7 @@ describe('ChurnTreemap render', () => {
     } as unknown as GitrelicReport;
   }
 
-  it('renders an SVG when sizeBy="commits"', () => {
-    const { container } = render(
-      <ChurnTreemap
-        report={makeRenderableReport()}
-        selectedFile={null}
-        onSelectFile={() => {}}
-        sizeBy="commits"
-        legend="churn"
-      />,
-    );
-    expect(container.querySelector('svg')).toBeTruthy();
-  });
-
-  it('renders an SVG with the default sizeBy="loc" too (back-compat)', () => {
+  it('renders an SVG with the default size=loc encoding', () => {
     const { container } = render(
       <ChurnTreemap report={makeRenderableReport()} selectedFile={null} onSelectFile={() => {}} />,
     );
