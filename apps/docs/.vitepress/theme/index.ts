@@ -15,6 +15,10 @@ const OVERLAY_CLASS = 'gr-zoom-overlay';
 function openOverlay(source: Element) {
   const overlay = document.createElement('div');
   overlay.className = OVERLAY_CLASS;
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', 'Zoomed view — click anywhere or press Escape to close');
+  overlay.tabIndex = -1;
 
   const clone = source.cloneNode(true) as HTMLElement;
   // Strip mermaid's inline sizing — its SVG ships with width="100%" which
@@ -39,6 +43,7 @@ function openOverlay(source: Element) {
   overlay.addEventListener('click', close);
   document.addEventListener('keydown', onKey);
   document.body.appendChild(overlay);
+  overlay.focus();
 }
 
 function bindZoom() {
