@@ -43,6 +43,7 @@ interface BottomPanelProps {
 const TAB_LABELS: Record<BottomTab, string> = {
   hotspots: 'Hotspots',
   churn: 'Churn',
+  'churn-tests': 'Test Files',
   'cursed-files': 'Cursed Files',
   'bus-factor': 'Bus Factor',
   coupling: 'Coupling',
@@ -85,14 +86,9 @@ function TabContent({
         <HotspotsTab report={report} selectedFile={selectedFile} onSelectFile={onSelectFile} />
       );
     case 'churn':
-      return (
-        <ChurnTab
-          report={report}
-          selectedFile={selectedFile}
-          onSelectFile={onSelectFile}
-          onApplyPreset={onApplyPreset}
-        />
-      );
+      return <ChurnTab report={report} onApplyPreset={onApplyPreset} mode="source" />;
+    case 'churn-tests':
+      return <ChurnTab report={report} onApplyPreset={onApplyPreset} mode="tests" />;
     case 'cursed-files':
       return <CursedFilesTab report={report} onSelectFile={onSelectFile} />;
     case 'bus-factor':

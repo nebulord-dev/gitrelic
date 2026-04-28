@@ -168,11 +168,11 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     heroLabel: 'Churn — file commit frequency',
     hero: {
       defaultViz: 'churn-bar',
-      altTabs: ['churn-bar', 'treemap-bycommits'],
+      altTabs: ['churn-bar'],
     },
     bottomPanel: {
       defaultTab: 'churn',
-      altTabs: ['churn'],
+      altTabs: ['churn', 'churn-tests'],
     },
     metrics: churnMetrics,
   },

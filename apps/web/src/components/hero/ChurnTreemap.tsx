@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { hierarchy, treemap, treemapSquarify } from 'd3-hierarchy';
 
 import { categoryColor } from '../../utils/colors';
-import { ChurnLegend } from '../shared/ChurnLegend';
 
 import type { AgeStatus, GitrelicReport } from '@gitrelic/core';
 import type { HierarchyRectangularNode } from 'd3-hierarchy';
@@ -66,8 +65,6 @@ interface ChurnTreemapProps {
   selectedFile: string | null;
   onSelectFile: (file: string) => void;
   colorBy?: TreemapColorBy;
-  sizeBy?: 'loc' | 'commits';
-  legend?: 'churn';
 }
 
 interface TreeNode {
@@ -79,20 +76,15 @@ interface TreeNode {
   children?: TreeNode[];
 }
 
-function buildTree(report: GitrelicReport, sizeBy: 'loc' | 'commits'): TreeNode {
+function buildTree(report: GitrelicReport): TreeNode {
   const root: TreeNode = { name: 'root', children: [] };
   const dirMap = new Map<string, TreeNode>();
 
-  // Index churn data for commit-count sizing.
-  const churnByFile = new Map(report.churn.files.map((f) => [f.file, f.commitCount]));
-
-  // Only include files that appear in LOC data (the structural canon).
   const fileSet = new Map<string, { value: number; score: number; category: string }>();
   for (const f of report.loc.files) {
     const hotspot = report.hotspots.files.find((h) => h.file === f.file);
-    const sizeValue = sizeBy === 'commits' ? (churnByFile.get(f.file) ?? 0) : f.lines;
     fileSet.set(f.file, {
-      value: Math.max(sizeValue, 1),
+      value: Math.max(f.lines, 1),
       score: hotspot?.hotspotScore ?? 0,
       category: hotspot?.category ?? 'low',
     });
@@ -129,8 +121,6 @@ export function ChurnTreemap({
   selectedFile,
   onSelectFile,
   colorBy = 'churn',
-  sizeBy = 'loc',
-  legend,
 }: ChurnTreemapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
@@ -146,7 +136,7 @@ export function ChurnTreemap({
   }, []);
 
   const leaves = useMemo(() => {
-    const tree = buildTree(report, sizeBy);
+    const tree = buildTree(report);
     const root = hierarchy(tree)
       .sum((d) => d.value ?? 0)
       .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
@@ -157,7 +147,7 @@ export function ChurnTreemap({
       .tile(treemapSquarify);
 
     return layout(root).leaves() as HierarchyRectangularNode<TreeNode>[];
-  }, [report, dims.width, dims.height, sizeBy]);
+  }, [report, dims.width, dims.height]);
 
   const ageIndex = useMemo(() => {
     const m = new Map<string, AgeStatus>();
@@ -232,7 +222,6 @@ export function ChurnTreemap({
           );
         })}
       </svg>
-      {legend === 'churn' && <ChurnLegend />}
     </div>
   );
 }

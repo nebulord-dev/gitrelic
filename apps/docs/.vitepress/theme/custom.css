@@ -39,3 +39,47 @@ h6,
   filter: blur(44px);
   opacity: 0.8;
 }
+
+/* Click-to-zoom: cursor hint + fullscreen overlay */
+.mermaid,
+.vp-doc img {
+  cursor: zoom-in;
+}
+
+.gr-zoom-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  cursor: zoom-out;
+  animation: gr-zoom-fade 160ms ease-out;
+}
+
+.gr-zoom-overlay > * {
+  max-width: 95vw;
+  max-height: 95vh;
+}
+
+.gr-zoom-overlay .mermaid svg,
+.gr-zoom-overlay img {
+  width: auto;
+  height: auto;
+  max-width: 95vw;
+  max-height: 95vh;
+  background: var(--vp-c-bg);
+  border-radius: 4px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes gr-zoom-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
