@@ -18,9 +18,6 @@ catalogs:
     '@vitest/ui':
       specifier: ^4.1.4
       version: 4.1.4
-    docs:
-      specifier: ^0.3.2-canary.0
-      version: 0.3.2-canary.0
     tsdown:
       specifier: ^0.21.9
       version: 0.21.9
@@ -40,10 +37,6 @@ overrides:
 importers:
 
   .:
-    dependencies:
-      docs:
-        specifier: 'catalog:'
-        version: 0.3.2-canary.0
     devDependencies:
       '@semantic-release/changelog':
         specifier: ^6.0.3
@@ -2598,10 +2591,6 @@ packages:
   dir-glob@3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
     engines: {node: '>=8'}
-
-  docs@0.3.2-canary.0:
-    resolution: {integrity: sha512-jkGIXsVKFcs8SXpqJuIPZJvwAuHqNwlatDSFLhMXLQDqsvQp+IK7JAdbdJvrypJrdXUnWJTntur3s4qfh6JQCQ==}
-    hasBin: true
 
   dom-accessibility-api@0.5.16:
     resolution: {integrity: sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg==}
@@ -6637,8 +6626,6 @@ snapshots:
   dir-glob@3.0.1:
     dependencies:
       path-type: 4.0.0
-
-  docs@0.3.2-canary.0: {}
 
   dom-accessibility-api@0.5.16: {}
 
