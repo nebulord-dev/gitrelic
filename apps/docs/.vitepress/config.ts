@@ -8,6 +8,16 @@ export default defineConfig({
   appearance: 'dark',
   lastUpdated: true,
 
+  // Known future analyzer pages cross-linked from existing docs. Drop entries
+  // as their pages land so genuine typos still surface in the build.
+  ignoreDeadLinks: [
+    '/analyzers/hotspots',
+    '/analyzers/cursed-files',
+    '/analyzers/churn-velocity',
+    '/analyzers/rename-tracking',
+    '/analyzers/rewrite-ratio',
+  ],
+
   themeConfig: {
     nav: [
       {
@@ -34,7 +44,10 @@ export default defineConfig({
       {
         text: 'Analyzers',
         collapsed: false,
-        items: [{ text: 'Overview', link: '/analyzers/' }],
+        items: [
+          { text: 'Overview', link: '/analyzers/' },
+          { text: 'Churn', link: '/analyzers/churn' },
+        ],
       },
       {
         text: 'Web Dashboard',
