@@ -20,6 +20,8 @@ A few things to keep in mind when doing the implementation work this doc describ
 
 **Pre-1.0 versioning rules apply.** Any commit messages with `feat:` get a minor bump, `feat!:` is reclassified to minor (not major) by `.releaserc.json`. See CLAUDE.md "Releases & Versioning" section. Don't let semantic-release jump to 1.0 by accident.
 
+NOTE FROM DAN: I added a `polish-tasks.md` to `/docs` to go over the things that extend the Linear stories.  Please review it.
+
 ## Why this doc exists
 
 The dashboard ships a single template across all 22 analyzers: `[hero viz on top] + [SortableTable below]`. After polishing Bus Factor and Churn it became clear the table is often nearly redundant with the hero — same columns, same rows, just rotated. This doc maps each analyzer to a deliberate bottom-panel form so polish tickets execute it instead of re-litigating it.
