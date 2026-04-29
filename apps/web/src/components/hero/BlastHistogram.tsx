@@ -128,11 +128,16 @@ export function BlastHistogram({ report }: BlastHistogramProps) {
   }
 
   const yTicks = yScale.ticks(4);
-  const hover = hoverIdx == null ? null : buckets[hoverIdx];
+  const hover = hoverIdx == null ? null : { idx: hoverIdx, bucket: buckets[hoverIdx] };
 
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <svg width={dims.width} height={dims.height}>
+      <svg
+        width={dims.width}
+        height={dims.height}
+        role="img"
+        aria-label={`Blast-score distribution histogram across ${totalFiles} files. ${highBlastCount} ${highBlastCount === 1 ? 'file is' : 'files are'} at or above the high-blast threshold of ${HIGH_BLAST_THRESHOLD}.`}
+      >
         <g transform={`translate(${PADDING.left},${PADDING.top})`}>
           {/* High-blast threshold zone shading */}
           <rect
@@ -159,7 +164,8 @@ export function BlastHistogram({ report }: BlastHistogramProps) {
             fill="var(--severity-critical)"
             fillOpacity={0.8}
           >
-            high blast (≥{HIGH_BLAST_THRESHOLD}) · {highBlastCount} files
+            high blast (≥{HIGH_BLAST_THRESHOLD}) · {highBlastCount}{' '}
+            {highBlastCount === 1 ? 'file' : 'files'}
           </text>
 
           {/* Y axis */}
@@ -263,8 +269,8 @@ export function BlastHistogram({ report }: BlastHistogramProps) {
         <div
           style={{
             position: 'absolute',
-            left: PADDING.left + hoverIdx! * (barWidth + BAR_GAP) + barWidth / 2,
-            top: PADDING.top + yScale(hover.count) - 8,
+            left: PADDING.left + hover.idx * (barWidth + BAR_GAP) + barWidth / 2,
+            top: PADDING.top + yScale(hover.bucket.count) - 8,
             transform: 'translate(-50%, -100%)',
             background: 'var(--surface-elevated)',
             border: '1px solid var(--border-primary)',
@@ -278,19 +284,19 @@ export function BlastHistogram({ report }: BlastHistogramProps) {
           }}
         >
           <div style={{ fontWeight: 600 }}>
-            Blast {hover.rangeStart}–{hover.rangeEnd}
+            Blast {hover.bucket.rangeStart}–{hover.bucket.rangeEnd}
           </div>
           <div style={{ color: 'var(--text-secondary)' }}>
-            {hover.count} {hover.count === 1 ? 'file' : 'files'}
+            {hover.bucket.count} {hover.bucket.count === 1 ? 'file' : 'files'}
           </div>
           <div
             style={{
-              color: TIER_COLORS[hover.tier],
+              color: TIER_COLORS[hover.bucket.tier],
               marginTop: 2,
               textTransform: 'capitalize',
             }}
           >
-            {hover.tier}
+            {hover.bucket.tier}
           </div>
         </div>
       )}
