@@ -15,14 +15,30 @@
  *
  * ## Shame score formula
  *
- *   shameScore = min((rawShamePoints / totalCommitsForFile) * 100, 100)
+ *   rawScore   = (rawShamePoints / totalCommitsForFile) * 100
+ *   confidence = min(1, totalCommitsForFile / CONFIDENCE_FLOOR)
+ *   shameScore = min(round(rawScore * confidence), 100)
  *
- * Ratio-based: a file with 1 revert in 2 commits scores higher than
+ * Ratio-based: a file with 1 revert in 2 commits has a higher raw ratio than
  * 1 revert in 100 commits, because the percentage of "bad" commits is higher.
+ *
+ * The confidence multiplier dampens scores for files with very few commits.
+ * Without it, a one-commit YAML whose only message says "fix" would tie at 100
+ * with a long-suffering file that has a sustained pattern of shame. After the
+ * multiplier, that one-commit file scores 20; only files with at least
+ * `CONFIDENCE_FLOOR` commits can reach the full ratio. The floor also gates
+ * the leaderboard — `shameLeaderboard` only contains files that meet it.
  */
 
 import type { FileForensics, ForensicsReport, ShamefulCommit } from '../types.js';
 import type { RawCommit } from '../utils/git.js';
+
+/**
+ * Below this many commits, a file's shame score is dampened proportionally.
+ * Prevents single-commit files (e.g. a YAML whose only commit message says "fix")
+ * from tying at 100 with files that have a sustained pattern of shame.
+ */
+export const CONFIDENCE_FLOOR = 5;
 
 const SHAME_KEYWORDS: Array<{ weight: number; entries: Array<{ word: string; re: RegExp }> }> = [
   {
@@ -112,7 +128,9 @@ export function analyzeForensics(commits: RawCommit[], trackedFiles: string[]): 
 
     if (rawShamePoints === 0) continue;
 
-    const shameScore = Math.min(Math.round((rawShamePoints / fileCommitList.length) * 100), 100);
+    const rawScore = (rawShamePoints / fileCommitList.length) * 100;
+    const confidence = Math.min(1, fileCommitList.length / CONFIDENCE_FLOOR);
+    const shameScore = Math.min(Math.round(rawScore * confidence), 100);
 
     const topShameCommits = [...shamefulCommits]
       .sort((a, b) => b.shamePoints - a.shamePoints)
@@ -134,7 +152,9 @@ export function analyzeForensics(commits: RawCommit[], trackedFiles: string[]): 
   }
 
   files.sort((a, b) => b.shameScore - a.shameScore);
-  const shameLeaderboard = files.slice(0, 10);
+  const shameLeaderboard = files
+    .filter((f) => fileCommits.get(f.file)!.length >= CONFIDENCE_FLOOR)
+    .slice(0, 10);
 
   const summary =
     shameLeaderboard.length === 0
