@@ -17,6 +17,12 @@ interface ShameTrendProps {
 export function ShameTrend({ report }: ShameTrendProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 300 });
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    month: ShameByMonth;
+    total: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -79,7 +85,20 @@ export function ShameTrend({ report }: ShameTrendProps) {
     const baseY = padding.top + chartHeight;
 
     return (
-      <g key={m.month}>
+      <g
+        key={m.month}
+        onMouseEnter={(evt) => {
+          const rect = containerRef.current?.getBoundingClientRect();
+          if (!rect) return;
+          setTooltip({
+            x: evt.clientX - rect.left,
+            y: evt.clientY - rect.top,
+            month: m,
+            total,
+          });
+        }}
+        onMouseLeave={() => setTooltip(null)}
+      >
         <rect
           data-tier="mild"
           x={x}
@@ -107,9 +126,6 @@ export function ShameTrend({ report }: ShameTrendProps) {
           fill={TIER_COLORS.critical}
           opacity={0.95}
         />
-        <title>
-          {m.month}: critical {m.critical} · moderate {m.moderate} · mild {m.mild} · total {total}
-        </title>
       </g>
     );
   };
@@ -146,6 +162,33 @@ export function ShameTrend({ report }: ShameTrendProps) {
             </>
           )}
         </svg>
+        {tooltip && (
+          <div
+            style={{
+              position: 'absolute',
+              left: tooltip.x + 12,
+              top: tooltip.y - 8,
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: 4,
+              padding: '6px 10px',
+              fontSize: 10,
+              color: 'var(--text-primary)',
+              pointerEvents: 'none',
+              zIndex: 20,
+            }}
+          >
+            <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.month.month}</div>
+            <div style={{ color: 'var(--text-secondary)' }}>
+              <span style={{ color: TIER_COLORS.critical }}>critical {tooltip.month.critical}</span>
+              {' · '}
+              <span style={{ color: TIER_COLORS.moderate }}>moderate {tooltip.month.moderate}</span>
+              {' · '}
+              <span style={{ color: TIER_COLORS.mild }}>mild {tooltip.month.mild}</span>
+            </div>
+            <div style={{ color: 'var(--text-tertiary)', marginTop: 2 }}>total {tooltip.total}</div>
+          </div>
+        )}
       </div>
       <HeroCaption
         primary="One bar per month · stack = commit count by tier · color = severity"
