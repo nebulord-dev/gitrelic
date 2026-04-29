@@ -53,6 +53,7 @@ export function NarrativeKPI({
         <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
           <div style={{ textAlign: 'center', minWidth: 120 }}>
             <div
+              data-testid="narrative-kpi-big-number"
               style={{
                 fontSize: 36,
                 fontWeight: 700,

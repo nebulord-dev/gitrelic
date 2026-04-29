@@ -1440,19 +1440,6 @@ exports[`fixture regression > cursed files list is stable 1`] = `
       "2 shame commits detected ("fix" appears repeatedly) — this file keeps breaking",
     ],
   },
-  {
-    "ageDays": 25,
-    "authors": 1,
-    "churn": 4,
-    "curseScore": 51,
-    "file": "src/api.ts",
-    "narrative": "src/api.ts has seen 4 commits from 1 author — worth keeping an eye on.",
-    "reasons": [
-      "Frequently modified (4 commits)",
-      "Single author owns 100% of changes",
-      "Notable pattern of shame commits",
-    ],
-  },
 ]
 `;
 
@@ -1467,6 +1454,26 @@ exports[`fixture regression > dead code report is stable 1`] = `
 
 exports[`fixture regression > forensics report is stable 1`] = `
 {
+  "byMonth": [
+    {
+      "critical": 0,
+      "mild": 1,
+      "moderate": 0,
+      "month": "2026-01",
+    },
+    {
+      "critical": 1,
+      "mild": 0,
+      "moderate": 2,
+      "month": "2026-02",
+    },
+    {
+      "critical": 1,
+      "mild": 1,
+      "moderate": 0,
+      "month": "2026-03",
+    },
+  ],
   "files": [
     {
       "dominantKeywords": [
@@ -1504,28 +1511,6 @@ exports[`fixture regression > forensics report is stable 1`] = `
     {
       "dominantKeywords": [
         "hack",
-        "workaround",
-      ],
-      "file": "src/config.ts",
-      "rawShamePoints": 4,
-      "shameCommitCount": 1,
-      "shameScore": 100,
-      "topShameCommits": [
-        {
-          "date": "2026-02-20T08:30:00Z",
-          "hash": "<SHA>",
-          "keywords": [
-            "hack",
-            "workaround",
-          ],
-          "message": "hack: workaround for empty names",
-          "shamePoints": 4,
-        },
-      ],
-    },
-    {
-      "dominantKeywords": [
-        "hack",
         "hotfix",
         "cleanup",
       ],
@@ -1567,12 +1552,34 @@ exports[`fixture regression > forensics report is stable 1`] = `
     },
     {
       "dominantKeywords": [
+        "hack",
+        "workaround",
+      ],
+      "file": "src/config.ts",
+      "rawShamePoints": 4,
+      "shameCommitCount": 1,
+      "shameScore": 80,
+      "topShameCommits": [
+        {
+          "date": "2026-02-20T08:30:00Z",
+          "hash": "<SHA>",
+          "keywords": [
+            "hack",
+            "workaround",
+          ],
+          "message": "hack: workaround for empty names",
+          "shamePoints": 4,
+        },
+      ],
+    },
+    {
+      "dominantKeywords": [
         "cleanup",
       ],
       "file": "src/api.ts",
       "rawShamePoints": 1,
       "shameCommitCount": 1,
-      "shameScore": 25,
+      "shameScore": 20,
       "topShameCommits": [
         {
           "date": "2026-03-01T10:00:00Z",
@@ -1606,64 +1613,14 @@ exports[`fixture regression > forensics report is stable 1`] = `
       ],
     },
   ],
+  "keywordTiers": {
+    "critical": 2,
+    "mild": 2,
+    "moderate": 2,
+  },
   "shameLeaderboard": [
     {
       "dominantKeywords": [
-        "fix",
-        "workaround",
-        "bug",
-      ],
-      "file": "src/auth.ts",
-      "rawShamePoints": 5,
-      "shameCommitCount": 2,
-      "shameScore": 100,
-      "topShameCommits": [
-        {
-          "date": "2026-02-05T23:15:00Z",
-          "hash": "<SHA>",
-          "keywords": [
-            "workaround",
-            "fix",
-          ],
-          "message": "fix: auth race condition workaround",
-          "shamePoints": 3,
-        },
-        {
-          "date": "2026-01-25T20:30:00Z",
-          "hash": "<SHA>",
-          "keywords": [
-            "fix",
-            "bug",
-          ],
-          "message": "fix: auth null token bug",
-          "shamePoints": 2,
-        },
-      ],
-    },
-    {
-      "dominantKeywords": [
-        "hack",
-        "workaround",
-      ],
-      "file": "src/config.ts",
-      "rawShamePoints": 4,
-      "shameCommitCount": 1,
-      "shameScore": 100,
-      "topShameCommits": [
-        {
-          "date": "2026-02-20T08:30:00Z",
-          "hash": "<SHA>",
-          "keywords": [
-            "hack",
-            "workaround",
-          ],
-          "message": "hack: workaround for empty names",
-          "shamePoints": 4,
-        },
-      ],
-    },
-    {
-      "dominantKeywords": [
         "hack",
         "hotfix",
         "cleanup",
@@ -1708,26 +1665,6 @@ exports[`fixture regression > forensics report is stable 1`] = `
       "dominantKeywords": [
         "cleanup",
       ],
-      "file": "src/api.ts",
-      "rawShamePoints": 1,
-      "shameCommitCount": 1,
-      "shameScore": 25,
-      "topShameCommits": [
-        {
-          "date": "2026-03-01T10:00:00Z",
-          "hash": "<SHA>",
-          "keywords": [
-            "cleanup",
-          ],
-          "message": "refactor: cross-module cleanup",
-          "shamePoints": 1,
-        },
-      ],
-    },
-    {
-      "dominantKeywords": [
-        "cleanup",
-      ],
       "file": "src/index.ts",
       "rawShamePoints": 1,
       "shameCommitCount": 1,
@@ -1745,7 +1682,7 @@ exports[`fixture regression > forensics report is stable 1`] = `
       ],
     },
   ],
-  "summary": "src/auth.ts has the highest shame score (100/100) with 2 flagged commits.",
+  "summary": "src/helpers.ts has the highest shame score (100/100) with 4 flagged commits.",
   "totalShameCommits": 6,
 }
 `;

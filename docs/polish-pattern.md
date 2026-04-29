@@ -2,6 +2,18 @@
 
 > **Scope:** Internal design doc for the Polish Initiative ([Linear project](https://linear.app/nebulord/project/polish-initiative-8fcf94923771)). Read this before polishing any analyzer's tab.
 
+## How to read this doc
+
+**This is a high-level overview, not a binding spec.** Each polish session opens the analyzer in the rendered dashboard against real data (typically the React repo), audits *every* surface — hero(es), metrics strip, big number, narrative-KPI, scoring formula, Inspector overlap, bottom panel, extras slot — and proposes whatever changes make it a *great* analyzer. That can include ignoring or contradicting the per-analyzer recommendation below.
+
+A few sessions have already proven this:
+
+- **Churn (RELIC-303)** flipped from narrative-KPI to a directory-rollup table after we saw the metrics strip already showed the narrative-KPI numbers.
+- **Blast Radius (RELIC-315)** collapsed three heroes into one histogram, added an `extras` slot to `NarrativeKPI` (reversing RELIC-332's "no extras" decision), and rewrote its sub-content based on what fit visually.
+- **Shame** revealed that the per-file score formula itself produces top-of-leaderboard noise on real data, expanding scope from "replace the bottom table" to "rethink the hero, the formula, and the KPI."
+
+**The mapping below is a starting heuristic.** When you discover the right design is different, build the right design — and update this doc *first*, then the ticket.
+
 ## Notes for Claude Code
 
 A few things to keep in mind when doing the implementation work this doc describes:
@@ -99,10 +111,20 @@ The four analyzers in Batch 1 all share the "table is rotated hero" pathology. T
 ### `forensics` (Shame tab)
 
 - **Bottom panel:** Narrative-KPI.
-- **Big number:** Top file's shame score (out of 100).
-- **Sub-content:** Keyword tier breakdown — `442 shameful commits across 1,063 files: X critical (revert/hotfix/oops), Y moderate (hack/workaround), Z mild (fix/bug)`. The tier system is unique to this analyzer; surfacing it is the *interesting* angle.
-- **See also:** Cursed Files, Bus Factor.
-- **Backend changes:** Add `keywordTiers: { critical: number; moderate: number; mild: number }` aggregate to `ForensicsReport`. ~10 lines in `forensics.ts`.
+- **Big number:** Files with `shameScore ≥ 70` (post-formula-fix). Tier badge thresholds **0 = Healthy · 1–9 = Moderate · 10+ = High Shame** — mirrors blast-radius's absolute-count thresholding so the headline is comparable across analyzers.
+- **Sub-content:** `N` shame commits — **X** critical (revert/hotfix/oops) · **Y** moderate (hack/workaround) · **Z** mild (fix/bug). The tier weighting is unique to this analyzer; the subline carries it. Sub-line beneath: total file count after the min-commit-confidence floor.
+- **Extras (`NarrativeKPI.extras` slot):** "Where they live" — top-5 directory rollup of the high-shame (`≥70`) files (same shape as blast-radius). Each row: parent directory · proportional bar · file count · share %. New aggregator at `apps/web/src/utils/shameByDirectory.ts`.
+- **Hero:** **Two tabs** sharing one component — `Trend` (default) + `Leaderboard` (alt). Forensic look at the existing leaderboard against React data revealed every entry tied at score 100, because the score formula `(rawShamePoints / totalCommits) × 100` sets a single-commit YAML with one "fix" keyword to 100. Polish therefore expanded scope to include a formula fix and an alternative hero.
+  - **Trend (default):** stacked-bar by month, three layers per bar (critical · moderate · mild commit counts), tier-colored. Answers the temporal question — *is shame trending up, and is the severity mix shifting toward worse tiers?* — that nothing else on the screen surfaces.
+  - **Leaderboard (alt):** revised version of the existing horizontal bar leaderboard, filtered to files passing the confidence floor, with bar color encoding the file's dominant keyword tier (red/orange/yellow). Answers *which files actually carry sustained shame?*
+- **Hero captions:** wired into both Shame heroes via the existing shared `<HeroCaption>` (already used by `ChurnBar` / `OwnershipBar`). Backport: same caption strip is **also added to `BlastHistogram`** in this PR — it shipped without one in RELIC-315 and the missing caption is a regression against the Churn/Bus Factor pattern.
+- **See also:** Cursed Files, Bus Factor. Sticky to the bottom of the panel.
+- **Backend changes:**
+  - Add `keywordTiers: { critical: number; moderate: number; mild: number }` aggregate to `ForensicsReport` (commit-level counts).
+  - Add `byMonth: Array<{ month: string; critical: number; moderate: number; mild: number }>` aggregate to `ForensicsReport` for the Trend hero.
+  - **Score formula fix:** confidence multiplier — `shameScore = round(rawScore × min(1, totalCommits / 5))`. Sub-floor files get scaled down proportionally (1-commit YAML drops from 100 to 20) instead of zeroed out. Cursed-files' existing 75/50/25 thresholds keep meaning the same thing.
+- **Downstream effects:** `fixture-regression.test.ts.snap` regenerates (~10 score updates); `cursed-files.test.ts` may need expectation tweaks if any test fixture has <5 commits.
+- **Removes:** ShameTab's per-file SortableTable (~95 lines). Inspector + leaderboard-hero already cover per-file detail.
 
 ### `blast-radius` *(shipped — RELIC-315)*
 

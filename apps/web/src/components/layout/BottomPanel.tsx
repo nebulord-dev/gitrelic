@@ -100,7 +100,7 @@ function TabContent({
     case 'parallel-dev':
       return <ParallelDevTab report={report} onSelectFile={onSelectFile} />;
     case 'shame':
-      return <ShameTab report={report} onSelectFile={onSelectFile} />;
+      return <ShameTab report={report} onApplyPreset={onApplyPreset} />;
     case 'age-map':
       return <AgeMapTab report={report} onSelectFile={onSelectFile} />;
     case 'dead-code':

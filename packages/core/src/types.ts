@@ -158,10 +158,19 @@ export interface FileForensics {
   dominantKeywords: string[]; // most frequent shame keywords for this file
 }
 
+export interface ShameByMonth {
+  month: string; // ISO YYYY-MM (e.g. "2026-04")
+  critical: number;
+  moderate: number;
+  mild: number;
+}
+
 export interface ForensicsReport {
   files: FileForensics[];
   shameLeaderboard: FileForensics[]; // top 10 most shameful files
   totalShameCommits: number;
+  keywordTiers: { critical: number; moderate: number; mild: number };
+  byMonth: ShameByMonth[];
   summary: string;
 }
 

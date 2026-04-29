@@ -1,6 +1,12 @@
+import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { HIGH_BLAST_THRESHOLD, blastTierFor, prepareBlastHistogramData } from './BlastHistogram';
+import {
+  BlastHistogram,
+  HIGH_BLAST_THRESHOLD,
+  blastTierFor,
+  prepareBlastHistogramData,
+} from './BlastHistogram';
 
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -109,5 +115,21 @@ describe('prepareBlastHistogramData', () => {
     expect(maxCount).toBe(0);
     expect(totalFiles).toBe(0);
     expect(highBlastCount).toBe(0);
+  });
+});
+
+describe('BlastHistogram', () => {
+  it('renders the hero caption', () => {
+    const report = makeReport([
+      { file: 'a', blastScore: 10, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
+      { file: 'b', blastScore: 80, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
+    ]);
+    render(<BlastHistogram report={report} />);
+    expect(screen.getByText(/10-bin histogram/)).toBeTruthy();
+  });
+
+  it('renders the hero caption in the empty state', () => {
+    render(<BlastHistogram report={makeReport([])} />);
+    expect(screen.getByText(/10-bin histogram/)).toBeTruthy();
   });
 });

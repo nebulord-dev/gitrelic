@@ -361,9 +361,10 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     tier: 'analyzer',
     label: 'Shame',
     group: 'code-health',
+    heroLabel: 'Shame — commit-message forensics',
     hero: {
-      defaultViz: 'shame-leaderboard',
-      altTabs: ['shame-leaderboard'],
+      defaultViz: 'shame-trend',
+      altTabs: ['shame-trend', 'shame-leaderboard'],
     },
     bottomPanel: {
       defaultTab: 'shame',

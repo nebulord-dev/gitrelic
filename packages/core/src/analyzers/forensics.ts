@@ -15,14 +15,30 @@
  *
  * ## Shame score formula
  *
- *   shameScore = min((rawShamePoints / totalCommitsForFile) * 100, 100)
+ *   rawScore   = (rawShamePoints / totalCommitsForFile) * 100
+ *   confidence = min(1, totalCommitsForFile / CONFIDENCE_FLOOR)
+ *   shameScore = min(round(rawScore * confidence), 100)
  *
- * Ratio-based: a file with 1 revert in 2 commits scores higher than
+ * Ratio-based: a file with 1 revert in 2 commits has a higher raw ratio than
  * 1 revert in 100 commits, because the percentage of "bad" commits is higher.
+ *
+ * The confidence multiplier dampens scores for files with very few commits.
+ * Without it, a one-commit YAML whose only message says "fix" would tie at 100
+ * with a long-suffering file that has a sustained pattern of shame. After the
+ * multiplier, that one-commit file scores 20; only files with at least
+ * `CONFIDENCE_FLOOR` commits can reach the full ratio. The floor also gates
+ * the leaderboard — `shameLeaderboard` only contains files that meet it.
  */
 
-import type { FileForensics, ForensicsReport, ShamefulCommit } from '../types.js';
+import type { FileForensics, ForensicsReport, ShameByMonth, ShamefulCommit } from '../types.js';
 import type { RawCommit } from '../utils/git.js';
+
+/**
+ * Below this many commits, a file's shame score is dampened proportionally.
+ * Prevents single-commit files (e.g. a YAML whose only commit message says "fix")
+ * from tying at 100 with files that have a sustained pattern of shame.
+ */
+export const CONFIDENCE_FLOOR = 5;
 
 const SHAME_KEYWORDS: Array<{ weight: number; entries: Array<{ word: string; re: RegExp }> }> = [
   {
@@ -47,6 +63,17 @@ const SHAME_KEYWORDS: Array<{ weight: number; entries: Array<{ word: string; re:
     })),
   },
 ];
+
+type ShameTier = 'critical' | 'moderate' | 'mild';
+const TIER_BY_WEIGHT: Record<number, ShameTier> = { 3: 'critical', 2: 'moderate', 1: 'mild' };
+
+function tierForCommit(message: string): ShameTier | null {
+  const lower = message.toLowerCase();
+  for (const { weight, entries } of SHAME_KEYWORDS) {
+    if (entries.some(({ re }) => re.test(lower))) return TIER_BY_WEIGHT[weight];
+  }
+  return null;
+}
 
 function scoreMessage(message: string): { points: number; keywords: string[] } {
   const lower = message.toLowerCase();
@@ -112,7 +139,9 @@ export function analyzeForensics(commits: RawCommit[], trackedFiles: string[]): 
 
     if (rawShamePoints === 0) continue;
 
-    const shameScore = Math.min(Math.round((rawShamePoints / fileCommitList.length) * 100), 100);
+    const rawScore = (rawShamePoints / fileCommitList.length) * 100;
+    const confidence = Math.min(1, fileCommitList.length / CONFIDENCE_FLOOR);
+    const shameScore = Math.min(Math.round(rawScore * confidence), 100);
 
     const topShameCommits = [...shamefulCommits]
       .sort((a, b) => b.shamePoints - a.shamePoints)
@@ -134,12 +163,59 @@ export function analyzeForensics(commits: RawCommit[], trackedFiles: string[]): 
   }
 
   files.sort((a, b) => b.shameScore - a.shameScore);
-  const shameLeaderboard = files.slice(0, 10);
+  const shameLeaderboard = files
+    .filter((f) => fileCommits.get(f.file)!.length >= CONFIDENCE_FLOOR)
+    .slice(0, 10);
+
+  const keywordTiers = { critical: 0, moderate: 0, mild: 0 };
+  const monthBuckets = new Map<string, { critical: number; moderate: number; mild: number }>();
+  const seenForAggregates = new Set<string>();
+  for (const commit of commits) {
+    if (seenForAggregates.has(commit.hash) || !allShameHashes.has(commit.hash)) continue;
+    seenForAggregates.add(commit.hash);
+    // Defensive — `allShameHashes` is built from `scoreMessage`, which scans the same
+    // keyword sets as `tierForCommit`, so `tier` should never be null here.
+    const tier = tierForCommit(commit.message);
+    if (tier === null) continue;
+    keywordTiers[tier]++;
+    const month = commit.date.slice(0, 7);
+    const bucket = monthBuckets.get(month) ?? { critical: 0, moderate: 0, mild: 0 };
+    bucket[tier]++;
+    monthBuckets.set(month, bucket);
+  }
+
+  const byMonth: ShameByMonth[] = [];
+  if (monthBuckets.size > 0) {
+    const sortedKeys = [...monthBuckets.keys()].sort();
+    const [firstYear, firstMonth] = sortedKeys[0].split('-').map(Number);
+    const [lastYear, lastMonth] = sortedKeys[sortedKeys.length - 1].split('-').map(Number);
+    let y = firstYear;
+    let m = firstMonth;
+    while (y < lastYear || (y === lastYear && m <= lastMonth)) {
+      const key = `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}`;
+      const bucket = monthBuckets.get(key) ?? { critical: 0, moderate: 0, mild: 0 };
+      byMonth.push({ month: key, ...bucket });
+      m++;
+      if (m > 12) {
+        m = 1;
+        y++;
+      }
+    }
+  }
 
   const summary =
-    shameLeaderboard.length === 0
-      ? 'No commit message red flags detected.'
-      : `${shameLeaderboard[0].file} has the highest shame score (${shameLeaderboard[0].shameScore}/100) with ${shameLeaderboard[0].shameCommitCount} flagged commits.`;
+    shameLeaderboard.length > 0
+      ? `${shameLeaderboard[0].file} has the highest shame score (${shameLeaderboard[0].shameScore}/100) with ${shameLeaderboard[0].shameCommitCount} flagged commits.`
+      : files.length > 0
+        ? `${files.length} file${files.length === 1 ? '' : 's'} with shame signals detected, but none have ${CONFIDENCE_FLOOR}+ commits for confident ranking.`
+        : 'No commit message red flags detected.';
 
-  return { files, shameLeaderboard, totalShameCommits: allShameHashes.size, summary };
+  return {
+    files,
+    shameLeaderboard,
+    totalShameCommits: allShameHashes.size,
+    keywordTiers,
+    byMonth,
+    summary,
+  };
 }
