@@ -30,7 +30,7 @@
  * the leaderboard — `shameLeaderboard` only contains files that meet it.
  */
 
-import type { FileForensics, ForensicsReport, ShamefulCommit } from '../types.js';
+import type { FileForensics, ForensicsReport, ShameByMonth, ShamefulCommit } from '../types.js';
 import type { RawCommit } from '../utils/git.js';
 
 /**
@@ -176,10 +176,49 @@ export function analyzeForensics(commits: RawCommit[], trackedFiles: string[]): 
     if (tier !== null) keywordTiers[tier]++;
   }
 
+  const monthBuckets = new Map<string, { critical: number; moderate: number; mild: number }>();
+  const seenForBucket = new Set<string>();
+  for (const commit of commits) {
+    if (seenForBucket.has(commit.hash) || !allShameHashes.has(commit.hash)) continue;
+    seenForBucket.add(commit.hash);
+    const tier = tierForCommit(commit.message);
+    if (tier === null) continue;
+    const month = commit.date.slice(0, 7);
+    const bucket = monthBuckets.get(month) ?? { critical: 0, moderate: 0, mild: 0 };
+    bucket[tier]++;
+    monthBuckets.set(month, bucket);
+  }
+
+  const byMonth: ShameByMonth[] = [];
+  if (monthBuckets.size > 0) {
+    const sortedKeys = [...monthBuckets.keys()].sort();
+    const [firstYear, firstMonth] = sortedKeys[0].split('-').map(Number);
+    const [lastYear, lastMonth] = sortedKeys[sortedKeys.length - 1].split('-').map(Number);
+    let y = firstYear;
+    let m = firstMonth;
+    while (y < lastYear || (y === lastYear && m <= lastMonth)) {
+      const key = `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}`;
+      const bucket = monthBuckets.get(key) ?? { critical: 0, moderate: 0, mild: 0 };
+      byMonth.push({ month: key, ...bucket });
+      m++;
+      if (m > 12) {
+        m = 1;
+        y++;
+      }
+    }
+  }
+
   const summary =
     shameLeaderboard.length === 0
       ? 'No commit message red flags detected.'
       : `${shameLeaderboard[0].file} has the highest shame score (${shameLeaderboard[0].shameScore}/100) with ${shameLeaderboard[0].shameCommitCount} flagged commits.`;
 
-  return { files, shameLeaderboard, totalShameCommits: allShameHashes.size, keywordTiers, summary };
+  return {
+    files,
+    shameLeaderboard,
+    totalShameCommits: allShameHashes.size,
+    keywordTiers,
+    byMonth,
+    summary,
+  };
 }

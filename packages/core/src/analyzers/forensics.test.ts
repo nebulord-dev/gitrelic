@@ -214,3 +214,37 @@ describe('keywordTiers aggregate', () => {
     expect(result.keywordTiers).toEqual({ critical: 0, moderate: 0, mild: 0 });
   });
 });
+
+describe('byMonth aggregate', () => {
+  it('buckets shame commits by YYYY-MM with contiguous empty months', () => {
+    const commits = [
+      makeCommit({ hash: 'c1', message: 'revert', files: ['a.ts'], date: '2026-01-15T10:00:00Z' }),
+      makeCommit({ hash: 'c2', message: 'fix', files: ['a.ts'], date: '2026-03-04T10:00:00Z' }),
+    ];
+    const result = analyzeForensics(commits, ['a.ts']);
+    expect(result.byMonth).toEqual([
+      { month: '2026-01', critical: 1, moderate: 0, mild: 0 },
+      { month: '2026-02', critical: 0, moderate: 0, mild: 0 },
+      { month: '2026-03', critical: 0, moderate: 0, mild: 1 },
+    ]);
+  });
+
+  it('returns empty array when no shame commits', () => {
+    const commits = [makeCommit({ message: 'add feature', files: ['a.ts'] })];
+    const result = analyzeForensics(commits, ['a.ts']);
+    expect(result.byMonth).toEqual([]);
+  });
+
+  it('handles December → January year rollover', () => {
+    const commits = [
+      makeCommit({ hash: 'c1', message: 'revert', files: ['a.ts'], date: '2025-12-15T10:00:00Z' }),
+      makeCommit({ hash: 'c2', message: 'fix', files: ['a.ts'], date: '2026-02-04T10:00:00Z' }),
+    ];
+    const result = analyzeForensics(commits, ['a.ts']);
+    expect(result.byMonth).toEqual([
+      { month: '2025-12', critical: 1, moderate: 0, mild: 0 },
+      { month: '2026-01', critical: 0, moderate: 0, mild: 0 },
+      { month: '2026-02', critical: 0, moderate: 0, mild: 1 },
+    ]);
+  });
+});

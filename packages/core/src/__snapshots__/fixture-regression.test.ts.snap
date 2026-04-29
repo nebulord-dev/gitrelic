@@ -1454,6 +1454,26 @@ exports[`fixture regression > dead code report is stable 1`] = `
 
 exports[`fixture regression > forensics report is stable 1`] = `
 {
+  "byMonth": [
+    {
+      "critical": 0,
+      "mild": 1,
+      "moderate": 0,
+      "month": "2026-01",
+    },
+    {
+      "critical": 1,
+      "mild": 0,
+      "moderate": 2,
+      "month": "2026-02",
+    },
+    {
+      "critical": 1,
+      "mild": 1,
+      "moderate": 0,
+      "month": "2026-03",
+    },
+  ],
   "files": [
     {
       "dominantKeywords": [
