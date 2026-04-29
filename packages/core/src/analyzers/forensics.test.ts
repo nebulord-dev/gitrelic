@@ -195,3 +195,22 @@ describe('shameLeaderboard redefinition (floor-passing only)', () => {
     expect(result.shameLeaderboard.map((f) => f.file)).toContain('solid.ts');
   });
 });
+
+describe('keywordTiers aggregate', () => {
+  it('counts unique commits at the highest matched tier', () => {
+    const commits = [
+      makeCommit({ message: 'revert broken refactor', files: ['a.ts'], hash: 'c1' }), // critical
+      makeCommit({ message: 'temporary hack to ship', files: ['a.ts'], hash: 'c2' }), // moderate
+      makeCommit({ message: 'fix typo', files: ['a.ts'], hash: 'c3' }), // mild
+      makeCommit({ message: 'revert and fix', files: ['a.ts'], hash: 'c4' }), // critical (top-tier wins)
+    ];
+    const result = analyzeForensics(commits, ['a.ts']);
+    expect(result.keywordTiers).toEqual({ critical: 2, moderate: 1, mild: 1 });
+  });
+
+  it('returns all-zeros when no shame commits', () => {
+    const commits = [makeCommit({ message: 'add feature', files: ['a.ts'] })];
+    const result = analyzeForensics(commits, ['a.ts']);
+    expect(result.keywordTiers).toEqual({ critical: 0, moderate: 0, mild: 0 });
+  });
+});

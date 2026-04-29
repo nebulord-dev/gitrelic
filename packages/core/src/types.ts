@@ -162,6 +162,7 @@ export interface ForensicsReport {
   files: FileForensics[];
   shameLeaderboard: FileForensics[]; // top 10 most shameful files
   totalShameCommits: number;
+  keywordTiers: { critical: number; moderate: number; mild: number };
   summary: string;
 }
 

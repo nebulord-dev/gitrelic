@@ -1593,6 +1593,11 @@ exports[`fixture regression > forensics report is stable 1`] = `
       ],
     },
   ],
+  "keywordTiers": {
+    "critical": 2,
+    "mild": 2,
+    "moderate": 2,
+  },
   "shameLeaderboard": [
     {
       "dominantKeywords": [

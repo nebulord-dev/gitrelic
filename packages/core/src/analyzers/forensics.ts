@@ -64,6 +64,17 @@ const SHAME_KEYWORDS: Array<{ weight: number; entries: Array<{ word: string; re:
   },
 ];
 
+type ShameTier = 'critical' | 'moderate' | 'mild';
+const TIER_BY_WEIGHT: Record<number, ShameTier> = { 3: 'critical', 2: 'moderate', 1: 'mild' };
+
+function tierForCommit(message: string): ShameTier | null {
+  const lower = message.toLowerCase();
+  for (const { weight, entries } of SHAME_KEYWORDS) {
+    if (entries.some(({ re }) => re.test(lower))) return TIER_BY_WEIGHT[weight];
+  }
+  return null;
+}
+
 function scoreMessage(message: string): { points: number; keywords: string[] } {
   const lower = message.toLowerCase();
   let points = 0;
@@ -156,10 +167,19 @@ export function analyzeForensics(commits: RawCommit[], trackedFiles: string[]): 
     .filter((f) => fileCommits.get(f.file)!.length >= CONFIDENCE_FLOOR)
     .slice(0, 10);
 
+  const keywordTiers = { critical: 0, moderate: 0, mild: 0 };
+  const seenHashes = new Set<string>();
+  for (const commit of commits) {
+    if (seenHashes.has(commit.hash) || !allShameHashes.has(commit.hash)) continue;
+    seenHashes.add(commit.hash);
+    const tier = tierForCommit(commit.message);
+    if (tier !== null) keywordTiers[tier]++;
+  }
+
   const summary =
     shameLeaderboard.length === 0
       ? 'No commit message red flags detected.'
       : `${shameLeaderboard[0].file} has the highest shame score (${shameLeaderboard[0].shameScore}/100) with ${shameLeaderboard[0].shameCommitCount} flagged commits.`;
 
-  return { files, shameLeaderboard, totalShameCommits: allShameHashes.size, summary };
+  return { files, shameLeaderboard, totalShameCommits: allShameHashes.size, keywordTiers, summary };
 }
