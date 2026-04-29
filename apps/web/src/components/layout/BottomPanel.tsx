@@ -112,7 +112,7 @@ function TabContent({
     case 'churn-velocity':
       return <ChurnVelocityTab report={report} onSelectFile={onSelectFile} />;
     case 'blast-radius':
-      return <BlastRadiusTab report={report} onSelectFile={onSelectFile} />;
+      return <BlastRadiusTab report={report} onApplyPreset={onApplyPreset} />;
     case 'ghost-files':
       return <GhostFilesTab report={report} onSelectFile={onSelectFile} />;
     case 'knowledge-silos':

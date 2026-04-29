@@ -1,103 +1,63 @@
-import { type Column, SortableTable } from '../shared/SortableTable';
-import { fileName, filePath, fmt } from '../theme';
+import { NarrativeKPI } from '../shared/NarrativeKPI';
+import { fileName } from '../theme';
 
-import type { FileBlastRadius, GitrelicReport } from '@gitrelic/core';
+import type { PresetId } from '../../presets/types';
+import type { BadgeVariant } from '../theme';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface BlastRadiusTabProps {
   report: GitrelicReport;
-  onSelectFile: (file: string) => void;
+  onApplyPreset: (id: PresetId) => void;
 }
 
-export function BlastRadiusTab({ report, onSelectFile }: BlastRadiusTabProps) {
-  const columns: Column<FileBlastRadius>[] = [
-    {
-      key: 'file',
-      label: 'File',
-      render: (f) => (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-          {fileName(f.file)}
-          <span style={{ color: 'var(--text-tertiary)', marginLeft: 6, fontSize: 10 }}>
-            {filePath(f.file)}
-          </span>
-        </span>
-      ),
-    },
-    {
-      key: 'score',
-      label: 'Score',
-      width: '100px',
-      align: 'right',
-      sortValue: (f) => f.blastScore,
-      render: (f) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
-          <div
-            style={{
-              width: 50,
-              height: 4,
-              background: 'var(--surface-tertiary)',
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                width: `${f.blastScore}%`,
-                height: '100%',
-                borderRadius: 2,
-                background: 'var(--severity-warning)',
-              }}
-            />
-          </div>
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 11,
-              color: 'var(--text-secondary)',
-              width: 24,
-              textAlign: 'right',
-            }}
-          >
-            {f.blastScore}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: 'avg',
-      label: 'Avg Co-change',
-      width: '110px',
-      align: 'right',
-      sortValue: (f) => f.avgCoChangedFiles,
-      render: (f) => (
-        <span
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-        >
-          {f.avgCoChangedFiles.toFixed(1)} files
-        </span>
-      ),
-    },
-    {
-      key: 'peak',
-      label: 'Peak',
-      width: '70px',
-      align: 'right',
-      sortValue: (f) => f.maxCoChangedFiles,
-      render: (f) => (
-        <span
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-        >
-          {fmt(f.maxCoChangedFiles)}
-        </span>
-      ),
-    },
-  ];
+const HIGH_BLAST_THRESHOLD = 70;
+
+function blastTier(highBlast: number): { variant: BadgeVariant; label: string } {
+  if (highBlast === 0) return { variant: 'healthy', label: 'Low Risk' };
+  if (highBlast < 10) return { variant: 'warning', label: 'Moderate Risk' };
+  return { variant: 'critical', label: 'High Risk' };
+}
+
+export function BlastRadiusTab({ report, onApplyPreset }: BlastRadiusTabProps) {
+  const { files, topBlasters, summary } = report.blastRadius;
+  const highBlast = files.filter((f) => f.blastScore >= HIGH_BLAST_THRESHOLD).length;
+  const tier = blastTier(highBlast);
+  const top = topBlasters[0];
 
   return (
-    <SortableTable
-      data={report.blastRadius.files}
-      columns={columns}
-      rowKey={(f) => f.file}
-      onRowClick={(f) => onSelectFile(f.file)}
+    <NarrativeKPI
+      bigNumber={String(highBlast)}
+      tier={tier}
+      metric={`Files ≥${HIGH_BLAST_THRESHOLD} Blast`}
+      finding={
+        top ? (
+          <>
+            Top blast file{' '}
+            <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+              {fileName(top.file)}
+            </span>{' '}
+            co-changes with{' '}
+            <span
+              style={{
+                fontFamily: 'var(--font-mono)',
+                color: 'var(--text-primary)',
+                fontWeight: 600,
+              }}
+            >
+              {top.avgCoChangedFiles.toFixed(1)}
+            </span>{' '}
+            files on average ({top.maxCoChangedFiles} peak)
+          </>
+        ) : (
+          <>No co-change activity in the analyzed window.</>
+        )
+      }
+      subline={summary}
+      seeAlso={[
+        { label: 'Coupling', presetId: 'coupling' },
+        { label: 'Hotspots', presetId: 'hotspots' },
+      ]}
+      onApplyPreset={onApplyPreset}
     />
   );
 }

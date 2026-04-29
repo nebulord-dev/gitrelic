@@ -197,8 +197,8 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     label: 'Blast Radius',
     group: 'code-health',
     hero: {
-      defaultViz: 'blast-scatter',
-      altTabs: ['blast-scatter', 'scatter', 'coupling'],
+      defaultViz: 'blast-histogram',
+      altTabs: ['blast-histogram'],
     },
     bottomPanel: {
       defaultTab: 'blast-radius',

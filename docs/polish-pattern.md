@@ -82,6 +82,8 @@ Every analyzer's report already produces:
 
 The four analyzers in Batch 1 all share the "table is rotated hero" pathology. Three of them (`forensics`, `blast-radius`, `rewrite-ratio`) get narrative-KPI bottom panels. **`churn`** moved to a directory roll-up table after evaluating against the rendered Churn page — its candidate narrative-KPI numbers (`Top File Commits`, `Top File Share`) are already shown in the metrics strip, leaving the directory lens as the only churn-specific story the screen doesn't already tell.
 
+> **Hero scope creep is OK when warranted.** Originally Batch 1 was scoped strictly to bottom-panel work. `blast-radius` widened it: a forensic look at the three hero views found that two were redundant with other analyzers (Scatter ↔ Hotspots, Coupling ↔ Coupling) and the third had a structural diagonal artifact. Replacing all three with a single distribution histogram fell out naturally from the narrative-KPI work. Future polish tickets should ask the same value question per `polish-tasks.md` — *"is each hero pulling its weight?"* — before defaulting to the doc's bottom-panel-only scope.
+
 ### `churn`
 
 - **Bottom panel:** Table (directory roll-up), **split into two BottomTabs** sharing one component (`Churn` / `Test Files`). Different unit of analysis from the per-file hero — answers "where in the codebase does churn live?" — and isolates source-vs-test churn so neither story drowns out the other.
@@ -102,12 +104,13 @@ The four analyzers in Batch 1 all share the "table is rotated hero" pathology. T
 - **See also:** Cursed Files, Bus Factor.
 - **Backend changes:** Add `keywordTiers: { critical: number; moderate: number; mild: number }` aggregate to `ForensicsReport`. ~10 lines in `forensics.ts`.
 
-### `blast-radius`
+### `blast-radius` *(shipped — RELIC-315)*
 
 - **Bottom panel:** Narrative-KPI.
-- **Big number:** Count of high-blast files (already computed as `highBlast`, ≥70 threshold).
-- **Sub-content:** `summary` string + top file's avg co-change count.
-- **Optional secondary visual:** Distribution histogram of blast scores. The hero scatter shows cluster shape; the histogram quantifies it. Skip if budget tight.
+- **Big number:** Count of files with `blastScore` ≥ 70. The analyzer computes this inline in its `summary` string (`packages/core/src/analyzers/blast-radius.ts`) but doesn't expose it on `BlastRadiusReport`; the tab filters `report.blastRadius.files` itself. One-liner, no backend change needed.
+- **Tier thresholds:** 0 = Low Risk, 1–9 = Moderate Risk, 10+ = High Risk. Absolute count (not proportional) — architectural load-bearers are uncommon in any repo size, so absolute thresholds are easier to reason about.
+- **Sub-content:** Top blast file's avg co-change count + peak as the bolded finding; analyzer's `summary` string as the subline.
+- **Hero:** Collapsed from three views (Blast scatter / Scatter / Coupling) down to a **single distribution histogram** of blast scores, 10 bins of width 10, colored by tier of bucket midpoint, with the ≥70 zone shaded and labeled. The original Blast scatter had a structural diagonal (`blastScore = avg / maxAvg × 100` — x and y axes were the same number rescaled); the alt-tab Scatter duplicated Hotspots' churn × LOC; the alt-tab Coupling duplicated the Coupling analyzer's hero. Histogram answers the only question those three didn't: *what's the distribution shape of blast risk in this repo?*
 - **See also:** Coupling, Hotspots.
 - **Backend changes:** None.
 

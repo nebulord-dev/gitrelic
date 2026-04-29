@@ -18,6 +18,7 @@ export default withMermaid(
       '/analyzers/churn-velocity',
       '/analyzers/rename-tracking',
       '/analyzers/rewrite-ratio',
+      '/analyzers/coupling',
     ],
 
     themeConfig: {
@@ -48,6 +49,7 @@ export default withMermaid(
           collapsed: false,
           items: [
             { text: 'Overview', link: '/analyzers/' },
+            { text: 'Blast Radius', link: '/analyzers/blast-radius' },
             { text: 'Churn', link: '/analyzers/churn' },
           ],
         },
