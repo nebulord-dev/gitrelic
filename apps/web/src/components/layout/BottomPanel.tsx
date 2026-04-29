@@ -240,8 +240,11 @@ export function BottomPanel({
         ))}
       </div>
 
-      {/* Tab content */}
-      <div style={{ flex: 1, overflow: 'auto', padding: '8px 16px' }}>
+      {/* Tab content. Bottom padding is intentionally 0 so sticky "See also"
+          footers (NarrativeKPI's, ChurnTab's) sit flush against the panel
+          edge. SortableTable rows have their own border-bottom, so non-footer
+          tabs still terminate cleanly. */}
+      <div style={{ flex: 1, overflow: 'auto', padding: '8px 16px 0' }}>
         <TabContent
           tab={activeTab}
           report={report}
