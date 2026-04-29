@@ -82,7 +82,8 @@ export function ShameTab({ report, onApplyPreset }: ShameTabProps) {
       subline={
         totalShameCommits > 0 ? (
           <>
-            <strong>{totalShameCommits.toLocaleString()}</strong> shame commits ·{' '}
+            <strong>{totalShameCommits.toLocaleString()}</strong> shame{' '}
+            {totalShameCommits === 1 ? 'commit' : 'commits'} ·{' '}
             <strong style={{ color: 'var(--severity-critical)' }}>{keywordTiers.critical}</strong>{' '}
             critical (revert/hotfix/oops) ·{' '}
             <strong style={{ color: 'var(--severity-warning)' }}>{keywordTiers.moderate}</strong>{' '}
@@ -90,7 +91,8 @@ export function ShameTab({ report, onApplyPreset }: ShameTabProps) {
             <strong style={{ color: '#9b8b3e' }}>{keywordTiers.mild}</strong> mild (fix/bug)
             <div style={{ marginTop: 4, fontSize: 11, color: 'var(--text-tertiary)' }}>
               Across <strong style={{ color: 'var(--text-secondary)' }}>{files.length}</strong>{' '}
-              files (after min-commit-confidence floor of {CONFIDENCE_FLOOR}).
+              {files.length === 1 ? 'file' : 'files'} (after min-commit-confidence floor of{' '}
+              {CONFIDENCE_FLOOR}).
             </div>
           </>
         ) : null

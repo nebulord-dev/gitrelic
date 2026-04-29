@@ -125,7 +125,12 @@ export function ShameLeaderboard({ report, selectedFile, onSelectFile }: ShameLe
       style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
     >
       <div style={{ flex: 1, position: 'relative' }}>
-        <svg width={dims.width} height={svgHeight}>
+        <svg
+          width={dims.width}
+          height={svgHeight}
+          role="img"
+          aria-label={`Shame leaderboard. ${entries.length} ${entries.length === 1 ? 'file' : 'files'} ranked by severity-weighted shame score, filtered to files with at least ${CONFIDENCE_FLOOR} commits.`}
+        >
           {entries.map((e, i) => {
             const y = topPad + i * rowHeight;
             const barWidth = Math.max(2, (e.score / 100) * available);

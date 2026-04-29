@@ -74,6 +74,7 @@ export function ShameTrend({ report }: ShameTrendProps) {
   const barWidth = Math.max(8, (chartWidth - barGap * (months.length - 1)) / months.length);
 
   const maxTotal = Math.max(1, ...months.map((m) => m.critical + m.moderate + m.mild));
+  const totalAcrossMonths = months.reduce((s, m) => s + m.critical + m.moderate + m.mild, 0);
 
   const barFor = (m: ShameByMonth, i: number) => {
     const x = padding.left + i * (barWidth + barGap);
@@ -136,7 +137,12 @@ export function ShameTrend({ report }: ShameTrendProps) {
       style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
     >
       <div style={{ flex: 1, position: 'relative' }}>
-        <svg width={dims.width} height={dims.height - 56}>
+        <svg
+          width={dims.width}
+          height={dims.height - 56}
+          role="img"
+          aria-label={`Shame commit trend by month. ${months.length} ${months.length === 1 ? 'month' : 'months'} from ${months[0].month} to ${months[months.length - 1].month}. ${totalAcrossMonths} total shame ${totalAcrossMonths === 1 ? 'commit' : 'commits'}.`}
+        >
           {months.map(barFor)}
           {months.length > 0 && (
             <>
