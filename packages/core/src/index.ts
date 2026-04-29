@@ -20,6 +20,7 @@ export type {
   RepoMeta,
   ForensicsReport,
   FileForensics,
+  ShameByMonth,
   ShamefulCommit,
   ParallelDevReport,
   FileParallelDev,
