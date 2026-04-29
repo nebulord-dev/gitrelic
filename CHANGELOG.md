@@ -1,3 +1,10 @@
+# [0.28.0](https://github.com/nebulord-dev/gitrelic/compare/v0.27.0...v0.28.0) (2026-04-29)
+
+
+### Features
+
+* **web:** shame polish — trend hero + KPI panel ([#55](https://github.com/nebulord-dev/gitrelic/issues/55)) ([36ee21b](https://github.com/nebulord-dev/gitrelic/commit/36ee21b6f7364c5be73b3b15c7350329390b15f6)), closes [hi#shame](https://github.com/hi/issues/shame) [hi#shame](https://github.com/hi/issues/shame)
+
 # [0.27.0](https://github.com/nebulord-dev/gitrelic/compare/v0.26.1...v0.27.0) (2026-04-29)
 
 
