@@ -19,6 +19,8 @@ export default withMermaid(
       '/analyzers/rename-tracking',
       '/analyzers/rewrite-ratio',
       '/analyzers/coupling',
+      '/analyzers/bus-factor',
+      '/analyzers/commit-timing',
     ],
 
     themeConfig: {
@@ -51,6 +53,7 @@ export default withMermaid(
             { text: 'Overview', link: '/analyzers/' },
             { text: 'Blast Radius', link: '/analyzers/blast-radius' },
             { text: 'Churn', link: '/analyzers/churn' },
+            { text: 'Shame', link: '/analyzers/shame' },
           ],
         },
         {
