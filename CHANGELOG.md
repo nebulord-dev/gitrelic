@@ -1,3 +1,10 @@
+## [0.26.1](https://github.com/nebulord-dev/gitrelic/compare/v0.26.0...v0.26.1) (2026-04-29)
+
+
+### Bug Fixes
+
+* **deps:** update postcss and uuid dependencies to resolve compatibility issues ([f9beaf0](https://github.com/nebulord-dev/gitrelic/commit/f9beaf0ed313a8ae2a263cb4972fede4cb6c5d97))
+
 # [0.26.0](https://github.com/nebulord-dev/gitrelic/compare/v0.25.0...v0.26.0) (2026-04-28)
 
 
