@@ -67,6 +67,8 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       files: [],
       shameLeaderboard: [],
       totalShameCommits: 0,
+      keywordTiers: { critical: 0, moderate: 0, mild: 0 },
+      byMonth: [],
       summary: 'Not available',
     },
     parallelDev: raw.parallelDev ?? {

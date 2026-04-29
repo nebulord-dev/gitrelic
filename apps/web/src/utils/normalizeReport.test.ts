@@ -36,4 +36,10 @@ describe('normalizeReport', () => {
     expect(out.testCoverage.files).toEqual([]);
     expect(out.testCoverage.directories).toEqual([]);
   });
+
+  it('fills empty defaults for new forensics aggregates on older reports', () => {
+    const result = normalizeReport({});
+    expect(result.forensics.keywordTiers).toEqual({ critical: 0, moderate: 0, mild: 0 });
+    expect(result.forensics.byMonth).toEqual([]);
+  });
 });
