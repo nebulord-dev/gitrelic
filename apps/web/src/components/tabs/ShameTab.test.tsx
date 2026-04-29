@@ -38,7 +38,7 @@ describe('ShameTab', () => {
     render(
       <ShameTab report={makeReport({ files, totalShameCommits: 60 })} onApplyPreset={vi.fn()} />,
     );
-    expect(screen.getByText('12', { selector: 'div' })).toBeTruthy();
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('12');
     expect(screen.getByText('High Shame')).toBeTruthy();
   });
 

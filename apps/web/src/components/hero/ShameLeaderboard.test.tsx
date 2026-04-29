@@ -4,6 +4,7 @@ import { describe, it, expect, vi } from 'vitest';
 import {
   CONFIDENCE_FLOOR,
   ShameLeaderboard,
+  TIER_KEYWORDS,
   classifyTier,
   prepareShameData,
 } from './ShameLeaderboard';
@@ -132,5 +133,23 @@ describe('CONFIDENCE_FLOOR (mirror of core)', () => {
   // and someone forgets to update the web copy.
   it('matches the core analyzer value of 5', () => {
     expect(CONFIDENCE_FLOOR).toBe(5);
+  });
+});
+
+describe('TIER_KEYWORDS (mirror of core SHAME_KEYWORDS)', () => {
+  // Same drift-detection rationale as CONFIDENCE_FLOOR — keyword sets are duplicated
+  // because we can't value-import from core. Canary assertions on one representative
+  // keyword per tier; if core promotes/demotes keywords across tiers without updating
+  // this file, the bar tier coloring will silently diverge from analyzer truth.
+  it('keeps "revert" in the critical tier', () => {
+    expect(TIER_KEYWORDS.critical.has('revert')).toBe(true);
+  });
+
+  it('keeps "hack" in the moderate tier', () => {
+    expect(TIER_KEYWORDS.moderate.has('hack')).toBe(true);
+  });
+
+  it('keeps "fix" in the mild tier', () => {
+    expect(TIER_KEYWORDS.mild.has('fix')).toBe(true);
   });
 });

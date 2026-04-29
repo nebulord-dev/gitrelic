@@ -99,7 +99,7 @@ describe('BlastRadiusTab', () => {
         onApplyPreset={vi.fn()}
       />,
     );
-    expect(screen.getByText('1', { selector: 'div' })).toBeTruthy();
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('1');
     expect(screen.getByText('Top blast files')).toBeTruthy();
     expect(screen.getByText('load-bearer.ts')).toBeTruthy();
     expect(screen.queryByText('sub-threshold-1.ts')).toBeNull();
@@ -131,7 +131,7 @@ describe('BlastRadiusTab', () => {
         onApplyPreset={vi.fn()}
       />,
     );
-    expect(screen.getByText('2', { selector: 'div' })).toBeTruthy();
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('2');
     expect(screen.getByText('Moderate Risk')).toBeTruthy();
   });
 
@@ -149,7 +149,7 @@ describe('BlastRadiusTab', () => {
         onApplyPreset={vi.fn()}
       />,
     );
-    expect(screen.getByText('12', { selector: 'div' })).toBeTruthy();
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('12');
     expect(screen.getByText('High Risk')).toBeTruthy();
     expect(screen.getByText('Top blast files')).toBeTruthy();
     expect(screen.getByText('file0.ts')).toBeTruthy();
@@ -407,7 +407,7 @@ describe('BlastRadiusTab', () => {
     render(
       <BlastRadiusTab report={makeReport([], 'No commits to analyze')} onApplyPreset={vi.fn()} />,
     );
-    expect(screen.getByText('0', { selector: 'div' })).toBeTruthy();
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('0');
     expect(screen.getByText('No co-change activity in the analyzed window.')).toBeTruthy();
     expect(screen.getByText('No commits to analyze')).toBeTruthy();
   });

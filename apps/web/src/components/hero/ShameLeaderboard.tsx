@@ -12,7 +12,7 @@ type ShameTier = 'critical' | 'moderate' | 'mild';
 
 // Mirrors the SHAME_KEYWORDS tier sets in packages/core/src/analyzers/forensics.ts.
 // If core's keyword tiers change, mirror the change here in the same PR.
-const TIER_KEYWORDS: Record<ShameTier, ReadonlySet<string>> = {
+export const TIER_KEYWORDS: Record<ShameTier, ReadonlySet<string>> = {
   critical: new Set(['revert', 'hotfix', 'oops', 'fixup', 'broke']),
   moderate: new Set(['hack', 'workaround', 'temporary', 'temp', 'kludge', 'band-aid']),
   mild: new Set(['fix', 'bug', 'wrong', 'mistake', 'typo', 'cleanup']),

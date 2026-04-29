@@ -204,9 +204,11 @@ export function analyzeForensics(commits: RawCommit[], trackedFiles: string[]): 
   }
 
   const summary =
-    shameLeaderboard.length === 0
-      ? 'No commit message red flags detected.'
-      : `${shameLeaderboard[0].file} has the highest shame score (${shameLeaderboard[0].shameScore}/100) with ${shameLeaderboard[0].shameCommitCount} flagged commits.`;
+    shameLeaderboard.length > 0
+      ? `${shameLeaderboard[0].file} has the highest shame score (${shameLeaderboard[0].shameScore}/100) with ${shameLeaderboard[0].shameCommitCount} flagged commits.`
+      : files.length > 0
+        ? `${files.length} file${files.length === 1 ? '' : 's'} with shame signals detected, but none have ${CONFIDENCE_FLOOR}+ commits for confident ranking.`
+        : 'No commit message red flags detected.';
 
   return {
     files,

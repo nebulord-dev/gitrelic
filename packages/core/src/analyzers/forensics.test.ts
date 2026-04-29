@@ -196,6 +196,35 @@ describe('shameLeaderboard redefinition (floor-passing only)', () => {
   });
 });
 
+describe('summary text', () => {
+  it('reports the leaderboard top file when one passes the floor', () => {
+    const commits = Array.from({ length: 6 }, (_, i) =>
+      makeCommit({ message: 'revert', files: ['solid.ts'], hash: `r${i}` }),
+    );
+    const result = analyzeForensics(commits, ['solid.ts']);
+    expect(result.summary).toMatch(/^solid\.ts has the highest shame score/);
+  });
+
+  it('acknowledges sub-floor shame signals when files exist but none pass the floor', () => {
+    const commits = [
+      makeCommit({ message: 'revert', files: ['a.yml'], hash: 'a1' }),
+      makeCommit({ message: 'fix', files: ['b.yml'], hash: 'b1' }),
+    ];
+    const result = analyzeForensics(commits, ['a.yml', 'b.yml']);
+    expect(result.shameLeaderboard).toHaveLength(0);
+    expect(result.files.length).toBeGreaterThan(0);
+    expect(result.summary).toMatch(
+      /2 files with shame signals detected, but none have 5\+ commits/,
+    );
+  });
+
+  it('reports no red flags when no shame signals exist at all', () => {
+    const commits = [makeCommit({ message: 'add feature', files: ['a.ts'] })];
+    const result = analyzeForensics(commits, ['a.ts']);
+    expect(result.summary).toBe('No commit message red flags detected.');
+  });
+});
+
 describe('keywordTiers aggregate', () => {
   it('counts unique commits at the highest matched tier', () => {
     const commits = [
