@@ -36,14 +36,15 @@ const monoBold = {
 } as const;
 
 export function BlastRadiusTab({ report, onApplyPreset }: BlastRadiusTabProps) {
-  const { files, topBlasters, summary } = report.blastRadius;
+  const { files, summary } = report.blastRadius;
   const highBlastFiles = files.filter((f) => f.blastScore >= HIGH_BLAST_THRESHOLD);
   const tier = riskBadge(highBlastFiles.length);
-  // Top files come from `topBlasters` (full top-10 from the analyzer) so we
-  // preserve the canonical sort, but only render them when at least one file
-  // is actually above the threshold — otherwise the "Top blast files" header
-  // would contradict the "0 ≥70" headline.
-  const topFiles = highBlastFiles.length > 0 ? topBlasters.slice(0, TOP_FILES_COUNT) : [];
+  // Slice from `highBlastFiles`, not from `topBlasters`, so the "Top blast
+  // files" header never includes sub-threshold files — `topBlasters` is the
+  // whole-repo top-10 by score, which can pull in files below 70 when only
+  // 1–2 files are actually above the threshold. `files` is sorted desc by
+  // blastScore in the core analyzer, so `highBlastFiles` preserves that order.
+  const topFiles = highBlastFiles.slice(0, TOP_FILES_COUNT);
   const tierCounts = countByTier(files.map((f) => f.blastScore));
   const allDirectoryRows = aggregateBlastByDirectory(highBlastFiles);
   const directoryRows = allDirectoryRows.slice(0, DIRECTORY_ROLLUP_LIMIT);

@@ -65,6 +65,47 @@ describe('BlastRadiusTab', () => {
     expect(screen.queryByText('b.ts')).toBeNull();
   });
 
+  it('omits sub-threshold files from "Top blast files" when fewer than 3 cross ≥70', () => {
+    // 1 high-blast file + 2 sub-threshold. The top-3 cap should not pull
+    // sub-threshold files into the "Top blast files" list under the headline.
+    render(
+      <BlastRadiusTab
+        report={makeReport(
+          [
+            {
+              file: 'load-bearer.ts',
+              blastScore: 85,
+              avgCoChangedFiles: 18,
+              maxCoChangedFiles: 26,
+              totalCommits: 4,
+            },
+            {
+              file: 'sub-threshold-1.ts',
+              blastScore: 60,
+              avgCoChangedFiles: 9,
+              maxCoChangedFiles: 14,
+              totalCommits: 4,
+            },
+            {
+              file: 'sub-threshold-2.ts',
+              blastScore: 50,
+              avgCoChangedFiles: 7,
+              maxCoChangedFiles: 12,
+              totalCommits: 4,
+            },
+          ],
+          '1 high blast-radius file (architectural load-bearer)',
+        )}
+        onApplyPreset={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('1', { selector: 'div' })).toBeTruthy();
+    expect(screen.getByText('Top blast files')).toBeTruthy();
+    expect(screen.getByText('load-bearer.ts')).toBeTruthy();
+    expect(screen.queryByText('sub-threshold-1.ts')).toBeNull();
+    expect(screen.queryByText('sub-threshold-2.ts')).toBeNull();
+  });
+
   it('renders Moderate Risk badge for 1–9 high-blast files', () => {
     render(
       <BlastRadiusTab
