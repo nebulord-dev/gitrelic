@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { scaleLinear } from 'd3-scale';
 
+import { HeroCaption } from '../shared/HeroCaption';
+
 import type { GitrelicReport } from '@gitrelic/core';
 
 export type BlastTier = 'low' | 'medium' | 'high' | 'critical';
@@ -93,8 +95,10 @@ export function BlastHistogram({ report }: BlastHistogramProps) {
     [report],
   );
 
+  // Reserve ~56px for the HeroCaption strip below so bars don't overlap it.
+  const svgHeight = Math.max(120, dims.height - 56);
   const plotW = Math.max(40, dims.width - PADDING.left - PADDING.right);
-  const plotH = Math.max(40, dims.height - PADDING.top - PADDING.bottom);
+  const plotH = Math.max(40, svgHeight - PADDING.top - PADDING.bottom);
 
   const yScale = useMemo(
     () =>
@@ -121,13 +125,25 @@ export function BlastHistogram({ report }: BlastHistogramProps) {
           width: '100%',
           height: '100%',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--text-tertiary)',
-          fontSize: 12,
+          flexDirection: 'column',
         }}
       >
-        No blast-radius data available.
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--text-tertiary)',
+            fontSize: 12,
+          }}
+        >
+          No blast-radius data available.
+        </div>
+        <HeroCaption
+          primary="10-bin histogram · bar height = file count · color = blast tier (low/medium/high/critical)"
+          subtitle="No blast-radius signal in this repo. Either no co-changes were detected or the analyzer hasn't run yet."
+        />
       </div>
     );
   }
@@ -136,175 +152,184 @@ export function BlastHistogram({ report }: BlastHistogramProps) {
   const hover = hoverIdx == null ? null : { idx: hoverIdx, bucket: buckets[hoverIdx] };
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <svg
-        width={dims.width}
-        height={dims.height}
-        role="img"
-        aria-label={`Blast-score distribution histogram across ${totalFiles} files. ${highBlastCount} ${highBlastCount === 1 ? 'file is' : 'files are'} at or above the high-blast threshold of ${HIGH_BLAST_THRESHOLD}.`}
-      >
-        <g transform={`translate(${PADDING.left},${PADDING.top})`}>
-          {/* High-blast threshold zone shading */}
-          <rect
-            x={thresholdX}
-            y={0}
-            width={Math.max(0, plotW - thresholdX)}
-            height={plotH}
-            fill="var(--severity-critical)"
-            fillOpacity={0.06}
-          />
-          <line
-            x1={thresholdX}
-            y1={0}
-            x2={thresholdX}
-            y2={plotH}
-            stroke="var(--severity-critical)"
-            strokeOpacity={0.5}
-            strokeDasharray="3 3"
-          />
-          <text
-            x={thresholdX + 6}
-            y={12}
-            fontSize={9}
-            fill="var(--severity-critical)"
-            fillOpacity={0.8}
-          >
-            high blast (≥{HIGH_BLAST_THRESHOLD}) · {highBlastCount}{' '}
-            {highBlastCount === 1 ? 'file' : 'files'}
-          </text>
+    <div
+      ref={containerRef}
+      style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
+    >
+      <div style={{ flex: 1, position: 'relative' }}>
+        <svg
+          width={dims.width}
+          height={svgHeight}
+          role="img"
+          aria-label={`Blast-score distribution histogram across ${totalFiles} files. ${highBlastCount} ${highBlastCount === 1 ? 'file is' : 'files are'} at or above the high-blast threshold of ${HIGH_BLAST_THRESHOLD}.`}
+        >
+          <g transform={`translate(${PADDING.left},${PADDING.top})`}>
+            {/* High-blast threshold zone shading */}
+            <rect
+              x={thresholdX}
+              y={0}
+              width={Math.max(0, plotW - thresholdX)}
+              height={plotH}
+              fill="var(--severity-critical)"
+              fillOpacity={0.06}
+            />
+            <line
+              x1={thresholdX}
+              y1={0}
+              x2={thresholdX}
+              y2={plotH}
+              stroke="var(--severity-critical)"
+              strokeOpacity={0.5}
+              strokeDasharray="3 3"
+            />
+            <text
+              x={thresholdX + 6}
+              y={12}
+              fontSize={9}
+              fill="var(--severity-critical)"
+              fillOpacity={0.8}
+            >
+              high blast (≥{HIGH_BLAST_THRESHOLD}) · {highBlastCount}{' '}
+              {highBlastCount === 1 ? 'file' : 'files'}
+            </text>
 
-          {/* Y axis */}
-          <line x1={0} y1={0} x2={0} y2={plotH} stroke="var(--border-primary)" />
-          <text
-            transform={`translate(-40,${plotH / 2}) rotate(-90)`}
-            textAnchor="middle"
-            fontSize={10}
-            fill="var(--text-tertiary)"
-          >
-            Files
-          </text>
-          {yTicks.map((tick) => (
-            <g key={`y-${tick}`} transform={`translate(0,${yScale(tick)})`}>
-              <line x2={-4} stroke="var(--border-primary)" />
-              <line x2={plotW} stroke="var(--border-primary)" strokeOpacity={0.15} />
-              <text
-                x={-8}
-                textAnchor="end"
-                dominantBaseline="central"
-                fontSize={8}
-                fill="var(--text-tertiary)"
-              >
-                {tick}
+            {/* Y axis */}
+            <line x1={0} y1={0} x2={0} y2={plotH} stroke="var(--border-primary)" />
+            <text
+              transform={`translate(-40,${plotH / 2}) rotate(-90)`}
+              textAnchor="middle"
+              fontSize={10}
+              fill="var(--text-tertiary)"
+            >
+              Files
+            </text>
+            {yTicks.map((tick) => (
+              <g key={`y-${tick}`} transform={`translate(0,${yScale(tick)})`}>
+                <line x2={-4} stroke="var(--border-primary)" />
+                <line x2={plotW} stroke="var(--border-primary)" strokeOpacity={0.15} />
+                <text
+                  x={-8}
+                  textAnchor="end"
+                  dominantBaseline="central"
+                  fontSize={8}
+                  fill="var(--text-tertiary)"
+                >
+                  {tick}
+                </text>
+              </g>
+            ))}
+
+            {/* Bars */}
+            {buckets.map((b, i) => {
+              const x = i * (barWidth + BAR_GAP);
+              const y = yScale(b.count);
+              const h = plotH - y;
+              const isHover = hoverIdx === i;
+              const color = TIER_COLORS[b.tier];
+              return (
+                <g key={`bar-${b.rangeStart}`}>
+                  <rect
+                    x={x}
+                    y={y}
+                    width={barWidth}
+                    height={h}
+                    fill={color}
+                    fillOpacity={isHover ? 0.95 : 0.75}
+                    stroke={color}
+                    strokeOpacity={isHover ? 1 : 0}
+                    onMouseEnter={() => setHoverIdx(i)}
+                    onMouseLeave={() => setHoverIdx(null)}
+                    style={{ cursor: 'default' }}
+                  />
+                  {b.count > 0 && (
+                    <text
+                      x={x + barWidth / 2}
+                      y={y - 4}
+                      textAnchor="middle"
+                      fontSize={9}
+                      fill="var(--text-secondary)"
+                    >
+                      {b.count}
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+
+            {/* X axis */}
+            <line x1={0} y1={plotH} x2={plotW} y2={plotH} stroke="var(--border-primary)" />
+            {buckets.map((b, i) => {
+              const x = i * (barWidth + BAR_GAP) + barWidth / 2;
+              return (
+                <g key={`x-${b.rangeStart}`} transform={`translate(${x},${plotH})`}>
+                  <line y2={4} stroke="var(--border-primary)" />
+                  <text y={14} textAnchor="middle" fontSize={8} fill="var(--text-tertiary)">
+                    {b.rangeStart}
+                  </text>
+                </g>
+              );
+            })}
+            <text
+              x={plotW / 2}
+              y={plotH + 32}
+              textAnchor="middle"
+              fontSize={10}
+              fill="var(--text-tertiary)"
+            >
+              Blast score
+            </text>
+          </g>
+
+          {/* Tier legend */}
+          {(['low', 'medium', 'high', 'critical'] as const).map((tier, i) => (
+            <g key={tier} transform={`translate(${PADDING.left + i * 80},${PADDING.top - 14})`}>
+              <rect width={10} height={8} y={-6} fill={TIER_COLORS[tier]} fillOpacity={0.75} />
+              <text x={14} y={2} fontSize={9} fill="var(--text-tertiary)">
+                {tier}
               </text>
             </g>
           ))}
-
-          {/* Bars */}
-          {buckets.map((b, i) => {
-            const x = i * (barWidth + BAR_GAP);
-            const y = yScale(b.count);
-            const h = plotH - y;
-            const isHover = hoverIdx === i;
-            const color = TIER_COLORS[b.tier];
-            return (
-              <g key={`bar-${b.rangeStart}`}>
-                <rect
-                  x={x}
-                  y={y}
-                  width={barWidth}
-                  height={h}
-                  fill={color}
-                  fillOpacity={isHover ? 0.95 : 0.75}
-                  stroke={color}
-                  strokeOpacity={isHover ? 1 : 0}
-                  onMouseEnter={() => setHoverIdx(i)}
-                  onMouseLeave={() => setHoverIdx(null)}
-                  style={{ cursor: 'default' }}
-                />
-                {b.count > 0 && (
-                  <text
-                    x={x + barWidth / 2}
-                    y={y - 4}
-                    textAnchor="middle"
-                    fontSize={9}
-                    fill="var(--text-secondary)"
-                  >
-                    {b.count}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-
-          {/* X axis */}
-          <line x1={0} y1={plotH} x2={plotW} y2={plotH} stroke="var(--border-primary)" />
-          {buckets.map((b, i) => {
-            const x = i * (barWidth + BAR_GAP) + barWidth / 2;
-            return (
-              <g key={`x-${b.rangeStart}`} transform={`translate(${x},${plotH})`}>
-                <line y2={4} stroke="var(--border-primary)" />
-                <text y={14} textAnchor="middle" fontSize={8} fill="var(--text-tertiary)">
-                  {b.rangeStart}
-                </text>
-              </g>
-            );
-          })}
-          <text
-            x={plotW / 2}
-            y={plotH + 32}
-            textAnchor="middle"
-            fontSize={10}
-            fill="var(--text-tertiary)"
-          >
-            Blast score
-          </text>
-        </g>
-
-        {/* Tier legend */}
-        {(['low', 'medium', 'high', 'critical'] as const).map((tier, i) => (
-          <g key={tier} transform={`translate(${PADDING.left + i * 80},${PADDING.top - 14})`}>
-            <rect width={10} height={8} y={-6} fill={TIER_COLORS[tier]} fillOpacity={0.75} />
-            <text x={14} y={2} fontSize={9} fill="var(--text-tertiary)">
-              {tier}
-            </text>
-          </g>
-        ))}
-      </svg>
-      {hover && (
-        <div
-          style={{
-            position: 'absolute',
-            left: PADDING.left + hover.idx * (barWidth + BAR_GAP) + barWidth / 2,
-            top: PADDING.top + yScale(hover.bucket.count) - 8,
-            transform: 'translate(-50%, -100%)',
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <div style={{ fontWeight: 600 }}>
-            Blast {hover.bucket.rangeStart}–{hover.bucket.rangeEnd}
-          </div>
-          <div style={{ color: 'var(--text-secondary)' }}>
-            {hover.bucket.count} {hover.bucket.count === 1 ? 'file' : 'files'}
-          </div>
+        </svg>
+        {hover && (
           <div
             style={{
-              color: TIER_COLORS[hover.bucket.tier],
-              marginTop: 2,
-              textTransform: 'capitalize',
+              position: 'absolute',
+              left: PADDING.left + hover.idx * (barWidth + BAR_GAP) + barWidth / 2,
+              top: PADDING.top + yScale(hover.bucket.count) - 8,
+              transform: 'translate(-50%, -100%)',
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: 4,
+              padding: '6px 10px',
+              fontSize: 10,
+              color: 'var(--text-primary)',
+              pointerEvents: 'none',
+              zIndex: 20,
+              whiteSpace: 'nowrap',
             }}
           >
-            {hover.bucket.tier}
+            <div style={{ fontWeight: 600 }}>
+              Blast {hover.bucket.rangeStart}–{hover.bucket.rangeEnd}
+            </div>
+            <div style={{ color: 'var(--text-secondary)' }}>
+              {hover.bucket.count} {hover.bucket.count === 1 ? 'file' : 'files'}
+            </div>
+            <div
+              style={{
+                color: TIER_COLORS[hover.bucket.tier],
+                marginTop: 2,
+                textTransform: 'capitalize',
+              }}
+            >
+              {hover.bucket.tier}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+      <HeroCaption
+        primary="10-bin histogram · bar height = file count · color = blast tier (low/medium/high/critical)"
+        subtitle="What's the shape of blast risk across the repo? How many files actually carry architectural coupling?"
+      />
     </div>
   );
 }
