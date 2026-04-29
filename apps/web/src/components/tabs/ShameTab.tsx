@@ -15,9 +15,6 @@ const HIGH_SHAME_THRESHOLD = 70;
 const TOP_FILES_COUNT = 3;
 const DIRECTORY_ROLLUP_LIMIT = 5;
 
-// Mirrors CONFIDENCE_FLOOR in packages/core/src/analyzers/forensics.ts.
-const CONFIDENCE_FLOOR = 5;
-
 function tierBadge(highShameCount: number): { variant: BadgeVariant; label: string } {
   if (highShameCount === 0) return { variant: 'healthy', label: 'Healthy' };
   if (highShameCount < 10) return { variant: 'warning', label: 'Moderate Shame' };
@@ -91,8 +88,7 @@ export function ShameTab({ report, onApplyPreset }: ShameTabProps) {
             <strong style={{ color: '#9b8b3e' }}>{keywordTiers.mild}</strong> mild (fix/bug)
             <div style={{ marginTop: 4, fontSize: 11, color: 'var(--text-tertiary)' }}>
               Across <strong style={{ color: 'var(--text-secondary)' }}>{files.length}</strong>{' '}
-              {files.length === 1 ? 'file' : 'files'} (after min-commit-confidence floor of{' '}
-              {CONFIDENCE_FLOOR}).
+              {files.length === 1 ? 'file' : 'files'} with any shame signal.
             </div>
           </>
         ) : null

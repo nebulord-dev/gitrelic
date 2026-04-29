@@ -4,8 +4,9 @@ import { HeroCaption } from '../shared/HeroCaption';
 
 import type { GitrelicReport } from '@gitrelic/core';
 
-// Mirrors CONFIDENCE_FLOOR in packages/core/src/analyzers/forensics.ts.
-const CONFIDENCE_FLOOR = 5;
+// Mirrors CONFIDENCE_FLOOR in packages/core/src/analyzers/forensics.ts. Exported so the
+// shame-leaderboard test can assert the value matches core (catches drift if core bumps).
+export const CONFIDENCE_FLOOR = 5;
 
 type ShameTier = 'critical' | 'moderate' | 'mild';
 

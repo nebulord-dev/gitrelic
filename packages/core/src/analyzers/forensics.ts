@@ -168,21 +168,16 @@ export function analyzeForensics(commits: RawCommit[], trackedFiles: string[]): 
     .slice(0, 10);
 
   const keywordTiers = { critical: 0, moderate: 0, mild: 0 };
-  const seenHashes = new Set<string>();
-  for (const commit of commits) {
-    if (seenHashes.has(commit.hash) || !allShameHashes.has(commit.hash)) continue;
-    seenHashes.add(commit.hash);
-    const tier = tierForCommit(commit.message);
-    if (tier !== null) keywordTiers[tier]++;
-  }
-
   const monthBuckets = new Map<string, { critical: number; moderate: number; mild: number }>();
-  const seenForBucket = new Set<string>();
+  const seenForAggregates = new Set<string>();
   for (const commit of commits) {
-    if (seenForBucket.has(commit.hash) || !allShameHashes.has(commit.hash)) continue;
-    seenForBucket.add(commit.hash);
+    if (seenForAggregates.has(commit.hash) || !allShameHashes.has(commit.hash)) continue;
+    seenForAggregates.add(commit.hash);
+    // Defensive — `allShameHashes` is built from `scoreMessage`, which scans the same
+    // keyword sets as `tierForCommit`, so `tier` should never be null here.
     const tier = tierForCommit(commit.message);
     if (tier === null) continue;
+    keywordTiers[tier]++;
     const month = commit.date.slice(0, 7);
     const bucket = monthBuckets.get(month) ?? { critical: 0, moderate: 0, mild: 0 };
     bucket[tier]++;

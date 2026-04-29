@@ -1,7 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 
-import { ShameLeaderboard, classifyTier, prepareShameData } from './ShameLeaderboard';
+import {
+  CONFIDENCE_FLOOR,
+  ShameLeaderboard,
+  classifyTier,
+  prepareShameData,
+} from './ShameLeaderboard';
 
 import type { GitrelicReport, FileForensics } from '@gitrelic/core';
 
@@ -118,5 +123,14 @@ describe('classifyTier', () => {
 
   it('returns mild for an unrecognized keyword', () => {
     expect(classifyTier('unknown')).toBe('mild');
+  });
+});
+
+describe('CONFIDENCE_FLOOR (mirror of core)', () => {
+  // Web can't value-import from `@gitrelic/core` (would bundle Node into the browser),
+  // so the floor is duplicated here. This test catches the drift if core bumps the value
+  // and someone forgets to update the web copy.
+  it('matches the core analyzer value of 5', () => {
+    expect(CONFIDENCE_FLOOR).toBe(5);
   });
 });
