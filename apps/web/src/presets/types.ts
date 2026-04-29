@@ -27,6 +27,7 @@ export type HeroViz =
   | 'ownership-sunburst-silos'
   | 'author-force-graph'
   | 'shame-leaderboard'
+  | 'shame-trend'
   | 'rename-sankey'
   | 'growth-timeline'
   | 'debt-scatter'

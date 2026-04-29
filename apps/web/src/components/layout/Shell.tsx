@@ -20,6 +20,7 @@ import { RenameSankey } from '../hero/RenameSankey';
 import { RewriteDivergingBar } from '../hero/RewriteDivergingBar';
 import { RiskHeatmap } from '../hero/RiskHeatmap';
 import { ShameLeaderboard } from '../hero/ShameLeaderboard';
+import { ShameTrend } from '../hero/ShameTrend';
 import { StalenessScatter } from '../hero/StalenessScatter';
 import { TestCoverageByDir } from '../hero/TestCoverageByDir';
 import { Timeline } from '../hero/Timeline';
@@ -109,7 +110,8 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'ownership-sunburst-ghosts': 'Ghosts',
   'ownership-sunburst-silos': 'Silos',
   'author-force-graph': 'Pairs',
-  'shame-leaderboard': 'Shame',
+  'shame-leaderboard': 'Leaderboard',
+  'shame-trend': 'Trend',
   'rename-sankey': 'Sankey',
   'growth-timeline': 'Growth',
   'debt-scatter': 'Debt',
@@ -384,6 +386,7 @@ export function Shell({ report }: ShellProps) {
                     onSelectFile={selection.selectFile}
                   />
                 )}
+                {selection.activeHeroViz === 'shame-trend' && <ShameTrend report={report} />}
                 {selection.activeHeroViz === 'rename-sankey' && (
                   <RenameSankey
                     report={report}
