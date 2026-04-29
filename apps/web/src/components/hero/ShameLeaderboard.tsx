@@ -23,7 +23,7 @@ const TIER_COLORS: Record<ShameTier, string> = {
   mild: '#9b8b3e', // muted yellow — distinct from --severity-healthy (green)
 };
 
-function classifyTier(dominantKeyword: string | null): ShameTier {
+export function classifyTier(dominantKeyword: string | null): ShameTier {
   if (!dominantKeyword) return 'mild';
   if (TIER_KEYWORDS.critical.has(dominantKeyword)) return 'critical';
   if (TIER_KEYWORDS.moderate.has(dominantKeyword)) return 'moderate';

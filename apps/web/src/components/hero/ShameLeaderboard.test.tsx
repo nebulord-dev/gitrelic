@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 
-import { ShameLeaderboard } from './ShameLeaderboard';
+import { ShameLeaderboard, classifyTier, prepareShameData } from './ShameLeaderboard';
 
 import type { GitrelicReport, FileForensics } from '@gitrelic/core';
 
@@ -63,5 +63,60 @@ describe('ShameLeaderboard', () => {
     const bars = container.querySelectorAll('rect[data-tier]');
     const tiers = Array.from(bars).map((b) => b.getAttribute('data-tier'));
     expect(tiers).toEqual(['critical', 'moderate', 'mild']);
+  });
+});
+
+describe('prepareShameData', () => {
+  it('returns an empty array when the leaderboard is empty', () => {
+    expect(prepareShameData(makeReport([]))).toEqual([]);
+  });
+
+  it('preserves the pre-sorted leaderboard order', () => {
+    const report = makeReport([
+      makeFile({ file: 'a.ts', shameScore: 90 }),
+      makeFile({ file: 'b.ts', shameScore: 70 }),
+      makeFile({ file: 'c.ts', shameScore: 50 }),
+    ]);
+    const out = prepareShameData(report);
+    expect(out.map((e) => e.file)).toEqual(['a.ts', 'b.ts', 'c.ts']);
+  });
+
+  it('derives basename from a nested path', () => {
+    const report = makeReport([makeFile({ file: 'foo/bar/baz.ts' })]);
+    const out = prepareShameData(report);
+    expect(out[0].name).toBe('baz.ts');
+  });
+
+  it('falls back to the full path when basename would be empty', () => {
+    const report = makeReport([makeFile({ file: 'foo/bar/' })]);
+    const out = prepareShameData(report);
+    // basename = "" (after trailing slash split); fallback uses full path
+    expect(out[0].name).toBe('foo/bar/');
+  });
+
+  it('returns null topKeyword when dominantKeywords is empty (→ tier mild)', () => {
+    const report = makeReport([makeFile({ file: 'a.ts', dominantKeywords: [] })]);
+    const out = prepareShameData(report);
+    expect(out[0].topKeyword).toBeNull();
+    expect(out[0].tier).toBe('mild');
+  });
+
+  it('passes through file, score, and shameCommitCount verbatim', () => {
+    const report = makeReport([makeFile({ file: 'src/path/to/file.ts', shameScore: 42 })]);
+    // shameCommitCount default in makeFile is 8
+    const out = prepareShameData(report);
+    expect(out[0].file).toBe('src/path/to/file.ts');
+    expect(out[0].score).toBe(42);
+    expect(out[0].shameCommitCount).toBe(8);
+  });
+});
+
+describe('classifyTier', () => {
+  it('returns mild when dominantKeyword is null', () => {
+    expect(classifyTier(null)).toBe('mild');
+  });
+
+  it('returns mild for an unrecognized keyword', () => {
+    expect(classifyTier('unknown')).toBe('mild');
   });
 });
