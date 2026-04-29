@@ -106,7 +106,12 @@ export function BlastHistogram({ report }: BlastHistogramProps) {
   );
 
   const barWidth = (plotW - BAR_GAP * (buckets.length - 1)) / buckets.length;
-  const thresholdX = (HIGH_BLAST_THRESHOLD / 100) * plotW;
+  // Snap the threshold marker to the left edge of the bucket that begins at
+  // HIGH_BLAST_THRESHOLD (e.g. bar 7 for the 70-79 bucket). A naive
+  // `(HIGH_BLAST_THRESHOLD / 100) * plotW` ignores BAR_GAP and lands a few
+  // pixels short of the actual bar boundary.
+  const thresholdBucketIdx = Math.floor(HIGH_BLAST_THRESHOLD / BUCKET_WIDTH);
+  const thresholdX = thresholdBucketIdx * (barWidth + BAR_GAP);
 
   if (totalFiles === 0) {
     return (

@@ -27,7 +27,7 @@ function makeReport(files: BlastFixture[], summary = ''): GitrelicReport {
 describe('BlastRadiusTab', () => {
   afterEach(() => cleanup());
 
-  it('renders 0 with Low Risk badge when no files cross the high-blast threshold', () => {
+  it('renders 0 with Low Risk badge and a safe-state finding when no files cross the high-blast threshold', () => {
     render(
       <BlastRadiusTab
         report={makeReport(
@@ -55,6 +55,14 @@ describe('BlastRadiusTab', () => {
     expect(screen.getByText('0', { selector: 'div' })).toBeTruthy();
     expect(screen.getByText('Low Risk')).toBeTruthy();
     expect(screen.getByText('Files ≥70 Blast')).toBeTruthy();
+    // Safe-state copy must replace the "Top blast files" header — otherwise
+    // the finding would advertise sub-threshold files alongside a "0 / Low
+    // Risk" headline (PR #53 review finding).
+    expect(
+      screen.getByText('No files cross the high-blast threshold — coupling is well-distributed.'),
+    ).toBeTruthy();
+    expect(screen.queryByText('Top blast files')).toBeNull();
+    expect(screen.queryByText('b.ts')).toBeNull();
   });
 
   it('renders Moderate Risk badge for 1–9 high-blast files', () => {

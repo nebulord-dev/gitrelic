@@ -1,5 +1,5 @@
 import { aggregateBlastByDirectory } from '../../utils/blastByDirectory';
-import { type BlastTier, blastTierFor } from '../hero/BlastHistogram';
+import { type BlastTier, HIGH_BLAST_THRESHOLD, blastTierFor } from '../hero/BlastHistogram';
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { fileName } from '../theme';
 
@@ -12,13 +12,14 @@ interface BlastRadiusTabProps {
   onApplyPreset: (id: PresetId) => void;
 }
 
-const HIGH_BLAST_THRESHOLD = 70;
 const TOP_FILES_COUNT = 3;
 const DIRECTORY_ROLLUP_LIMIT = 5;
 
-function blastTier(highBlast: number): { variant: BadgeVariant; label: string } {
-  if (highBlast === 0) return { variant: 'healthy', label: 'Low Risk' };
-  if (highBlast < 10) return { variant: 'warning', label: 'Moderate Risk' };
+// Maps the count of high-blast files (≥70) to a Badge config. Distinct from
+// `blastTierFor`, which maps an individual file's score to a `BlastTier` string.
+function riskBadge(highBlastCount: number): { variant: BadgeVariant; label: string } {
+  if (highBlastCount === 0) return { variant: 'healthy', label: 'Low Risk' };
+  if (highBlastCount < 10) return { variant: 'warning', label: 'Moderate Risk' };
   return { variant: 'critical', label: 'High Risk' };
 }
 
@@ -37,8 +38,12 @@ const monoBold = {
 export function BlastRadiusTab({ report, onApplyPreset }: BlastRadiusTabProps) {
   const { files, topBlasters, summary } = report.blastRadius;
   const highBlastFiles = files.filter((f) => f.blastScore >= HIGH_BLAST_THRESHOLD);
-  const tier = blastTier(highBlastFiles.length);
-  const topFiles = topBlasters.slice(0, TOP_FILES_COUNT);
+  const tier = riskBadge(highBlastFiles.length);
+  // Top files come from `topBlasters` (full top-10 from the analyzer) so we
+  // preserve the canonical sort, but only render them when at least one file
+  // is actually above the threshold — otherwise the "Top blast files" header
+  // would contradict the "0 ≥70" headline.
+  const topFiles = highBlastFiles.length > 0 ? topBlasters.slice(0, TOP_FILES_COUNT) : [];
   const tierCounts = countByTier(files.map((f) => f.blastScore));
   const allDirectoryRows = aggregateBlastByDirectory(highBlastFiles);
   const directoryRows = allDirectoryRows.slice(0, DIRECTORY_ROLLUP_LIMIT);
@@ -51,7 +56,7 @@ export function BlastRadiusTab({ report, onApplyPreset }: BlastRadiusTabProps) {
       tier={tier}
       metric={`Files ≥${HIGH_BLAST_THRESHOLD} Blast`}
       finding={
-        topFiles.length > 0 ? (
+        highBlastFiles.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div
               style={{
@@ -75,6 +80,8 @@ export function BlastRadiusTab({ report, onApplyPreset }: BlastRadiusTabProps) {
               </div>
             ))}
           </div>
+        ) : files.length > 0 ? (
+          <>No files cross the high-blast threshold — coupling is well-distributed.</>
         ) : (
           <>No co-change activity in the analyzed window.</>
         )
