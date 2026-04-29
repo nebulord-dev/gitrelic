@@ -1,3 +1,4 @@
+import { aggregateBlastByDirectory } from '../../utils/blastByDirectory';
 import { type BlastTier, blastTierFor } from '../hero/BlastHistogram';
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { fileName } from '../theme';
@@ -34,14 +35,16 @@ const monoBold = {
 
 export function BlastRadiusTab({ report, onApplyPreset }: BlastRadiusTabProps) {
   const { files, topBlasters, summary } = report.blastRadius;
-  const highBlast = files.filter((f) => f.blastScore >= HIGH_BLAST_THRESHOLD).length;
-  const tier = blastTier(highBlast);
+  const highBlastFiles = files.filter((f) => f.blastScore >= HIGH_BLAST_THRESHOLD);
+  const tier = blastTier(highBlastFiles.length);
   const topFiles = topBlasters.slice(0, TOP_FILES_COUNT);
   const tierCounts = countByTier(files.map((f) => f.blastScore));
+  const directoryRows = aggregateBlastByDirectory(highBlastFiles);
+  const maxDirCount = directoryRows[0]?.count ?? 1;
 
   return (
     <NarrativeKPI
-      bigNumber={String(highBlast)}
+      bigNumber={String(highBlastFiles.length)}
       tier={tier}
       metric={`Files ≥${HIGH_BLAST_THRESHOLD} Blast`}
       finding={
@@ -84,6 +87,92 @@ export function BlastRadiusTab({ report, onApplyPreset }: BlastRadiusTabProps) {
         ) : (
           summary
         )
+      }
+      extras={
+        directoryRows.length > 0 ? (
+          <div>
+            <div
+              style={{
+                fontSize: 9,
+                color: 'var(--text-tertiary)',
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                marginBottom: 8,
+              }}
+            >
+              Where they live
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {directoryRows.map((row) => (
+                <div
+                  key={row.directory}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    fontSize: 11,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  <div
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      fontFamily: 'var(--font-mono)',
+                      color: 'var(--text-secondary)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                    title={row.directory || '(root)'}
+                  >
+                    {row.directory || '(root)'}
+                  </div>
+                  <div
+                    style={{
+                      width: 80,
+                      height: 4,
+                      background: 'var(--surface-tertiary)',
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${(row.count / maxDirCount) * 100}%`,
+                        height: '100%',
+                        background: 'var(--severity-critical)',
+                        opacity: 0.7,
+                      }}
+                    />
+                  </div>
+                  <span
+                    style={{
+                      ...monoBold,
+                      minWidth: 32,
+                      textAlign: 'right',
+                      display: 'inline-block',
+                    }}
+                  >
+                    {row.count}
+                  </span>
+                  <span
+                    style={{
+                      color: 'var(--text-tertiary)',
+                      fontSize: 10,
+                      minWidth: 36,
+                      textAlign: 'right',
+                      display: 'inline-block',
+                    }}
+                  >
+                    {(row.share * 100).toFixed(0)}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : undefined
       }
       seeAlso={[
         { label: 'Coupling', presetId: 'coupling' },

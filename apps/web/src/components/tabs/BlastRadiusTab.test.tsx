@@ -185,6 +185,92 @@ describe('BlastRadiusTab', () => {
     expect(subline.textContent).toContain('2 critical');
   });
 
+  it('renders the "Where they live" rollup with the top high-blast directories', () => {
+    // 3 high-blast in /tests, 2 high-blast in /src, 1 in /scripts; 1 medium that should be ignored.
+    const files: BlastFixture[] = [
+      {
+        file: 'tests/a.ts',
+        blastScore: 95,
+        avgCoChangedFiles: 20,
+        maxCoChangedFiles: 30,
+        totalCommits: 1,
+      },
+      {
+        file: 'tests/b.ts',
+        blastScore: 90,
+        avgCoChangedFiles: 18,
+        maxCoChangedFiles: 28,
+        totalCommits: 1,
+      },
+      {
+        file: 'tests/c.ts',
+        blastScore: 85,
+        avgCoChangedFiles: 16,
+        maxCoChangedFiles: 26,
+        totalCommits: 1,
+      },
+      {
+        file: 'src/x.ts',
+        blastScore: 80,
+        avgCoChangedFiles: 14,
+        maxCoChangedFiles: 22,
+        totalCommits: 1,
+      },
+      {
+        file: 'src/y.ts',
+        blastScore: 75,
+        avgCoChangedFiles: 12,
+        maxCoChangedFiles: 20,
+        totalCommits: 1,
+      },
+      {
+        file: 'scripts/q.ts',
+        blastScore: 70,
+        avgCoChangedFiles: 10,
+        maxCoChangedFiles: 18,
+        totalCommits: 1,
+      },
+      {
+        file: 'src/z.ts',
+        blastScore: 40,
+        avgCoChangedFiles: 4,
+        maxCoChangedFiles: 6,
+        totalCommits: 1,
+      },
+    ];
+    render(<BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />);
+    expect(screen.getByText('Where they live')).toBeTruthy();
+
+    const dirRow = screen.getByText('tests').closest('div')!.parentElement!;
+    // tests has 3 of 6 high-blast files → 50%
+    expect(dirRow.textContent).toContain('3');
+    expect(dirRow.textContent).toContain('50%');
+
+    expect(screen.getByText('src')).toBeTruthy();
+    expect(screen.getByText('scripts')).toBeTruthy();
+  });
+
+  it('omits the rollup when no high-blast files exist', () => {
+    render(
+      <BlastRadiusTab
+        report={makeReport(
+          [
+            {
+              file: 'a.ts',
+              blastScore: 30,
+              avgCoChangedFiles: 2,
+              maxCoChangedFiles: 4,
+              totalCommits: 1,
+            },
+          ],
+          '',
+        )}
+        onApplyPreset={vi.fn()}
+      />,
+    );
+    expect(screen.queryByText('Where they live')).toBeNull();
+  });
+
   it('routes Coupling click to onApplyPreset("coupling")', () => {
     const onApplyPreset = vi.fn();
     render(
