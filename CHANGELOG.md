@@ -1,3 +1,10 @@
+# [0.27.0](https://github.com/nebulord-dev/gitrelic/compare/v0.26.1...v0.27.0) (2026-04-29)
+
+
+### Features
+
+* **web:** blast-radius polish — histogram hero + narrative-KPI panel + docs (RELIC-315) ([#53](https://github.com/nebulord-dev/gitrelic/issues/53)) ([3facc73](https://github.com/nebulord-dev/gitrelic/commit/3facc733e00ecfac935621cdd0b1c8b50576298f)), closes [hi#blast](https://github.com/hi/issues/blast) [hi#blast](https://github.com/hi/issues/blast) [hi#blast](https://github.com/hi/issues/blast) [hi#blast](https://github.com/hi/issues/blast) [zero-hi#blast](https://github.com/zero-hi/issues/blast) [hi#blast](https://github.com/hi/issues/blast) [hi#blast](https://github.com/hi/issues/blast) [hi#blast](https://github.com/hi/issues/blast)
+
 ## [0.26.1](https://github.com/nebulord-dev/gitrelic/compare/v0.26.0...v0.26.1) (2026-04-29)
 
 
