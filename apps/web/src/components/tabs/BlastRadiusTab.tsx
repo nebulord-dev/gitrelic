@@ -14,6 +14,7 @@ interface BlastRadiusTabProps {
 
 const HIGH_BLAST_THRESHOLD = 70;
 const TOP_FILES_COUNT = 3;
+const DIRECTORY_ROLLUP_LIMIT = 5;
 
 function blastTier(highBlast: number): { variant: BadgeVariant; label: string } {
   if (highBlast === 0) return { variant: 'healthy', label: 'Low Risk' };
@@ -39,7 +40,9 @@ export function BlastRadiusTab({ report, onApplyPreset }: BlastRadiusTabProps) {
   const tier = blastTier(highBlastFiles.length);
   const topFiles = topBlasters.slice(0, TOP_FILES_COUNT);
   const tierCounts = countByTier(files.map((f) => f.blastScore));
-  const directoryRows = aggregateBlastByDirectory(highBlastFiles);
+  const allDirectoryRows = aggregateBlastByDirectory(highBlastFiles);
+  const directoryRows = allDirectoryRows.slice(0, DIRECTORY_ROLLUP_LIMIT);
+  const hiddenDirectoryCount = Math.max(0, allDirectoryRows.length - DIRECTORY_ROLLUP_LIMIT);
   const maxDirCount = directoryRows[0]?.count ?? 1;
 
   return (
@@ -171,6 +174,18 @@ export function BlastRadiusTab({ report, onApplyPreset }: BlastRadiusTabProps) {
                 </div>
               ))}
             </div>
+            {hiddenDirectoryCount > 0 && (
+              <div
+                style={{
+                  marginTop: 6,
+                  fontSize: 10,
+                  color: 'var(--text-tertiary)',
+                }}
+              >
+                + {hiddenDirectoryCount} more{' '}
+                {hiddenDirectoryCount === 1 ? 'directory' : 'directories'}
+              </div>
+            )}
           </div>
         ) : undefined
       }

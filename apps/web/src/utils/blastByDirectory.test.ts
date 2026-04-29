@@ -44,14 +44,12 @@ describe('aggregateBlastByDirectory', () => {
     expect(rows.map((r) => r.directory)).toEqual(['apple', 'mango', 'zebra']);
   });
 
-  it('honors the limit option (default 5)', () => {
+  it('returns one row per distinct parent directory (no internal cap)', () => {
     const files: FileBlastRadius[] = [];
     for (let i = 0; i < 8; i++) {
       files.push(f(`dir${i}/file.ts`));
     }
-    expect(aggregateBlastByDirectory(files)).toHaveLength(5);
-    expect(aggregateBlastByDirectory(files, { limit: 3 })).toHaveLength(3);
-    expect(aggregateBlastByDirectory(files, { limit: 100 })).toHaveLength(8);
+    expect(aggregateBlastByDirectory(files)).toHaveLength(8);
   });
 
   it('represents the repo root as the empty string', () => {

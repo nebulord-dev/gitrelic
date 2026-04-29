@@ -6,8 +6,6 @@ export interface BlastDirectoryRow {
   share: number;
 }
 
-const DEFAULT_LIMIT = 5;
-
 function parentDirectory(filePath: string): string {
   const slash = filePath.lastIndexOf('/');
   return slash === -1 ? '' : filePath.slice(0, slash);
@@ -15,7 +13,6 @@ function parentDirectory(filePath: string): string {
 
 export function aggregateBlastByDirectory(
   files: ReadonlyArray<FileBlastRadius>,
-  options?: { limit?: number },
 ): BlastDirectoryRow[] {
   if (files.length === 0) return [];
 
@@ -32,5 +29,5 @@ export function aggregateBlastByDirectory(
   }
 
   rows.sort((a, b) => b.count - a.count || a.directory.localeCompare(b.directory));
-  return rows.slice(0, options?.limit ?? DEFAULT_LIMIT);
+  return rows;
 }

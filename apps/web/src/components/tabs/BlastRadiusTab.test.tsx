@@ -250,6 +250,43 @@ describe('BlastRadiusTab', () => {
     expect(screen.getByText('scripts')).toBeTruthy();
   });
 
+  it('shows a "+ N more directories" footer when more than 5 distinct directories exist', () => {
+    // 7 high-blast files spread across 7 distinct directories — top 5 visible, 2 hidden.
+    const files: BlastFixture[] = Array.from({ length: 7 }, (_, i) => ({
+      file: `dir${i}/file.ts`,
+      blastScore: 90 - i,
+      avgCoChangedFiles: 15,
+      maxCoChangedFiles: 20,
+      totalCommits: 1,
+    }));
+    render(<BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />);
+    expect(screen.getByText(/\+ 2 more directories/)).toBeTruthy();
+  });
+
+  it('uses singular "directory" when exactly one directory is hidden', () => {
+    const files: BlastFixture[] = Array.from({ length: 6 }, (_, i) => ({
+      file: `dir${i}/file.ts`,
+      blastScore: 90 - i,
+      avgCoChangedFiles: 15,
+      maxCoChangedFiles: 20,
+      totalCommits: 1,
+    }));
+    render(<BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />);
+    expect(screen.getByText(/\+ 1 more directory/)).toBeTruthy();
+  });
+
+  it('omits the "+ more directories" footer when 5 or fewer distinct directories exist', () => {
+    const files: BlastFixture[] = Array.from({ length: 5 }, (_, i) => ({
+      file: `dir${i}/file.ts`,
+      blastScore: 90 - i,
+      avgCoChangedFiles: 15,
+      maxCoChangedFiles: 20,
+      totalCommits: 1,
+    }));
+    render(<BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />);
+    expect(screen.queryByText(/more director/)).toBeNull();
+  });
+
   it('omits the rollup when no high-blast files exist', () => {
     render(
       <BlastRadiusTab

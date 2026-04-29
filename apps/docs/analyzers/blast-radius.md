@@ -91,6 +91,8 @@ The right side carries two pieces of context:
 
 Below those, a **"Where they live"** rollup answers the directory-level question that the file-list views can't: *if I'm trying to reduce blast radius, where do I look first?* Each row shows the immediate parent directory, the number of high-blast (`≥70`) files inside it, the share of the repo's total high-blast count, and a small bar visualizing that count relative to the largest directory. Top 5 directories, sorted by count desc with alphabetical tiebreak.
 
+When more than 5 distinct directories hold high-blast files, the rollup ends with a `+ N more directories` line so the long tail is acknowledged rather than silently truncated. The cap stays at 5 because the rollup is an aggregate-summary view, not a directory browser; if you need the full list, the right-side Inspector surfaces every per-file detail and the Coupling tab shows pair-wise relationships across the whole repo.
+
 Why a KPI and not a table: the histogram already shows the full distribution; the Inspector already shows per-file detail on click; the top-3 callout covers the "next worst" case; and the directory rollup answers "where," which none of the other surfaces does. The aggregate count — *how many architectural load-bearers does this repo have* — is the only question the histogram and Inspector don't answer, and the subline makes the proportional answer (load-bearers vs the rest) obvious without forcing the reader to do the math from the histogram. A sortable file table on the bottom would have been a worse version of those four answers stacked.
 
 The sticky **See also** footer links to two related analyzers:
