@@ -52,7 +52,7 @@ describe('BlastRadiusTab', () => {
         onApplyPreset={vi.fn()}
       />,
     );
-    expect(screen.getByText('0')).toBeTruthy();
+    expect(screen.getByText('0', { selector: 'div' })).toBeTruthy();
     expect(screen.getByText('Low Risk')).toBeTruthy();
     expect(screen.getByText('Files ≥70 Blast')).toBeTruthy();
   });
@@ -82,11 +82,11 @@ describe('BlastRadiusTab', () => {
         onApplyPreset={vi.fn()}
       />,
     );
-    expect(screen.getByText('2')).toBeTruthy();
+    expect(screen.getByText('2', { selector: 'div' })).toBeTruthy();
     expect(screen.getByText('Moderate Risk')).toBeTruthy();
   });
 
-  it('renders High Risk badge for 10+ high-blast files and shows top file in finding', () => {
+  it('renders High Risk badge for 10+ high-blast files and shows the top three in the finding', () => {
     const files: BlastFixture[] = Array.from({ length: 12 }, (_, i) => ({
       file: `pkg/src/file${i}.ts`,
       blastScore: 90 - i,
@@ -100,12 +100,89 @@ describe('BlastRadiusTab', () => {
         onApplyPreset={vi.fn()}
       />,
     );
-    expect(screen.getByText('12')).toBeTruthy();
+    expect(screen.getByText('12', { selector: 'div' })).toBeTruthy();
     expect(screen.getByText('High Risk')).toBeTruthy();
+    expect(screen.getByText('Top blast files')).toBeTruthy();
     expect(screen.getByText('file0.ts')).toBeTruthy();
-    expect(
-      screen.getByText('12 high blast-radius files (architectural load-bearers)'),
-    ).toBeTruthy();
+    expect(screen.getByText('file1.ts')).toBeTruthy();
+    expect(screen.getByText('file2.ts')).toBeTruthy();
+    // Fourth file should not appear in the finding cap.
+    expect(screen.queryByText('file3.ts')).toBeNull();
+  });
+
+  it('renders the per-tier mix in the subline (low/medium/high/critical) using blastTierFor cuts', () => {
+    // blastTierFor: <25 low · <50 medium · <=75 high · >75 critical
+    const files: BlastFixture[] = [
+      {
+        file: 'low1.ts',
+        blastScore: 5,
+        avgCoChangedFiles: 1,
+        maxCoChangedFiles: 2,
+        totalCommits: 1,
+      },
+      {
+        file: 'low2.ts',
+        blastScore: 24,
+        avgCoChangedFiles: 2,
+        maxCoChangedFiles: 3,
+        totalCommits: 1,
+      },
+      {
+        file: 'med1.ts',
+        blastScore: 25,
+        avgCoChangedFiles: 3,
+        maxCoChangedFiles: 4,
+        totalCommits: 1,
+      },
+      {
+        file: 'med2.ts',
+        blastScore: 49,
+        avgCoChangedFiles: 4,
+        maxCoChangedFiles: 5,
+        totalCommits: 1,
+      },
+      {
+        file: 'med3.ts',
+        blastScore: 30,
+        avgCoChangedFiles: 5,
+        maxCoChangedFiles: 6,
+        totalCommits: 1,
+      },
+      {
+        file: 'hi1.ts',
+        blastScore: 50,
+        avgCoChangedFiles: 6,
+        maxCoChangedFiles: 7,
+        totalCommits: 1,
+      },
+      {
+        file: 'hi2.ts',
+        blastScore: 75,
+        avgCoChangedFiles: 7,
+        maxCoChangedFiles: 8,
+        totalCommits: 1,
+      },
+      {
+        file: 'crit1.ts',
+        blastScore: 76,
+        avgCoChangedFiles: 8,
+        maxCoChangedFiles: 9,
+        totalCommits: 1,
+      },
+      {
+        file: 'crit2.ts',
+        blastScore: 100,
+        avgCoChangedFiles: 9,
+        maxCoChangedFiles: 10,
+        totalCommits: 1,
+      },
+    ];
+    render(<BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />);
+    const subline = screen.getByText(/Tier mix:/).closest('div')!;
+    expect(subline.textContent).toContain('2 low');
+    expect(subline.textContent).toContain('3 medium');
+    expect(subline.textContent).toContain('2 high');
+    expect(subline.textContent).toContain('2 critical');
   });
 
   it('routes Coupling click to onApplyPreset("coupling")', () => {
@@ -154,11 +231,12 @@ describe('BlastRadiusTab', () => {
     expect(onApplyPreset).toHaveBeenCalledWith('hotspots');
   });
 
-  it('falls back gracefully when no top file exists', () => {
+  it('falls back to the analyzer summary when no files exist', () => {
     render(
       <BlastRadiusTab report={makeReport([], 'No commits to analyze')} onApplyPreset={vi.fn()} />,
     );
-    expect(screen.getByText('0')).toBeTruthy();
+    expect(screen.getByText('0', { selector: 'div' })).toBeTruthy();
     expect(screen.getByText('No co-change activity in the analyzed window.')).toBeTruthy();
+    expect(screen.getByText('No commits to analyze')).toBeTruthy();
   });
 });

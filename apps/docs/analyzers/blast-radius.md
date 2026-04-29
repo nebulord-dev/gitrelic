@@ -82,9 +82,14 @@ The hero answers **"is blast risk concentrated or evenly distributed?"** Three s
 
 ### The bottom panel — narrative KPI
 
-A single panel, not a table. The left-side big number is **the count of files with `blastScore` ≥ 70**, badge-colored by severity (0 = low, 1–9 = moderate, 10+ = high). The right side names the worst offender — its average and peak co-change cohort sizes — and the analyzer's summary string repeats below.
+A single panel, not a table. The left-side big number is **the count of files with `blastScore` ≥ 70**, badge-colored by severity (0 = low, 1–9 = moderate, 10+ = high).
 
-Why a KPI and not a table: the histogram already shows the full distribution; the Inspector already shows per-file detail on click. A bottom-panel table would be a worse version of both. The aggregate number — *how many architectural load-bearers does this repo have* — is the only question the other surfaces don't answer.
+The right side carries two pieces of context:
+
+1. **Top blast files** — the three worst offenders by `blastScore`, with their `avgCoChangedFiles` and `maxCoChangedFiles`. Three is enough to show "the worst is not alone" without making the panel feel like a table; the right-side Inspector remains the place to drill into any single file's full profile.
+2. **Tier mix subline** — a per-tier breakdown across all analyzed files (`low / medium / high / critical`), using the same cuts the histogram colors use. This grounds the histogram's visual shape in concrete counts and keeps the long tail visible — `1,108 low` files matter to the repo's overall coupling story even though they don't cross the headline threshold.
+
+Why a KPI and not a table: the histogram already shows the full distribution; the Inspector already shows per-file detail on click; and a top-3 callout covers the "next worst" case a sortable table would otherwise serve. The aggregate count — *how many architectural load-bearers does this repo have* — is the only question the other surfaces don't answer, and the subline makes the proportional answer (load-bearers vs the rest) obvious without forcing the reader to do the math from the histogram.
 
 The sticky **See also** footer links to two related analyzers:
 
