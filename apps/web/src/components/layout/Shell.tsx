@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSelection } from '../../hooks/useSelection';
 import { PRESETS } from '../../presets/registry';
 import { AuthorForceGraph } from '../hero/AuthorForceGraph';
-import { BlastScatter } from '../hero/BlastScatter';
+import { BlastHistogram } from '../hero/BlastHistogram';
 import { ChurnBar } from '../hero/ChurnBar';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
 import { CommitGraph } from '../hero/CommitGraph';
@@ -115,7 +115,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'debt-scatter': 'Debt',
   'rewrite-diverging-bar': 'Rewrites',
   'staleness-scatter': 'Staleness',
-  'blast-scatter': 'Blast',
+  'blast-histogram': 'Distribution',
   'languages-stacked': 'Stacked',
   'test-coverage-by-dir': 'By Dir',
 };
@@ -419,12 +419,8 @@ export function Shell({ report }: ShellProps) {
                     onSelectFile={selection.selectFile}
                   />
                 )}
-                {selection.activeHeroViz === 'blast-scatter' && (
-                  <BlastScatter
-                    report={report}
-                    selectedFile={selection.selectedFile}
-                    onSelectFile={selection.selectFile}
-                  />
+                {selection.activeHeroViz === 'blast-histogram' && (
+                  <BlastHistogram report={report} />
                 )}
                 {selection.activeHeroViz === 'languages-stacked' && (
                   <LanguagesStackedBar report={report} />

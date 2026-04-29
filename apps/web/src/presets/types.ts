@@ -32,7 +32,7 @@ export type HeroViz =
   | 'debt-scatter'
   | 'rewrite-diverging-bar'
   | 'staleness-scatter'
-  | 'blast-scatter'
+  | 'blast-histogram'
   | 'languages-stacked'
   | 'test-coverage-by-dir';
 
