@@ -9,7 +9,7 @@
 
 The Rewrite Ratio surface ships a `RewriteDivergingBar` hero atop a per-file `SortableTable` — the same "rotated hero" pathology that drove Batch 1. Forensic time on the React fixture (1,153 commits · 2,792 analyzed files) revealed three compounding problems:
 
-1. **The score formula has no volume floor.** `rewriteScore = round(min(ins,del) / max(ins,del) × 100)` gives `+1/-1` and `+116/-116` an identical score of 100. The diverging-bar's top 30 on React is *all* tied at 100 — `ErrorBoundary.js`, `DESIGN_GOALS.md`, single-line test fixtures stand alongside the actual rewrite-heavy files (`ReactFiberHooks.js`, `BabelPlugin.ts`). The metrics-strip "Top Rewriter Score" tile reads 100, the metrics-strip "High Rewriters" reads 10 (a hard cap, not a real count), and `cursed-files`'s ≥70 threshold consumes the noise as if it were signal.
+1. **The score formula has no volume floor.** `rewriteScore = round(min(ins,del) / max(ins,del) × 100)` gives `+1/-1` and `+116/-116` an identical score of 100. The diverging-bar's top 30 on React is *all* tied at 100 — `ErrorBoundary.js`, `DESIGN_GOALS.md`, single-line test fixtures stand alongside the actual rewrite-heavy files (`ReactFiberHooks.js`, `BabelPlugin.ts`). The metrics-strip "Top Rewriter Score" tile reads 100 and the metrics-strip "High Rewriters" reads 10 (a hard cap from `topRewriters.length`, not a real count). The histogram, panel KPI, and any tier-based signal downstream all consume the noise as if it were signal.
 
 2. **Two of the three hero tabs aren't rewrite-ratio views.** The `Scatter` alt-tab is wired to `HotspotScatter` — the same component the Hotspots tab uses as its default hero (x = churn, y = LOC, r = hotspotScore). The `Debt` alt-tab is wired to `DebtScatter`, which is the curated Tech Debt dashboard's default hero (registry.ts:66). Neither is rewrite-specific; both duplicate views the user can already see one click away. Same pathology blast-radius had with its three sub-tabs in RELIC-315.
 
@@ -81,9 +81,8 @@ The constant `CONFIDENCE_FLOOR = 30` is declared at module scope in `rewrite-rat
 
 **Downstream effects:**
 
-- `cursed-files.ts`'s 75/50/25 thresholds against `rewriteScore` keep meaning the same thing — fewer false positives surface (the `+1/-1` files will no longer cross 75). No code change in cursed-files.
+- `cursed-files.ts` does not consume `rewriteScore` (verified — its candidate set and scoring read churn / busFactor / ageMap / forensics / parallelDev only). No code or test changes there.
 - `packages/core/src/__snapshots__/fixture-regression.test.ts.snap` regenerates. Most rewrite scores will drop; the snapshot diff captures it once.
-- `packages/core/src/analyzers/cursed-files.test.ts` may need expectation tweaks if any test fixture has `min(ins, del) < 30`. Check during implementation.
 - Existing `rewrite-ratio.test.ts` tests: `+50/-50 → 100` (unchanged, min=50 ≥ 30), `+100/-10 → 10` (was 10) becomes `round(10 × 10/30) = 3` (test expectation updates), `+5/-100 → 5` (was 5) becomes `round(5 × 5/30) = 1` (test expectation updates), `+30/-20 then +20/-30 accumulated → 100` (unchanged, min=50 ≥ 30 after accumulation). New tests cover the multiplier explicitly: `+30/-30 → 100`, `+15/-15 → 50`, `+1/-1 → 3`, the cutover at `min(ins,del) = 30`.
 
 #### A2 — `RewriteRatioReport` aggregates
@@ -284,7 +283,6 @@ Bundles in the same PR per `project_analyzer_polish_session_pattern` memory.
 **Core (unit):**
 - `packages/core/src/analyzers/rewrite-ratio.test.ts` — existing tests updated for new expected values; new cases cover the multiplier explicitly (`+1/-1 → 3`, `+15/-15 → 50`, `+30/-30 → 100`, the cutover boundary, accumulated-across-commits behavior with mixed sub-floor + above-floor commits).
 - `packages/core/src/__snapshots__/fixture-regression.test.ts.snap` — regenerated; diff captures repo-wide score shifts.
-- `packages/core/src/analyzers/cursed-files.test.ts` — sanity check; update only if a fixture is sub-floor.
 
 **Web (unit + render):**
 - `apps/web/src/components/tabs/RewriteRatioTab.test.tsx` — new. Asserts: big number reflects `report.rewriteRatio.highRewrite`; tier badge variant flips at 0 / 1 / 5; finding lists top 3 high-rewrite files (sliced from filtered subset, not `topRewriters`); subline includes formatted totals + balanced %; extras renders directory rows with proportional bars; see-also click fires `onApplyPreset('churn')` and `onApplyPreset('hotspots')`; uses `getByTestId('narrative-kpi-big-number')` not `getByText`.
@@ -296,10 +294,11 @@ Bundles in the same PR per `project_analyzer_polish_session_pattern` memory.
 
 ## Side effects on other surfaces
 
-- **Cursed Files** — files that previously crossed the 75/50/25 cursed-files thresholds via `+2/-2` noise no longer do. Real signals stay. Linear: this is an *intended* downstream improvement, not a regression — flag in PR description.
+- **Cursed Files** — unaffected. `cursed-files.ts` does not read `rewriteRatio` at all (its candidate set and scoring inputs are churn / busFactor / ageMap / forensics / parallelDev). The formula change is invisible to it.
 - **Tech Debt dashboard** — unaffected. `DebtScatter` is still its default hero.
 - **Hotspots** — unaffected. `HotspotScatter` is still its default hero.
-- **Inspector panel** — unaffected. `FileInspector.tsx` already reads `f.rewriteScore` and the formula change just shifts the values; no template changes.
+- **Inspector panel** — unaffected. `FileInspector.tsx:81-83` reads `rr.ratio` (the raw mathematical ratio, unchanged by the formula fix). It does not read `rewriteScore`. No template change.
+- **Metrics strip "Top Rewriter Score" (slot 1)** — formula unchanged but its meaning subtly shifts: under the new score formula a sub-floor file can no longer hit 100, so the slot now represents *the highest score among files with at least 30 lines on the smaller side*. The label and code stay; this is a documentation-side observation only.
 
 ## Build sequence
 
