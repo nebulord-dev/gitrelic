@@ -138,13 +138,22 @@ The four analyzers in Batch 1 all share the "table is rotated hero" pathology. T
 - **See also:** Coupling, Hotspots.
 - **Backend changes:** None.
 
-### `rewrite-ratio`
+### `rewrite-ratio` *(shipped — RELIC-314)*
 
 - **Bottom panel:** Narrative-KPI.
-- **Big number:** Count of high-rewrite files (already computed as `highRewrite`, ≥70 threshold).
-- **Sub-content:** Repo-wide insertion/deletion totals — *"This repo has written X lines and deleted Y — net +Z, with N% of files showing balanced rewrite (ratio > 0.5)."* The aggregate angle is unique to this analyzer.
+- **Big number:** `report.rewriteRatio.highRewrite` — count of files with `rewriteScore ≥ 70` after the formula fix (see below). Now exposed on the report; previously computed inline in the summary string only.
+- **Tier thresholds:** 0 = Healthy · 1–4 = Moderate · 5+ = High Rewrite. Tighter than Blast (1–9 / 10+) because rewrite-heavy files are usually fewer per repo.
+- **Sub-content:** Top **three** high-rewrite files (basename + `+ins / −del`) as the finding, sliced from the threshold-filtered subset (per RELIC-315 lesson). Subline: repo balance — *"+X / −Y · net +Z · N% of files balanced (ratio > 0.5)"* — the aggregate growth-vs-rewrite angle unique to this analyzer.
+- **Extras (`NarrativeKPI.extras` slot):** "Where they live" — top-5 directory rollup of the high-rewrite files. Aggregator at `apps/web/src/utils/rewriteByDirectory.ts`. Same shape as Blast Radius and Shame — three Batch 1 panels now share one layout.
+- **Hero:** Two views — `Rewrites` (default `RewriteDivergingBar`, top-30 by score) + `Distribution` (new `RewriteHistogram`, mirrors `BlastHistogram` 1:1 with 10 bins, ≥70 zone shaded). Dropped the previous `Scatter` alt-tab (was wired to `HotspotScatter` — a pure dup of the Hotspots default hero) and `Debt` alt-tab (was wired to `DebtScatter` — owned by the Tech Debt curated dashboard, not rewrite-ratio's territory). Same "two redundant alts" pathology blast-radius had.
+- **HeroCaption backport:** added to `RewriteDivergingBar` (was missing — backport-style fix paralleling the BlastHistogram caption added during RELIC-308).
 - **See also:** Churn, Hotspots.
-- **Backend changes:** Add `totalInsertions: number` and `totalDeletions: number` to `RewriteRatioReport`. Trivially derivable from existing `fileStats` map; ~3 lines.
+- **Backend changes:**
+  - **Score formula fix:** confidence multiplier — `rewriteScore = round(rawScore × min(1, min(ins, del) / 30))`. The smaller side of the diff IS the rewrite signal, so it's the analyzer-specific confidence basis. `+1/-1` files no longer tie with `+116/-116` at 100. Mirrors Shame's `min(1, totalCommits / 5)` precedent. Snapshot regenerates (`fixture-regression.test.ts.snap`); cursed-files unaffected (it doesn't consume `rewriteScore`).
+  - **Three new aggregates** on `RewriteRatioReport`: `totalInsertions`, `totalDeletions` (repo-wide), and `highRewrite` (count of files ≥70).
+- **Metrics-strip slot 2 fix:** replaced misleading `High Rewriters` (which used `topRewriters.length`, capped at 10) with `Files ≥70` (sourced from the new `highRewrite` aggregate). Severity bands match the panel's tier badge (0 / 1–4 / 5+).
+- **Scope expansion:** Like blast-radius, the polish ticket exceeded its original bottom-panel-only spec — a forensic look at the rendered Rewrite Ratio tab against React data revealed every top-30 score tied at 100 (formula bug) and two of three alt-tabs duplicating other analyzers' heroes (hero audit). Same "*hero scope creep is OK when warranted*" precedent.
+- **Removes:** `RewriteRatioTab`'s per-file `SortableTable` (~107 lines). Inspector + diverging-bar already cover per-file detail.
 
 ## Pending (Batches 2–N)
 
