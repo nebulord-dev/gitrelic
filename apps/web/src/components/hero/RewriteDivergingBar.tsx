@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { HeroCaption } from '../shared/HeroCaption';
+
 import type { GitrelicReport } from '@gitrelic/core';
 
 export interface RewriteRow {
@@ -47,6 +49,11 @@ interface RewriteDivergingBarProps {
   onSelectFile: (file: string) => void;
 }
 
+const CAPTION_PRIMARY =
+  'Top 30 by rewrite score · bar length = lines added/removed · score on right';
+const CAPTION_SUBTITLE =
+  "Which files keep getting rewritten? Balanced ins/del = code that doesn't stick.";
+
 export function RewriteDivergingBar({
   report,
   selectedFile,
@@ -72,17 +79,21 @@ export function RewriteDivergingBar({
     return (
       <div
         ref={containerRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--text-tertiary)',
-          fontSize: 12,
-        }}
+        style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
       >
-        No rewrite activity detected.
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--text-tertiary)',
+            fontSize: 12,
+          }}
+        >
+          No rewrite activity detected.
+        </div>
+        <HeroCaption primary={CAPTION_PRIMARY} subtitle={CAPTION_SUBTITLE} />
       </div>
     );
   }
@@ -100,135 +111,141 @@ export function RewriteDivergingBar({
   const deletionColor = 'var(--severity-critical)';
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <svg width={dims.width} height={dims.height}>
-        {/* Header axis labels */}
-        <text
-          x={labelWidth + halfBar / 2}
-          y={topPad - 12}
-          textAnchor="middle"
-          fontSize={9}
-          fill={deletionColor}
-          fontWeight={600}
-        >
-          deletions
-        </text>
-        <text
-          x={labelWidth + halfBar + halfBar / 2}
-          y={topPad - 12}
-          textAnchor="middle"
-          fontSize={9}
-          fill={insertionColor}
-          fontWeight={600}
-        >
-          insertions
-        </text>
-        {/* Center axis */}
-        <line
-          x1={centerX}
-          y1={topPad - 6}
-          x2={centerX}
-          y2={topPad + rows.length * rowHeight}
-          stroke="var(--border-primary)"
-          strokeWidth={1}
-        />
+    <div
+      ref={containerRef}
+      style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
+    >
+      <div style={{ flex: 1, position: 'relative' }}>
+        <svg width={dims.width} height={dims.height}>
+          {/* Header axis labels */}
+          <text
+            x={labelWidth + halfBar / 2}
+            y={topPad - 12}
+            textAnchor="middle"
+            fontSize={9}
+            fill={deletionColor}
+            fontWeight={600}
+          >
+            deletions
+          </text>
+          <text
+            x={labelWidth + halfBar + halfBar / 2}
+            y={topPad - 12}
+            textAnchor="middle"
+            fontSize={9}
+            fill={insertionColor}
+            fontWeight={600}
+          >
+            insertions
+          </text>
+          {/* Center axis */}
+          <line
+            x1={centerX}
+            y1={topPad - 6}
+            x2={centerX}
+            y2={topPad + rows.length * rowHeight}
+            stroke="var(--border-primary)"
+            strokeWidth={1}
+          />
 
-        {rows.map((row, i) => {
-          const y = topPad + i * rowHeight;
-          const insWidth = maxAbs > 0 ? (row.totalInsertions / maxAbs) * halfBar : 0;
-          const delWidth = maxAbs > 0 ? (row.totalDeletions / maxAbs) * halfBar : 0;
-          const isSelected = selectedFile === row.file;
+          {rows.map((row, i) => {
+            const y = topPad + i * rowHeight;
+            const insWidth = maxAbs > 0 ? (row.totalInsertions / maxAbs) * halfBar : 0;
+            const delWidth = maxAbs > 0 ? (row.totalDeletions / maxAbs) * halfBar : 0;
+            const isSelected = selectedFile === row.file;
 
-          return (
-            <g
-              key={row.file}
-              onClick={() => onSelectFile(row.file)}
-              style={{ cursor: 'pointer' }}
-              onMouseEnter={(evt) => {
-                const rect = containerRef.current?.getBoundingClientRect();
-                if (!rect) return;
-                setTooltip({ x: evt.clientX - rect.left, y: evt.clientY - rect.top, row });
-              }}
-              onMouseLeave={() => setTooltip(null)}
-            >
-              <text
-                x={labelWidth - 8}
-                y={y + barHeight / 2}
-                textAnchor="end"
-                dominantBaseline="middle"
-                fontSize={10}
-                fontFamily="var(--font-mono)"
-                fill={isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)'}
+            return (
+              <g
+                key={row.file}
+                onClick={() => onSelectFile(row.file)}
+                style={{ cursor: 'pointer' }}
+                onMouseEnter={(evt) => {
+                  const rect = containerRef.current?.getBoundingClientRect();
+                  if (!rect) return;
+                  setTooltip({ x: evt.clientX - rect.left, y: evt.clientY - rect.top, row });
+                }}
+                onMouseLeave={() => setTooltip(null)}
               >
-                {row.name}
-              </text>
-              {/* Deletion bar — extends left of center */}
-              <rect
-                x={centerX - delWidth}
-                y={y}
-                width={delWidth}
-                height={barHeight}
-                rx={2}
-                fill={deletionColor}
-                fillOpacity={isSelected ? 0.9 : 0.7}
-                stroke={isSelected ? 'var(--accent-primary)' : 'transparent'}
-                strokeWidth={isSelected ? 1 : 0}
-              />
-              {/* Insertion bar — extends right of center */}
-              <rect
-                x={centerX}
-                y={y}
-                width={insWidth}
-                height={barHeight}
-                rx={2}
-                fill={insertionColor}
-                fillOpacity={isSelected ? 0.9 : 0.7}
-                stroke={isSelected ? 'var(--accent-primary)' : 'transparent'}
-                strokeWidth={isSelected ? 1 : 0}
-              />
-              {/* Right-side rewrite score */}
-              <text
-                x={labelWidth + available + 6}
-                y={y + barHeight / 2}
-                dominantBaseline="middle"
-                fontSize={10}
-                fontFamily="var(--font-mono)"
-                fill="var(--text-secondary)"
-                fontWeight={600}
-                style={{ pointerEvents: 'none' }}
-              >
-                {row.rewriteScore}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-      {tooltip && (
-        <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 320,
-            wordBreak: 'break-all',
-          }}
-        >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.row.file}</div>
-          <div style={{ color: insertionColor }}>+{tooltip.row.totalInsertions} insertions</div>
-          <div style={{ color: deletionColor }}>−{tooltip.row.totalDeletions} deletions</div>
-          <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>
-            Rewrite score {tooltip.row.rewriteScore} · ratio {tooltip.row.ratio.toFixed(2)}
+                <text
+                  x={labelWidth - 8}
+                  y={y + barHeight / 2}
+                  textAnchor="end"
+                  dominantBaseline="middle"
+                  fontSize={10}
+                  fontFamily="var(--font-mono)"
+                  fill={isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)'}
+                >
+                  {row.name}
+                </text>
+                {/* Deletion bar — extends left of center */}
+                <rect
+                  x={centerX - delWidth}
+                  y={y}
+                  width={delWidth}
+                  height={barHeight}
+                  rx={2}
+                  fill={deletionColor}
+                  fillOpacity={isSelected ? 0.9 : 0.7}
+                  stroke={isSelected ? 'var(--accent-primary)' : 'transparent'}
+                  strokeWidth={isSelected ? 1 : 0}
+                />
+                {/* Insertion bar — extends right of center */}
+                <rect
+                  x={centerX}
+                  y={y}
+                  width={insWidth}
+                  height={barHeight}
+                  rx={2}
+                  fill={insertionColor}
+                  fillOpacity={isSelected ? 0.9 : 0.7}
+                  stroke={isSelected ? 'var(--accent-primary)' : 'transparent'}
+                  strokeWidth={isSelected ? 1 : 0}
+                />
+                {/* Right-side rewrite score */}
+                <text
+                  x={labelWidth + available + 6}
+                  y={y + barHeight / 2}
+                  dominantBaseline="middle"
+                  fontSize={10}
+                  fontFamily="var(--font-mono)"
+                  fill="var(--text-secondary)"
+                  fontWeight={600}
+                  style={{ pointerEvents: 'none' }}
+                >
+                  {row.rewriteScore}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+        {tooltip && (
+          <div
+            style={{
+              position: 'absolute',
+              left: tooltip.x + 12,
+              top: tooltip.y - 8,
+              background: 'var(--surface-elevated)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: 4,
+              padding: '6px 10px',
+              fontSize: 10,
+              color: 'var(--text-primary)',
+              pointerEvents: 'none',
+              zIndex: 20,
+              maxWidth: 320,
+              wordBreak: 'break-all',
+            }}
+          >
+            <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.row.file}</div>
+            <div style={{ color: insertionColor }}>+{tooltip.row.totalInsertions} insertions</div>
+            <div style={{ color: deletionColor }}>−{tooltip.row.totalDeletions} deletions</div>
+            <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>
+              Rewrite score {tooltip.row.rewriteScore} · ratio {tooltip.row.ratio.toFixed(2)}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+      <HeroCaption primary={CAPTION_PRIMARY} subtitle={CAPTION_SUBTITLE} />
     </div>
   );
 }
