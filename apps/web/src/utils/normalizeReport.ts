@@ -103,6 +103,9 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
     rewriteRatio: raw.rewriteRatio ?? {
       files: [],
       topRewriters: [],
+      totalInsertions: 0,
+      totalDeletions: 0,
+      highRewrite: 0,
       summary: 'Not available',
     },
     blastRadius: raw.blastRadius ?? {

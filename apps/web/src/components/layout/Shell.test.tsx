@@ -1,6 +1,7 @@
 import { fireEvent, render, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { PRESETS } from '../../presets/registry';
 import { normalizeReport } from '../../utils/normalizeReport';
 import { computeVisibility, HERO_LABELS, Shell } from './Shell';
 
@@ -113,11 +114,25 @@ describe('Shell keyboard shortcuts', () => {
 });
 
 describe('HERO_LABELS', () => {
-  it('maps every HeroViz to a unique display label', () => {
-    // A duplicate label (e.g. 'timeline' and 'growth-timeline' both showing 'Timeline')
-    // makes hero alt-tab buttons indistinguishable when a preset mixes them.
-    const labels = Object.values(HERO_LABELS);
-    expect(new Set(labels).size).toBe(labels.length);
+  it('gives every viz id in HERO_LABELS a non-empty label', () => {
+    for (const [vizId, label] of Object.entries(HERO_LABELS)) {
+      expect(label, `viz id "${vizId}" has empty label`).toBeTruthy();
+    }
+  });
+
+  it('maps each preset alt-tab to a label unique within that preset', () => {
+    // Cross-preset label reuse is fine — two analyzers can both call their histogram
+    // view "Distribution" because users only see one preset's pill bar at a time.
+    // What breaks UX is two viz ids inside the same preset's altTabs sharing a label,
+    // which makes the alt-tab buttons indistinguishable.
+    for (const preset of Object.values(PRESETS)) {
+      const labels = preset.hero.altTabs.map((vizId) => HERO_LABELS[vizId]);
+      const unique = new Set(labels);
+      expect(
+        unique.size,
+        `preset "${preset.id}" has duplicate alt-tab labels: ${labels.join(', ')}`,
+      ).toBe(labels.length);
+    }
   });
 });
 

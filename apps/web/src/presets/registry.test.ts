@@ -23,7 +23,13 @@ function makeReport(): GitrelicReport {
     testCoverage: { directories: [], uncoveredDirectories: [], overallRatio: 0 },
     blastRadius: { files: [], topBlasters: [] },
     complexityTrend: { files: [], growingFiles: [], shrinkingFiles: [] },
-    rewriteRatio: { files: [], topRewriters: [] },
+    rewriteRatio: {
+      files: [],
+      topRewriters: [],
+      totalInsertions: 0,
+      totalDeletions: 0,
+      highRewrite: 0,
+    },
     churnVelocity: { acceleratingFiles: [] },
     commitTiming: {
       files: [],

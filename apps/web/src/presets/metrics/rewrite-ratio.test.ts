@@ -20,6 +20,9 @@ function makeReport(rewriteRatio: Partial<RewriteRatioReport>): GitrelicReport {
     rewriteRatio: {
       files: rewriteRatio.files ?? [],
       topRewriters: rewriteRatio.topRewriters ?? [],
+      totalInsertions: rewriteRatio.totalInsertions ?? 0,
+      totalDeletions: rewriteRatio.totalDeletions ?? 0,
+      highRewrite: rewriteRatio.highRewrite ?? 0,
       summary: '',
     },
   } as unknown as GitrelicReport;
@@ -73,5 +76,28 @@ describe('rewriteRatioMetrics', () => {
     const metrics = rewriteRatioMetrics(makeReport({ files: [makeFile()], topRewriters: [] }));
     expect(metrics[0].value).toBe('—');
     expect(metrics[0].color).toBe('var(--severity-healthy)');
+  });
+});
+
+describe('slot 2 — Files ≥70', () => {
+  it("uses label 'Files ≥70'", () => {
+    const m = rewriteRatioMetrics(makeReport({}));
+    expect(m[1].label).toBe('Files ≥70');
+  });
+
+  it('value reflects report.rewriteRatio.highRewrite, not topRewriters.length', () => {
+    // Construct a report where topRewriters.length differs from highRewrite,
+    // so a regression that falls back to topRewriters.length is caught.
+    const filler = Array.from({ length: 10 }, (_, i) =>
+      makeFile({ file: `f${i}.ts`, rewriteScore: 50 }),
+    );
+    const m = rewriteRatioMetrics(makeReport({ topRewriters: filler, highRewrite: 2 }));
+    expect(m[1].value).toBe('2');
+  });
+
+  it('severity bands at 0 / 1 / 5', () => {
+    expect(rewriteRatioMetrics(makeReport({ highRewrite: 0 }))[1].color).toContain('healthy');
+    expect(rewriteRatioMetrics(makeReport({ highRewrite: 4 }))[1].color).toContain('warning');
+    expect(rewriteRatioMetrics(makeReport({ highRewrite: 5 }))[1].color).toContain('critical');
   });
 });

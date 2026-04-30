@@ -298,6 +298,9 @@ export interface FileRewriteRatio {
 export interface RewriteRatioReport {
   files: FileRewriteRatio[];
   topRewriters: FileRewriteRatio[];
+  totalInsertions: number;
+  totalDeletions: number;
+  highRewrite: number;
   summary: string;
 }
 
