@@ -108,7 +108,7 @@ function TabContent({
     case 'complexity-trend':
       return <ComplexityTrendTab report={report} onSelectFile={onSelectFile} />;
     case 'rewrite-ratio':
-      return <RewriteRatioTab report={report} onSelectFile={onSelectFile} />;
+      return <RewriteRatioTab report={report} onApplyPreset={onApplyPreset} />;
     case 'churn-velocity':
       return <ChurnVelocityTab report={report} onSelectFile={onSelectFile} />;
     case 'blast-radius':
