@@ -1,3 +1,10 @@
+# [0.29.0](https://github.com/nebulord-dev/gitrelic/compare/v0.28.0...v0.29.0) (2026-04-30)
+
+
+### Features
+
+* **web:** NarrativeKPI responsive side-by-side layout (RELIC-334) ([#56](https://github.com/nebulord-dev/gitrelic/issues/56)) ([8f10210](https://github.com/nebulord-dev/gitrelic/commit/8f102101e42d0487ab1f1dd3fdab21b966a255d9))
+
 # [0.28.0](https://github.com/nebulord-dev/gitrelic/compare/v0.27.0...v0.28.0) (2026-04-29)
 
 
