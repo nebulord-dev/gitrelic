@@ -61,7 +61,7 @@ const confidence = Math.min(1, minVal / CONFIDENCE_FLOOR);
 const rewriteScore = Math.round(rawScore * confidence);
 ```
 
-The `ratio` field is left unchanged — it remains the raw mathematical ratio, useful for the diverging-bar tooltip and the "% of files balanced" subline calculation. Only `rewriteScore` (the public-facing 0–100 metric that feeds cursed-files, the panel, and the histogram) gets the floor applied.
+The `ratio` field is left unchanged — it remains the raw mathematical ratio, useful for the diverging-bar tooltip and the "% of files balanced" subline calculation. Only `rewriteScore` (the public-facing 0–100 metric that feeds the panel KPI, the histogram, and the metrics-strip "Top Rewriter Score" tile) gets the floor applied.
 
 Worked examples (numbers verified against the data in your screenshot):
 
