@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ShameTab } from './ShameTab';
@@ -47,5 +47,33 @@ describe('ShameTab', () => {
     render(<ShameTab report={makeReport()} onApplyPreset={onApplyPreset} />);
     screen.getByText('Cursed Files').click();
     expect(onApplyPreset).toHaveBeenCalledWith('cursed-files');
+  });
+
+  it('surfaces the full directory path via Tooltip on hover (RELIC-334 truncation safety)', () => {
+    // Long fixture path that would visibly ellipsize at side-by-side widths in
+    // the real dashboard. The Tooltip wrapper must surface the full value on
+    // hover so users can read the truncated path.
+    const longDir = 'compiler/packages/babel-plugin-react-compiler/src/__tests__/fixtures';
+    const files = [
+      {
+        file: `${longDir}/a.ts`,
+        shameScore: 85,
+        rawShamePoints: 20,
+        shameCommitCount: 5,
+        topShameCommits: [],
+        dominantKeywords: ['revert'],
+      },
+    ];
+    render(
+      <ShameTab report={makeReport({ files, totalShameCommits: 5 })} onApplyPreset={vi.fn()} />,
+    );
+
+    // Pre-hover: only the cell renders the path.
+    expect(screen.getAllByText(longDir)).toHaveLength(1);
+
+    fireEvent.mouseEnter(screen.getByText(longDir));
+
+    // Post-hover: the tooltip duplicates the path inside the Tooltip wrapper.
+    expect(screen.getAllByText(longDir)).toHaveLength(2);
   });
 });

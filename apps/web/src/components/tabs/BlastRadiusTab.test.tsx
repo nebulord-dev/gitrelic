@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { BlastRadiusTab } from './BlastRadiusTab';
@@ -297,6 +297,31 @@ describe('BlastRadiusTab', () => {
 
     expect(screen.getByText('src')).toBeTruthy();
     expect(screen.getByText('scripts')).toBeTruthy();
+  });
+
+  it('surfaces the full directory path via Tooltip on hover (RELIC-334 truncation safety)', () => {
+    // Long fixture path that would visibly ellipsize at side-by-side widths in
+    // the real dashboard. The Tooltip wrapper must surface the full value on
+    // hover so users can read the truncated path.
+    const longDir = 'compiler/packages/babel-plugin-react-compiler/src/__tests__/fixtures';
+    const files: BlastFixture[] = [
+      {
+        file: `${longDir}/a.ts`,
+        blastScore: 95,
+        avgCoChangedFiles: 20,
+        maxCoChangedFiles: 30,
+        totalCommits: 1,
+      },
+    ];
+    render(<BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />);
+
+    // Pre-hover: only the cell renders the path.
+    expect(screen.getAllByText(longDir)).toHaveLength(1);
+
+    fireEvent.mouseEnter(screen.getByText(longDir));
+
+    // Post-hover: the tooltip duplicates the path inside the Tooltip wrapper.
+    expect(screen.getAllByText(longDir)).toHaveLength(2);
   });
 
   it('shows a "+ N more directories" footer when more than 5 distinct directories exist', () => {
