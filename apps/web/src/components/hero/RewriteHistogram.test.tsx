@@ -1,7 +1,12 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { RewriteHistogram, prepareRewriteHistogramData, rewriteTierFor } from './RewriteHistogram';
+import {
+  HIGH_REWRITE_THRESHOLD,
+  RewriteHistogram,
+  prepareRewriteHistogramData,
+  rewriteTierFor,
+} from './RewriteHistogram';
 
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -67,6 +72,37 @@ describe('prepareRewriteHistogramData', () => {
     );
     expect(data.highRewriteCount).toBe(2);
   });
+
+  it('uses HIGH_REWRITE_THRESHOLD as the inclusive boundary (>=70 counts, 69 does not)', () => {
+    const data = prepareRewriteHistogramData(
+      makeReport([
+        { file: 'a.ts', rewriteScore: HIGH_REWRITE_THRESHOLD },
+        { file: 'b.ts', rewriteScore: HIGH_REWRITE_THRESHOLD - 1 },
+      ]),
+    );
+    expect(data.highRewriteCount).toBe(1);
+  });
+
+  it('reports totalFiles and maxCount correctly', () => {
+    const data = prepareRewriteHistogramData(
+      makeReport([
+        { file: 'a.ts', rewriteScore: 5 },
+        { file: 'b.ts', rewriteScore: 5 },
+        { file: 'c.ts', rewriteScore: 5 },
+        { file: 'd.ts', rewriteScore: 80 },
+      ]),
+    );
+    expect(data.totalFiles).toBe(4);
+    expect(data.maxCount).toBe(3);
+  });
+
+  it('handles an empty file list', () => {
+    const data = prepareRewriteHistogramData(makeReport([]));
+    expect(data.buckets.every((b) => b.count === 0)).toBe(true);
+    expect(data.maxCount).toBe(0);
+    expect(data.totalFiles).toBe(0);
+    expect(data.highRewriteCount).toBe(0);
+  });
 });
 
 describe('RewriteHistogram render', () => {
@@ -75,6 +111,17 @@ describe('RewriteHistogram render', () => {
   it('renders an empty-state caption when no files exist', () => {
     render(<RewriteHistogram report={makeReport([])} />);
     expect(screen.getByText(/No rewrite-ratio data available/i)).toBeTruthy();
+  });
+
+  it('renders the hero caption in both populated and empty states', () => {
+    const populated = render(
+      <RewriteHistogram report={makeReport([{ file: 'a.ts', rewriteScore: 50 }])} />,
+    );
+    expect(populated.getByText(/10-bin histogram/)).toBeTruthy();
+    cleanup();
+
+    const empty = render(<RewriteHistogram report={makeReport([])} />);
+    expect(empty.getByText(/10-bin histogram/)).toBeTruthy();
   });
 
   it('renders an aria-label that announces the threshold count', () => {

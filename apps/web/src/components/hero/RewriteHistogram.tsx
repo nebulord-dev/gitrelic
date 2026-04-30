@@ -142,7 +142,7 @@ export function RewriteHistogram({ report }: RewriteHistogramProps) {
         </div>
         <HeroCaption
           primary="10-bin histogram · bar height = file count · color = rewrite tier"
-          subtitle="What's the shape of rewrite churn across the repo? How many files actually keep getting rewritten?"
+          subtitle="No rewrite-ratio signal in this repo. Either no insertions/deletions were detected or the analyzer hasn't run yet."
         />
       </div>
     );
