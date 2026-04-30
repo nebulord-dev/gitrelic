@@ -17,10 +17,12 @@ interface NarrativeKPIProps {
   finding: ReactNode;
   subline?: ReactNode;
   /**
-   * Optional full-width content rendered below the KPI / finding / subline row
-   * and above the sticky see-also footer. Use for analyzer-specific drill-downs
-   * (directory rollups, secondary callouts) that don't fit the constrained
-   * subline area. Leave undefined for the canonical sparse layout.
+   * Optional content rendered alongside the KPI / finding / subline row and
+   * above the sticky see-also footer. On wide containers (≥880px) the extras
+   * sit side-by-side with the KPI row; on narrow containers they stack
+   * beneath. Use for analyzer-specific drill-downs (directory rollups,
+   * secondary callouts) that don't fit the constrained subline area. Leave
+   * undefined for the canonical sparse layout.
    */
   extras?: ReactNode;
   seeAlso: [SeeAlsoLink, SeeAlsoLink];

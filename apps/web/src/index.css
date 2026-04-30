@@ -213,6 +213,11 @@ body {
     align-items: flex-start;
     gap: 32px;
   }
+  /* Pin the KPI/finding column to its natural width so a long extras
+     column can't squeeze it below `minWidth: 120` of the number block. */
+  .narrative-kpi-stack > .narrative-kpi-row {
+    flex-shrink: 0;
+  }
   .narrative-kpi-stack > .narrative-kpi-extras {
     flex: 1;
     min-width: 0;
