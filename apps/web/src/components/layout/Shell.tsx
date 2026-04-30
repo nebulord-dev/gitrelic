@@ -117,7 +117,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'growth-timeline': 'Growth',
   'debt-scatter': 'Debt',
   'rewrite-diverging-bar': 'Rewrites',
-  'rewrite-histogram': 'Histogram',
+  'rewrite-histogram': 'Distribution',
   'staleness-scatter': 'Staleness',
   'blast-histogram': 'Distribution',
   'languages-stacked': 'Stacked',
