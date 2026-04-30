@@ -1,4 +1,5 @@
 import { aggregateRewriteByDirectory } from '../../utils/rewriteByDirectory';
+import { HIGH_REWRITE_THRESHOLD } from '../hero/RewriteHistogram';
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { Tooltip } from '../shared/Tooltip';
 import { fileName, fmt } from '../theme';
@@ -12,13 +13,16 @@ interface RewriteRatioTabProps {
   onApplyPreset: (id: PresetId) => void;
 }
 
-const HIGH_REWRITE_THRESHOLD = 70;
 const TOP_FILES_COUNT = 3;
 const DIRECTORY_ROLLUP_LIMIT = 5;
 
+// Headcount tiering: 0 = Healthy, 1 to MODERATE_THRESHOLD-1 = Moderate, ≥MODERATE_THRESHOLD = High Rewrite.
+// Shared with rewriteRatioMetrics so the panel badge and metrics-strip slot 2 color cannot drift.
+export const MODERATE_THRESHOLD = 5;
+
 function tierBadge(highRewriteCount: number): { variant: BadgeVariant; label: string } {
   if (highRewriteCount === 0) return { variant: 'healthy', label: 'Healthy' };
-  if (highRewriteCount < 5) return { variant: 'warning', label: 'Moderate' };
+  if (highRewriteCount < MODERATE_THRESHOLD) return { variant: 'warning', label: 'Moderate' };
   return { variant: 'critical', label: 'High Rewrite' };
 }
 
@@ -42,6 +46,8 @@ export function RewriteRatioTab({ report, onApplyPreset }: RewriteRatioTabProps)
   const tier = tierBadge(highRewrite);
   const topFiles = highRewriteFiles.slice(0, TOP_FILES_COUNT);
 
+  // Subline shows raw edit balance, not the dampened display score — `ratio` is the
+  // undampened min/max ratio (intent: "is this codebase shaped like growth or rewrite?").
   const balancedCount = files.filter((f) => f.ratio > 0.5).length;
   const balancedPct = files.length > 0 ? Math.round((balancedCount / files.length) * 100) : 0;
 

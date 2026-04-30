@@ -1,3 +1,4 @@
+import { MODERATE_THRESHOLD } from '../../components/tabs/RewriteRatioTab';
 import { fmt } from '../../components/theme';
 
 import type { Metric } from '../types';
@@ -25,7 +26,7 @@ export function rewriteRatioMetrics(report: GitrelicReport): Metric[] {
       label: 'Files ≥70',
       value: fmt(report.rewriteRatio.highRewrite),
       color:
-        report.rewriteRatio.highRewrite >= 5
+        report.rewriteRatio.highRewrite >= MODERATE_THRESHOLD
           ? 'var(--severity-critical)'
           : report.rewriteRatio.highRewrite > 0
             ? 'var(--severity-warning)'
