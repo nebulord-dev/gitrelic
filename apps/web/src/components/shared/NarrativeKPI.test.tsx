@@ -71,4 +71,41 @@ describe('NarrativeKPI', () => {
     expect(onApplyPreset).toHaveBeenLastCalledWith('ghost-files');
     expect(onApplyPreset).toHaveBeenCalledTimes(2);
   });
+
+  // Layout-shape assertions for the responsive side-by-side layout (RELIC-334).
+  // Container queries don't compute under happy-dom, so we verify the wiring is
+  // present (container-defining body, stack wrapper, extras slot class) and rely
+  // on a manual / Playwright smoke for the actual layout flip.
+  describe('responsive layout wiring', () => {
+    it('marks the body as a container-query root', () => {
+      const { container } = render(<NarrativeKPI {...baseProps} onApplyPreset={vi.fn()} />);
+      const body = container.querySelector('.narrative-kpi-body');
+      expect(body).toBeTruthy();
+    });
+
+    it('wraps kpi-row in a responsive stack', () => {
+      const { container } = render(<NarrativeKPI {...baseProps} onApplyPreset={vi.fn()} />);
+      const stack = container.querySelector('.narrative-kpi-stack');
+      expect(stack).toBeTruthy();
+      expect(stack?.querySelector('.narrative-kpi-row')).toBeTruthy();
+    });
+
+    it('renders the extras slot only when extras prop is provided', () => {
+      const { container, rerender } = render(
+        <NarrativeKPI {...baseProps} onApplyPreset={vi.fn()} />,
+      );
+      expect(container.querySelector('.narrative-kpi-extras')).toBeNull();
+
+      rerender(
+        <NarrativeKPI
+          {...baseProps}
+          extras={<div>directory rollup</div>}
+          onApplyPreset={vi.fn()}
+        />,
+      );
+      const extras = container.querySelector('.narrative-kpi-extras');
+      expect(extras).toBeTruthy();
+      expect(extras?.textContent).toBe('directory rollup');
+    });
+  });
 });

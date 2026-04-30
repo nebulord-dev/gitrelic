@@ -1,5 +1,6 @@
 import { aggregateShameByDirectory } from '../../utils/shameByDirectory';
 import { NarrativeKPI } from '../shared/NarrativeKPI';
+import { Tooltip } from '../shared/Tooltip';
 import { fileName } from '../theme';
 
 import type { PresetId } from '../../presets/types';
@@ -119,8 +120,10 @@ export function ShameTab({ report, onApplyPreset }: ShameTabProps) {
                     lineHeight: 1.4,
                   }}
                 >
-                  <div
-                    style={{
+                  <Tooltip
+                    content={row.directory || '(root)'}
+                    wrapperStyle={{
+                      display: 'block',
                       flex: 1,
                       minWidth: 0,
                       fontFamily: 'var(--font-mono)',
@@ -129,10 +132,9 @@ export function ShameTab({ report, onApplyPreset }: ShameTabProps) {
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                     }}
-                    title={row.directory || '(root)'}
                   >
                     {row.directory || '(root)'}
-                  </div>
+                  </Tooltip>
                   <div
                     style={{
                       width: 80,

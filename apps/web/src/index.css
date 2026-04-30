@@ -183,3 +183,29 @@ body {
 .font-mono {
   font-family: var(--font-mono);
 }
+
+/* ─── NarrativeKPI responsive layout (RELIC-334) ───
+   Wide containers place `extras` to the right of the KPI/finding row;
+   narrow containers keep the original stacked layout. */
+
+.narrative-kpi-body {
+  container-type: inline-size;
+}
+
+.narrative-kpi-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@container (min-width: 880px) {
+  .narrative-kpi-stack {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 32px;
+  }
+  .narrative-kpi-stack > .narrative-kpi-extras {
+    flex: 1;
+    min-width: 0;
+  }
+}
