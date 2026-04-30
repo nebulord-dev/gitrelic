@@ -303,7 +303,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     group: 'code-health',
     hero: {
       defaultViz: 'rewrite-diverging-bar',
-      altTabs: ['rewrite-diverging-bar', 'scatter', 'debt-scatter'],
+      altTabs: ['rewrite-diverging-bar', 'rewrite-histogram'],
     },
     bottomPanel: {
       defaultTab: 'rewrite-ratio',

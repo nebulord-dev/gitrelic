@@ -18,6 +18,7 @@ import { OwnershipBubble } from '../hero/OwnershipBubble';
 import { OwnershipSunburst } from '../hero/OwnershipSunburst';
 import { RenameSankey } from '../hero/RenameSankey';
 import { RewriteDivergingBar } from '../hero/RewriteDivergingBar';
+import { RewriteHistogram } from '../hero/RewriteHistogram';
 import { RiskHeatmap } from '../hero/RiskHeatmap';
 import { ShameLeaderboard } from '../hero/ShameLeaderboard';
 import { ShameTrend } from '../hero/ShameTrend';
@@ -116,6 +117,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'growth-timeline': 'Growth',
   'debt-scatter': 'Debt',
   'rewrite-diverging-bar': 'Rewrites',
+  'rewrite-histogram': 'Histogram',
   'staleness-scatter': 'Staleness',
   'blast-histogram': 'Distribution',
   'languages-stacked': 'Stacked',
@@ -414,6 +416,9 @@ export function Shell({ report }: ShellProps) {
                     selectedFile={selection.selectedFile}
                     onSelectFile={selection.selectFile}
                   />
+                )}
+                {selection.activeHeroViz === 'rewrite-histogram' && (
+                  <RewriteHistogram report={report} />
                 )}
                 {selection.activeHeroViz === 'staleness-scatter' && (
                   <StalenessScatter
