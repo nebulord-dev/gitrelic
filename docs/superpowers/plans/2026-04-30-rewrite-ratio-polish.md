@@ -1276,38 +1276,42 @@ EOF
 
 Spec §D1. Slot 2 currently uses `topRewriters.length` (capped at 10, lies); switch to `report.rewriteRatio.highRewrite`.
 
-- [ ] **Step 1: Write or update failing test**
+- [ ] **Step 1: Update the existing `makeReport` helper**
 
-Check whether `apps/web/src/presets/metrics/rewrite-ratio.test.ts` exists. If not, create it. Either way it should contain:
+`apps/web/src/presets/metrics/rewrite-ratio.test.ts` already exists and contains 7 tests covering slot 1 color bands (70/30), the empty-state em-dash, slot 3 avg-ratio formatting, and slot 4 file counts — **do not delete or replace those tests.** First, locate the existing `makeReport` (or equivalently named) helper at the top of the file. Its `rewriteRatio` block currently omits `totalInsertions`, `totalDeletions`, and `highRewrite`. Add defaults for the three new fields so existing tests still type-check and run cleanly under the post-Task-1 type:
 
 ```ts
-import { describe, expect, it } from 'vitest';
-
-import { rewriteRatioMetrics } from './rewrite-ratio';
-
-import type { GitrelicReport } from '@gitrelic/core';
-
-const baseReport = (overrides: Partial<GitrelicReport['rewriteRatio']> = {}): GitrelicReport =>
+// existing helper, updated:
+const makeReport = (overrides: Partial<GitrelicReport['rewriteRatio']> = {}): GitrelicReport =>
   ({
     rewriteRatio: {
       files: [],
       topRewriters: [],
-      totalInsertions: 0,
-      totalDeletions: 0,
-      highRewrite: 0,
+      totalInsertions: 0,    // new — required by RewriteRatioReport post-Task-1
+      totalDeletions: 0,     // new
+      highRewrite: 0,        // new
       summary: '',
       ...overrides,
     },
   }) as unknown as GitrelicReport;
+```
 
-describe('rewriteRatioMetrics', () => {
-  it("slot 2 label is 'Files ≥70'", () => {
-    const m = rewriteRatioMetrics(baseReport());
+(If the existing helper has a different name or signature, adapt — the goal is that all existing tests still construct a valid report.)
+
+- [ ] **Step 2: Append the new failing tests**
+
+Append a new `describe` block at the bottom of the file (do NOT remove the existing describes):
+
+```ts
+describe('slot 2 — Files ≥70', () => {
+  it("uses label 'Files ≥70'", () => {
+    const m = rewriteRatioMetrics(makeReport());
     expect(m[1].label).toBe('Files ≥70');
   });
 
-  it('slot 2 value reflects report.rewriteRatio.highRewrite, not topRewriters.length', () => {
-    // Construct a report where topRewriters.length differs from highRewrite.
+  it('value reflects report.rewriteRatio.highRewrite, not topRewriters.length', () => {
+    // Construct a report where topRewriters.length differs from highRewrite, to
+    // catch a regression where slot 2 falls back to the old (capped) source.
     const filler = Array.from({ length: 10 }, (_, i) => ({
       file: `f${i}.ts`,
       rewriteScore: 50, // sub-threshold but still in topRewriters
@@ -1315,19 +1319,21 @@ describe('rewriteRatioMetrics', () => {
       totalDeletions: 50,
       ratio: 0.5,
     }));
-    const m = rewriteRatioMetrics(baseReport({ topRewriters: filler, highRewrite: 2 }));
+    const m = rewriteRatioMetrics(makeReport({ topRewriters: filler, highRewrite: 2 }));
     expect(m[1].value).toBe('2');
   });
 
-  it('slot 2 severity bands at 0 / 1 / 5', () => {
-    expect(rewriteRatioMetrics(baseReport({ highRewrite: 0 }))[1].color).toContain('healthy');
-    expect(rewriteRatioMetrics(baseReport({ highRewrite: 4 }))[1].color).toContain('warning');
-    expect(rewriteRatioMetrics(baseReport({ highRewrite: 5 }))[1].color).toContain('critical');
+  it('severity bands at 0 / 1 / 5', () => {
+    expect(rewriteRatioMetrics(makeReport({ highRewrite: 0 }))[1].color).toContain('healthy');
+    expect(rewriteRatioMetrics(makeReport({ highRewrite: 4 }))[1].color).toContain('warning');
+    expect(rewriteRatioMetrics(makeReport({ highRewrite: 5 }))[1].color).toContain('critical');
   });
 });
 ```
 
-- [ ] **Step 2: Run; expect failures**
+If any pre-existing test asserts the old slot 2 label `'High Rewriters'` or the old value derived from `topRewriters.length`, update *only that assertion* to match the new behavior — don't drop the whole test.
+
+- [ ] **Step 3: Run; expect failures**
 
 ```bash
 cd /Users/tracericochet/Desktop/nebulord/gitrelic/.worktrees/relic-314-polish-rewrite-ratio
@@ -1336,7 +1342,7 @@ pnpm --filter @gitrelic/web test --run "metrics/rewrite-ratio"
 
 Expected: failures (label still says `'High Rewriters'`, value still uses `topRewriters.length`).
 
-- [ ] **Step 3: Update the preset**
+- [ ] **Step 4: Update the preset**
 
 In `apps/web/src/presets/metrics/rewrite-ratio.ts`, replace slot 2's object literal with:
 
@@ -1355,16 +1361,16 @@ In `apps/web/src/presets/metrics/rewrite-ratio.ts`, replace slot 2's object lite
 
 Slots 1 (Top Rewriter Score), 3 (Avg Ratio), 4 (Files Analyzed) are unchanged.
 
-- [ ] **Step 4: Run; expect pass**
+- [ ] **Step 5: Run; expect pass**
 
 ```bash
 cd /Users/tracericochet/Desktop/nebulord/gitrelic/.worktrees/relic-314-polish-rewrite-ratio
 pnpm --filter @gitrelic/web test --run "metrics/rewrite-ratio"
 ```
 
-Expected: 3 tests pass.
+Expected: existing tests still pass plus the new 3-test block — total = (existing count) + 3.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 cd /Users/tracericochet/Desktop/nebulord/gitrelic/.worktrees/relic-314-polish-rewrite-ratio
