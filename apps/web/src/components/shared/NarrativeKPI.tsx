@@ -17,10 +17,12 @@ interface NarrativeKPIProps {
   finding: ReactNode;
   subline?: ReactNode;
   /**
-   * Optional full-width content rendered below the KPI / finding / subline row
-   * and above the sticky see-also footer. Use for analyzer-specific drill-downs
-   * (directory rollups, secondary callouts) that don't fit the constrained
-   * subline area. Leave undefined for the canonical sparse layout.
+   * Optional content rendered alongside the KPI / finding / subline row and
+   * above the sticky see-also footer. On wide containers (≥880px) the extras
+   * sit side-by-side with the KPI row; on narrow containers they stack
+   * beneath. Use for analyzer-specific drill-downs (directory rollups,
+   * secondary callouts) that don't fit the constrained subline area. Leave
+   * undefined for the canonical sparse layout.
    */
   extras?: ReactNode;
   seeAlso: [SeeAlsoLink, SeeAlsoLink];
@@ -49,46 +51,51 @@ export function NarrativeKPI({
 }: NarrativeKPIProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
-      <div style={{ flex: 1, padding: '12px 0' }}>
-        <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
-          <div style={{ textAlign: 'center', minWidth: 120 }}>
-            <div
-              data-testid="narrative-kpi-big-number"
-              style={{
-                fontSize: 36,
-                fontWeight: 700,
-                fontFamily: 'var(--font-mono)',
-                color: `var(--severity-${tier.variant})`,
-                lineHeight: 1,
-              }}
-            >
-              {bigNumber}
-            </div>
-            <div style={{ marginTop: 4 }}>
-              <Badge variant={tier.variant}>{tier.label}</Badge>
-            </div>
-            <div
-              style={{
-                fontSize: 9,
-                color: 'var(--text-tertiary)',
-                marginTop: 6,
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-              }}
-            >
-              {metric}
-            </div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 11 }}>
-            <div style={{ color: 'var(--text-secondary)' }}>{finding}</div>
-            {subline != null && (
-              <div style={{ color: 'var(--text-tertiary)', fontSize: 10, maxWidth: 400 }}>
-                {subline}
+      <div className="narrative-kpi-body" style={{ flex: 1, padding: '12px 0' }}>
+        <div className="narrative-kpi-stack">
+          <div
+            className="narrative-kpi-row"
+            style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}
+          >
+            <div style={{ textAlign: 'center', minWidth: 120 }}>
+              <div
+                data-testid="narrative-kpi-big-number"
+                style={{
+                  fontSize: 36,
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-mono)',
+                  color: `var(--severity-${tier.variant})`,
+                  lineHeight: 1,
+                }}
+              >
+                {bigNumber}
               </div>
-            )}
+              <div style={{ marginTop: 4 }}>
+                <Badge variant={tier.variant}>{tier.label}</Badge>
+              </div>
+              <div
+                style={{
+                  fontSize: 9,
+                  color: 'var(--text-tertiary)',
+                  marginTop: 6,
+                  textTransform: 'uppercase',
+                  letterSpacing: 1,
+                }}
+              >
+                {metric}
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 11 }}>
+              <div style={{ color: 'var(--text-secondary)' }}>{finding}</div>
+              {subline != null && (
+                <div style={{ color: 'var(--text-tertiary)', fontSize: 10, maxWidth: 400 }}>
+                  {subline}
+                </div>
+              )}
+            </div>
           </div>
+          {extras != null && <div className="narrative-kpi-extras">{extras}</div>}
         </div>
-        {extras != null && <div style={{ marginTop: 16 }}>{extras}</div>}
       </div>
 
       <div

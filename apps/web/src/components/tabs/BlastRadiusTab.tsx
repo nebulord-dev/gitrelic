@@ -1,6 +1,7 @@
 import { aggregateBlastByDirectory } from '../../utils/blastByDirectory';
 import { type BlastTier, HIGH_BLAST_THRESHOLD, blastTierFor } from '../hero/BlastHistogram';
 import { NarrativeKPI } from '../shared/NarrativeKPI';
+import { Tooltip } from '../shared/Tooltip';
 import { fileName } from '../theme';
 
 import type { PresetId } from '../../presets/types';
@@ -125,8 +126,10 @@ export function BlastRadiusTab({ report, onApplyPreset }: BlastRadiusTabProps) {
                     lineHeight: 1.4,
                   }}
                 >
-                  <div
-                    style={{
+                  <Tooltip
+                    content={row.directory || '(root)'}
+                    wrapperStyle={{
+                      display: 'block',
                       flex: 1,
                       minWidth: 0,
                       fontFamily: 'var(--font-mono)',
@@ -135,10 +138,9 @@ export function BlastRadiusTab({ report, onApplyPreset }: BlastRadiusTabProps) {
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                     }}
-                    title={row.directory || '(root)'}
                   >
                     {row.directory || '(root)'}
-                  </div>
+                  </Tooltip>
                   <div
                     style={{
                       width: 80,

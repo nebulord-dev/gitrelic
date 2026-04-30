@@ -5,9 +5,16 @@ interface TooltipProps {
   content: ReactNode;
   children: ReactNode;
   position?: 'top' | 'bottom';
+  /**
+   * Override the default `display: inline-block` wrapper styling. Use when the
+   * trigger needs to participate in flex sizing or own its own truncation
+   * styles (e.g. an ellipsizing cell that should still surface its full value
+   * on hover).
+   */
+  wrapperStyle?: CSSProperties;
 }
 
-export function Tooltip({ content, children, position = 'top' }: TooltipProps) {
+export function Tooltip({ content, children, position = 'top', wrapperStyle }: TooltipProps) {
   const [visible, setVisible] = useState(false);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -41,7 +48,7 @@ export function Tooltip({ content, children, position = 'top' }: TooltipProps) {
       ref={wrapRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setVisible(false)}
-      style={{ display: 'inline-block' }}
+      style={{ display: 'inline-block', cursor: 'help', ...wrapperStyle }}
     >
       {children}
       {visible && <div style={tooltipStyle}>{content}</div>}
