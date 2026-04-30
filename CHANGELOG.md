@@ -1,3 +1,10 @@
+# [0.30.0](https://github.com/nebulord-dev/gitrelic/compare/v0.29.0...v0.30.0) (2026-04-30)
+
+
+### Features
+
+* **web:** rewrite-ratio polish — formula + heroes + narrative-KPI (RELIC-314) ([#57](https://github.com/nebulord-dev/gitrelic/issues/57)) ([9790ff2](https://github.com/nebulord-dev/gitrelic/commit/9790ff283290489d7c470ff5511778d522b7adde)), closes [hi#rewrite](https://github.com/hi/issues/rewrite) [hi#rewrite](https://github.com/hi/issues/rewrite)
+
 # [0.29.0](https://github.com/nebulord-dev/gitrelic/compare/v0.28.0...v0.29.0) (2026-04-30)
 
 
