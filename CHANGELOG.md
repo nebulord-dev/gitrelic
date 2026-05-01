@@ -1,3 +1,10 @@
+# [0.33.0](https://github.com/nebulord-dev/gitrelic/compare/v0.32.0...v0.33.0) (2026-05-01)
+
+
+### Features
+
+* **web:** tailwind foundation + NarrativeKPI canary (RELIC-336) ([#59](https://github.com/nebulord-dev/gitrelic/issues/59)) ([41a4b42](https://github.com/nebulord-dev/gitrelic/commit/41a4b4259ddbeacd513758ff7c99dc8f97112d9b))
+
 # [0.32.0](https://github.com/nebulord-dev/gitrelic/compare/v0.31.0...v0.32.0) (2026-05-01)
 
 
