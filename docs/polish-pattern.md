@@ -96,7 +96,7 @@ The four analyzers in Batch 1 all share the "table is rotated hero" pathology. T
 
 > **Hero scope creep is OK when warranted.** Originally Batch 1 was scoped strictly to bottom-panel work. `blast-radius` widened it: a forensic look at the three hero views found that two were redundant with other analyzers (Scatter ↔ Hotspots, Coupling ↔ Coupling) and the third had a structural diagonal artifact. Replacing all three with a single distribution histogram fell out naturally from the narrative-KPI work. Future polish tickets should ask the same value question per `polish-tasks.md` — *"is each hero pulling its weight?"* — before defaulting to the doc's bottom-panel-only scope.
 
-### `churn`
+### `churn` *(shipped — RELIC-303)*
 
 - **Bottom panel:** Table (directory roll-up), **split into two BottomTabs** sharing one component (`Churn` / `Test Files`). Different unit of analysis from the per-file hero — answers "where in the codebase does churn live?" — and isolates source-vs-test churn so neither story drowns out the other.
 - **Columns:** Directory · Commits · Share (% of all repo commits) · Files · Top file.
@@ -108,7 +108,7 @@ The four analyzers in Batch 1 all share the "table is rotated hero" pathology. T
 - **Backend changes:** None — derived from `report.churn.files[]` in the frontend.
 - **Removes:** ChurnTab's per-file SortableTable + cross-analyzer join (loc + bus factor + age map, ~90 lines). All redundant with the Inspector.
 
-### `forensics` (Shame tab)
+### `forensics` (Shame tab) *(shipped — RELIC-308)*
 
 - **Bottom panel:** Narrative-KPI.
 - **Big number:** Files with `shameScore ≥ 70` (post-formula-fix). Tier badge thresholds **0 = Healthy · 1–9 = Moderate · 10+ = High Shame** — mirrors blast-radius's absolute-count thresholding so the headline is comparable across analyzers.
