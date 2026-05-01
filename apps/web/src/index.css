@@ -1,6 +1,76 @@
 @import 'tailwindcss';
 
 /* ═══════════════════════════════════════════════════
+   Tailwind v4 Token Bridge (RELIC-336)
+   Aliases the semantic CSS variables defined in :root below to
+   Tailwind tokens, so utilities like `bg-surface-primary` and
+   `text-severity-critical` resolve through the same variables
+   that the [data-theme='light'] switch already toggles. Theme
+   switching keeps working unchanged — only the Tailwind utility
+   class is the new surface.
+   ═══════════════════════════════════════════════════ */
+
+@theme {
+  /* Surface */
+  --color-surface-primary: var(--surface-primary);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-surface-tertiary: var(--surface-tertiary);
+  --color-surface-elevated: var(--surface-elevated);
+
+  /* Borders */
+  --color-border-primary: var(--border-primary);
+  --color-border-secondary: var(--border-secondary);
+  --color-border-focus: var(--border-focus);
+
+  /* Text */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-inverse: var(--text-inverse);
+
+  /* Severity */
+  --color-severity-critical: var(--severity-critical);
+  --color-severity-critical-bg: var(--severity-critical-bg);
+  --color-severity-critical-text: var(--severity-critical-text);
+  --color-severity-warning: var(--severity-warning);
+  --color-severity-warning-bg: var(--severity-warning-bg);
+  --color-severity-warning-text: var(--severity-warning-text);
+  --color-severity-moderate: var(--severity-moderate);
+  --color-severity-moderate-bg: var(--severity-moderate-bg);
+  --color-severity-moderate-text: var(--severity-moderate-text);
+  --color-severity-healthy: var(--severity-healthy);
+  --color-severity-healthy-bg: var(--severity-healthy-bg);
+  --color-severity-healthy-text: var(--severity-healthy-text);
+
+  /* Accent / Domain */
+  --color-accent-ownership: var(--accent-ownership);
+  --color-accent-ownership-bg: var(--accent-ownership-bg);
+  --color-accent-ownership-text: var(--accent-ownership-text);
+  --color-accent-coupling: var(--accent-coupling);
+  --color-accent-coupling-bg: var(--accent-coupling-bg);
+  --color-accent-coupling-text: var(--accent-coupling-text);
+  --color-accent-temporal: var(--accent-temporal);
+  --color-accent-temporal-bg: var(--accent-temporal-bg);
+  --color-accent-temporal-text: var(--accent-temporal-text);
+  --color-accent-primary: var(--accent-primary);
+
+  /* Component */
+  --color-panel-resize-handle: var(--panel-resize-handle);
+  --color-panel-resize-handle-hover: var(--panel-resize-handle-hover);
+  --color-nav-item-active-bg: var(--nav-item-active-bg);
+  --color-nav-badge-critical: var(--nav-badge-critical);
+  --color-nav-badge-warning: var(--nav-badge-warning);
+  --color-tooltip-bg: var(--tooltip-bg);
+  --color-tooltip-text: var(--tooltip-text);
+
+  /* Fonts — duplicated from :root so Tailwind's font-* utilities
+     pick up the project's stack. Keeping :root values too so any
+     direct var(--font-*) consumer in CSS keeps working unchanged. */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+}
+
+/* ═══════════════════════════════════════════════════
    GitRelic — Semantic Design Tokens (Dark Theme Default)
    ═══════════════════════════════════════════════════ */
 
