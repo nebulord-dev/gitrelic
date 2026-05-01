@@ -106,8 +106,8 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     label: 'Bus Factor',
     group: 'ownership-risk',
     hero: {
-      defaultViz: 'ownership-bar',
-      altTabs: ['ownership-bar', 'risk-heatmap', 'ownership'],
+      defaultViz: 'bus-factor-histogram',
+      altTabs: ['bus-factor-histogram', 'ownership-bar'],
     },
     bottomPanel: {
       defaultTab: 'bus-factor',

@@ -34,6 +34,7 @@ export type HeroViz =
   | 'rewrite-diverging-bar'
   | 'staleness-scatter'
   | 'blast-histogram'
+  | 'bus-factor-histogram'
   | 'rewrite-histogram'
   | 'languages-stacked'
   | 'test-coverage-by-dir';

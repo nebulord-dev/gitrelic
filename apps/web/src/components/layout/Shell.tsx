@@ -4,6 +4,7 @@ import { useSelection } from '../../hooks/useSelection';
 import { PRESETS } from '../../presets/registry';
 import { AuthorForceGraph } from '../hero/AuthorForceGraph';
 import { BlastHistogram } from '../hero/BlastHistogram';
+import { BusFactorHistogram } from '../hero/BusFactorHistogram';
 import { ChurnBar } from '../hero/ChurnBar';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
 import { CommitGraph } from '../hero/CommitGraph';
@@ -120,6 +121,7 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'rewrite-histogram': 'Distribution',
   'staleness-scatter': 'Staleness',
   'blast-histogram': 'Distribution',
+  'bus-factor-histogram': 'Distribution',
   'languages-stacked': 'Stacked',
   'test-coverage-by-dir': 'By Dir',
 };
@@ -429,6 +431,9 @@ export function Shell({ report }: ShellProps) {
                 )}
                 {selection.activeHeroViz === 'blast-histogram' && (
                   <BlastHistogram report={report} />
+                )}
+                {selection.activeHeroViz === 'bus-factor-histogram' && (
+                  <BusFactorHistogram report={report} />
                 )}
                 {selection.activeHeroViz === 'languages-stacked' && (
                   <LanguagesStackedBar report={report} />
