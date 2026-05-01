@@ -1,3 +1,10 @@
+# [0.31.0](https://github.com/nebulord-dev/gitrelic/compare/v0.30.0...v0.31.0) (2026-05-01)
+
+
+### Features
+
+* **docs:** update polish-pattern with shipped status for churn and forensics analyzers ([9760314](https://github.com/nebulord-dev/gitrelic/commit/9760314a1aa239f3ce7c125ecb2c500c5e7267a1))
+
 # [0.30.0](https://github.com/nebulord-dev/gitrelic/compare/v0.29.0...v0.30.0) (2026-04-30)
 
 
