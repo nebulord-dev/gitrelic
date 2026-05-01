@@ -1,5 +1,7 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
+import { severityText } from '../../utils/classMaps';
+import { cn } from '../../utils/cn';
 import Badge from './Badge';
 
 import type { PresetId } from '../../presets/types';
@@ -29,15 +31,8 @@ interface NarrativeKPIProps {
   onApplyPreset: (id: PresetId) => void;
 }
 
-const linkStyle: CSSProperties = {
-  background: 'none',
-  border: 'none',
-  color: 'var(--accent-primary)',
-  fontSize: 10,
-  cursor: 'pointer',
-  padding: 0,
-  textDecoration: 'underline',
-};
+const linkClass =
+  'bg-transparent border-none text-accent-primary text-[10px] cursor-pointer p-0 underline';
 
 export function NarrativeKPI({
   bigNumber,
@@ -50,47 +45,31 @@ export function NarrativeKPI({
   onApplyPreset,
 }: NarrativeKPIProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
-      <div className="narrative-kpi-body" style={{ flex: 1, padding: '12px 0' }}>
+    <div className="flex flex-col min-h-full">
+      <div className="narrative-kpi-body flex-1 py-3">
         <div className="narrative-kpi-stack">
-          <div
-            className="narrative-kpi-row"
-            style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}
-          >
-            <div style={{ textAlign: 'center', minWidth: 120 }}>
+          <div className="narrative-kpi-row flex gap-6 items-start">
+            <div className="text-center min-w-[120px]">
               <div
                 data-testid="narrative-kpi-big-number"
-                style={{
-                  fontSize: 36,
-                  fontWeight: 700,
-                  fontFamily: 'var(--font-mono)',
-                  color: `var(--severity-${tier.variant})`,
-                  lineHeight: 1,
-                }}
+                className={cn(
+                  'text-[36px] font-bold font-mono leading-none',
+                  severityText[tier.variant],
+                )}
               >
                 {bigNumber}
               </div>
-              <div style={{ marginTop: 4 }}>
+              <div className="mt-1">
                 <Badge variant={tier.variant}>{tier.label}</Badge>
               </div>
-              <div
-                style={{
-                  fontSize: 9,
-                  color: 'var(--text-tertiary)',
-                  marginTop: 6,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                }}
-              >
+              <div className="text-[9px] text-text-tertiary mt-1.5 uppercase tracking-[1px]">
                 {metric}
               </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 11 }}>
-              <div style={{ color: 'var(--text-secondary)' }}>{finding}</div>
+            <div className="flex flex-col gap-2 text-[11px]">
+              <div className="text-text-secondary">{finding}</div>
               {subline != null && (
-                <div style={{ color: 'var(--text-tertiary)', fontSize: 10, maxWidth: 400 }}>
-                  {subline}
-                </div>
+                <div className="text-text-tertiary text-[10px] max-w-[400px]">{subline}</div>
               )}
             </div>
           </div>
@@ -98,27 +77,13 @@ export function NarrativeKPI({
         </div>
       </div>
 
-      <div
-        style={{
-          position: 'sticky',
-          bottom: 0,
-          marginTop: 'auto',
-          background: 'var(--surface-primary)',
-          borderTop: '1px solid var(--border-primary)',
-          padding: '6px 4px',
-          fontSize: 10,
-          color: 'var(--text-tertiary)',
-          display: 'flex',
-          gap: 8,
-          alignItems: 'center',
-        }}
-      >
+      <div className="sticky bottom-0 mt-auto bg-surface-primary border-t border-border-primary px-1 py-1.5 text-[10px] text-text-tertiary flex gap-2 items-center">
         See also:{' '}
-        <button onClick={() => onApplyPreset(seeAlso[0].presetId)} style={linkStyle}>
+        <button onClick={() => onApplyPreset(seeAlso[0].presetId)} className={linkClass}>
           {seeAlso[0].label}
         </button>
         ·
-        <button onClick={() => onApplyPreset(seeAlso[1].presetId)} style={linkStyle}>
+        <button onClick={() => onApplyPreset(seeAlso[1].presetId)} className={linkClass}>
           {seeAlso[1].label}
         </button>
       </div>

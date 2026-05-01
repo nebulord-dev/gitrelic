@@ -29,9 +29,9 @@ describe('NarrativeKPI', () => {
   it('applies severity color from tier.variant to the big number', () => {
     render(<NarrativeKPI {...baseProps} onApplyPreset={vi.fn()} />);
     const big = screen.getByText('67%');
-    // happy-dom can normalize CSS values; assert against the raw style attribute
-    // to ensure we round-trip the var() reference faithfully.
-    expect(big.getAttribute('style')).toContain('color: var(--severity-warning)');
+    // Tailwind class is the contract now; happy-dom won't compute the
+    // resolved color, but the className is enough to verify wiring.
+    expect(big.className).toContain('text-severity-warning');
   });
 
   it('renders subline when provided and omits it when absent', () => {
