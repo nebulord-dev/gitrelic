@@ -92,7 +92,7 @@ function TabContent({
     case 'cursed-files':
       return <CursedFilesTab report={report} onSelectFile={onSelectFile} />;
     case 'bus-factor':
-      return <BusFactorTab report={report} onSelectFile={onSelectFile} />;
+      return <BusFactorTab report={report} onApplyPreset={onApplyPreset} />;
     case 'coupling':
       return <CouplingTab report={report} onSelectFile={onSelectFile} />;
     case 'contributors':

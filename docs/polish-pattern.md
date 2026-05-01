@@ -155,13 +155,28 @@ The four analyzers in Batch 1 all share the "table is rotated hero" pathology. T
 - **Scope expansion:** Like blast-radius, the polish ticket exceeded its original bottom-panel-only spec — a forensic look at the rendered Rewrite Ratio tab against React data revealed every top-30 score tied at 100 (formula bug) and two of three alt-tabs duplicating other analyzers' heroes (hero audit). Same "*hero scope creep is OK when warranted*" precedent.
 - **Removes:** `RewriteRatioTab`'s per-file `SortableTable` (~107 lines). Inspector + diverging-bar already cover per-file detail.
 
+### `bus-factor` *(shipped — RELIC-304)*
+
+- **Bottom panel:** Narrative-KPI replacing the SortableTable. Re-polish after the original Bus Factor pass was prematurely closed pre-pattern.
+- **Big number:** `report.busFactors.overallBusFactor` — the canonical "min unique authors across the top-20 most-concentrated files," already on the report but never rendered. Not duplicated by the metrics strip (which shows `Critical Files`, `Solo-Owned`, `Solo-Owned %`, `Dominant Owners`).
+- **Tier thresholds:** `1 = Critical` (single point of failure), `2–3 = High Risk`, `4+ = Resilient`. Anchored on the canonical bus-factor definition. `0` is reserved for empty-repo state and shows a neutral `No Data` badge.
+- **Sub-content:** Top **three dominant owners** (author email · `N files (P%)`, grouped from `criticalFiles` by `dominantAuthor`) as the finding; tier mix breakdown (`X critical · Y high · Z medium · W low`) as the subline using the analyzer's per-file `risk` enum.
+- **Extras (`NarrativeKPI.extras` slot):** "Where they live" — top-5 directory rollup of `risk === 'critical'` files. Aggregator at `apps/web/src/utils/busFactorByDirectory.ts`. Same shape as Blast Radius / Shame / Rewrite Ratio — four Batch 1+ panels now share one layout.
+- **Why author-centric finding (not file-centric):** Bus Factor is fundamentally about *people*, not code. On a real repo (React) the top-3 critical files were all dominated by a single author — the file-centric finding conveyed one fact across three rows. Swapping to top-3 dominant owners (`mail@hendrik-liebau.de — 287 files (16%)` / etc.) answers the analyzer's actual question: *"who would knowledge collapse on if they got hit by a bus?"* — directly. Aggregator at `apps/web/src/utils/topDominantOwners.ts`. The Bus Bar alt covers the file-level drill-down lens.
+- **Hero audit (scope expansion):** A forensic look at the rendered Bus Factor tab against React data confirmed the hero pathology: `Bus Bar` (default) was visually flat — every top-N file pegged at `dominantAuthorPercent === 100` (single-author saturation), making 20+ identical-looking red bars. The two alt heroes were also redundant: `risk-heatmap` is Cursed Files territory and `ownership` (OwnershipBubble) is Contributors territory. Same "redundant alts" pattern Blast Radius and Rewrite Ratio fixed.
+- **Hero:** Two views — `Distribution` (new default `BusFactorHistogram`, mirrors `BlastHistogram` / `RewriteHistogram` 1:1 with 10 bins of width 10) + `Bus Bar` (existing `OwnershipBar`, demoted to alt). Threshold marker shaded at ≥90% (cleanly aligned to the last bucket boundary AND to the analyzer's `risk === 'critical'` band — no off-by-bucket fudging). Dropped both shared alt heroes (`risk-heatmap` + `ownership`).
+- **Why histogram default, not Bus Bar:** the saturated 100%-cluster on real repos turns the leaderboard into a wall of identical red bars. The histogram answers the unique question — *what's the shape of ownership concentration?* — that the saturated bar can't, and demotes the leaderboard to alt-view duty where it's still useful when narrowed by hover/inspector.
+- **See also:** Knowledge Silos, Ghost Files. Sticky to the bottom of the panel. (The three ownership-risk siblings — Bus Factor / Knowledge Silos / Ghost Files — now triangulate ownership from three different aggregations: distribution shape + author concentration + dormant ownership.)
+- **Backend changes:** None — `overallBusFactor` already shipped on `BusFactorReport`; tier mix derived in the frontend from `f.risk`.
+- **Removes:** `BusFactorTab`'s per-file `SortableTable` (~110 lines). Inspector + leaderboard hero already cover per-file detail. `sortBusFactor.ts` retained because `OwnershipBar` (now the alt hero) still consumes it.
+- **Pre-1.0 versioning note:** ships as `feat:` (minor bump). `OwnershipBar` is technically still wired but defaults change — Sidebar deep-links that pinned the old `ownership-bar` default will silently fall through to the new histogram. No breaking change to the public CLI surface.
+
 ## Pending (Batches 2–N)
 
 Not yet decided. Will be filled in as each batch is worked through. Listed here so the doc is honest about what's done vs. open.
 
 | Analyzer | Batch | Notes from initial screenshot review |
 |---|---|---|
-| `bus-factor` | TBD | Bus Bar view falls in same "rotated hero" bucket as Batch 1 — likely also narrative-KPI. RELIC-304 was prematurely marked Done; pulled back to Todo. |
 | `parallel-dev` | 2 | Shares both views (Swimlanes + Timeline) with `commit-timing`. Merge-or-keep-separate decision tracked in [RELIC-333](https://linear.app/nebulord/issue/RELIC-333) — resolve before this analyzer's polish ticket. |
 | `commit-timing` | 2 | See above — [RELIC-333](https://linear.app/nebulord/issue/RELIC-333) blocks. |
 | `co-author` | 2 | Empty on react repo; needs empty-state pass. |

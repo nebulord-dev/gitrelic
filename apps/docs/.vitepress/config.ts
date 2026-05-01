@@ -18,8 +18,10 @@ export default withMermaid(
       '/analyzers/churn-velocity',
       '/analyzers/rename-tracking',
       '/analyzers/coupling',
-      '/analyzers/bus-factor',
       '/analyzers/commit-timing',
+      '/analyzers/knowledge-silos',
+      '/analyzers/ghost-files',
+      '/analyzers/contributors',
     ],
 
     themeConfig: {
@@ -51,6 +53,7 @@ export default withMermaid(
           items: [
             { text: 'Overview', link: '/analyzers/' },
             { text: 'Blast Radius', link: '/analyzers/blast-radius' },
+            { text: 'Bus Factor', link: '/analyzers/bus-factor' },
             { text: 'Churn', link: '/analyzers/churn' },
             { text: 'Rewrite Ratio', link: '/analyzers/rewrite-ratio' },
             { text: 'Shame', link: '/analyzers/shame' },
