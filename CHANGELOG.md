@@ -1,3 +1,10 @@
+# [0.32.0](https://github.com/nebulord-dev/gitrelic/compare/v0.31.0...v0.32.0) (2026-05-01)
+
+
+### Features
+
+* **web:** bus-factor polish — distribution hero + author-centric narrative-KPI (RELIC-304) ([#58](https://github.com/nebulord-dev/gitrelic/issues/58)) ([3926fd3](https://github.com/nebulord-dev/gitrelic/commit/3926fd321f4ad847828028712f560816c0bb5663))
+
 # [0.31.0](https://github.com/nebulord-dev/gitrelic/compare/v0.30.0...v0.31.0) (2026-05-01)
 
 
