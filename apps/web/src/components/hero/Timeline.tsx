@@ -149,7 +149,7 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
   }, [weeks, xScale, stackKeys, stackData, plotH]);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div ref={containerRef} className="relative w-full h-full">
       <svg width={dims.width} height={dims.height}>
         <g transform={`translate(${PADDING.left},${PADDING.top})`}>
           {/* X axis line */}
@@ -198,7 +198,7 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
                 onClick={() => {
                   if (!isOthers) onSelectContributor(key);
                 }}
-                style={{ cursor: isOthers ? 'default' : 'pointer' }}
+                className={isOthers ? 'cursor-default' : 'cursor-pointer'}
               />
             );
           })}
@@ -243,21 +243,10 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
       {/* Hover tooltip */}
       {hoverWeek != null && xScale && (
         <div
-          style={{
-            position: 'absolute',
-            left: PADDING.left + xScale(weeks[hoverWeek].weekStart) + 12,
-            top: PADDING.top,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-[6px] text-[10px] text-text-primary pointer-events-none z-20"
+          style={{ left: PADDING.left + xScale(weeks[hoverWeek].weekStart) + 12, top: PADDING.top }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>
+          <div className="font-semibold mb-1">
             {weeks[hoverWeek].weekStart.toLocaleDateString('en', {
               month: 'short',
               day: 'numeric',
@@ -277,19 +266,14 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
                   : (weeks[hoverWeek].counts[key] ?? 0);
               if (count === 0) return null;
               return (
-                <div
-                  key={key}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 1 }}
-                >
+                <div key={key} className="flex items-center gap-1 mb-px">
                   <div
+                    className="w-1.5 h-1.5 rounded-full"
                     style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: 3,
                       background: key === '__others__' ? 'var(--text-tertiary)' : authorColor(key),
                     }}
                   />
-                  <span style={{ color: 'var(--text-secondary)' }}>
+                  <span className="text-text-secondary">
                     {key === '__others__' ? 'Others' : key.split('@')[0]}: {count}
                   </span>
                 </div>

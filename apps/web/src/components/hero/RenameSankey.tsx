@@ -142,15 +142,7 @@ export function RenameSankey({ report, selectedFile, onSelectFile }: RenameSanke
     return (
       <div
         ref={containerRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--text-tertiary)',
-          fontSize: 12,
-        }}
+        className="w-full h-full flex items-center justify-center text-text-tertiary text-xs"
       >
         No rename history detected.
       </div>
@@ -160,7 +152,7 @@ export function RenameSankey({ report, selectedFile, onSelectFile }: RenameSanke
   const linkPath = sankeyLinkHorizontal<RenameSankeyNode, RenameSankeyLink>();
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div ref={containerRef} className="relative w-full h-full">
       <svg width={dims.width} height={dims.height}>
         <g fill="none" strokeOpacity={0.3}>
           {sankeyGraph.links.map((l, i) => (
@@ -186,7 +178,7 @@ export function RenameSankey({ report, selectedFile, onSelectFile }: RenameSanke
           return (
             <g
               key={i}
-              style={{ cursor: 'pointer' }}
+              className="cursor-pointer"
               onClick={() => onSelectFile(n.currentPath)}
               onMouseEnter={(evt) => {
                 const rect = containerRef.current?.getBoundingClientRect();
@@ -217,7 +209,7 @@ export function RenameSankey({ report, selectedFile, onSelectFile }: RenameSanke
                 fontSize={9}
                 fontFamily="var(--font-mono)"
                 fill="var(--text-secondary)"
-                style={{ pointerEvents: 'none' }}
+                className="pointer-events-none"
               >
                 {n.displayName}
               </text>
@@ -227,27 +219,14 @@ export function RenameSankey({ report, selectedFile, onSelectFile }: RenameSanke
       </svg>
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 320,
-            wordBreak: 'break-all',
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-[6px] text-[10px] text-text-primary pointer-events-none z-20 max-w-[320px] break-all"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.node.name}</div>
+          <div className="font-semibold mb-0.5">{tooltip.node.name}</div>
           {!tooltip.node.isTerminus && (
-            <div style={{ color: 'var(--text-secondary)' }}>Now: {tooltip.node.currentPath}</div>
+            <div className="text-text-secondary">Now: {tooltip.node.currentPath}</div>
           )}
-          <div style={{ color: 'var(--text-tertiary)', marginTop: 2 }}>
+          <div className="text-text-tertiary mt-0.5">
             {tooltip.node.isTerminus ? 'Current name' : 'Previous name'}
           </div>
         </div>

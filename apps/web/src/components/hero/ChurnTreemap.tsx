@@ -162,7 +162,7 @@ export function ChurnTreemap({
   }, [report.testCoverage.files]);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div ref={containerRef} className="w-full h-full relative">
       <svg width={dims.width} height={dims.height}>
         {leaves.map((leaf) => {
           const d = leaf.data;
@@ -184,7 +184,7 @@ export function ChurnTreemap({
             <g
               key={d.fullPath}
               onClick={() => onSelectFile(d.fullPath!)}
-              style={{ cursor: 'pointer' }}
+              className="cursor-pointer"
             >
               <rect
                 x={leaf.x0}
@@ -202,7 +202,7 @@ export function ChurnTreemap({
                   y={leaf.y0 + 12}
                   fontSize={9}
                   fill="rgba(255,255,255,0.7)"
-                  style={{ pointerEvents: 'none' }}
+                  className="pointer-events-none"
                 >
                   {d.name}
                 </text>
@@ -213,7 +213,7 @@ export function ChurnTreemap({
                   y={leaf.y0 + 23}
                   fontSize={8}
                   fill="rgba(255,255,255,0.4)"
-                  style={{ pointerEvents: 'none' }}
+                  className="pointer-events-none"
                 >
                   {d.hotspotScore}
                 </text>

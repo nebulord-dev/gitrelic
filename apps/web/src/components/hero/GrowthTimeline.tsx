@@ -115,14 +115,14 @@ export function GrowthTimeline({ report, selectedFile, onSelectFile }: GrowthTim
 
   if (files.length === 0) {
     return (
-      <div style={{ color: 'var(--text-tertiary)', padding: 20, fontSize: 12 }}>
+      <div className="text-text-tertiary p-5 text-xs">
         No growing files detected in this repository.
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div ref={containerRef} className="relative w-full h-full">
       <svg width={dims.width} height={dims.height}>
         <g transform={`translate(${PADDING.left},${PADDING.top})`}>
           {/* Horizontal grid lines */}
@@ -175,7 +175,7 @@ export function GrowthTimeline({ report, selectedFile, onSelectFile }: GrowthTim
                 stroke={color}
                 strokeOpacity={strokeOpacity}
                 strokeWidth={strokeWidth}
-                style={{ cursor: 'pointer' }}
+                className="cursor-pointer"
                 onClick={() => onSelectFile(file.file)}
                 onMouseEnter={(e) => {
                   setHoveredSeries(file.file);
@@ -248,7 +248,7 @@ export function GrowthTimeline({ report, selectedFile, onSelectFile }: GrowthTim
                 <g
                   key={`legend-${file.file}`}
                   transform={`translate(0, ${i * 18})`}
-                  style={{ cursor: 'pointer' }}
+                  className="cursor-pointer"
                   onClick={() => onSelectFile(file.file)}
                   onMouseEnter={() => setHoveredSeries(file.file)}
                   onMouseLeave={() => setHoveredSeries(null)}
@@ -280,32 +280,11 @@ export function GrowthTimeline({ report, selectedFile, onSelectFile }: GrowthTim
       {/* Tooltip */}
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 14,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 320,
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-[6px] text-[10px] text-text-primary pointer-events-none z-20 max-w-[320px]"
+          style={{ left: tooltip.x + 14, top: tooltip.y - 8 }}
         >
-          <div
-            style={{
-              fontWeight: 600,
-              marginBottom: 2,
-              fontFamily: 'var(--font-mono)',
-              wordBreak: 'break-all',
-            }}
-          >
-            {tooltip.file}
-          </div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="font-semibold mb-0.5 break-all font-mono">{tooltip.file}</div>
+          <div className="text-text-secondary">
             +{Math.round(tooltip.growthRate)} lines/mo (recent avg)
           </div>
         </div>

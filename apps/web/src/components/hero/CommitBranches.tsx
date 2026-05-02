@@ -60,14 +60,11 @@ export function CommitBranches({ commits, selectedFile, onSelectFile }: CommitBr
   }, [commits, width]);
 
   return (
-    <div
-      ref={containerRef}
-      style={{ width: '100%', height: '100%', overflow: 'auto', position: 'relative' }}
-    >
+    <div ref={containerRef} className="relative w-full h-full overflow-auto">
       {/* Time axis */}
-      <div style={{ display: 'flex', height: 20, marginBottom: 4 }}>
-        <div style={{ width: LABEL_WIDTH, flexShrink: 0 }} />
-        <svg style={{ flex: 1 }} height={20}>
+      <div className="flex mb-1 h-5">
+        <div className="shrink-0" style={{ width: LABEL_WIDTH }} />
+        <svg className="flex-1" height={20}>
           {lanes.length > 0 &&
             xScale.ticks(6).map((date) => (
               <text
@@ -86,21 +83,14 @@ export function CommitBranches({ commits, selectedFile, onSelectFile }: CommitBr
       {lanes.map((lane) => {
         const color = authorColor(lane.email);
         return (
-          <div key={lane.email} style={{ display: 'flex', height: LANE_HEIGHT, marginBottom: 2 }}>
+          <div key={lane.email} className="flex mb-0.5" style={{ height: LANE_HEIGHT }}>
             <div
-              style={{
-                width: LABEL_WIDTH,
-                flexShrink: 0,
-                fontSize: 10,
-                color: 'var(--text-secondary)',
-                display: 'flex',
-                alignItems: 'center',
-                paddingRight: 8,
-              }}
+              className="shrink-0 text-[10px] text-text-secondary flex items-center pr-2"
+              style={{ width: LABEL_WIDTH }}
             >
               {lane.name}
             </div>
-            <svg style={{ flex: 1 }} height={LANE_HEIGHT}>
+            <svg className="flex-1" height={LANE_HEIGHT}>
               <line
                 x1={0}
                 y1={LANE_HEIGHT / 2}
@@ -127,7 +117,7 @@ export function CommitBranches({ commits, selectedFile, onSelectFile }: CommitBr
                     onClick={() => {
                       if (topFile) onSelectFile(topFile);
                     }}
-                    style={{ cursor: topFile ? 'pointer' : 'default' }}
+                    className={topFile ? 'cursor-pointer' : 'cursor-default'}
                     onMouseEnter={(e) => {
                       const rect = containerRef.current?.getBoundingClientRect();
                       if (rect) {
@@ -148,23 +138,11 @@ export function CommitBranches({ commits, selectedFile, onSelectFile }: CommitBr
       })}
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 300,
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-[6px] text-[10px] text-text-primary pointer-events-none z-20 max-w-[300px]"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.commit.message}</div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="font-semibold mb-0.5">{tooltip.commit.message}</div>
+          <div className="text-text-secondary">
             {tooltip.commit.date.slice(0, 10)} · {tooltip.commit.files.length} files · +
             {tooltip.commit.insertions}/-{tooltip.commit.deletions}
           </div>

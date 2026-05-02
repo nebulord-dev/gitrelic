@@ -104,35 +104,14 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
   const selectedDir = selectedFile ? getDirectory(selectedFile) : null;
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width: '100%',
-        height: '100%',
-        position: 'relative',
-        overflow: 'auto',
-        marginTop: '-15px',
-      }}
-    >
-      <div
-        style={{
-          position: 'absolute',
-          top: 4,
-          left: 8,
-          fontSize: 9,
-          textTransform: 'uppercase',
-          letterSpacing: 1,
-          color: 'var(--text-tertiary)',
-          pointerEvents: 'none',
-          zIndex: 1,
-        }}
-      >
+    <div ref={containerRef} className="relative w-full h-full overflow-auto -mt-[15px]">
+      <div className="absolute top-1 left-2 text-[9px] uppercase tracking-[1px] text-text-tertiary pointer-events-none z-[1]">
         Cross-directory coupling · same-dir pairs in table below
       </div>
       <svg
         width={ROW_LABEL_WIDTH + totalSize + 10}
         height={COL_HEADER_HEIGHT + totalSize + 10}
-        style={{ display: 'block', margin: '0 auto' }}
+        className="block mx-auto"
       >
         {/* Column headers (rotated) */}
         {dirs.map((d, i) => (
@@ -202,7 +181,7 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
                   stroke={isHighlighted ? 'var(--accent-primary)' : 'none'}
                   strokeWidth={isHighlighted ? 1.5 : 0}
                   rx={2}
-                  style={{ cursor: value > 0 ? 'pointer' : 'default' }}
+                  className={value > 0 ? 'cursor-pointer' : 'cursor-default'}
                   onClick={() => {
                     if (value > 0) {
                       const files = dirFilesMap.get(rowDir);
@@ -233,25 +212,13 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
       {/* Tooltip */}
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 300,
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-[6px] text-[10px] text-text-primary pointer-events-none z-20 max-w-[300px]"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>
+          <div className="font-semibold mb-0.5">
             {tooltip.dirA} ↔ {tooltip.dirB}
           </div>
-          <div style={{ color: 'var(--text-secondary)' }}>{tooltip.value} co-commits</div>
+          <div className="text-text-secondary">{tooltip.value} co-commits</div>
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { cn } from '../../utils/cn';
 import { CommitBranches } from './CommitBranches';
 import { CommitDAG } from './CommitDAG';
 import { CommitHeatmap } from './CommitHeatmap';
@@ -32,41 +33,18 @@ export function CommitGraph({ report, selectedFile, onSelectFile }: CommitGraphP
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ position: 'relative', flexShrink: 0, marginBottom: 8 }}>
+    <div className="w-full h-full flex flex-col">
+      <div className="relative shrink-0 mb-2">
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          style={{
-            background: 'var(--surface-tertiary)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '4px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-          }}
+          className="bg-surface-tertiary border border-border-primary rounded px-2.5 py-1 text-[10px] text-text-primary cursor-pointer flex items-center gap-1"
         >
           {MODE_LABELS[mode]}
-          <span style={{ fontSize: 8, color: 'var(--text-tertiary)' }}>▾</span>
+          <span className="text-[8px] text-text-tertiary">▾</span>
         </button>
 
         {dropdownOpen && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '100%',
-              left: 0,
-              marginTop: 2,
-              background: 'var(--surface-elevated)',
-              border: '1px solid var(--border-primary)',
-              borderRadius: 4,
-              padding: 2,
-              zIndex: 10,
-            }}
-          >
+          <div className="absolute top-full left-0 mt-0.5 bg-surface-elevated border border-border-primary rounded p-0.5 z-10">
             {(['dag', 'branches', 'heatmap'] as CommitGraphMode[]).map((m) => (
               <button
                 key={m}
@@ -74,18 +52,10 @@ export function CommitGraph({ report, selectedFile, onSelectFile }: CommitGraphP
                   setMode(m);
                   setDropdownOpen(false);
                 }}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  padding: '6px 12px',
-                  fontSize: 10,
-                  border: 'none',
-                  background: m === mode ? 'var(--surface-tertiary)' : 'transparent',
-                  color: 'var(--text-primary)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  borderRadius: 3,
-                }}
+                className={cn(
+                  'block w-full px-3 py-[6px] text-[10px] border-none text-text-primary cursor-pointer text-left rounded-[3px]',
+                  m === mode ? 'bg-surface-tertiary' : 'bg-transparent',
+                )}
               >
                 {MODE_LABELS[m]}
               </button>
@@ -94,7 +64,7 @@ export function CommitGraph({ report, selectedFile, onSelectFile }: CommitGraphP
         )}
       </div>
 
-      <div style={{ flex: 1, minHeight: 0 }}>
+      <div className="flex-1 min-h-0">
         {mode === 'dag' && (
           <CommitDAG commits={commits} selectedFile={selectedFile} onSelectFile={onSelectFile} />
         )}

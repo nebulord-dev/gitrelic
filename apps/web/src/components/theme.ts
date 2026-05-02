@@ -53,18 +53,6 @@ export function clusterVariant(dimension: string): BadgeVariant {
   }
 }
 
-/** @deprecated Use severityColor() — kept for backward compat with HotspotTable */
-export function hotspotColor(category: string): string {
-  switch (category) {
-    case 'critical':
-      return 'var(--severity-critical)';
-    case 'warning':
-      return 'var(--severity-warning)';
-    default:
-      return 'var(--severity-healthy)';
-  }
-}
-
 export function fmt(n: number): string {
   return n.toLocaleString();
 }

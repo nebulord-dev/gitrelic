@@ -8,8 +8,6 @@ interface CommitHeatmapProps {
   commits: RawCommit[];
 }
 
-const ROW_HEIGHT = 24;
-const CELL_GAP = 2;
 const LABEL_WIDTH = 120;
 const MAX_AUTHORS = 15;
 
@@ -83,42 +81,27 @@ export function CommitHeatmap({ commits }: CommitHeatmapProps) {
   const cellW = Math.max((width - LABEL_WIDTH) / (weeks.length || 1), 2);
 
   return (
-    <div
-      ref={containerRef}
-      style={{ width: '100%', height: '100%', overflow: 'auto', position: 'relative' }}
-    >
+    <div ref={containerRef} className="relative w-full h-full overflow-auto">
       {authors.map((email, ai) => {
         const color = authorColor(email);
         const name = email.split('@')[0];
         return (
-          <div key={email} style={{ display: 'flex', height: ROW_HEIGHT, marginBottom: CELL_GAP }}>
+          <div key={email} className="flex h-6 mb-0.5">
             <div
-              style={{
-                width: LABEL_WIDTH,
-                flexShrink: 0,
-                fontSize: 10,
-                color: 'var(--text-secondary)',
-                display: 'flex',
-                alignItems: 'center',
-                paddingRight: 8,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
+              className="shrink-0 text-[10px] text-text-secondary flex items-center pr-2 overflow-hidden text-ellipsis whitespace-nowrap"
+              style={{ width: LABEL_WIDTH }}
             >
               {name}
             </div>
-            <div style={{ display: 'flex', flex: 1, gap: 1 }}>
+            <div className="flex flex-1 gap-px">
               {grid[ai].map((count, wi) => (
                 <div
                   key={wi}
+                  className={`h-full rounded-[2px] ${count > 0 ? 'cursor-pointer' : 'cursor-default'}`}
                   style={{
                     width: cellW,
-                    height: '100%',
                     background: color,
                     opacity: count === 0 ? 0.04 : 0.15 + (count / maxCount) * 0.7,
-                    borderRadius: 2,
-                    cursor: count > 0 ? 'pointer' : 'default',
                   }}
                   onMouseEnter={
                     count > 0
@@ -144,23 +127,11 @@ export function CommitHeatmap({ commits }: CommitHeatmapProps) {
       })}
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 300,
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-[6px] text-[10px] text-text-primary pointer-events-none z-20 max-w-[300px]"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.email}</div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="font-semibold mb-0.5">{tooltip.email}</div>
+          <div className="text-text-secondary">
             {tooltip.count} commits · week of {tooltip.week.toISOString().slice(0, 10)}
           </div>
         </div>
