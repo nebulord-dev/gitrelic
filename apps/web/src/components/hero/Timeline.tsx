@@ -243,7 +243,7 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
       {/* Hover tooltip */}
       {hoverWeek != null && xScale && (
         <div
-          className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-[6px] text-[10px] text-tooltip-text pointer-events-none z-20"
+          className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20"
           style={{ left: PADDING.left + xScale(weeks[hoverWeek].weekStart) + 12, top: PADDING.top }}
         >
           <div className="font-semibold mb-1">

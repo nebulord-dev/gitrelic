@@ -116,7 +116,7 @@ export function CommitDAG({ commits, selectedFile, onSelectFile }: CommitDAGProp
       </svg>
       {tooltip && (
         <div
-          className="absolute bg-tooltip-bg border border-border-primary rounded px-[10px] py-[6px] text-[10px] text-tooltip-text pointer-events-none z-20 max-w-[350px]"
+          className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-[350px]"
           style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
           <div className="font-semibold mb-0.5">{tooltip.commit.message}</div>

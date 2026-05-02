@@ -53,7 +53,7 @@ export function CommitGraph({ report, selectedFile, onSelectFile }: CommitGraphP
                   setDropdownOpen(false);
                 }}
                 className={cn(
-                  'block w-full px-3 py-[6px] text-[10px] border-none text-text-primary cursor-pointer text-left rounded-[3px]',
+                  'block w-full px-3 py-1.5 text-[10px] border-none text-text-primary cursor-pointer text-left rounded-[3px]',
                   m === mode ? 'bg-surface-tertiary' : 'bg-transparent',
                 )}
               >

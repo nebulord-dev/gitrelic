@@ -97,7 +97,7 @@ export function CommitHeatmap({ commits }: CommitHeatmapProps) {
               {grid[ai].map((count, wi) => (
                 <div
                   key={wi}
-                  className={`h-full rounded-[2px] ${count > 0 ? 'cursor-pointer' : 'cursor-default'}`}
+                  className={`h-full rounded-xs ${count > 0 ? 'cursor-pointer' : 'cursor-default'}`}
                   style={{
                     width: cellW,
                     background: color,
@@ -127,7 +127,7 @@ export function CommitHeatmap({ commits }: CommitHeatmapProps) {
       })}
       {tooltip && (
         <div
-          className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-[6px] text-[10px] text-tooltip-text pointer-events-none z-20 max-w-[300px]"
+          className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-[300px]"
           style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
           <div className="font-semibold mb-0.5">{tooltip.email}</div>
