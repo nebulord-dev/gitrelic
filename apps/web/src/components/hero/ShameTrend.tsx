@@ -155,11 +155,11 @@ export function ShameTrend({ report }: ShameTrendProps) {
           >
             <div className="font-semibold mb-0.5">{tooltip.month.month}</div>
             <div className="text-text-secondary">
-              <span style={{ color: TIER_COLORS.critical }}>critical {tooltip.month.critical}</span>
+              <span className="text-severity-critical">critical {tooltip.month.critical}</span>
               {' · '}
-              <span style={{ color: TIER_COLORS.moderate }}>moderate {tooltip.month.moderate}</span>
+              <span className="text-severity-warning">moderate {tooltip.month.moderate}</span>
               {' · '}
-              <span style={{ color: TIER_COLORS.mild }}>mild {tooltip.month.mild}</span>
+              <span className="text-[#9b8b3e]">mild {tooltip.month.mild}</span>
             </div>
             <div className="text-text-tertiary mt-0.5">total {tooltip.total}</div>
           </div>
