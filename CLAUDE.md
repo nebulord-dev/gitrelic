@@ -269,12 +269,14 @@ import { severityText } from '../../utils/classMaps';
 
 ### Theme bridge
 
-CSS variables in `apps/web/src/index.css` are the source of truth for colors and other theme values. A `@theme` block aliases them to Tailwind tokens (`bg-surface-primary`, `text-severity-critical`, `bg-tooltip-bg`, etc.). Light/dark switches via the `[data-theme]` attribute on `<html>`. **Don't introduce `dark:` variants** — they fight the existing system. **Don't migrate `index.css` to Tailwind primitives** (`@apply`, `@layer components`) — the CSS variable token system is good as CSS.
+CSS variables in `apps/web/src/index.css` are the source of truth for colors and other theme values. A `@theme` block aliases them to Tailwind tokens (`bg-surface-primary`, `text-severity-critical`, `bg-tooltip-bg`, etc.). Light/dark is designed to switch via `[data-theme='light']` on `<html>`, but the toggle is currently disabled in `TopBar.tsx` pending full hero/graph coverage — dark is the active default. **Don't introduce `dark:` variants** — they fight the existing system. **Don't migrate `index.css` to Tailwind primitives** (`@apply`, `@layer components`) — the CSS variable token system is good as CSS.
 
 Available token domains:
 - `bg-surface-*` / `border-border-*` / `text-text-*` (UI chrome)
-- `bg-severity-{critical,warning,moderate,healthy,stale}-{bg,text}` + `text-severity-*` foreground only
-- `bg-accent-{ownership,coupling,temporal,primary}-{bg,text}` + `text-accent-*` foreground only
+- `bg-severity-{critical,warning,moderate,healthy}-{bg,text}` + `text-severity-{critical,warning,moderate,healthy}` foreground only
+- `stale` is a `BadgeVariant` but resolves to `bg-surface-tertiary text-text-tertiary` via `classMaps.ts` (no dedicated severity token)
+- `bg-accent-{ownership,coupling,temporal}-{bg,text}` + `text-accent-{ownership,coupling,temporal}` foreground only
+- `bg-accent-primary` / `text-accent-primary` (bare — no `-bg`/`-text` variants)
 - `bg-tooltip-bg` / `text-tooltip-text` (tooltip-specific token pair — distinct from `bg-surface-elevated` which is for general elevated surfaces)
 
 ### Cookbook rules
