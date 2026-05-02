@@ -1,4 +1,3 @@
-import { cn } from '../../utils/cn';
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath, fmt } from '../theme';
@@ -49,10 +48,11 @@ export function ComplexityTrendTab({ report, onSelectFile }: ComplexityTrendTabP
       sortValue: (f) => f.recentGrowthRate,
       render: (f) => (
         <span
-          className={cn(
-            'font-mono text-[11px]',
-            f.recentGrowthRate > 0 ? 'text-severity-critical' : 'text-severity-healthy',
-          )}
+          className={
+            f.recentGrowthRate > 0
+              ? 'font-mono text-[11px] text-severity-critical'
+              : 'font-mono text-[11px] text-severity-healthy'
+          }
         >
           {f.recentGrowthRate > 0 ? '+' : ''}
           {f.recentGrowthRate.toFixed(1)}%
@@ -67,10 +67,11 @@ export function ComplexityTrendTab({ report, onSelectFile }: ComplexityTrendTabP
       sortValue: (f) => f.totalNetLines,
       render: (f) => (
         <span
-          className={cn(
-            'font-mono text-[11px]',
-            f.totalNetLines > 0 ? 'text-severity-warning' : 'text-text-secondary',
-          )}
+          className={
+            f.totalNetLines > 0
+              ? 'font-mono text-[11px] text-severity-warning'
+              : 'font-mono text-[11px] text-text-secondary'
+          }
         >
           {f.totalNetLines > 0 ? '+' : ''}
           {fmt(f.totalNetLines)}
