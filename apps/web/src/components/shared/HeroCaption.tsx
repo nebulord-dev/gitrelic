@@ -5,26 +5,9 @@ interface HeroCaptionProps {
 
 export function HeroCaption({ primary, subtitle }: HeroCaptionProps) {
   return (
-    <div
-      style={{
-        flexShrink: 0,
-        padding: '10px 16px',
-        borderTop: '1px solid var(--border-primary)',
-        background: 'var(--surface-primary)',
-      }}
-    >
-      <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{primary}</div>
-      {subtitle && (
-        <div
-          style={{
-            fontSize: 11,
-            color: 'var(--text-tertiary)',
-            marginTop: 3,
-          }}
-        >
-          {subtitle}
-        </div>
-      )}
+    <div className="shrink-0 px-4 py-2.5 border-t border-border-primary bg-surface-primary">
+      <div className="text-xs text-text-secondary">{primary}</div>
+      {subtitle && <div className="text-[11px] text-text-tertiary mt-[3px]">{subtitle}</div>}
     </div>
   );
 }
