@@ -248,12 +248,6 @@ body {
   background: #afb8c1;
 }
 
-/* ─── Utility ─── */
-
-.font-mono {
-  font-family: var(--font-mono);
-}
-
 /* ─── NarrativeKPI responsive layout (RELIC-334) ───
    Wide containers place `extras` to the right of the KPI/finding row;
    narrow containers keep the original stacked layout.
