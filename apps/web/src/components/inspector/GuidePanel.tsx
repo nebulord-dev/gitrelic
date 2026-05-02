@@ -129,24 +129,14 @@ export function GuidePanel() {
   return (
     <div>
       {METRIC_GROUPS.map((group) => (
-        <div key={group.label} style={{ marginBottom: 14 }}>
-          <div
-            style={{
-              fontSize: 9,
-              textTransform: 'uppercase',
-              letterSpacing: 1,
-              color: 'var(--text-tertiary)',
-              marginBottom: 6,
-            }}
-          >
+        <div key={group.label} className="mb-3.5">
+          <div className="text-[9px] uppercase tracking-[1px] text-text-tertiary mb-1.5">
             {group.label}
           </div>
           {group.metrics.map((metric) => (
-            <div key={metric.name} style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-primary)', fontWeight: 500 }}>
-                {metric.name}
-              </div>
-              <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+            <div key={metric.name} className="mb-2">
+              <div className="text-[11px] text-text-primary font-medium">{metric.name}</div>
+              <div className="text-[10px] text-text-secondary leading-[1.4]">
                 {metric.description}
               </div>
             </div>

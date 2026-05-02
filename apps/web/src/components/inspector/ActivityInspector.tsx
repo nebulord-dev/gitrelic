@@ -1,3 +1,4 @@
+import { cn } from '../../utils/cn';
 import Badge from '../shared/Badge';
 import { fileName } from '../theme';
 
@@ -21,32 +22,10 @@ function trendVariant(trend: string): 'critical' | 'warning' | 'healthy' {
   }
 }
 
-const sectionLabel: React.CSSProperties = {
-  fontSize: 9,
-  textTransform: 'uppercase',
-  letterSpacing: 1,
-  color: 'var(--text-tertiary)',
-  marginBottom: 6,
-  marginTop: 14,
-};
-
-const statRow: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  padding: '3px 0',
-  fontSize: 11,
-};
-
-const statLabel: React.CSSProperties = {
-  color: 'var(--text-secondary)',
-};
-
-const statValue: React.CSSProperties = {
-  fontFamily: 'var(--font-mono)',
-  color: 'var(--text-primary)',
-  fontWeight: 500,
-};
+const sectionLabel = 'text-[9px] uppercase tracking-[1px] text-text-tertiary mb-1.5 mt-3.5';
+const statRow = 'flex justify-between items-center py-[3px] text-[11px]';
+const statLabel = 'text-text-secondary';
+const statValue = 'font-mono text-text-primary font-medium';
 
 export function ActivityInspector({ report, file }: ActivityInspectorProps) {
   const churn = report.churn.files.find((f) => f.file === file);
@@ -58,46 +37,36 @@ export function ActivityInspector({ report, file }: ActivityInspectorProps) {
   return (
     <div>
       {/* File header */}
-      <div
-        style={{
-          fontSize: 12,
-          fontFamily: 'var(--font-mono)',
-          color: 'var(--text-primary)',
-          fontWeight: 600,
-          marginBottom: 4,
-        }}
-      >
-        {fileName(file)}
-      </div>
+      <div className="text-xs font-mono text-text-primary font-semibold mb-1">{fileName(file)}</div>
 
       {/* Churn */}
-      <div style={sectionLabel}>Churn</div>
-      <div style={statRow}>
-        <span style={statLabel}>Commits</span>
-        <span style={statValue}>{churn?.commitCount ?? 0}</span>
+      <div className={sectionLabel}>Churn</div>
+      <div className={statRow}>
+        <span className={statLabel}>Commits</span>
+        <span className={statValue}>{churn?.commitCount ?? 0}</span>
       </div>
       {age && (
-        <div style={statRow}>
-          <span style={statLabel}>Last modified</span>
-          <span style={{ ...statValue, fontSize: 10 }}>{age.lastCommitDate.split('T')[0]}</span>
+        <div className={statRow}>
+          <span className={statLabel}>Last modified</span>
+          <span className={cn(statValue, 'text-[10px]')}>{age.lastCommitDate.split('T')[0]}</span>
         </div>
       )}
 
       {/* Velocity */}
       {velocity && (
         <>
-          <div style={sectionLabel}>Velocity</div>
-          <div style={statRow}>
-            <span style={statLabel}>Trend</span>
+          <div className={sectionLabel}>Velocity</div>
+          <div className={statRow}>
+            <span className={statLabel}>Trend</span>
             <Badge variant={trendVariant(velocity.trend)}>{velocity.trend}</Badge>
           </div>
-          <div style={statRow}>
-            <span style={statLabel}>Score</span>
-            <span style={statValue}>{velocity.velocityScore}</span>
+          <div className={statRow}>
+            <span className={statLabel}>Score</span>
+            <span className={statValue}>{velocity.velocityScore}</span>
           </div>
-          <div style={statRow}>
-            <span style={statLabel}>Recent / Older</span>
-            <span style={statValue}>
+          <div className={statRow}>
+            <span className={statLabel}>Recent / Older</span>
+            <span className={statValue}>
               {velocity.recentCommits} / {velocity.olderCommits}
             </span>
           </div>
@@ -107,15 +76,15 @@ export function ActivityInspector({ report, file }: ActivityInspectorProps) {
       {/* Ownership */}
       {bf && (
         <>
-          <div style={sectionLabel}>Ownership</div>
-          <div style={statRow}>
-            <span style={statLabel}>Authors</span>
-            <span style={statValue}>{bf.uniqueAuthors}</span>
+          <div className={sectionLabel}>Ownership</div>
+          <div className={statRow}>
+            <span className={statLabel}>Authors</span>
+            <span className={statValue}>{bf.uniqueAuthors}</span>
           </div>
           {bf.dominantAuthor && (
-            <div style={statRow}>
-              <span style={statLabel}>Dominant</span>
-              <span style={{ ...statValue, fontSize: 10 }}>
+            <div className={statRow}>
+              <span className={statLabel}>Dominant</span>
+              <span className={cn(statValue, 'text-[10px]')}>
                 {bf.dominantAuthor.split(' <')[0]} ({bf.dominantAuthorPercent}%)
               </span>
             </div>
@@ -126,26 +95,14 @@ export function ActivityInspector({ report, file }: ActivityInspectorProps) {
       {/* Shame commits */}
       {forensics && forensics.topShameCommits.length > 0 && (
         <>
-          <div style={sectionLabel}>Shame Commits</div>
+          <div className={sectionLabel}>Shame Commits</div>
           {forensics.topShameCommits.map((c) => (
-            <div
-              key={c.hash}
-              style={{
-                padding: '6px 0',
-                borderBottom: '1px solid var(--border-primary)',
-              }}
-            >
-              <div style={{ fontSize: 10, color: 'var(--text-primary)', marginBottom: 3 }}>
+            <div key={c.hash} className="py-1.5 border-b border-border-primary">
+              <div className="text-[10px] text-text-primary mb-[3px]">
                 {c.message.length > 60 ? `${c.message.slice(0, 60)}...` : c.message}
               </div>
-              <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                <span
-                  style={{
-                    fontSize: 9,
-                    color: 'var(--text-tertiary)',
-                    fontFamily: 'var(--font-mono)',
-                  }}
-                >
+              <div className="flex gap-1 items-center">
+                <span className="text-[9px] text-text-tertiary font-mono">
                   {c.date.split('T')[0]}
                 </span>
                 {c.keywords.slice(0, 3).map((k) => (
@@ -161,14 +118,7 @@ export function ActivityInspector({ report, file }: ActivityInspectorProps) {
 
       {/* Empty state if no meaningful activity data */}
       {!churn && !velocity && !forensics && (
-        <div
-          style={{
-            color: 'var(--text-tertiary)',
-            fontSize: 11,
-            marginTop: 20,
-            textAlign: 'center',
-          }}
-        >
+        <div className="text-text-tertiary text-[11px] mt-5 text-center">
           No activity data for this file
         </div>
       )}

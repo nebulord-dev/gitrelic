@@ -10,6 +10,11 @@ interface ContributorsInspectorProps {
   onSelectFile: (file: string) => void;
 }
 
+const statRow =
+  'flex justify-between items-center py-1.5 border-b border-border-primary text-[10px]';
+const statLabel = 'text-text-tertiary';
+const statValue = 'text-text-primary font-medium';
+
 export function ContributorsInspector({
   report,
   file,
@@ -19,119 +24,52 @@ export function ContributorsInspector({
   // If a contributor is selected, show their profile
   if (contributor) {
     const person = report.contributors.contributors.find((c) => c.email === contributor);
-    if (!person)
-      return (
-        <div style={{ color: 'var(--text-tertiary)', fontSize: 11 }}>Contributor not found</div>
-      );
+    if (!person) return <div className="text-text-tertiary text-[11px]">Contributor not found</div>;
 
     // Find files owned by this contributor
     const ownedFiles = report.busFactors.files.filter((f) => f.dominantAuthor === contributor);
 
     return (
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          <div
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: '50%',
-              background: 'var(--surface-tertiary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 11,
-              color: 'var(--text-secondary)',
-              flexShrink: 0,
-            }}
-          >
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-[28px] h-[28px] rounded-full bg-surface-tertiary flex items-center justify-center text-[11px] text-text-secondary shrink-0">
             {person.name.slice(0, 2).toUpperCase()}
           </div>
           <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
-              {person.name}
-            </div>
-            <div style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>{person.email}</div>
+            <div className="text-[12px] font-semibold text-text-primary">{person.name}</div>
+            <div className="text-[10px] text-text-tertiary">{person.email}</div>
           </div>
           {!person.isActive && <Badge variant="stale">ghost</Badge>}
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            padding: '6px 0',
-            borderBottom: '1px solid var(--border-primary)',
-            fontSize: 10,
-          }}
-        >
-          <span style={{ color: 'var(--text-tertiary)' }}>Commits</span>
-          <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
-            {fmt(person.commitCount)}
-          </span>
+        <div className={statRow}>
+          <span className={statLabel}>Commits</span>
+          <span className={statValue}>{fmt(person.commitCount)}</span>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            padding: '6px 0',
-            borderBottom: '1px solid var(--border-primary)',
-            fontSize: 10,
-          }}
-        >
-          <span style={{ color: 'var(--text-tertiary)' }}>Active Days</span>
-          <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
-            {fmt(person.activeDays)}
-          </span>
+        <div className={statRow}>
+          <span className={statLabel}>Active Days</span>
+          <span className={statValue}>{fmt(person.activeDays)}</span>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            padding: '6px 0',
-            borderBottom: '1px solid var(--border-primary)',
-            fontSize: 10,
-          }}
-        >
-          <span style={{ color: 'var(--text-tertiary)' }}>Files Owned</span>
-          <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{person.filesOwned}</span>
+        <div className={statRow}>
+          <span className={statLabel}>Files Owned</span>
+          <span className={statValue}>{person.filesOwned}</span>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            padding: '6px 0',
-            borderBottom: '1px solid var(--border-primary)',
-            fontSize: 10,
-          }}
-        >
-          <span style={{ color: 'var(--text-tertiary)' }}>Focus Areas</span>
-          <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
-            {person.focusAreas.slice(0, 2).join(', ')}
-          </span>
+        <div className={statRow}>
+          <span className={statLabel}>Focus Areas</span>
+          <span className={statValue}>{person.focusAreas.slice(0, 2).join(', ')}</span>
         </div>
 
         {ownedFiles.length > 0 && (
-          <div style={{ marginTop: 16 }}>
-            <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginBottom: 8 }}>
-              Dominant Owner Of
-            </div>
+          <div className="mt-4">
+            <div className="text-[10px] text-text-tertiary mb-2">Dominant Owner Of</div>
             {ownedFiles.slice(0, 10).map((f) => (
               <div
                 key={f.file}
                 onClick={() => onSelectFile(f.file)}
-                style={{
-                  padding: '4px 0',
-                  borderBottom: '1px solid var(--border-primary)',
-                  fontSize: 10,
-                  fontFamily: 'var(--font-mono)',
-                  color: 'var(--text-primary)',
-                  cursor: 'pointer',
-                }}
+                className="py-1 border-b border-border-primary text-[10px] font-mono text-text-primary cursor-pointer"
               >
                 {fileName(f.file)}
-                <span style={{ color: 'var(--text-tertiary)', marginLeft: 8 }}>
-                  {f.dominantAuthorPercent}%
-                </span>
+                <span className="text-text-tertiary ml-2">{f.dominantAuthorPercent}%</span>
               </div>
             ))}
           </div>
@@ -143,24 +81,14 @@ export function ContributorsInspector({
   // If a file is selected, show its contributors
   if (file) {
     const bf = report.busFactors.files.find((f) => f.file === file);
-    if (!bf)
-      return <div style={{ color: 'var(--text-tertiary)', fontSize: 11 }}>No contributor data</div>;
+    if (!bf) return <div className="text-text-tertiary text-[11px]">No contributor data</div>;
 
     return (
       <div>
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: 'var(--text-primary)',
-            marginBottom: 12,
-            fontFamily: 'var(--font-mono)',
-            wordBreak: 'break-all',
-          }}
-        >
+        <div className="text-[11px] font-semibold text-text-primary mb-3 font-mono break-all">
           {file}
         </div>
-        <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginBottom: 8 }}>
+        <div className="text-[10px] text-text-tertiary mb-2">
           {bf.uniqueAuthors} contributor{bf.uniqueAuthors !== 1 ? 's' : ''}
         </div>
         {bf.authors.map((email) => {
@@ -169,37 +97,18 @@ export function ContributorsInspector({
           return (
             <div
               key={email}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '6px 0',
-                borderBottom: '1px solid var(--border-primary)',
-              }}
+              className="flex items-center gap-2 py-1.5 border-b border-border-primary"
             >
-              <div
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: '50%',
-                  background: 'var(--surface-tertiary)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 9,
-                  color: 'var(--text-secondary)',
-                  flexShrink: 0,
-                }}
-              >
+              <div className="w-[22px] h-[22px] rounded-full bg-surface-tertiary flex items-center justify-center text-[9px] text-text-secondary shrink-0">
                 {(person?.name ?? email).slice(0, 2).toUpperCase()}
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 10, color: 'var(--text-primary)' }}>
+              <div className="flex-1">
+                <div className="text-[10px] text-text-primary">
                   {person?.name ?? email.split('@')[0]}
                 </div>
               </div>
               {isDominant && (
-                <span style={{ fontSize: 10, color: 'var(--accent-ownership)', fontWeight: 500 }}>
+                <span className="text-[10px] text-accent-ownership font-medium">
                   {bf.dominantAuthorPercent}%
                 </span>
               )}
@@ -211,9 +120,7 @@ export function ContributorsInspector({
   }
 
   return (
-    <div
-      style={{ color: 'var(--text-tertiary)', fontSize: 11, textAlign: 'center', marginTop: 40 }}
-    >
+    <div className="text-text-tertiary text-[11px] text-center mt-10">
       Select a file or contributor
     </div>
   );
