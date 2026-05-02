@@ -293,7 +293,7 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
       {/* Tooltip */}
       {tooltip && (
         <div
-          className="absolute bg-surface-elevated border border-border-primary rounded-xs px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-80"
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-80"
           style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
           <div className="font-semibold mb-0.5 font-mono break-all">{tooltip.file}</div>
