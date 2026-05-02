@@ -280,7 +280,7 @@ export function GrowthTimeline({ report, selectedFile, onSelectFile }: GrowthTim
       {/* Tooltip */}
       {tooltip && (
         <div
-          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-[6px] text-[10px] text-text-primary pointer-events-none z-20 max-w-[320px]"
+          className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-[6px] text-[10px] text-tooltip-text pointer-events-none z-20 max-w-[320px]"
           style={{ left: tooltip.x + 14, top: tooltip.y - 8 }}
         >
           <div className="font-semibold mb-0.5 break-all font-mono">{tooltip.file}</div>

@@ -272,7 +272,7 @@ export function RewriteHistogram({ report }: RewriteHistogramProps) {
         </svg>
         {hover && (
           <div
-            className="absolute bg-surface-elevated border border-border-primary rounded px-[10px] py-[6px] text-[10px] text-text-primary pointer-events-none z-20 whitespace-nowrap"
+            className="absolute bg-tooltip-bg border border-border-primary rounded px-[10px] py-[6px] text-[10px] text-tooltip-text pointer-events-none z-20 whitespace-nowrap"
             style={{
               left: PADDING.left + hover.idx * (barWidth + BAR_GAP) + barWidth / 2,
               top: PADDING.top + yScale(hover.bucket.count) - 8,

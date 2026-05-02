@@ -289,7 +289,7 @@ export function ContributorSwimlanes({
       })}
       {tooltip && (
         <div
-          className="fixed bg-surface-elevated border border-border-primary rounded pointer-events-none z-[1000] max-w-[300px] text-[10px] text-text-primary px-2.5 py-1.5"
+          className="fixed bg-tooltip-bg border border-border-primary rounded pointer-events-none z-[1000] max-w-[300px] text-[10px] text-tooltip-text px-2.5 py-1.5"
           style={{
             left: Math.min(tooltip.x + 12, window.innerWidth - 320),
             top: tooltip.y - 8,
