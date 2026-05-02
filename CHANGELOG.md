@@ -1,3 +1,10 @@
+# [0.34.0](https://github.com/nebulord-dev/gitrelic/compare/v0.33.0...v0.34.0) (2026-05-02)
+
+
+### Features
+
+* **web:** tailwind migration PR2 — shared + layout (RELIC-336) ([#60](https://github.com/nebulord-dev/gitrelic/issues/60)) ([75f1f55](https://github.com/nebulord-dev/gitrelic/commit/75f1f55d253ea80db3513fd6bb7ec0bc6bd530be))
+
 # [0.33.0](https://github.com/nebulord-dev/gitrelic/compare/v0.32.0...v0.33.0) (2026-05-01)
 
 
