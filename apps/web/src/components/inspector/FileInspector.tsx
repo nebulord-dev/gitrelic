@@ -113,21 +113,12 @@ export function FileInspector({ report, file, onSelectContributor }: FileInspect
   return (
     <div>
       {/* Header */}
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: 'var(--text-primary)',
-          marginBottom: 8,
-          wordBreak: 'break-all',
-          fontFamily: 'var(--font-mono)',
-        }}
-      >
+      <div className="text-[11px] font-semibold text-text-primary mb-2 break-all font-mono">
         {file}
       </div>
 
       {hotspot && (
-        <div style={{ marginBottom: 12 }}>
+        <div className="mb-3">
           <Badge variant={severityColor(hotspot.category)}>{hotspot.category} hotspot</Badge>
         </div>
       )}
@@ -136,16 +127,11 @@ export function FileInspector({ report, file, onSelectContributor }: FileInspect
       {rows.map((row) => (
         <div
           key={row.label}
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            padding: '6px 0',
-            borderBottom: '1px solid var(--border-primary)',
-            fontSize: 10,
-          }}
+          className="flex justify-between py-1.5 border-b border-border-primary text-[10px]"
         >
-          <span style={{ color: 'var(--text-tertiary)' }}>{row.label}</span>
-          <span style={{ color: row.color ?? 'var(--text-primary)', fontWeight: 500 }}>
+          <span className="text-text-tertiary">{row.label}</span>
+          {/* color is a runtime CSS var token — kept as inline style */}
+          <span className="font-medium" style={{ color: row.color ?? 'var(--text-primary)' }}>
             {row.value}
           </span>
         </div>
@@ -153,47 +139,25 @@ export function FileInspector({ report, file, onSelectContributor }: FileInspect
 
       {/* Top contributors for this file */}
       {bf && bf.authors.length > 0 && (
-        <div style={{ marginTop: 16 }}>
-          <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginBottom: 8 }}>
-            Top Contributors
-          </div>
+        <div className="mt-4">
+          <div className="text-[10px] text-text-tertiary mb-2">Top Contributors</div>
           {bf.authors.slice(0, 5).map((email) => {
             const contributor = report.contributors.contributors.find((c) => c.email === email);
             return (
               <div
                 key={email}
                 onClick={() => onSelectContributor(email)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '6px 0',
-                  borderBottom: '1px solid var(--border-primary)',
-                  cursor: 'pointer',
-                }}
+                className="flex items-center gap-2 py-1.5 border-b border-border-primary cursor-pointer"
               >
-                <div
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: '50%',
-                    background: 'var(--surface-tertiary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 9,
-                    color: 'var(--text-secondary)',
-                    flexShrink: 0,
-                  }}
-                >
+                <div className="w-[22px] h-[22px] rounded-full bg-surface-tertiary flex items-center justify-center text-[9px] text-text-secondary shrink-0">
                   {(contributor?.name ?? email).slice(0, 2).toUpperCase()}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, color: 'var(--text-primary)' }}>
+                <div className="flex-1">
+                  <div className="text-[10px] text-text-primary">
                     {contributor?.name ?? email.split('@')[0]}
                   </div>
                 </div>
-                <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
+                <span className="text-[10px] text-text-secondary">
                   {email === bf.dominantAuthor ? `${bf.dominantAuthorPercent}%` : ''}
                 </span>
               </div>
