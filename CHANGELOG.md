@@ -1,3 +1,10 @@
+# [0.35.0](https://github.com/nebulord-dev/gitrelic/compare/v0.34.0...v0.35.0) (2026-05-02)
+
+
+### Features
+
+* **web:** tailwind migration PR3a — inspectors (RELIC-336) ([#61](https://github.com/nebulord-dev/gitrelic/issues/61)) ([314f5f6](https://github.com/nebulord-dev/gitrelic/commit/314f5f694262a6aeac7b46944d3781c2aa592bb7))
+
 # [0.34.0](https://github.com/nebulord-dev/gitrelic/compare/v0.33.0...v0.34.0) (2026-05-02)
 
 
