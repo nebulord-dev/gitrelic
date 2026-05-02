@@ -126,25 +126,8 @@ export function BusFactorHistogram({ report }: BusFactorHistogramProps) {
 
   if (totalFiles === 0) {
     return (
-      <div
-        ref={containerRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text-tertiary)',
-            fontSize: 12,
-          }}
-        >
+      <div ref={containerRef} className="w-full h-full flex flex-col">
+        <div className="flex-1 flex items-center justify-center text-text-tertiary text-xs">
           No bus-factor data available.
         </div>
         <HeroCaption
@@ -159,11 +142,8 @@ export function BusFactorHistogram({ report }: BusFactorHistogramProps) {
   const hover = hoverIdx == null ? null : { idx: hoverIdx, bucket: buckets[hoverIdx] };
 
   return (
-    <div
-      ref={containerRef}
-      style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
-    >
-      <div style={{ flex: 1, position: 'relative' }}>
+    <div ref={containerRef} className="w-full h-full flex flex-col">
+      <div className="flex-1 relative">
         <svg
           width={dims.width}
           height={svgHeight}
@@ -303,35 +283,20 @@ export function BusFactorHistogram({ report }: BusFactorHistogramProps) {
         </svg>
         {hover && (
           <div
+            className="absolute bg-surface-elevated border border-border-primary rounded px-[10px] py-[6px] text-[10px] text-text-primary pointer-events-none z-20 whitespace-nowrap"
             style={{
-              position: 'absolute',
               left: PADDING.left + hover.idx * (barWidth + BAR_GAP) + barWidth / 2,
               top: PADDING.top + yScale(hover.bucket.count) - 8,
               transform: 'translate(-50%, -100%)',
-              background: 'var(--surface-elevated)',
-              border: '1px solid var(--border-primary)',
-              borderRadius: 4,
-              padding: '6px 10px',
-              fontSize: 10,
-              color: 'var(--text-primary)',
-              pointerEvents: 'none',
-              zIndex: 20,
-              whiteSpace: 'nowrap',
             }}
           >
-            <div style={{ fontWeight: 600 }}>
+            <div className="font-semibold">
               {hover.bucket.rangeStart}–{hover.bucket.rangeEnd}% dominant
             </div>
-            <div style={{ color: 'var(--text-secondary)' }}>
+            <div className="text-text-secondary">
               {hover.bucket.count} {hover.bucket.count === 1 ? 'file' : 'files'}
             </div>
-            <div
-              style={{
-                color: TIER_COLORS[hover.bucket.tier],
-                marginTop: 2,
-                textTransform: 'capitalize',
-              }}
-            >
+            <div className="mt-0.5 capitalize" style={{ color: TIER_COLORS[hover.bucket.tier] }}>
               {hover.bucket.tier}
             </div>
           </div>
