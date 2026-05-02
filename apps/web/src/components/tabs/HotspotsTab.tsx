@@ -60,26 +60,14 @@ function ExpandedDetail({ file, report }: { file: string; report: GitrelicReport
   const sh = report.forensics.files.find((f) => f.file === file);
   const churn = report.churn.files.find((f) => f.file === file);
 
-  const cellStyle = {
-    flex: 1,
-    minWidth: 0,
-    padding: '0 8px',
-  };
-  const labelStyle = {
-    fontSize: 9,
-    textTransform: 'uppercase' as const,
-    letterSpacing: 1,
-    color: 'var(--text-tertiary)',
-    marginBottom: 6,
-  };
-  const valueStyle = { fontSize: 10, color: 'var(--text-secondary)' };
-
   return (
-    <div style={{ display: 'flex', gap: 8 }}>
-      <div style={cellStyle}>
-        <div style={labelStyle}>Ownership</div>
+    <div className="flex gap-2">
+      <div className="flex-1 min-w-0 px-2">
+        <div className="text-[9px] uppercase tracking-[1px] text-text-tertiary mb-1.5">
+          Ownership
+        </div>
         {bf ? (
-          <div style={valueStyle}>
+          <div className="text-[10px] text-text-secondary">
             {bf.uniqueAuthors} author{bf.uniqueAuthors !== 1 ? 's' : ''}
             {bf.dominantAuthor && (
               <div>
@@ -88,13 +76,15 @@ function ExpandedDetail({ file, report }: { file: string; report: GitrelicReport
             )}
           </div>
         ) : (
-          <div style={valueStyle}>—</div>
+          <div className="text-[10px] text-text-secondary">—</div>
         )}
       </div>
-      <div style={cellStyle}>
-        <div style={labelStyle}>Coupled With</div>
+      <div className="flex-1 min-w-0 px-2">
+        <div className="text-[9px] uppercase tracking-[1px] text-text-tertiary mb-1.5">
+          Coupled With
+        </div>
         {cp && cp.partners.length > 0 ? (
-          <div style={valueStyle}>
+          <div className="text-[10px] text-text-secondary">
             {cp.partners.slice(0, 3).map((p) => (
               <div key={p.fileB === file ? p.fileA : p.fileB}>
                 {Math.round(p.couplingStrength)}% {fileName(p.fileB === file ? p.fileA : p.fileB)}
@@ -102,25 +92,27 @@ function ExpandedDetail({ file, report }: { file: string; report: GitrelicReport
             ))}
           </div>
         ) : (
-          <div style={valueStyle}>—</div>
+          <div className="text-[10px] text-text-secondary">—</div>
         )}
       </div>
-      <div style={cellStyle}>
-        <div style={labelStyle}>Shame ({sh?.shameScore ?? 0})</div>
+      <div className="flex-1 min-w-0 px-2">
+        <div className="text-[9px] uppercase tracking-[1px] text-text-tertiary mb-1.5">
+          Shame ({sh?.shameScore ?? 0})
+        </div>
         {sh && sh.topShameCommits.length > 0 ? (
-          <div style={valueStyle}>
-            <div style={{ fontStyle: 'italic' }}>
-              "{sh.topShameCommits[0].message.slice(0, 40)}..."
-            </div>
+          <div className="text-[10px] text-text-secondary">
+            <div className="italic">"{sh.topShameCommits[0].message.slice(0, 40)}..."</div>
             <div>{sh.dominantKeywords.slice(0, 3).join(', ')}</div>
           </div>
         ) : (
-          <div style={valueStyle}>—</div>
+          <div className="text-[10px] text-text-secondary">—</div>
         )}
       </div>
-      <div style={cellStyle}>
-        <div style={labelStyle}>Activity</div>
-        <div style={valueStyle}>
+      <div className="flex-1 min-w-0 px-2">
+        <div className="text-[9px] uppercase tracking-[1px] text-text-tertiary mb-1.5">
+          Activity
+        </div>
+        <div className="text-[10px] text-text-secondary">
           {churn ? `${fmt(churn.commitCount)} commits` : '—'}
           {report.loc.files.find((f) => f.file === file) && (
             <div>{fmt(report.loc.files.find((f) => f.file === file)!.lines)} lines</div>
@@ -139,25 +131,9 @@ export function HotspotsTab({ report, selectedFile, onSelectFile }: HotspotsTabP
       key: 'file',
       label: 'File',
       render: (h) => (
-        <div style={{ minWidth: 0 }}>
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 11,
-              color: 'var(--text-primary)',
-            }}
-          >
-            {fileName(h.file)}
-          </span>
-          <span
-            style={{
-              fontSize: 10,
-              color: 'var(--text-tertiary)',
-              marginLeft: 6,
-            }}
-          >
-            {filePath(h.file)}
-          </span>
+        <div className="min-w-0">
+          <span className="font-mono text-[11px] text-text-primary">{fileName(h.file)}</span>
+          <span className="text-[10px] text-text-tertiary ml-1.5">{filePath(h.file)}</span>
         </div>
       ),
     },
@@ -166,7 +142,7 @@ export function HotspotsTab({ report, selectedFile, onSelectFile }: HotspotsTabP
       label: 'Signals',
       width: '280px',
       render: (h) => (
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        <div className="flex gap-1 flex-wrap">
           {getSignals(h.file, report).map((s) => (
             <Badge key={s.label} variant={signalVariant(s.label)} title={s.title}>
               {s.label}
@@ -182,41 +158,17 @@ export function HotspotsTab({ report, selectedFile, onSelectFile }: HotspotsTabP
       align: 'right',
       sortValue: (h) => h.hotspotScore,
       render: (h) => (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            justifyContent: 'flex-end',
-          }}
-        >
-          <div
-            style={{
-              width: 60,
-              height: 4,
-              background: 'var(--surface-tertiary)',
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}
-          >
+        <div className="flex items-center gap-2 justify-end">
+          <div className="w-[60px] h-1 bg-surface-tertiary rounded-xs overflow-hidden">
             <div
               style={{
                 width: `${h.hotspotScore}%`,
-                height: '100%',
-                borderRadius: 2,
                 background: `var(--severity-${severityColor(h.category)})`,
               }}
+              className="h-full rounded-xs"
             />
           </div>
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 11,
-              color: 'var(--text-secondary)',
-              width: 24,
-              textAlign: 'right',
-            }}
-          >
+          <span className="font-mono text-[11px] text-text-secondary w-6 text-right">
             {h.hotspotScore}
           </span>
         </div>
@@ -229,15 +181,7 @@ export function HotspotsTab({ report, selectedFile, onSelectFile }: HotspotsTabP
       align: 'right',
       sortValue: (h) => h.churnScore,
       render: (h) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--text-secondary)',
-          }}
-        >
-          {h.churnScore}
-        </span>
+        <span className="font-mono text-[11px] text-text-secondary">{h.churnScore}</span>
       ),
     },
     {
@@ -247,15 +191,7 @@ export function HotspotsTab({ report, selectedFile, onSelectFile }: HotspotsTabP
       align: 'right',
       sortValue: (h) => h.loc,
       render: (h) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--text-secondary)',
-          }}
-        >
-          {fmt(h.loc)}
-        </span>
+        <span className="font-mono text-[11px] text-text-secondary">{fmt(h.loc)}</span>
       ),
     },
     {
