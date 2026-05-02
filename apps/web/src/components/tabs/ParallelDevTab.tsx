@@ -15,17 +15,9 @@ export function ParallelDevTab({ report, onSelectFile }: ParallelDevTabProps) {
       key: 'file',
       label: 'File',
       render: (f) => (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+        <span className="font-mono text-[11px]">
           {fileName(f.file)}
-          <span
-            style={{
-              color: 'var(--text-tertiary)',
-              marginLeft: 6,
-              fontSize: 10,
-            }}
-          >
-            {filePath(f.file)}
-          </span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(f.file)}</span>
         </span>
       ),
     },
@@ -36,14 +28,7 @@ export function ParallelDevTab({ report, onSelectFile }: ParallelDevTabProps) {
       align: 'right',
       sortValue: (f) => f.parallelScore,
       render: (f) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--severity-warning)',
-            fontWeight: 600,
-          }}
-        >
+        <span className="font-mono text-[11px] text-severity-warning font-semibold">
           {f.parallelScore}
         </span>
       ),
@@ -55,13 +40,7 @@ export function ParallelDevTab({ report, onSelectFile }: ParallelDevTabProps) {
       align: 'right',
       sortValue: (f) => f.parallelWeeks,
       render: (f) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--text-secondary)',
-          }}
-        >
+        <span className="font-mono text-[11px] text-text-secondary">
           {f.parallelWeeks}/{f.totalActiveWeeks}
         </span>
       ),
