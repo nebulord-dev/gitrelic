@@ -59,13 +59,11 @@ export function AgeMapTab({ report, onApplyPreset }: AgeMapTabProps) {
   const ancientDirectoryRows = [...allDirectoryRows].sort(
     (a, b) => b.ancientCount - a.ancientCount || a.directory.localeCompare(b.directory),
   );
-  const directoryRows = ancientDirectoryRows
-    .filter((r) => r.ancientCount > 0 && !findingDirs.has(r.directory))
-    .slice(0, DIRECTORY_ROLLUP_LIMIT);
-  const eligibleDirectoryCount = ancientDirectoryRows.filter(
+  const eligibleAncientRows = ancientDirectoryRows.filter(
     (r) => r.ancientCount > 0 && !findingDirs.has(r.directory),
-  ).length;
-  const hiddenDirectoryCount = Math.max(0, eligibleDirectoryCount - DIRECTORY_ROLLUP_LIMIT);
+  );
+  const directoryRows = eligibleAncientRows.slice(0, DIRECTORY_ROLLUP_LIMIT);
+  const hiddenDirectoryCount = Math.max(0, eligibleAncientRows.length - DIRECTORY_ROLLUP_LIMIT);
   const maxAncientCount = directoryRows[0]?.ancientCount ?? 1;
 
   return (
