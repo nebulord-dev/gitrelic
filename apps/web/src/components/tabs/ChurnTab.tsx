@@ -1,4 +1,4 @@
-import { type CSSProperties, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { aggregateChurnByDirectory, type DirectoryChurnRow } from '../../utils/churnByDirectory';
 import { isTestPath } from '../../utils/isTestPath';
@@ -15,29 +15,6 @@ interface ChurnTabProps {
   onApplyPreset: (id: PresetId) => void;
   mode: ChurnTabMode;
 }
-
-const linkStyle: CSSProperties = {
-  background: 'none',
-  border: 'none',
-  color: 'var(--accent-primary)',
-  fontSize: 10,
-  cursor: 'pointer',
-  padding: 0,
-  textDecoration: 'underline',
-};
-
-const numericCellStyle: CSSProperties = {
-  fontFamily: 'var(--font-mono)',
-  fontSize: 11,
-  color: 'var(--text-secondary)',
-};
-
-const emptyStateStyle: CSSProperties = {
-  padding: '24px 12px',
-  fontSize: 11,
-  color: 'var(--text-tertiary)',
-  textAlign: 'center',
-};
 
 function formatShare(share: number): string {
   return `${(share * 100).toFixed(1)}%`;
@@ -63,12 +40,8 @@ export function ChurnTab({ report, onApplyPreset, mode }: ChurnTabProps) {
       key: 'directory',
       label: 'Directory',
       render: (r) => (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-          {r.directory === '' ? (
-            <span style={{ color: 'var(--text-tertiary)' }}>(root)</span>
-          ) : (
-            r.directory
-          )}
+        <span className="font-mono text-[11px]">
+          {r.directory === '' ? <span className="text-text-tertiary">(root)</span> : r.directory}
         </span>
       ),
     },
@@ -78,7 +51,9 @@ export function ChurnTab({ report, onApplyPreset, mode }: ChurnTabProps) {
       width: '90px',
       align: 'right',
       sortValue: (r) => r.commits,
-      render: (r) => <span style={numericCellStyle}>{fmt(r.commits)}</span>,
+      render: (r) => (
+        <span className="font-mono text-[11px] text-text-secondary">{fmt(r.commits)}</span>
+      ),
     },
     {
       key: 'share',
@@ -86,7 +61,9 @@ export function ChurnTab({ report, onApplyPreset, mode }: ChurnTabProps) {
       width: '70px',
       align: 'right',
       sortValue: (r) => r.share,
-      render: (r) => <span style={numericCellStyle}>{formatShare(r.share)}</span>,
+      render: (r) => (
+        <span className="font-mono text-[11px] text-text-secondary">{formatShare(r.share)}</span>
+      ),
     },
     {
       key: 'files',
@@ -94,45 +71,41 @@ export function ChurnTab({ report, onApplyPreset, mode }: ChurnTabProps) {
       width: '70px',
       align: 'right',
       sortValue: (r) => r.files,
-      render: (r) => <span style={numericCellStyle}>{fmt(r.files)}</span>,
+      render: (r) => (
+        <span className="font-mono text-[11px] text-text-secondary">{fmt(r.files)}</span>
+      ),
     },
     {
       key: 'topFile',
       label: 'Top file',
-      render: (r) => <span style={numericCellStyle}>{r.topFile}</span>,
+      render: (r) => <span className="font-mono text-[11px] text-text-secondary">{r.topFile}</span>,
     },
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
-      <div style={{ flex: 1 }}>
+    <div className="flex flex-col min-h-full">
+      <div className="flex-1">
         {rows.length === 0 ? (
-          <div style={emptyStateStyle}>{emptyStateCopy(mode)}</div>
+          <div className="py-6 px-3 text-[11px] text-text-tertiary text-center">
+            {emptyStateCopy(mode)}
+          </div>
         ) : (
           <SortableTable data={rows} columns={columns} rowKey={(r) => r.directory} />
         )}
       </div>
-      <div
-        style={{
-          position: 'sticky',
-          bottom: 0,
-          marginTop: 'auto',
-          background: 'var(--surface-primary)',
-          borderTop: '1px solid var(--border-primary)',
-          padding: '6px 4px',
-          fontSize: 10,
-          color: 'var(--text-tertiary)',
-          display: 'flex',
-          gap: 8,
-          alignItems: 'center',
-        }}
-      >
+      <div className="sticky bottom-0 mt-auto bg-surface-primary border-t border-border-primary py-1.5 px-1 text-[10px] text-text-tertiary flex gap-2 items-center">
         See also:{' '}
-        <button onClick={() => onApplyPreset('hotspots')} style={linkStyle}>
+        <button
+          onClick={() => onApplyPreset('hotspots')}
+          className="bg-transparent border-none text-accent-primary text-[10px] cursor-pointer p-0 underline"
+        >
           Hotspots
         </button>
         ·
-        <button onClick={() => onApplyPreset('cursed-files')} style={linkStyle}>
+        <button
+          onClick={() => onApplyPreset('cursed-files')}
+          className="bg-transparent border-none text-accent-primary text-[10px] cursor-pointer p-0 underline"
+        >
           Cursed Files
         </button>
       </div>
