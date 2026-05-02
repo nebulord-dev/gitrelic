@@ -2,6 +2,9 @@
 
 Git archaeology — understand the history and health of your codebase.
 
+> [!IMPORTANT]
+> `gitrelic` is currently in alpha
+
 
 ## What it does
 
