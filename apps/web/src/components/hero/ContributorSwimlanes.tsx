@@ -178,11 +178,7 @@ export function ContributorSwimlanes({
                   {lane.name}
                 </div>
                 <div className="text-[9px] text-text-tertiary">
-                  {lane.isGhost && (
-                    <span className="mr-1" style={{ color: 'rgba(248,81,73,0.8)' }}>
-                      ghost
-                    </span>
-                  )}
+                  {lane.isGhost && <span className="mr-1 text-[rgba(248,81,73,0.8)]">ghost</span>}
                   {lane.commitCount} commits
                 </div>
               </div>
@@ -190,9 +186,8 @@ export function ContributorSwimlanes({
 
             {/* Swimlane track */}
             <div
-              className="flex-1 relative rounded overflow-hidden"
+              className="flex-1 relative rounded overflow-hidden bg-[rgba(255,255,255,0.02)]"
               style={{
-                background: 'rgba(255,255,255,0.02)',
                 border: `1px solid ${isSelected ? 'var(--accent-primary)' : 'rgba(255,255,255,0.06)'}`,
               }}
             >
@@ -290,9 +285,7 @@ export function ContributorSwimlanes({
           <div className="font-semibold mb-0.5">
             {tooltip.commit.files[0] ?? 'no files'}
             {tooltip.commit.isHotspot && (
-              <span className="ml-1" style={{ color: 'rgba(248,81,73,0.9)' }}>
-                hotspot
-              </span>
+              <span className="ml-1 text-[rgba(248,81,73,0.9)]">hotspot</span>
             )}
           </div>
           <div className="text-text-secondary">
