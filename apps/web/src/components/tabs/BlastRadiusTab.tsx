@@ -105,16 +105,7 @@ export function BlastRadiusTab({ report, onApplyPreset }: BlastRadiusTabProps) {
                 >
                   <Tooltip
                     content={row.directory || '(root)'}
-                    wrapperStyle={{
-                      display: 'block',
-                      flex: 1,
-                      minWidth: 0,
-                      fontFamily: 'var(--font-mono)',
-                      color: 'var(--text-secondary)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
+                    wrapperClassName="block flex-1 min-w-0 font-mono text-text-secondary overflow-hidden text-ellipsis whitespace-nowrap"
                   >
                     {row.directory || '(root)'}
                   </Tooltip>
