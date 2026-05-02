@@ -22,12 +22,6 @@ function tierBadge(highShameCount: number): { variant: BadgeVariant; label: stri
   return { variant: 'critical', label: 'High Shame' };
 }
 
-const monoBold = {
-  fontFamily: 'var(--font-mono)',
-  color: 'var(--text-primary)',
-  fontWeight: 600,
-} as const;
-
 export function ShameTab({ report, onApplyPreset }: ShameTabProps) {
   const { files, totalShameCommits, keywordTiers } = report.forensics;
   const highShameFiles = files.filter((f) => f.shameScore >= HIGH_SHAME_THRESHOLD);
@@ -47,26 +41,20 @@ export function ShameTab({ report, onApplyPreset }: ShameTabProps) {
       metric={`Files ≥${HIGH_SHAME_THRESHOLD} Shame`}
       finding={
         highShameFiles.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <div
-              style={{
-                fontSize: 9,
-                color: 'var(--text-tertiary)',
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-              }}
-            >
+          <div className="flex flex-col gap-1">
+            <div className="text-[9px] text-text-tertiary uppercase tracking-[1px]">
               Top shame files
             </div>
             {topFiles.map((f) => (
-              <div key={f.file} style={{ lineHeight: 1.5 }}>
-                <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {fileName(f.file)}
-                </span>{' '}
-                <span style={{ color: 'var(--text-tertiary)' }}>
-                  <span style={monoBold}>{f.shameScore}</span> ·{' '}
-                  <span style={monoBold}>{f.shameCommitCount}</span> shame commit
-                  {f.shameCommitCount === 1 ? '' : 's'}
+              <div key={f.file} className="leading-[1.5]">
+                <span className="font-mono text-text-primary">{fileName(f.file)}</span>{' '}
+                <span className="text-text-tertiary">
+                  <span className="font-mono text-text-primary font-semibold">{f.shameScore}</span>{' '}
+                  ·{' '}
+                  <span className="font-mono text-text-primary font-semibold">
+                    {f.shameCommitCount}
+                  </span>{' '}
+                  shame commit{f.shameCommitCount === 1 ? '' : 's'}
                 </span>
               </div>
             ))}
@@ -82,13 +70,13 @@ export function ShameTab({ report, onApplyPreset }: ShameTabProps) {
           <>
             <strong>{totalShameCommits.toLocaleString()}</strong> shame{' '}
             {totalShameCommits === 1 ? 'commit' : 'commits'} ·{' '}
-            <strong style={{ color: 'var(--severity-critical)' }}>{keywordTiers.critical}</strong>{' '}
-            critical (revert/hotfix/oops) ·{' '}
-            <strong style={{ color: 'var(--severity-warning)' }}>{keywordTiers.moderate}</strong>{' '}
-            moderate (hack/workaround) ·{' '}
-            <strong style={{ color: '#9b8b3e' }}>{keywordTiers.mild}</strong> mild (fix/bug)
-            <div style={{ marginTop: 4, fontSize: 11, color: 'var(--text-tertiary)' }}>
-              Across <strong style={{ color: 'var(--text-secondary)' }}>{files.length}</strong>{' '}
+            <strong className="text-severity-critical">{keywordTiers.critical}</strong> critical
+            (revert/hotfix/oops) ·{' '}
+            <strong className="text-severity-warning">{keywordTiers.moderate}</strong> moderate
+            (hack/workaround) · <strong className="text-[#9b8b3e]">{keywordTiers.mild}</strong> mild
+            (fix/bug)
+            <div className="mt-1 text-[11px] text-text-tertiary">
+              Across <strong className="text-text-secondary">{files.length}</strong>{' '}
               {files.length === 1 ? 'file' : 'files'} with any shame signal.
             </div>
           </>
@@ -97,28 +85,14 @@ export function ShameTab({ report, onApplyPreset }: ShameTabProps) {
       extras={
         directoryRows.length > 0 ? (
           <div>
-            <div
-              style={{
-                fontSize: 9,
-                color: 'var(--text-tertiary)',
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-                marginBottom: 8,
-              }}
-            >
+            <div className="text-[9px] text-text-tertiary uppercase tracking-[1px] mb-2">
               Where they live
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div className="flex flex-col gap-1">
               {directoryRows.map((row) => (
                 <div
                   key={row.directory}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    fontSize: 11,
-                    lineHeight: 1.4,
-                  }}
+                  className="flex items-center gap-3 text-[11px] leading-[1.4]"
                 >
                   <Tooltip
                     content={row.directory || '(root)'}
@@ -135,41 +109,27 @@ export function ShameTab({ report, onApplyPreset }: ShameTabProps) {
                   >
                     {row.directory || '(root)'}
                   </Tooltip>
-                  <div
-                    style={{
-                      width: 80,
-                      height: 4,
-                      background: 'var(--surface-tertiary)',
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      flexShrink: 0,
-                    }}
-                  >
+                  <div className="w-20 h-1 bg-surface-tertiary rounded-xs overflow-hidden shrink-0">
                     <div
                       style={{
                         width: `${(row.count / maxDirCount) * 100}%`,
-                        height: '100%',
                         background: 'var(--severity-critical)',
                         opacity: 0.7,
                       }}
+                      className="h-full"
                     />
                   </div>
-                  <span style={{ ...monoBold, minWidth: 32, textAlign: 'right' }}>{row.count}</span>
-                  <span
-                    style={{
-                      color: 'var(--text-tertiary)',
-                      fontSize: 10,
-                      minWidth: 36,
-                      textAlign: 'right',
-                    }}
-                  >
+                  <span className="font-mono text-text-primary font-semibold inline-block min-w-8 text-right">
+                    {row.count}
+                  </span>
+                  <span className="text-text-tertiary text-[10px] inline-block min-w-9 text-right">
                     {(row.share * 100).toFixed(0)}%
                   </span>
                 </div>
               ))}
             </div>
             {hiddenDirectoryCount > 0 && (
-              <div style={{ marginTop: 6, fontSize: 10, color: 'var(--text-tertiary)' }}>
+              <div className="mt-1.5 text-[10px] text-text-tertiary">
                 + {hiddenDirectoryCount} more{' '}
                 {hiddenDirectoryCount === 1 ? 'directory' : 'directories'}
               </div>
