@@ -14,11 +14,9 @@ export function RenamesTab({ report, onSelectFile }: RenamesTabProps) {
       key: 'file',
       label: 'Current Name',
       render: (r) => (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+        <span className="font-mono text-[11px]">
           {fileName(r.currentPath)}
-          <span style={{ color: 'var(--text-tertiary)', marginLeft: 6, fontSize: 10 }}>
-            {filePath(r.currentPath)}
-          </span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(r.currentPath)}</span>
         </span>
       ),
     },
@@ -27,18 +25,11 @@ export function RenamesTab({ report, onSelectFile }: RenamesTabProps) {
       label: 'Previous Names',
       width: '280px',
       render: (r) => (
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        <div className="flex gap-1 flex-wrap">
           {r.previousNames.map((name) => (
             <span
               key={name}
-              style={{
-                fontSize: 10,
-                padding: '1px 6px',
-                borderRadius: 4,
-                background: 'var(--surface-tertiary)',
-                color: 'var(--text-tertiary)',
-                fontFamily: 'var(--font-mono)',
-              }}
+              className="text-[10px] py-px px-1.5 rounded bg-surface-tertiary text-text-tertiary font-mono"
             >
               {fileName(name)}
             </span>
@@ -53,11 +44,7 @@ export function RenamesTab({ report, onSelectFile }: RenamesTabProps) {
       align: 'right',
       sortValue: (r) => r.renameCount,
       render: (r) => (
-        <span
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-        >
-          {fmt(r.renameCount)}
-        </span>
+        <span className="font-mono text-[11px] text-text-secondary">{fmt(r.renameCount)}</span>
       ),
     },
   ];
