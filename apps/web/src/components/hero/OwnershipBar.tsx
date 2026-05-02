@@ -102,25 +102,8 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
 
   if (rows.length === 0) {
     return (
-      <div
-        ref={containerRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text-tertiary)',
-            fontSize: 12,
-          }}
-        >
+      <div ref={containerRef} className="w-full h-full flex flex-col">
+        <div className="flex-1 flex items-center justify-center text-text-tertiary text-xs">
           No critical-ownership files detected.
         </div>
         <HeroCaption
@@ -151,18 +134,9 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
     : `${rows.length} critical file${rows.length === 1 ? '' : 's'}. Sorted by ownership share, tiebroken by commit count.`;
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width: '100%',
-        height: '100%',
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <div ref={scrollRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-        <svg width={width} height={chartHeight} style={{ display: 'block' }}>
+    <div ref={containerRef} className="w-full h-full relative flex flex-col">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
+        <svg width={width} height={chartHeight} className="block">
           {rows.map((row, i) => {
             const y = TOP_PAD + i * ROW_HEIGHT;
             const barTop = y + (ROW_HEIGHT - BAR_HEIGHT) / 2;
@@ -174,7 +148,7 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
               <g
                 key={row.file}
                 onClick={() => onSelectFile(row.file)}
-                style={{ cursor: 'pointer' }}
+                className="cursor-pointer"
                 onMouseEnter={(evt) => {
                   const rect = containerRef.current?.getBoundingClientRect();
                   if (!rect) return;
@@ -230,7 +204,7 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
                   fontFamily="var(--font-mono)"
                   fill={color}
                   fontWeight={600}
-                  style={{ pointerEvents: 'none' }}
+                  className="pointer-events-none"
                 >
                   {truncateToFit(
                     `${row.dominantAuthor} ${row.dominantAuthorPercent}%`,
@@ -248,38 +222,19 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
       />
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 320,
-            wordBreak: 'break-all',
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-[320px] break-all"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.row.file}</div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="font-semibold mb-0.5">{tooltip.row.file}</div>
+          <div className="text-text-secondary">
             {tooltip.row.dominantAuthor} owns {tooltip.row.dominantAuthorPercent}%
           </div>
           {tooltip.row.commitCount > 0 && (
-            <div style={{ color: 'var(--text-secondary)' }}>
+            <div className="text-text-secondary">
               {tooltip.row.commitCount} commit{tooltip.row.commitCount === 1 ? '' : 's'}
             </div>
           )}
-          <div
-            style={{
-              color: riskColor(tooltip.row.risk),
-              marginTop: 2,
-              textTransform: 'capitalize',
-            }}
-          >
+          <div className="mt-0.5 capitalize" style={{ color: riskColor(tooltip.row.risk) }}>
             {tooltip.row.risk} risk
           </div>
         </div>
