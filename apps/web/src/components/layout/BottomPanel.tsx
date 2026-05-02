@@ -206,7 +206,7 @@ export function BottomPanel({
             key={tabId}
             onClick={() => onTabChange(tabId)}
             className={cn(
-              'px-[14px] py-2 text-[10px] border-none bg-transparent cursor-pointer',
+              'px-3.5 py-2 text-[10px] border-none bg-transparent cursor-pointer',
               activeTab === tabId
                 ? 'text-text-primary border-b-2 border-b-accent-primary'
                 : 'text-text-tertiary border-b-2 border-b-transparent',
@@ -221,7 +221,7 @@ export function BottomPanel({
           footers (NarrativeKPI's, ChurnTab's) sit flush against the panel
           edge. SortableTable rows have their own border-bottom, so non-footer
           tabs still terminate cleanly. */}
-      <div className="flex-1 overflow-auto pt-2 px-4 pb-0">
+      <div className="flex-1 overflow-auto pt-2 px-4">
         <TabContent
           tab={activeTab}
           report={report}
