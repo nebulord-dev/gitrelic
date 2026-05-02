@@ -112,6 +112,11 @@ exports[`fixture regression > age map report is stable 1`] = `
     },
   ],
   "summary": "4 files haven't been touched in over 62 days — they may be dead weight or critical infrastructure nobody dares touch",
+  "thresholds": {
+    "agingLimit": 31,
+    "freshLimit": 8,
+    "staleLimit": 62,
+  },
 }
 `;
 

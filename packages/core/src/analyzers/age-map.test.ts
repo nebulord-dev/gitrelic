@@ -105,4 +105,31 @@ describe('analyzeAgeMap', () => {
     const result = analyzeAgeMap(commits, ['old.ts'], 365);
     expect(result.summary).toContain('1 file');
   });
+
+  it('exposes the repo-age-relative thresholds on the report', () => {
+    const result = analyzeAgeMap([], [], 365);
+    expect(result.thresholds).toEqual({
+      freshLimit: 29, // round(365 * 0.08)
+      agingLimit: 120, // round(365 * 0.33)
+      staleLimit: 241, // round(365 * 0.66)
+    });
+  });
+
+  it('scales thresholds for a 90-day window', () => {
+    const result = analyzeAgeMap([], [], 90);
+    expect(result.thresholds).toEqual({
+      freshLimit: 7,
+      agingLimit: 30,
+      staleLimit: 59,
+    });
+  });
+
+  it('returns zero thresholds for an empty (0-day) repo', () => {
+    const result = analyzeAgeMap([], [], 0);
+    expect(result.thresholds).toEqual({
+      freshLimit: 0,
+      agingLimit: 0,
+      staleLimit: 0,
+    });
+  });
 });
