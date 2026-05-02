@@ -1,3 +1,4 @@
+import { cn } from '../../utils/cn';
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath, fmt } from '../theme';
@@ -28,11 +29,9 @@ export function ComplexityTrendTab({ report, onSelectFile }: ComplexityTrendTabP
       key: 'file',
       label: 'File',
       render: (f) => (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+        <span className="font-mono text-[11px]">
           {fileName(f.file)}
-          <span style={{ color: 'var(--text-tertiary)', marginLeft: 6, fontSize: 10 }}>
-            {filePath(f.file)}
-          </span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(f.file)}</span>
         </span>
       ),
     },
@@ -50,11 +49,10 @@ export function ComplexityTrendTab({ report, onSelectFile }: ComplexityTrendTabP
       sortValue: (f) => f.recentGrowthRate,
       render: (f) => (
         <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: f.recentGrowthRate > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
-          }}
+          className={cn(
+            'font-mono text-[11px]',
+            f.recentGrowthRate > 0 ? 'text-severity-critical' : 'text-severity-healthy',
+          )}
         >
           {f.recentGrowthRate > 0 ? '+' : ''}
           {f.recentGrowthRate.toFixed(1)}%
@@ -69,11 +67,10 @@ export function ComplexityTrendTab({ report, onSelectFile }: ComplexityTrendTabP
       sortValue: (f) => f.totalNetLines,
       render: (f) => (
         <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: f.totalNetLines > 0 ? 'var(--severity-warning)' : 'var(--text-secondary)',
-          }}
+          className={cn(
+            'font-mono text-[11px]',
+            f.totalNetLines > 0 ? 'text-severity-warning' : 'text-text-secondary',
+          )}
         >
           {f.totalNetLines > 0 ? '+' : ''}
           {fmt(f.totalNetLines)}
