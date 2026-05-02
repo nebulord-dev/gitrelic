@@ -139,14 +139,11 @@ export function ContributorSwimlanes({
   const xScale = scaleTime().domain([timeRange.min, timeRange.max]).range([0, trackWidth]);
 
   return (
-    <div
-      ref={containerRef}
-      style={{ width: '100%', height: '100%', overflow: 'auto', position: 'relative' }}
-    >
+    <div ref={containerRef} className="w-full h-full overflow-auto relative">
       {/* Time axis */}
-      <div style={{ display: 'flex', height: 20, marginBottom: 4, flexShrink: 0 }}>
-        <div style={{ width: LABEL_WIDTH, flexShrink: 0 }} />
-        <svg style={{ flex: 1 }} height={20}>
+      <div className="flex h-5 mb-1 shrink-0">
+        <div className="w-[130px] shrink-0" />
+        <svg className="flex-1" height={20}>
           {xScale.ticks(8).map((date) => (
             <text
               key={date.toISOString()}
@@ -168,40 +165,23 @@ export function ContributorSwimlanes({
         const intensityScale = scaleLinear().domain([0, maxWeekly]).range([0.03, 0.8]);
 
         return (
-          <div
-            key={lane.email}
-            style={{
-              display: 'flex',
-              alignItems: 'stretch',
-              height: LANE_HEIGHT,
-              marginBottom: 4,
-            }}
-          >
+          <div key={lane.email} className="flex items-stretch h-14 mb-1">
             {/* Name label */}
             <div
               onClick={() => onSelectContributor(lane.email)}
-              style={{
-                width: LABEL_WIDTH,
-                flexShrink: 0,
-                display: 'flex',
-                alignItems: 'center',
-                paddingRight: 12,
-                cursor: 'pointer',
-              }}
+              className="w-[130px] shrink-0 flex items-center pr-3 cursor-pointer"
             >
               <div>
                 <div
-                  style={{
-                    fontSize: 11,
-                    color: 'var(--text-primary)',
-                    fontWeight: isSelected ? 700 : 600,
-                  }}
+                  className={`text-[11px] text-text-primary ${isSelected ? 'font-bold' : 'font-semibold'}`}
                 >
                   {lane.name}
                 </div>
-                <div style={{ fontSize: 9, color: 'var(--text-tertiary)' }}>
+                <div className="text-[9px] text-text-tertiary">
                   {lane.isGhost && (
-                    <span style={{ color: 'rgba(248,81,73,0.8)', marginRight: 4 }}>ghost</span>
+                    <span className="mr-1" style={{ color: 'rgba(248,81,73,0.8)' }}>
+                      ghost
+                    </span>
                   )}
                   {lane.commitCount} commits
                 </div>
@@ -210,26 +190,14 @@ export function ContributorSwimlanes({
 
             {/* Swimlane track */}
             <div
+              className="flex-1 relative rounded overflow-hidden"
               style={{
-                flex: 1,
-                position: 'relative',
-                borderRadius: 4,
-                overflow: 'hidden',
                 background: 'rgba(255,255,255,0.02)',
                 border: `1px solid ${isSelected ? 'var(--accent-primary)' : 'rgba(255,255,255,0.06)'}`,
               }}
             >
               {/* Layer 1: Activity bars */}
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  padding: `4px 2px ${HEATSTRIP_H + 2}px 2px`,
-                  display: 'flex',
-                  gap: 1,
-                  alignItems: 'stretch',
-                }}
-              >
+              <div className="absolute inset-0 flex items-stretch gap-px pt-1 px-0.5 pb-2.5">
                 {lane.weeklyIntensity.map((count, i) => (
                   <div
                     key={i}
@@ -245,12 +213,7 @@ export function ContributorSwimlanes({
 
               {/* Layer 2: Commit dots */}
               <svg
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  bottom: HEATSTRIP_H,
-                  pointerEvents: 'none',
-                }}
+                className="absolute inset-0 bottom-2 pointer-events-none"
                 width={trackWidth}
                 height={LANE_HEIGHT - HEATSTRIP_H}
               >
@@ -265,7 +228,7 @@ export function ContributorSwimlanes({
                       r={c.isHotspot ? 3 : 2.5}
                       fill={c.isHotspot ? 'rgba(248,81,73,0.9)' : color}
                       fillOpacity={c.isHotspot ? 0.9 : 0.7}
-                      style={{ pointerEvents: 'auto', cursor: 'pointer' }}
+                      className="pointer-events-auto cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         if (c.files.length > 0) onSelectFile(c.files[0]);
@@ -285,18 +248,7 @@ export function ContributorSwimlanes({
               </svg>
 
               {/* Layer 3: Heatstrip */}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: HEATSTRIP_H,
-                  display: 'flex',
-                  gap: 1,
-                  padding: '0 2px',
-                }}
-              >
+              <div className="absolute bottom-0 left-0 right-0 h-2 flex gap-px px-0.5">
                 {lane.weeklyIntensity.map((count, i) => (
                   <div
                     key={i}
@@ -314,20 +266,16 @@ export function ContributorSwimlanes({
               {lane.isGhost && lane.lastActiveDate && (
                 <>
                   <div
+                    className="absolute top-0 bottom-0"
                     style={{
-                      position: 'absolute',
-                      top: 0,
-                      bottom: 0,
                       left: xScale(lane.lastActiveDate),
                       borderLeft: '1px dashed rgba(248,81,73,0.3)',
                     }}
                   />
                   <div
+                    className="absolute top-1 text-[8px]"
                     style={{
-                      position: 'absolute',
-                      top: 4,
                       left: xScale(lane.lastActiveDate) + 4,
-                      fontSize: 8,
                       color: 'rgba(248,81,73,0.5)',
                     }}
                   >
@@ -341,28 +289,21 @@ export function ContributorSwimlanes({
       })}
       {tooltip && (
         <div
+          className="fixed bg-surface-elevated border border-border-primary rounded pointer-events-none z-[1000] max-w-[300px] text-[10px] text-text-primary px-2.5 py-1.5"
           style={{
-            position: 'fixed',
             left: Math.min(tooltip.x + 12, window.innerWidth - 320),
             top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 1000,
-            maxWidth: 300,
           }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>
+          <div className="font-semibold mb-0.5">
             {tooltip.commit.files[0] ?? 'no files'}
             {tooltip.commit.isHotspot && (
-              <span style={{ color: 'rgba(248,81,73,0.9)', marginLeft: 4 }}>hotspot</span>
+              <span className="ml-1" style={{ color: 'rgba(248,81,73,0.9)' }}>
+                hotspot
+              </span>
             )}
           </div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="text-text-secondary">
             {tooltip.author} ·{' '}
             {tooltip.commit.date.toLocaleDateString('en', {
               month: 'short',
