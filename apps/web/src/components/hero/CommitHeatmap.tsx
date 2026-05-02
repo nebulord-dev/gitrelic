@@ -8,8 +8,6 @@ interface CommitHeatmapProps {
   commits: RawCommit[];
 }
 
-const ROW_HEIGHT = 24;
-const CELL_GAP = 2;
 const LABEL_WIDTH = 120;
 const MAX_AUTHORS = 15;
 
@@ -88,7 +86,7 @@ export function CommitHeatmap({ commits }: CommitHeatmapProps) {
         const color = authorColor(email);
         const name = email.split('@')[0];
         return (
-          <div key={email} className="flex" style={{ height: ROW_HEIGHT, marginBottom: CELL_GAP }}>
+          <div key={email} className="flex h-6 mb-0.5">
             <div
               className="shrink-0 text-[10px] text-text-secondary flex items-center pr-2 overflow-hidden text-ellipsis whitespace-nowrap"
               style={{ width: LABEL_WIDTH }}
