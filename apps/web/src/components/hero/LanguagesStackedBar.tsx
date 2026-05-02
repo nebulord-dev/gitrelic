@@ -216,11 +216,11 @@ export function LanguagesStackedBar({ report }: LanguagesStackedBarProps) {
         })}
       </svg>
       {/* Language legend overlaid in the bottom-right */}
-      <div className="absolute right-2 bottom-2 flex flex-wrap gap-x-2.5 gap-y-1 max-w-[320px] text-[9px] text-text-tertiary bg-surface-elevated border border-border-primary rounded px-2 py-1.5">
+      <div className="absolute right-2 bottom-2 flex flex-wrap gap-x-2.5 gap-y-1 max-w-80 text-[9px] text-text-tertiary bg-surface-elevated border border-border-primary rounded px-2 py-1.5">
         {legendLanguages.map((lang) => (
           <span key={lang} className="inline-flex items-center gap-1">
             <span
-              className="inline-block w-2 h-2 rounded-[2px]"
+              className="inline-block w-2 h-2 rounded-xs"
               style={{ background: languageColor(lang) }}
             />
             {lang}
@@ -229,7 +229,7 @@ export function LanguagesStackedBar({ report }: LanguagesStackedBarProps) {
       </div>
       {tooltip && (
         <div
-          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-[320px] break-all"
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-80 break-all"
           style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
           <div className="font-semibold mb-0.5">{tooltip.directory}</div>
