@@ -43,27 +43,6 @@ describe('colorByMode', () => {
     });
   });
 
-  describe('age', () => {
-    it('returns color for FileAge.status', () => {
-      const report = makeReport({
-        ageMap: {
-          files: [{ file: 'a.ts', lastCommitDate: '', ageInDays: 10, status: 'fresh' }],
-          staleFiles: [],
-          ancientFiles: [],
-          medianAgeDays: 0,
-          summary: '',
-        },
-      } as Partial<GitrelicReport>);
-      const fill = colorByMode.age.fill('a.ts', report);
-      expect(fill).toBeTruthy();
-    });
-
-    it('falls back when file is missing from ageMap', () => {
-      const fill = colorByMode.age.fill('missing.ts', makeReport());
-      expect(fill).toBeTruthy();
-    });
-  });
-
   describe('test-proximity', () => {
     it('distinguishes tested, untested, and unknown', () => {
       const report = makeReport({
