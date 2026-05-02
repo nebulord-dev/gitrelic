@@ -1,3 +1,4 @@
+import { cn } from '../../utils/cn';
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { type BadgeVariant, fileName, filePath, fmt } from '../theme';
@@ -40,10 +41,10 @@ function formatAge(days: number): string {
   return `${days}d`;
 }
 
-function ageColor(days: number): string {
-  if (days >= 365) return 'var(--severity-critical)';
-  if (days >= 180) return 'var(--severity-warning)';
-  return 'var(--text-secondary)';
+function ageColorClass(days: number): string {
+  if (days >= 365) return 'text-severity-critical';
+  if (days >= 180) return 'text-severity-warning';
+  return 'text-text-secondary';
 }
 
 function rewriteVariant(score: number): BadgeVariant {
@@ -112,11 +113,9 @@ export function DebtInventoryTab({ report, onSelectFile }: DebtInventoryTabProps
       key: 'file',
       label: 'File',
       render: (r) => (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+        <span className="font-mono text-[11px]">
           {fileName(r.file)}
-          <span style={{ color: 'var(--text-tertiary)', marginLeft: 6, fontSize: 10 }}>
-            {filePath(r.file)}
-          </span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(r.file)}</span>
         </span>
       ),
     },
@@ -127,13 +126,7 @@ export function DebtInventoryTab({ report, onSelectFile }: DebtInventoryTabProps
       align: 'right',
       sortValue: (r) => r.ageDays,
       render: (r) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: ageColor(r.ageDays),
-          }}
-        >
+        <span className={cn('font-mono text-[11px]', ageColorClass(r.ageDays))}>
           {formatAge(r.ageDays)}
         </span>
       ),
@@ -156,11 +149,11 @@ export function DebtInventoryTab({ report, onSelectFile }: DebtInventoryTabProps
       sortValue: (r) => r.growthRate,
       render: (r) => (
         <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: r.growthRate > 0 ? 'var(--severity-critical)' : 'var(--text-secondary)',
-          }}
+          className={
+            r.growthRate > 0
+              ? 'font-mono text-[11px] text-severity-critical'
+              : 'font-mono text-[11px] text-text-secondary'
+          }
         >
           {r.growthRate > 0 ? '+' : ''}
           {Math.round(r.growthRate)}/mo
@@ -183,11 +176,11 @@ export function DebtInventoryTab({ report, onSelectFile }: DebtInventoryTabProps
       sortValue: (r) => r.shameScore,
       render: (r) => (
         <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: r.shameScore > 50 ? 'var(--severity-warning)' : 'var(--text-secondary)',
-          }}
+          className={
+            r.shameScore > 50
+              ? 'font-mono text-[11px] text-severity-warning'
+              : 'font-mono text-[11px] text-text-secondary'
+          }
         >
           {fmt(r.shameScore)}
         </span>
@@ -201,17 +194,14 @@ export function DebtInventoryTab({ report, onSelectFile }: DebtInventoryTabProps
       sortValue: (r) => r.debtScore,
       render: (r) => (
         <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            fontWeight: 700,
-            color:
-              r.debtScore > 70
-                ? 'var(--severity-critical)'
-                : r.debtScore > 40
-                  ? 'var(--severity-warning)'
-                  : 'var(--text-secondary)',
-          }}
+          className={cn(
+            'font-mono text-[11px] font-bold',
+            r.debtScore > 70
+              ? 'text-severity-critical'
+              : r.debtScore > 40
+                ? 'text-severity-warning'
+                : 'text-text-secondary',
+          )}
         >
           {r.debtScore}
         </span>

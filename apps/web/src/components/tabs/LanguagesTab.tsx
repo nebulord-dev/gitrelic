@@ -13,9 +13,7 @@ export function LanguagesTab({ report }: LanguagesTabProps) {
       key: 'language',
       label: 'Language',
       render: (l) => (
-        <span style={{ fontSize: 11, color: 'var(--text-primary)', fontWeight: 500 }}>
-          {l.language}
-        </span>
+        <span className="text-[11px] text-text-primary font-medium">{l.language}</span>
       ),
     },
     {
@@ -24,33 +22,14 @@ export function LanguagesTab({ report }: LanguagesTabProps) {
       width: '160px',
       sortValue: (l) => l.percentage,
       render: (l) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div
-            style={{
-              width: 80,
-              height: 4,
-              background: 'var(--surface-tertiary)',
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}
-          >
+        <div className="flex items-center gap-2">
+          <div className="w-20 h-1 bg-surface-tertiary rounded-xs overflow-hidden">
             <div
-              style={{
-                width: `${l.percentage}%`,
-                height: '100%',
-                borderRadius: 2,
-                background: 'var(--accent-primary)',
-              }}
+              className="h-full rounded-xs bg-accent-primary"
+              style={{ width: `${l.percentage}%` }}
             />
           </div>
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 11,
-              color: 'var(--text-secondary)',
-              width: 40,
-            }}
-          >
+          <span className="font-mono text-[11px] text-text-secondary w-10">
             {l.percentage.toFixed(1)}%
           </span>
         </div>
@@ -63,11 +42,7 @@ export function LanguagesTab({ report }: LanguagesTabProps) {
       align: 'right',
       sortValue: (l) => l.files,
       render: (l) => (
-        <span
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-        >
-          {fmt(l.files)}
-        </span>
+        <span className="font-mono text-[11px] text-text-secondary">{fmt(l.files)}</span>
       ),
     },
     {
@@ -77,11 +52,7 @@ export function LanguagesTab({ report }: LanguagesTabProps) {
       align: 'right',
       sortValue: (l) => l.lines,
       render: (l) => (
-        <span
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-        >
-          {fmt(l.lines)}
-        </span>
+        <span className="font-mono text-[11px] text-text-secondary">{fmt(l.lines)}</span>
       ),
     },
   ];

@@ -15,11 +15,9 @@ export function GhostFilesTab({ report, onSelectFile }: GhostFilesTabProps) {
       key: 'file',
       label: 'File',
       render: (f) => (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+        <span className="font-mono text-[11px]">
           {fileName(f.file)}
-          <span style={{ color: 'var(--text-tertiary)', marginLeft: 6, fontSize: 10 }}>
-            {filePath(f.file)}
-          </span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(f.file)}</span>
         </span>
       ),
     },
@@ -28,9 +26,7 @@ export function GhostFilesTab({ report, onSelectFile }: GhostFilesTabProps) {
       label: 'Owner',
       width: '140px',
       render: (f) => (
-        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-          {f.dominantAuthor.split(' <')[0]}
-        </span>
+        <span className="text-[11px] text-text-secondary">{f.dominantAuthor.split(' <')[0]}</span>
       ),
     },
     {
@@ -40,9 +36,7 @@ export function GhostFilesTab({ report, onSelectFile }: GhostFilesTabProps) {
       align: 'right',
       sortValue: (f) => f.dominantAuthorPercent,
       render: (f) => (
-        <span
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--accent-ownership)' }}
-        >
+        <span className="font-mono text-[11px] text-accent-ownership">
           {f.dominantAuthorPercent}%
         </span>
       ),
@@ -54,13 +48,11 @@ export function GhostFilesTab({ report, onSelectFile }: GhostFilesTabProps) {
       align: 'right',
       sortValue: (f) => f.authorInactiveDays,
       render: (f) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
+        <div className="flex items-center gap-1.5 justify-end">
           <Badge variant={f.authorInactiveDays > 180 ? 'critical' : 'warning'}>
             {f.authorInactiveDays > 365 ? 'ghost' : 'fading'}
           </Badge>
-          <span
-            style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-          >
+          <span className="font-mono text-[11px] text-text-secondary">
             {fmt(f.authorInactiveDays)}d
           </span>
         </div>
@@ -73,11 +65,7 @@ export function GhostFilesTab({ report, onSelectFile }: GhostFilesTabProps) {
       align: 'right',
       sortValue: (f) => f.loc,
       render: (f) => (
-        <span
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-        >
-          {fmt(f.loc)}
-        </span>
+        <span className="font-mono text-[11px] text-text-secondary">{fmt(f.loc)}</span>
       ),
     },
   ];

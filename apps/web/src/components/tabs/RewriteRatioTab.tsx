@@ -26,12 +26,6 @@ function tierBadge(highRewriteCount: number): { variant: BadgeVariant; label: st
   return { variant: 'critical', label: 'High Rewrite' };
 }
 
-const monoBold = {
-  fontFamily: 'var(--font-mono)',
-  color: 'var(--text-primary)',
-  fontWeight: 600,
-} as const;
-
 function signed(n: number): string {
   if (n > 0) return `+${fmt(n)}`;
   if (n < 0) return `−${fmt(-n)}`;
@@ -63,28 +57,19 @@ export function RewriteRatioTab({ report, onApplyPreset }: RewriteRatioTabProps)
       metric={`Files ≥${HIGH_REWRITE_THRESHOLD} Rewrite`}
       finding={
         highRewrite > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <div
-              style={{
-                fontSize: 9,
-                color: 'var(--text-tertiary)',
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-              }}
-            >
+          <div className="flex flex-col gap-1">
+            <div className="text-[9px] text-text-tertiary uppercase tracking-[1px]">
               Top rewrite files
             </div>
             {topFiles.map((f) => (
-              <div key={f.file} style={{ lineHeight: 1.5 }}>
-                <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
-                  {fileName(f.file)}
-                </span>{' '}
-                <span style={{ color: 'var(--text-tertiary)' }}>
-                  <span style={{ ...monoBold, color: 'var(--severity-healthy)' }}>
+              <div key={f.file} className="leading-[1.5]">
+                <span className="font-mono text-text-primary">{fileName(f.file)}</span>{' '}
+                <span className="text-text-tertiary">
+                  <span className="font-mono font-semibold text-severity-healthy">
                     +{fmt(f.totalInsertions)}
                   </span>{' '}
                   /{' '}
-                  <span style={{ ...monoBold, color: 'var(--severity-critical)' }}>
+                  <span className="font-mono font-semibold text-severity-critical">
                     −{fmt(f.totalDeletions)}
                   </span>
                 </span>
@@ -103,10 +88,9 @@ export function RewriteRatioTab({ report, onApplyPreset }: RewriteRatioTabProps)
       subline={
         files.length > 0 ? (
           <>
-            Repo balance:{' '}
-            <strong style={{ color: 'var(--severity-healthy)' }}>+{fmt(totalInsertions)}</strong> /{' '}
-            <strong style={{ color: 'var(--severity-critical)' }}>−{fmt(totalDeletions)}</strong> ·
-            net <strong>{signed(totalInsertions - totalDeletions)}</strong> ·{' '}
+            Repo balance: <strong className="text-severity-healthy">+{fmt(totalInsertions)}</strong>{' '}
+            / <strong className="text-severity-critical">−{fmt(totalDeletions)}</strong> · net{' '}
+            <strong>{signed(totalInsertions - totalDeletions)}</strong> ·{' '}
             <strong>{balancedPct}%</strong> of files balanced (ratio &gt; 0.5).
           </>
         ) : null
@@ -114,79 +98,38 @@ export function RewriteRatioTab({ report, onApplyPreset }: RewriteRatioTabProps)
       extras={
         directoryRows.length > 0 ? (
           <div>
-            <div
-              style={{
-                fontSize: 9,
-                color: 'var(--text-tertiary)',
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-                marginBottom: 8,
-              }}
-            >
+            <div className="text-[9px] text-text-tertiary uppercase tracking-[1px] mb-2">
               Where they live
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div className="flex flex-col gap-1">
               {directoryRows.map((row) => (
                 <div
                   key={row.directory}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    fontSize: 11,
-                    lineHeight: 1.4,
-                  }}
+                  className="flex items-center gap-3 text-[11px] leading-[1.4]"
                 >
                   <Tooltip
                     content={row.directory || '(root)'}
-                    wrapperStyle={{
-                      display: 'block',
-                      flex: 1,
-                      minWidth: 0,
-                      fontFamily: 'var(--font-mono)',
-                      color: 'var(--text-secondary)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
+                    wrapperClassName="block flex-1 min-w-0 font-mono text-text-secondary overflow-hidden text-ellipsis whitespace-nowrap"
                   >
                     {row.directory || '(root)'}
                   </Tooltip>
-                  <div
-                    style={{
-                      width: 80,
-                      height: 4,
-                      background: 'var(--surface-tertiary)',
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      flexShrink: 0,
-                    }}
-                  >
+                  <div className="w-20 h-1 bg-surface-tertiary rounded-xs overflow-hidden shrink-0">
                     <div
-                      style={{
-                        width: `${(row.count / maxDirCount) * 100}%`,
-                        height: '100%',
-                        background: 'var(--severity-warning)',
-                        opacity: 0.7,
-                      }}
+                      className="h-full bg-severity-warning opacity-70"
+                      style={{ width: `${(row.count / maxDirCount) * 100}%` }}
                     />
                   </div>
-                  <span style={{ ...monoBold, minWidth: 32, textAlign: 'right' }}>{row.count}</span>
-                  <span
-                    style={{
-                      color: 'var(--text-tertiary)',
-                      fontSize: 10,
-                      minWidth: 36,
-                      textAlign: 'right',
-                    }}
-                  >
+                  <span className="font-mono text-text-primary font-semibold inline-block min-w-8 text-right">
+                    {row.count}
+                  </span>
+                  <span className="text-text-tertiary text-[10px] inline-block min-w-9 text-right">
                     {(row.share * 100).toFixed(0)}%
                   </span>
                 </div>
               ))}
             </div>
             {hiddenDirectoryCount > 0 && (
-              <div style={{ marginTop: 6, fontSize: 10, color: 'var(--text-tertiary)' }}>
+              <div className="mt-1.5 text-[10px] text-text-tertiary">
                 + {hiddenDirectoryCount} more{' '}
                 {hiddenDirectoryCount === 1 ? 'directory' : 'directories'}
               </div>

@@ -291,7 +291,7 @@ export function OwnershipSunburst({
 
       {tooltip && (
         <div
-          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-80 break-all"
+          className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-80 break-all"
           style={{ left: tooltip.x + 14, top: tooltip.y - 8 }}
         >
           {tooltip.kind === 'author' ? (

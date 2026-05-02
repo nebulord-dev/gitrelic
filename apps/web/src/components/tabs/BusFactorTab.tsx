@@ -29,12 +29,6 @@ function tierBadge(overallBusFactor: number): { variant: BadgeVariant; label: st
   return { variant: 'healthy', label: 'Resilient' };
 }
 
-const monoBold = {
-  fontFamily: 'var(--font-mono)',
-  color: 'var(--text-primary)',
-  fontWeight: 600,
-} as const;
-
 export function BusFactorTab({ report, onApplyPreset }: BusFactorTabProps) {
   const { files, criticalFiles, overallBusFactor } = report.busFactors;
   const tier = tierBadge(overallBusFactor);
@@ -65,22 +59,15 @@ export function BusFactorTab({ report, onApplyPreset }: BusFactorTabProps) {
       metric="Bus Factor"
       finding={
         topOwners.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <div
-              style={{
-                fontSize: 9,
-                color: 'var(--text-tertiary)',
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-              }}
-            >
+          <div className="flex flex-col gap-1">
+            <div className="text-[9px] text-text-tertiary uppercase tracking-[1px]">
               Top dominant owners
             </div>
             {topOwners.map((o) => (
-              <div key={o.author} style={{ lineHeight: 1.5 }}>
-                <span style={{ ...monoBold, color: 'var(--severity-critical)' }}>{o.author}</span>{' '}
-                <span style={{ color: 'var(--text-tertiary)' }}>
-                  — <strong style={{ color: 'var(--text-primary)' }}>{o.count}</strong>{' '}
+              <div key={o.author} className="leading-[1.5]">
+                <span className="font-mono font-semibold text-severity-critical">{o.author}</span>{' '}
+                <span className="text-text-tertiary">
+                  — <strong className="text-text-primary">{o.count}</strong>{' '}
                   {o.count === 1 ? 'file' : 'files'} ({(o.share * 100).toFixed(0)}%)
                 </span>
               </div>
@@ -95,90 +82,48 @@ export function BusFactorTab({ report, onApplyPreset }: BusFactorTabProps) {
       subline={
         files.length > 0 ? (
           <>
-            Tier mix:{' '}
-            <strong style={{ color: 'var(--severity-critical)' }}>{tierMix.critical}</strong>{' '}
-            critical · <strong style={{ color: '#d27b22' }}>{tierMix.high}</strong> high ·{' '}
-            <strong style={{ color: 'var(--severity-warning)' }}>{tierMix.medium}</strong> medium ·{' '}
-            <strong style={{ color: 'var(--severity-healthy)' }}>{tierMix.low}</strong> low.
+            Tier mix: <strong className="text-severity-critical">{tierMix.critical}</strong>{' '}
+            critical · <strong className="text-[#d27b22]">{tierMix.high}</strong> high ·{' '}
+            <strong className="text-severity-warning">{tierMix.medium}</strong> medium ·{' '}
+            <strong className="text-severity-healthy">{tierMix.low}</strong> low.
           </>
         ) : null
       }
       extras={
         directoryRows.length > 0 ? (
           <div>
-            <div
-              style={{
-                fontSize: 9,
-                color: 'var(--text-tertiary)',
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-                marginBottom: 8,
-              }}
-            >
+            <div className="text-[9px] text-text-tertiary uppercase tracking-[1px] mb-2">
               Where they live
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div className="flex flex-col gap-1">
               {directoryRows.map((row) => (
                 <div
                   key={row.directory}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    fontSize: 11,
-                    lineHeight: 1.4,
-                  }}
+                  className="flex items-center gap-3 text-[11px] leading-[1.4]"
                 >
                   <Tooltip
                     content={row.directory || '(root)'}
-                    wrapperStyle={{
-                      display: 'block',
-                      flex: 1,
-                      minWidth: 0,
-                      fontFamily: 'var(--font-mono)',
-                      color: 'var(--text-secondary)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
+                    wrapperClassName="block flex-1 min-w-0 font-mono text-text-secondary overflow-hidden text-ellipsis whitespace-nowrap"
                   >
                     {row.directory || '(root)'}
                   </Tooltip>
-                  <div
-                    style={{
-                      width: 80,
-                      height: 4,
-                      background: 'var(--surface-tertiary)',
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      flexShrink: 0,
-                    }}
-                  >
+                  <div className="w-20 h-1 bg-surface-tertiary rounded-xs overflow-hidden shrink-0">
                     <div
-                      style={{
-                        width: `${(row.count / maxDirCount) * 100}%`,
-                        height: '100%',
-                        background: 'var(--severity-critical)',
-                        opacity: 0.7,
-                      }}
+                      className="h-full bg-severity-critical opacity-70"
+                      style={{ width: `${(row.count / maxDirCount) * 100}%` }}
                     />
                   </div>
-                  <span style={{ ...monoBold, minWidth: 32, textAlign: 'right' }}>{row.count}</span>
-                  <span
-                    style={{
-                      color: 'var(--text-tertiary)',
-                      fontSize: 10,
-                      minWidth: 36,
-                      textAlign: 'right',
-                    }}
-                  >
+                  <span className="font-mono text-text-primary font-semibold inline-block min-w-8 text-right">
+                    {row.count}
+                  </span>
+                  <span className="text-text-tertiary text-[10px] inline-block min-w-9 text-right">
                     {(row.share * 100).toFixed(0)}%
                   </span>
                 </div>
               ))}
             </div>
             {hiddenDirectoryCount > 0 && (
-              <div style={{ marginTop: 6, fontSize: 10, color: 'var(--text-tertiary)' }}>
+              <div className="mt-1.5 text-[10px] text-text-tertiary">
                 + {hiddenDirectoryCount} more{' '}
                 {hiddenDirectoryCount === 1 ? 'directory' : 'directories'}
               </div>

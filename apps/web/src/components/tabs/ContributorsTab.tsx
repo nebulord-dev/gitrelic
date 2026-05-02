@@ -14,26 +14,13 @@ export function ContributorsTab({ report }: ContributorsTabProps) {
       key: 'name',
       label: 'Contributor',
       render: (c) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: '50%',
-              background: 'var(--surface-tertiary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 9,
-              color: 'var(--text-secondary)',
-              flexShrink: 0,
-            }}
-          >
+        <div className="flex items-center gap-2">
+          <div className="w-[22px] h-[22px] rounded-full bg-surface-tertiary flex items-center justify-center text-[9px] text-text-secondary shrink-0">
             {c.name.slice(0, 2).toUpperCase()}
           </div>
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-primary)' }}>{c.name}</div>
-            <div style={{ fontSize: 9, color: 'var(--text-tertiary)' }}>{c.email}</div>
+            <div className="text-[11px] text-text-primary">{c.name}</div>
+            <div className="text-[9px] text-text-tertiary">{c.email}</div>
           </div>
           {!c.isActive && <Badge variant="stale">ghost</Badge>}
         </div>
@@ -46,14 +33,7 @@ export function ContributorsTab({ report }: ContributorsTabProps) {
       align: 'right',
       sortValue: (c) => c.commitCount,
       render: (c) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--text-primary)',
-            fontWeight: 600,
-          }}
-        >
+        <span className="font-mono text-[11px] text-text-primary font-semibold">
           {fmt(c.commitCount)}
         </span>
       ),
@@ -65,15 +45,7 @@ export function ContributorsTab({ report }: ContributorsTabProps) {
       align: 'right',
       sortValue: (c) => c.filesOwned,
       render: (c) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--text-secondary)',
-          }}
-        >
-          {c.filesOwned}
-        </span>
+        <span className="font-mono text-[11px] text-text-secondary">{c.filesOwned}</span>
       ),
     },
     {
@@ -81,7 +53,7 @@ export function ContributorsTab({ report }: ContributorsTabProps) {
       label: 'Focus Areas',
       width: '200px',
       render: (c) => (
-        <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>
+        <span className="text-[10px] text-text-tertiary">
           {c.focusAreas.slice(0, 2).join(', ')}
         </span>
       ),
@@ -93,13 +65,11 @@ export function ContributorsTab({ report }: ContributorsTabProps) {
       align: 'center',
       render: (c) => (
         <div
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: c.isActive ? 'var(--severity-healthy)' : 'var(--text-tertiary)',
-            margin: '0 auto',
-          }}
+          className={
+            c.isActive
+              ? 'w-2 h-2 rounded-full bg-severity-healthy mx-auto'
+              : 'w-2 h-2 rounded-full bg-text-tertiary mx-auto'
+          }
         />
       ),
     },

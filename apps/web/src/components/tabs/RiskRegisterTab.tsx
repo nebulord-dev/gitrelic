@@ -1,3 +1,4 @@
+import { cn } from '../../utils/cn';
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath, fmt } from '../theme';
@@ -86,11 +87,9 @@ export function RiskRegisterTab({ report, onSelectFile }: RiskRegisterTabProps) 
       key: 'file',
       label: 'File',
       render: (r) => (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+        <span className="font-mono text-[11px]">
           {fileName(r.file)}
-          <span style={{ color: 'var(--text-tertiary)', marginLeft: 6, fontSize: 10 }}>
-            {filePath(r.file)}
-          </span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(r.file)}</span>
         </span>
       ),
     },
@@ -112,7 +111,7 @@ export function RiskRegisterTab({ report, onSelectFile }: RiskRegisterTabProps) 
         r.isGhost ? (
           <Badge variant="critical">orphaned</Badge>
         ) : (
-          <span style={{ fontSize: 11, color: 'var(--severity-healthy)' }}>active</span>
+          <span className="text-[11px] text-severity-healthy">active</span>
         ),
     },
     {
@@ -123,11 +122,11 @@ export function RiskRegisterTab({ report, onSelectFile }: RiskRegisterTabProps) 
       sortValue: (r) => r.concentration,
       render: (r) => (
         <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: r.concentration > 80 ? 'var(--severity-warning)' : 'var(--text-secondary)',
-          }}
+          className={
+            r.concentration > 80
+              ? 'font-mono text-[11px] text-severity-warning'
+              : 'font-mono text-[11px] text-text-secondary'
+          }
         >
           {r.concentration}%
         </span>
@@ -141,11 +140,11 @@ export function RiskRegisterTab({ report, onSelectFile }: RiskRegisterTabProps) 
       sortValue: (r) => r.blastScore,
       render: (r) => (
         <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: r.blastScore > 70 ? 'var(--severity-warning)' : 'var(--text-secondary)',
-          }}
+          className={
+            r.blastScore > 70
+              ? 'font-mono text-[11px] text-severity-warning'
+              : 'font-mono text-[11px] text-text-secondary'
+          }
         >
           {fmt(r.blastScore)}
         </span>
@@ -159,17 +158,14 @@ export function RiskRegisterTab({ report, onSelectFile }: RiskRegisterTabProps) 
       sortValue: (r) => r.riskScore,
       render: (r) => (
         <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            fontWeight: 700,
-            color:
-              r.riskScore > 70
-                ? 'var(--severity-critical)'
-                : r.riskScore > 40
-                  ? 'var(--severity-warning)'
-                  : 'var(--text-secondary)',
-          }}
+          className={cn(
+            'font-mono text-[11px] font-bold',
+            r.riskScore > 70
+              ? 'text-severity-critical'
+              : r.riskScore > 40
+                ? 'text-severity-warning'
+                : 'text-text-secondary',
+          )}
         >
           {r.riskScore}
         </span>

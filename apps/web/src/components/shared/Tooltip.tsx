@@ -1,6 +1,8 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { useCallback, useRef, useState } from 'react';
 
+import { cn } from '../../utils/cn';
+
 interface TooltipProps {
   content: ReactNode;
   children: ReactNode;
@@ -12,9 +14,21 @@ interface TooltipProps {
    * on hover).
    */
   wrapperStyle?: CSSProperties;
+  /**
+   * Additional Tailwind classes for the wrapper div. Preferred over
+   * `wrapperStyle` for layout/sizing overrides (flex, min-w, overflow, etc.)
+   * since they participate in Tailwind's purge and are easier to grep.
+   */
+  wrapperClassName?: string;
 }
 
-export function Tooltip({ content, children, position = 'top', wrapperStyle }: TooltipProps) {
+export function Tooltip({
+  content,
+  children,
+  position = 'top',
+  wrapperStyle,
+  wrapperClassName,
+}: TooltipProps) {
   const [visible, setVisible] = useState(false);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -32,7 +46,7 @@ export function Tooltip({ content, children, position = 'top', wrapperStyle }: T
       ref={wrapRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setVisible(false)}
-      className="inline-block cursor-help"
+      className={cn('inline-block cursor-help', wrapperClassName)}
       style={wrapperStyle}
     >
       {children}

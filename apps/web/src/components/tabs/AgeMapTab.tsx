@@ -21,17 +21,9 @@ export function AgeMapTab({ report, onSelectFile }: AgeMapTabProps) {
       key: 'file',
       label: 'File',
       render: (f) => (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+        <span className="font-mono text-[11px]">
           {fileName(f.file)}
-          <span
-            style={{
-              color: 'var(--text-tertiary)',
-              marginLeft: 6,
-              fontSize: 10,
-            }}
-          >
-            {filePath(f.file)}
-          </span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(f.file)}</span>
         </span>
       ),
     },
@@ -42,15 +34,7 @@ export function AgeMapTab({ report, onSelectFile }: AgeMapTabProps) {
       align: 'right',
       sortValue: (f) => f.ageInDays,
       render: (f) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--text-secondary)',
-          }}
-        >
-          {fmt(f.ageInDays)}
-        </span>
+        <span className="font-mono text-[11px] text-text-secondary">{fmt(f.ageInDays)}</span>
       ),
     },
     {
@@ -59,9 +43,7 @@ export function AgeMapTab({ report, onSelectFile }: AgeMapTabProps) {
       width: '100px',
       align: 'right',
       render: (f) => (
-        <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>
-          {f.lastCommitDate.slice(0, 10)}
-        </span>
+        <span className="text-[10px] text-text-tertiary">{f.lastCommitDate.slice(0, 10)}</span>
       ),
     },
   ];

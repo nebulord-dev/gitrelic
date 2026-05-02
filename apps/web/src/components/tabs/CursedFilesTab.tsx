@@ -32,23 +32,9 @@ export function CursedFilesTab({ report, onSelectFile }: CursedFilesTabProps) {
       key: 'file',
       label: 'File',
       render: (c) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--severity-critical)',
-          }}
-        >
+        <span className="font-mono text-[11px] text-severity-critical">
           {fileName(c.file)}
-          <span
-            style={{
-              color: 'var(--text-tertiary)',
-              marginLeft: 6,
-              fontSize: 10,
-            }}
-          >
-            {filePath(c.file)}
-          </span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(c.file)}</span>
         </span>
       ),
     },
@@ -57,7 +43,7 @@ export function CursedFilesTab({ report, onSelectFile }: CursedFilesTabProps) {
       label: 'Reasons',
       width: '300px',
       render: (c) => (
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        <div className="flex gap-1 flex-wrap">
           {c.reasons.slice(0, 4).map((r) => (
             <Badge key={r} variant={reasonVariant(r)}>
               {r}
@@ -73,14 +59,7 @@ export function CursedFilesTab({ report, onSelectFile }: CursedFilesTabProps) {
       align: 'right',
       sortValue: (c) => c.curseScore,
       render: (c) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--severity-critical)',
-            fontWeight: 600,
-          }}
-        >
+        <span className="font-mono text-[11px] text-severity-critical font-semibold">
           {c.curseScore}
         </span>
       ),
@@ -92,15 +71,7 @@ export function CursedFilesTab({ report, onSelectFile }: CursedFilesTabProps) {
       align: 'right',
       sortValue: (c) => c.churn,
       render: (c) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--text-secondary)',
-          }}
-        >
-          {fmt(c.churn)}
-        </span>
+        <span className="font-mono text-[11px] text-text-secondary">{fmt(c.churn)}</span>
       ),
     },
     {
@@ -111,22 +82,12 @@ export function CursedFilesTab({ report, onSelectFile }: CursedFilesTabProps) {
       sortValue: (c) => c.authors,
       render: (c) => {
         const authors = getAuthors(c.file, report);
-        const span = (
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 11,
-              color: 'var(--text-secondary)',
-            }}
-          >
-            {c.authors}
-          </span>
-        );
+        const span = <span className="font-mono text-[11px] text-text-secondary">{c.authors}</span>;
         if (!authors) return span;
         return (
           <Tooltip
             content={
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div className="flex flex-col gap-0.5">
                 {authors.map((a) => (
                   <span key={a}>{a.split('@')[0]}</span>
                 ))}

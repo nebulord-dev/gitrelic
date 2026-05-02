@@ -15,11 +15,9 @@ export function DeadCodeTab({ report, onSelectFile }: DeadCodeTabProps) {
       key: 'file',
       label: 'File',
       render: (d) => (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+        <span className="font-mono text-[11px]">
           {fileName(d.file)}
-          <span style={{ color: 'var(--text-tertiary)', marginLeft: 6, fontSize: 10 }}>
-            {filePath(d.file)}
-          </span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(d.file)}</span>
         </span>
       ),
     },
@@ -27,9 +25,7 @@ export function DeadCodeTab({ report, onSelectFile }: DeadCodeTabProps) {
       key: 'language',
       label: 'Language',
       width: '100px',
-      render: (d) => (
-        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{d.language}</span>
-      ),
+      render: (d) => <span className="text-[11px] text-text-secondary">{d.language}</span>,
     },
     {
       key: 'loc',
@@ -38,11 +34,7 @@ export function DeadCodeTab({ report, onSelectFile }: DeadCodeTabProps) {
       align: 'right',
       sortValue: (d) => d.loc,
       render: (d) => (
-        <span
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-        >
-          {fmt(d.loc)}
-        </span>
+        <span className="font-mono text-[11px] text-text-secondary">{fmt(d.loc)}</span>
       ),
     },
     {
@@ -52,15 +44,11 @@ export function DeadCodeTab({ report, onSelectFile }: DeadCodeTabProps) {
       align: 'right',
       sortValue: (d) => d.ageInDays,
       render: (d) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
+        <div className="flex items-center gap-1.5 justify-end">
           <Badge variant={d.ageInDays > 365 ? 'critical' : d.ageInDays > 180 ? 'warning' : 'stale'}>
             {d.ageInDays > 365 ? 'ancient' : d.ageInDays > 180 ? 'stale' : 'dormant'}
           </Badge>
-          <span
-            style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-          >
-            {fmt(d.ageInDays)}d
-          </span>
+          <span className="font-mono text-[11px] text-text-secondary">{fmt(d.ageInDays)}d</span>
         </div>
       ),
     },

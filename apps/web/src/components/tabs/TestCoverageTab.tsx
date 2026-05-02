@@ -12,13 +12,7 @@ export function TestCoverageTab({ report }: TestCoverageTabProps) {
     {
       key: 'directory',
       label: 'Directory',
-      render: (d) => (
-        <span
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-primary)' }}
-        >
-          {d.directory}
-        </span>
-      ),
+      render: (d) => <span className="font-mono text-[11px] text-text-primary">{d.directory}</span>,
     },
     {
       key: 'status',
@@ -37,11 +31,7 @@ export function TestCoverageTab({ report }: TestCoverageTabProps) {
       align: 'right',
       sortValue: (d) => d.sourceFiles,
       render: (d) => (
-        <span
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-        >
-          {d.sourceFiles}
-        </span>
+        <span className="font-mono text-[11px] text-text-secondary">{d.sourceFiles}</span>
       ),
     },
     {
@@ -51,11 +41,7 @@ export function TestCoverageTab({ report }: TestCoverageTabProps) {
       align: 'right',
       sortValue: (d) => d.testFiles,
       render: (d) => (
-        <span
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-        >
-          {d.testFiles}
-        </span>
+        <span className="font-mono text-[11px] text-text-secondary">{d.testFiles}</span>
       ),
     },
     {
@@ -65,35 +51,18 @@ export function TestCoverageTab({ report }: TestCoverageTabProps) {
       align: 'right',
       sortValue: (d) => d.coverageRatio,
       render: (d) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
-          <div
-            style={{
-              width: 50,
-              height: 4,
-              background: 'var(--surface-tertiary)',
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}
-          >
+        <div className="flex items-center gap-2 justify-end">
+          <div className="w-[50px] h-1 bg-surface-tertiary rounded-xs overflow-hidden">
             <div
+              className="h-full rounded-xs"
               style={{
                 width: `${Math.min(100, d.coverageRatio * 100)}%`,
-                height: '100%',
-                borderRadius: 2,
                 background:
                   d.coverageRatio >= 0.5 ? 'var(--severity-healthy)' : 'var(--severity-warning)',
               }}
             />
           </div>
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 11,
-              color: 'var(--text-secondary)',
-              width: 32,
-              textAlign: 'right',
-            }}
-          >
+          <span className="font-mono text-[11px] text-text-secondary w-8 text-right">
             {(d.coverageRatio * 100).toFixed(0)}%
           </span>
         </div>

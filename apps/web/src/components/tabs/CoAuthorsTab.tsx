@@ -13,9 +13,9 @@ export function CoAuthorsTab({ report }: CoAuthorsTabProps) {
       key: 'pair',
       label: 'Pair',
       render: (p) => (
-        <span style={{ fontSize: 11, color: 'var(--text-primary)' }}>
+        <span className="text-[11px] text-text-primary">
           {p.authorA.split(' <')[0]}
-          <span style={{ color: 'var(--text-tertiary)', margin: '0 6px' }}>&amp;</span>
+          <span className="text-text-tertiary mx-1.5">&amp;</span>
           {p.authorB.split(' <')[0]}
         </span>
       ),
@@ -27,9 +27,7 @@ export function CoAuthorsTab({ report }: CoAuthorsTabProps) {
       align: 'right',
       sortValue: (p) => p.coAuthoredCommits,
       render: (p) => (
-        <span
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-        >
+        <span className="font-mono text-[11px] text-text-secondary">
           {fmt(p.coAuthoredCommits)}
         </span>
       ),
@@ -41,11 +39,7 @@ export function CoAuthorsTab({ report }: CoAuthorsTabProps) {
       align: 'right',
       sortValue: (p) => p.files.length,
       render: (p) => (
-        <span
-          style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-        >
-          {p.files.length}
-        </span>
+        <span className="font-mono text-[11px] text-text-secondary">{p.files.length}</span>
       ),
     },
   ];

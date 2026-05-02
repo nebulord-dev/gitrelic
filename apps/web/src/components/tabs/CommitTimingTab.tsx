@@ -24,11 +24,9 @@ export function CommitTimingTab({ report, onSelectFile }: CommitTimingTabProps) 
       key: 'file',
       label: 'File',
       render: (f) => (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+        <span className="font-mono text-[11px]">
           {fileName(f.file)}
-          <span style={{ color: 'var(--text-tertiary)', marginLeft: 6, fontSize: 10 }}>
-            {filePath(f.file)}
-          </span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(f.file)}</span>
         </span>
       ),
     },
@@ -40,11 +38,11 @@ export function CommitTimingTab({ report, onSelectFile }: CommitTimingTabProps) 
       sortValue: (f) => f.lateNightPercent,
       render: (f) => (
         <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: f.lateNightPercent > 30 ? 'var(--severity-warning)' : 'var(--text-secondary)',
-          }}
+          className={
+            f.lateNightPercent > 30
+              ? 'font-mono text-[11px] text-severity-warning'
+              : 'font-mono text-[11px] text-text-secondary'
+          }
         >
           {f.lateNightPercent.toFixed(0)}%
         </span>
@@ -58,11 +56,11 @@ export function CommitTimingTab({ report, onSelectFile }: CommitTimingTabProps) 
       sortValue: (f) => f.weekendPercent,
       render: (f) => (
         <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: f.weekendPercent > 30 ? 'var(--severity-warning)' : 'var(--text-secondary)',
-          }}
+          className={
+            f.weekendPercent > 30
+              ? 'font-mono text-[11px] text-severity-warning'
+              : 'font-mono text-[11px] text-text-secondary'
+          }
         >
           {f.weekendPercent.toFixed(0)}%
         </span>
@@ -73,7 +71,7 @@ export function CommitTimingTab({ report, onSelectFile }: CommitTimingTabProps) 
       label: 'Peak Time',
       width: '110px',
       render: (f) => (
-        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+        <span className="text-[11px] text-text-secondary">
           {DAYS[f.peakDay]} {formatHour(f.peakHour)}
         </span>
       ),
@@ -85,11 +83,9 @@ export function CommitTimingTab({ report, onSelectFile }: CommitTimingTabProps) 
       align: 'right',
       sortValue: (f) => f.stressScore,
       render: (f) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
+        <div className="flex items-center gap-1.5 justify-end">
           {f.stressScore > 50 && <Badge variant="warning">stress</Badge>}
-          <span
-            style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-secondary)' }}
-          >
+          <span className="font-mono text-[11px] text-text-secondary">
             {f.stressScore.toFixed(0)}
           </span>
         </div>
