@@ -1,3 +1,10 @@
+# [0.39.0](https://github.com/nebulord-dev/gitrelic/compare/v0.38.0...v0.39.0) (2026-05-02)
+
+
+### Features
+
+* **web:** age-map polish (RELIC-305) ([#66](https://github.com/nebulord-dev/gitrelic/issues/66)) ([5b19686](https://github.com/nebulord-dev/gitrelic/commit/5b196861df38ddf09c7d71d4ae087f1b33abd298))
+
 # [0.38.0](https://github.com/nebulord-dev/gitrelic/compare/v0.37.0...v0.38.0) (2026-05-02)
 
 
