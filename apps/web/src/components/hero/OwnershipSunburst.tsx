@@ -182,7 +182,7 @@ export function OwnershipSunburst({
   const cy = dims.height / 2;
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div ref={containerRef} className="w-full h-full relative">
       <svg width={dims.width} height={dims.height}>
         <g transform={`translate(${cx}, ${cy})`}>
           {nodes.map((node, i) => {
@@ -208,7 +208,7 @@ export function OwnershipSunburst({
                 fillOpacity={isAuthor ? 0.85 : 0.75}
                 stroke={isSelected ? 'var(--accent-primary)' : 'var(--surface-primary)'}
                 strokeWidth={isSelected ? 2 : 0.5}
-                style={{ cursor: 'pointer' }}
+                className="cursor-pointer"
                 onClick={() => {
                   if (isAuthor && d.email) {
                     onSelectContributor(d.email);
@@ -249,7 +249,7 @@ export function OwnershipSunburst({
           fontSize={11}
           fontWeight={600}
           fill="var(--text-primary)"
-          style={{ pointerEvents: 'none' }}
+          className="pointer-events-none"
         >
           {modeHeading(mode)}
         </text>
@@ -260,7 +260,7 @@ export function OwnershipSunburst({
           dominantBaseline="central"
           fontSize={9}
           fill="var(--text-secondary)"
-          style={{ pointerEvents: 'none' }}
+          className="pointer-events-none"
         >
           {totalFiles} files
         </text>
@@ -291,42 +291,21 @@ export function OwnershipSunburst({
 
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 14,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 320,
-            wordBreak: 'break-all',
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded-xs px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-80 break-all"
+          style={{ left: tooltip.x + 14, top: tooltip.y - 8 }}
         >
           {tooltip.kind === 'author' ? (
             <>
-              <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.name}</div>
-              <div style={{ color: 'var(--text-secondary)' }}>{tooltip.email}</div>
-              <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>
+              <div className="font-semibold mb-0.5">{tooltip.name}</div>
+              <div className="text-text-secondary">{tooltip.email}</div>
+              <div className="text-text-secondary mt-0.5">
                 {tooltip.fileCount} file{tooltip.fileCount !== 1 ? 's' : ''} owned
               </div>
             </>
           ) : (
             <>
-              <div style={{ fontWeight: 600, marginBottom: 2, wordBreak: 'break-all' }}>
-                {tooltip.file}
-              </div>
-              <div
-                style={{
-                  color: riskColor(tooltip.risk, 1),
-                  marginTop: 2,
-                  textTransform: 'capitalize',
-                }}
-              >
+              <div className="font-semibold mb-0.5 break-all">{tooltip.file}</div>
+              <div className="mt-0.5 capitalize" style={{ color: riskColor(tooltip.risk, 1) }}>
                 {tooltip.risk} risk
               </div>
             </>
