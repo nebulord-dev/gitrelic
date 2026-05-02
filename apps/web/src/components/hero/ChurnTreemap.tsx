@@ -162,7 +162,7 @@ export function ChurnTreemap({
   }, [report.testCoverage.files]);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div ref={containerRef} className="w-full h-full relative">
       <svg width={dims.width} height={dims.height}>
         {leaves.map((leaf) => {
           const d = leaf.data;
