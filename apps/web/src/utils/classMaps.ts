@@ -1,12 +1,15 @@
 import type { BadgeVariant } from '../components/theme';
 
 /**
- * Combined background + foreground classes per variant.
- * Replaces the legacy `badgeStyles` lookup in `components/theme.ts`,
- * which returns CSS-var strings for inline-style consumption.
- * Migrate consumers from `badgeStyles[v]` (used in `style={{}}`)
- * to `badgeClasses[v]` (used in `className`) as part of the Tailwind
- * migration (RELIC-336).
+ * Typed Tailwind class lookups for tier-driven styling (severity, accent, domain).
+ *
+ * Maps `BadgeVariant` → fully-composed Tailwind class strings (bg + text together)
+ * for the `badgeClasses` use case, or fg-only strings for `severityText`.
+ *
+ * Single source of truth: changing a tier's color means editing this file plus
+ * the corresponding CSS variable in `index.css`. Class consumers don't compose
+ * tier names via template literal (`text-severity-${tier}`) — that bypasses the
+ * type system and is grep-hostile.
  */
 export const badgeClasses: Record<BadgeVariant, string> = {
   critical: 'bg-severity-critical-bg text-severity-critical-text',
