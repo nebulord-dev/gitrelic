@@ -1,3 +1,10 @@
+# [0.36.0](https://github.com/nebulord-dev/gitrelic/compare/v0.35.0...v0.36.0) (2026-05-02)
+
+
+### Features
+
+* **web:** tailwind migration PR3b — simple heroes (RELIC-336) ([#62](https://github.com/nebulord-dev/gitrelic/issues/62)) ([aa05809](https://github.com/nebulord-dev/gitrelic/commit/aa0580953a14a7a5431edbef5e13fae1fa91748a))
+
 # [0.35.0](https://github.com/nebulord-dev/gitrelic/compare/v0.34.0...v0.35.0) (2026-05-02)
 
 
