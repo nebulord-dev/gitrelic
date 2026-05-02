@@ -88,7 +88,7 @@ export function HotspotScatter({ report, selectedFile, onSelectFile }: HotspotSc
   const plotH = dims.height - PADDING.top - PADDING.bottom;
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div ref={containerRef} className="w-full h-full relative">
       <svg width={dims.width} height={dims.height}>
         <g transform={`translate(${PADDING.left},${PADDING.top})`}>
           {/* Quadrant hint */}
@@ -173,7 +173,7 @@ export function HotspotScatter({ report, selectedFile, onSelectFile }: HotspotSc
                   }
                 }}
                 onMouseLeave={() => setTooltip(null)}
-                style={{ cursor: 'pointer' }}
+                className="cursor-pointer"
               />
             );
           })}
@@ -181,24 +181,11 @@ export function HotspotScatter({ report, selectedFile, onSelectFile }: HotspotSc
       </svg>
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 250,
-            whiteSpace: 'nowrap',
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-[10px] py-[6px] text-[10px] text-text-primary pointer-events-none z-20 max-w-[250px] whitespace-nowrap"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.point.file}</div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="font-semibold mb-0.5">{tooltip.point.file}</div>
+          <div className="text-text-secondary">
             Churn: {tooltip.point.churn} commits · LOC: {tooltip.point.loc} · Score:{' '}
             {tooltip.point.hotspotScore}
           </div>
