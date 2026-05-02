@@ -1,5 +1,7 @@
 import { type ReactNode, useCallback, useState } from 'react';
 
+import { cn } from '../../utils/cn';
+
 export interface Column<T> {
   key: string;
   label: string;
@@ -20,6 +22,12 @@ interface SortableTableProps<T> {
   onRowExpand?: (key: string | null) => void;
   maxRows?: number;
 }
+
+const alignClass: Record<string, string> = {
+  left: 'text-left',
+  right: 'text-right',
+  center: 'text-center',
+};
 
 export function SortableTable<T>({
   data,
@@ -69,30 +77,18 @@ export function SortableTable<T>({
   return (
     <div>
       {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '4px 0',
-          borderBottom: '1px solid var(--border-primary)',
-        }}
-      >
+      <div className="flex items-center py-1 border-b border-border-primary">
         {columns.map((col) => (
           <div
             key={col.key}
             onClick={() => col.sortValue && handleSort(col.key)}
-            style={{
-              width: col.width,
-              flex: col.width ? undefined : 1,
-              fontSize: 9,
-              textTransform: 'uppercase',
-              letterSpacing: 1,
-              color: 'var(--text-tertiary)',
-              cursor: col.sortValue ? 'pointer' : 'default',
-              textAlign: col.align ?? 'left',
-              padding: '0 4px',
-              userSelect: 'none',
-            }}
+            className={cn(
+              'px-1 text-[9px] uppercase tracking-[1px] text-text-tertiary select-none',
+              alignClass[col.align ?? 'left'],
+              col.sortValue ? 'cursor-pointer' : 'cursor-default',
+              col.width ? undefined : 'flex-1',
+            )}
+            style={col.width ? { width: col.width } : undefined}
           >
             {col.label}
             {sortCol === col.key && (sortDir === 'asc' ? ' ▲' : ' ▼')}
@@ -115,26 +111,20 @@ export function SortableTable<T>({
                 }
                 onRowClick?.(item);
               }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '6px 0',
-                borderBottom: '1px solid var(--border-primary)',
-                cursor: 'pointer',
-                background: isSelected ? 'var(--nav-item-active-bg)' : 'transparent',
-              }}
+              className={cn(
+                'flex items-center py-1.5 border-b border-border-primary cursor-pointer',
+                isSelected ? 'bg-nav-item-active-bg' : 'bg-transparent',
+              )}
             >
               {columns.map((col) => (
                 <div
                   key={col.key}
-                  style={{
-                    width: col.width,
-                    flex: col.width ? undefined : 1,
-                    fontSize: 11,
-                    padding: '0 4px',
-                    textAlign: col.align ?? 'left',
-                    minWidth: 0,
-                  }}
+                  className={cn(
+                    'px-1 text-[11px] min-w-0',
+                    alignClass[col.align ?? 'left'],
+                    col.width ? undefined : 'flex-1',
+                  )}
+                  style={col.width ? { width: col.width } : undefined}
                 >
                   {col.render(item)}
                 </div>
@@ -143,13 +133,7 @@ export function SortableTable<T>({
 
             {/* Expanded detail */}
             {isExpanded && renderExpanded && (
-              <div
-                style={{
-                  padding: '8px 12px',
-                  background: 'var(--surface-secondary)',
-                  borderBottom: '1px solid var(--border-primary)',
-                }}
-              >
+              <div className="px-3 py-2 bg-surface-secondary border-b border-border-primary">
                 {renderExpanded(item)}
               </div>
             )}
@@ -158,15 +142,7 @@ export function SortableTable<T>({
       })}
 
       {truncated && (
-        <div
-          style={{
-            padding: '6px 4px',
-            fontSize: 10,
-            color: 'var(--text-tertiary)',
-            textAlign: 'right',
-            fontStyle: 'italic',
-          }}
-        >
+        <div className="px-1 py-1.5 text-[10px] text-text-tertiary text-right italic">
           Showing {maxRows} of {totalRows.toLocaleString()} rows
         </div>
       )}
