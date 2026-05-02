@@ -26,15 +26,7 @@ export function KnowledgeSilosTab({ report, onApplyPreset }: KnowledgeSilosTabPr
       metric="Concentration Index"
       finding={
         <>
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              color: 'var(--text-primary)',
-              fontWeight: 600,
-            }}
-          >
-            {kc.singleAuthorFiles}
-          </span>{' '}
+          <span className="font-mono text-text-primary font-semibold">{kc.singleAuthorFiles}</span>{' '}
           of {kc.totalFiles} files have a single dominant author (80%+ commits)
         </>
       }
