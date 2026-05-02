@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSelection } from '../../hooks/useSelection';
 import { PRESETS } from '../../presets/registry';
 import { cn } from '../../utils/cn';
+import { AgeHistogram } from '../hero/AgeHistogram';
 import { AuthorForceGraph } from '../hero/AuthorForceGraph';
 import { BlastHistogram } from '../hero/BlastHistogram';
 import { BusFactorHistogram } from '../hero/BusFactorHistogram';
@@ -98,8 +99,8 @@ export function computeVisibility(mode: LayoutMode): PanelVisibility {
 
 export const HERO_LABELS: Record<HeroViz, string> = {
   treemap: 'Treemap',
-  'treemap-age': 'Age',
   'treemap-test': 'Coverage',
+  'age-histogram': 'Age',
   ownership: 'Ownership',
   'ownership-bar': 'Bus Bar',
   'churn-bar': 'Top Churn',
@@ -228,14 +229,6 @@ export function Shell({ report }: ShellProps) {
                     report={report}
                     selectedFile={selection.selectedFile}
                     onSelectFile={selection.selectFile}
-                  />
-                )}
-                {selection.activeHeroViz === 'treemap-age' && (
-                  <ChurnTreemap
-                    report={report}
-                    selectedFile={selection.selectedFile}
-                    onSelectFile={selection.selectFile}
-                    colorBy="age"
                   />
                 )}
                 {selection.activeHeroViz === 'treemap-test' && (
@@ -399,6 +392,7 @@ export function Shell({ report }: ShellProps) {
                 {selection.activeHeroViz === 'bus-factor-histogram' && (
                   <BusFactorHistogram report={report} />
                 )}
+                {selection.activeHeroViz === 'age-histogram' && <AgeHistogram report={report} />}
                 {selection.activeHeroViz === 'languages-stacked' && (
                   <LanguagesStackedBar report={report} />
                 )}

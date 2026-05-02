@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { cn } from '../../utils/cn';
+import { AgeMapByDirectoryTab } from '../tabs/AgeMapByDirectoryTab';
 import { AgeMapTab } from '../tabs/AgeMapTab';
 import { BlastRadiusTab } from '../tabs/BlastRadiusTab';
 import { BusFactorTab } from '../tabs/BusFactorTab';
@@ -52,6 +53,7 @@ const TAB_LABELS: Record<BottomTab, string> = {
   'parallel-dev': 'Parallel Dev',
   shame: 'Shame',
   'age-map': 'Age Map',
+  'age-map-by-directory': 'By Directory',
   'dead-code': 'Stale Files',
   'complexity-trend': 'Complexity Trend',
   'rewrite-ratio': 'Rewrite Ratio',
@@ -103,7 +105,9 @@ function TabContent({
     case 'shame':
       return <ShameTab report={report} onApplyPreset={onApplyPreset} />;
     case 'age-map':
-      return <AgeMapTab report={report} onSelectFile={onSelectFile} />;
+      return <AgeMapTab report={report} onApplyPreset={onApplyPreset} />;
+    case 'age-map-by-directory':
+      return <AgeMapByDirectoryTab report={report} onSelectFile={onSelectFile} />;
     case 'dead-code':
       return <DeadCodeTab report={report} onSelectFile={onSelectFile} />;
     case 'complexity-trend':

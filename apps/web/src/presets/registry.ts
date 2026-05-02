@@ -257,12 +257,12 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     label: 'Age Map',
     group: 'code-health',
     hero: {
-      defaultViz: 'treemap-age',
-      altTabs: ['treemap-age', 'treemap'],
+      defaultViz: 'age-histogram',
+      altTabs: ['age-histogram'],
     },
     bottomPanel: {
       defaultTab: 'age-map',
-      altTabs: ['age-map'],
+      altTabs: ['age-map', 'age-map-by-directory'],
     },
     metrics: ageMapMetrics,
   },

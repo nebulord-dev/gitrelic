@@ -11,7 +11,6 @@ export type SidebarGroupLabel =
 
 export type HeroViz =
   | 'treemap'
-  | 'treemap-age'
   | 'treemap-test'
   | 'ownership'
   | 'ownership-bar'
@@ -33,6 +32,7 @@ export type HeroViz =
   | 'debt-scatter'
   | 'rewrite-diverging-bar'
   | 'staleness-scatter'
+  | 'age-histogram'
   | 'blast-histogram'
   | 'bus-factor-histogram'
   | 'rewrite-histogram'
@@ -50,6 +50,7 @@ export type BottomTab =
   | 'parallel-dev'
   | 'shame'
   | 'age-map'
+  | 'age-map-by-directory'
   | 'dead-code'
   | 'complexity-trend'
   | 'rewrite-ratio'
