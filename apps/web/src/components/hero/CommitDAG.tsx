@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { cn } from '../../utils/cn';
 import { authorColor } from '../../utils/colors';
 
 import type { RawCommit } from '@gitrelic/core';
@@ -61,7 +60,7 @@ export function CommitDAG({ commits, selectedFile, onSelectFile }: CommitDAGProp
               onClick={() => {
                 if (topFile) onSelectFile(topFile);
               }}
-              className={cn(topFile ? 'cursor-pointer' : 'cursor-default')}
+              className={topFile ? 'cursor-pointer' : 'cursor-default'}
               onMouseEnter={(e) => {
                 const rect = containerRef.current?.getBoundingClientRect();
                 if (!rect) return;

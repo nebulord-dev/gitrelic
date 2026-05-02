@@ -37,7 +37,7 @@ export function CommitGraph({ report, selectedFile, onSelectFile }: CommitGraphP
       <div className="relative shrink-0 mb-2">
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="bg-surface-tertiary border border-border-primary rounded px-[10px] py-[4px] text-[10px] text-text-primary cursor-pointer flex items-center gap-1"
+          className="bg-surface-tertiary border border-border-primary rounded px-2.5 py-1 text-[10px] text-text-primary cursor-pointer flex items-center gap-1"
         >
           {MODE_LABELS[mode]}
           <span className="text-[8px] text-text-tertiary">▾</span>
