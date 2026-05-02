@@ -8,8 +8,10 @@ describe('cn', () => {
   });
 
   it('handles conditional values via clsx semantics', () => {
-    expect(cn('flex', false && 'hidden', 'gap-2')).toBe('flex gap-2');
-    expect(cn('flex', true && 'gap-2')).toBe('flex gap-2');
+    const showHidden = false;
+    const showGap = true;
+    expect(cn('flex', showHidden && 'hidden', 'gap-2')).toBe('flex gap-2');
+    expect(cn('flex', showGap && 'gap-2')).toBe('flex gap-2');
     expect(cn('flex', null, undefined, 'gap-2')).toBe('flex gap-2');
   });
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { useSelection } from '../../hooks/useSelection';
 import { PRESETS } from '../../presets/registry';
+import { cn } from '../../utils/cn';
 import { AuthorForceGraph } from '../hero/AuthorForceGraph';
 import { BlastHistogram } from '../hero/BlastHistogram';
 import { BusFactorHistogram } from '../hero/BusFactorHistogram';
@@ -169,19 +170,14 @@ export function Shell({ report }: ShellProps) {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        background: 'var(--surface-primary)',
-      }}
-    >
+    // Style block 1: root container — flex column, full viewport height, surface-primary bg
+    <div className="flex flex-col h-screen bg-surface-primary">
       {/* Top bar */}
       <TopBar report={report} layoutMode={layoutMode} onLayoutModeChange={setLayoutMode} />
 
       {/* Body: sidebar + center + inspector */}
-      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+      {/* Style block 2: body row — flex row, flex-1, min-h-0 to allow children to shrink */}
+      <div className="flex flex-1 min-h-0">
         {/* Left sidebar */}
         {visibility.sidebar && (
           <Sidebar
@@ -192,73 +188,41 @@ export function Shell({ report }: ShellProps) {
         )}
 
         {/* Center area: metrics + hero + bottom */}
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            minWidth: 0,
-          }}
-        >
+        {/* Style block 3: center column — flex-1, flex column, min-w-0 to allow text truncation */}
+        <div className="flex-1 flex flex-col min-w-0">
           {visibility.metricsStrip && <MetricsStrip metrics={selection.metrics(report)} />}
 
           {/* Hero visualization */}
           {visibility.hero && (
-            <div
-              style={{
-                flex: 1,
-                minHeight: 0,
-                padding: 'var(--space-md)',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: 12,
-                  flexShrink: 0,
-                }}
-              >
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+            // Style block 4: hero outer — flex-1, min-h-0, p-4 (=1rem = --space-md), flex column
+            <div className="flex-1 min-h-0 p-4 flex flex-col">
+              {/* Style block 5: hero header row — flex, space-between, center-aligned, mb-3, shrink-0 */}
+              <div className="flex justify-between items-center mb-3 shrink-0">
+                {/* Style block 6: hero title — text-[13px], font-semibold, text-primary */}
+                <span className="text-[13px] font-semibold text-text-primary">
                   {PRESETS[selection.activePresetId].heroLabel ?? 'Repository Map'}
                 </span>
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: 2,
-                    background: 'var(--surface-tertiary)',
-                    borderRadius: 6,
-                    padding: 2,
-                  }}
-                >
+                {/* Style block 7: alt-tab pill bar — flex, gap-0.5, surface-tertiary bg, rounded-md, p-0.5 */}
+                <div className="flex gap-0.5 bg-surface-tertiary rounded-md p-0.5">
                   {heroVizzes.map((viz) => (
+                    // Style block 8: alt-tab pill — cn() for active/inactive state (color + bg are both conditional)
                     <span
                       key={viz.id}
                       onClick={() => selection.setHeroOverride(viz.id)}
-                      style={{
-                        padding: '4px 10px',
-                        borderRadius: 4,
-                        fontSize: 10,
-                        cursor: 'pointer',
-                        color:
-                          selection.activeHeroViz === viz.id
-                            ? 'var(--text-primary)'
-                            : 'var(--text-secondary)',
-                        background:
-                          selection.activeHeroViz === viz.id
-                            ? 'var(--surface-elevated)'
-                            : 'transparent',
-                      }}
+                      className={cn(
+                        'px-2.5 py-1 rounded text-[10px] cursor-pointer',
+                        selection.activeHeroViz === viz.id
+                          ? 'text-text-primary bg-surface-elevated'
+                          : 'text-text-secondary bg-transparent',
+                      )}
                     >
                       {viz.label}
                     </span>
                   ))}
                 </div>
               </div>
-              <div style={{ flex: 1, minHeight: 0 }}>
+              {/* Style block 9: hero canvas — flex-1, min-h-0 */}
+              <div className="flex-1 min-h-0">
                 {selection.activeHeroViz === 'treemap' && (
                   <ChurnTreemap
                     report={report}

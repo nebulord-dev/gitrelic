@@ -10,19 +10,6 @@ export type BadgeVariant =
   | 'parallel'
   | 'stale';
 
-export const badgeStyles: Record<BadgeVariant, { bg: string; fg: string }> = {
-  critical: { bg: 'var(--severity-critical-bg)', fg: 'var(--severity-critical-text)' },
-  warning: { bg: 'var(--severity-warning-bg)', fg: 'var(--severity-warning-text)' },
-  moderate: { bg: 'var(--severity-moderate-bg)', fg: 'var(--severity-moderate-text)' },
-  healthy: { bg: 'var(--severity-healthy-bg)', fg: 'var(--severity-healthy-text)' },
-  ownership: { bg: 'var(--accent-ownership-bg)', fg: 'var(--accent-ownership-text)' },
-  coupling: { bg: 'var(--accent-coupling-bg)', fg: 'var(--accent-coupling-text)' },
-  temporal: { bg: 'var(--accent-temporal-bg)', fg: 'var(--accent-temporal-text)' },
-  shame: { bg: 'var(--severity-critical-bg)', fg: 'var(--severity-critical-text)' },
-  parallel: { bg: 'var(--severity-warning-bg)', fg: 'var(--severity-warning-text)' },
-  stale: { bg: 'var(--surface-tertiary)', fg: 'var(--text-tertiary)' },
-};
-
 export function severityColor(category: string): 'critical' | 'warning' | 'moderate' | 'healthy' {
   switch (category) {
     case 'critical':

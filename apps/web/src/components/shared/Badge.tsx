@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 
-import { type BadgeVariant, badgeStyles } from '../theme';
+import { badgeClasses } from '../../utils/classMaps';
+import { cn } from '../../utils/cn';
+import { type BadgeVariant } from '../theme';
 import { Tooltip } from './Tooltip';
 
 interface BadgeProps {
@@ -10,21 +12,13 @@ interface BadgeProps {
 }
 
 export default function Badge({ variant, children, title }: BadgeProps) {
-  const style = badgeStyles[variant] ?? badgeStyles.stale;
+  const classes = badgeClasses[variant] ?? badgeClasses.stale;
   const badge = (
     <span
-      style={{
-        display: 'inline-block',
-        fontSize: 10,
-        padding: '2px 7px',
-        borderRadius: 3,
-        fontWeight: 500,
-        letterSpacing: '0.02em',
-        background: style.bg,
-        color: style.fg,
-        whiteSpace: 'normal',
-        wordBreak: 'break-word',
-      }}
+      className={cn(
+        'inline-block text-[10px] px-[7px] py-[2px] rounded-[3px] font-medium tracking-[0.02em] whitespace-normal break-words',
+        classes,
+      )}
     >
       {children}
     </span>
@@ -36,7 +30,7 @@ export default function Badge({ variant, children, title }: BadgeProps) {
   return (
     <Tooltip
       content={
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="flex flex-col gap-0.5">
           {names.map((name) => (
             <span key={name}>{name}</span>
           ))}

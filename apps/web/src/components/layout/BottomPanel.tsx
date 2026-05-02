@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { cn } from '../../utils/cn';
 import { AgeMapTab } from '../tabs/AgeMapTab';
 import { BlastRadiusTab } from '../tabs/BlastRadiusTab';
 import { BusFactorTab } from '../tabs/BusFactorTab';
@@ -186,54 +187,30 @@ export function BottomPanel({
 
   return (
     <div
-      style={{
-        borderTop: '1px solid var(--border-primary)',
-        ...(fillAvailable ? { flex: 1, minHeight: 0 } : { height, flexShrink: 0 }),
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'var(--surface-primary)',
-        position: 'relative',
-      }}
+      className={cn(
+        'border-t border-border-primary flex flex-col bg-surface-primary relative',
+        fillAvailable ? 'flex-1 min-h-0' : 'shrink-0',
+      )}
+      style={fillAvailable ? undefined : { height }}
     >
       {/* Resize handle */}
       <div
         onMouseDown={handleMouseDown}
-        style={{
-          position: 'absolute',
-          top: -3,
-          left: 0,
-          right: 0,
-          height: 6,
-          cursor: 'row-resize',
-          zIndex: 10,
-        }}
+        className="absolute -top-[3px] left-0 right-0 h-[6px] cursor-row-resize z-10"
       />
 
       {/* Tab bar */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 0,
-          borderBottom: '1px solid var(--border-primary)',
-          padding: '0 16px',
-          flexShrink: 0,
-        }}
-      >
+      <div className="flex border-b border-border-primary px-4 shrink-0">
         {altTabs.map((tabId) => (
           <button
             key={tabId}
             onClick={() => onTabChange(tabId)}
-            style={{
-              padding: '8px 14px',
-              fontSize: 10,
-              border: 'none',
-              background: 'none',
-              cursor: 'pointer',
-              color: activeTab === tabId ? 'var(--text-primary)' : 'var(--text-tertiary)',
-              borderBottom: `2px solid ${
-                activeTab === tabId ? 'var(--accent-primary)' : 'transparent'
-              }`,
-            }}
+            className={cn(
+              'px-3.5 py-2 text-[10px] border-none bg-transparent cursor-pointer',
+              activeTab === tabId
+                ? 'text-text-primary border-b-2 border-b-accent-primary'
+                : 'text-text-tertiary border-b-2 border-b-transparent',
+            )}
           >
             {TAB_LABELS[tabId]}
           </button>
@@ -244,7 +221,7 @@ export function BottomPanel({
           footers (NarrativeKPI's, ChurnTab's) sit flush against the panel
           edge. SortableTable rows have their own border-bottom, so non-footer
           tabs still terminate cleanly. */}
-      <div style={{ flex: 1, overflow: 'auto', padding: '8px 16px 0' }}>
+      <div className="flex-1 overflow-auto pt-2 px-4">
         <TabContent
           tab={activeTab}
           report={report}

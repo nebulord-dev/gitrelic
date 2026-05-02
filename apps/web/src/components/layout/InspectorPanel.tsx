@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { cn } from '../../utils/cn';
 import { ActivityInspector } from '../inspector/ActivityInspector';
 import { ContributorsInspector } from '../inspector/ContributorsInspector';
 import { FileInspector } from '../inspector/FileInspector';
@@ -32,17 +33,29 @@ const UTILITY_TABS: { id: UtilityTab; label: string }[] = [
   { id: 'refactor', label: 'Refactor' },
 ];
 
-const tabButtonStyle = (isActive: boolean): React.CSSProperties => ({
-  flex: 1,
-  textAlign: 'center',
-  padding: '8px 4px',
-  fontSize: 10,
-  border: 'none',
-  background: 'none',
-  cursor: 'pointer',
-  color: isActive ? 'var(--text-primary)' : 'var(--text-tertiary)',
-  borderBottom: `2px solid ${isActive ? 'var(--accent-primary)' : 'transparent'}`,
-});
+function TabButton({
+  isActive,
+  onClick,
+  children,
+}: {
+  isActive: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'flex-1 text-center py-2 px-1 text-[10px] border-none bg-transparent cursor-pointer border-b-2',
+        isActive
+          ? 'text-text-primary border-accent-primary'
+          : 'text-text-tertiary border-transparent',
+      )}
+    >
+      {children}
+    </button>
+  );
+}
 
 export function InspectorPanel({
   report,
@@ -57,47 +70,24 @@ export function InspectorPanel({
   const [utilityTab, setUtilityTab] = useState<UtilityTab>('guide');
 
   return (
-    <div
-      style={{
-        width: 260,
-        minWidth: 260,
-        borderLeft: '1px solid var(--border-primary)',
-        background: 'var(--surface-primary)',
-        display: 'flex',
-        flexDirection: 'column',
-        flexShrink: 0,
-      }}
-    >
+    <div className="w-[260px] min-w-[260px] border-l border-border-primary bg-surface-primary flex flex-col shrink-0">
       {/* ─── Top: Context tabs ─── */}
-      <div
-        style={{
-          display: 'flex',
-          borderBottom: '1px solid var(--border-primary)',
-          flexShrink: 0,
-        }}
-      >
+      <div className="flex border-b border-border-primary shrink-0">
         {CONTEXT_TABS.map((tab) => (
-          <button
+          <TabButton
             key={tab.id}
+            isActive={activeTab === tab.id}
             onClick={() => onTabChange(tab.id)}
-            style={tabButtonStyle(activeTab === tab.id)}
           >
             {tab.label}
-          </button>
+          </TabButton>
         ))}
       </div>
 
       {/* Top content */}
-      <div style={{ flex: 1, overflow: 'auto', padding: 12, minHeight: 0 }}>
+      <div className="flex-1 overflow-auto p-3 min-h-0">
         {!hasSelection ? (
-          <div
-            style={{
-              color: 'var(--text-tertiary)',
-              fontSize: 11,
-              textAlign: 'center',
-              marginTop: 40,
-            }}
-          >
+          <div className="text-text-tertiary text-[11px] text-center mt-10">
             Select a file or contributor to inspect
           </div>
         ) : activeTab === 'file' && selectedFile ? (
@@ -116,60 +106,31 @@ export function InspectorPanel({
         ) : activeTab === 'activity' && selectedFile ? (
           <ActivityInspector report={report} file={selectedFile} />
         ) : (
-          <div
-            style={{
-              color: 'var(--text-tertiary)',
-              fontSize: 11,
-              textAlign: 'center',
-              marginTop: 40,
-            }}
-          >
+          <div className="text-text-tertiary text-[11px] text-center mt-10">
             Select a file to view activity
           </div>
         )}
       </div>
 
       {/* ─── Bottom: Utility tabs ─── */}
-      <div
-        style={{
-          borderTop: '1px solid var(--border-primary)',
-          display: 'flex',
-          flexDirection: 'column',
-          height: '50%',
-          minHeight: 120,
-          flexShrink: 0,
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid var(--border-primary)',
-            flexShrink: 0,
-          }}
-        >
+      <div className="border-t border-border-primary flex flex-col h-1/2 min-h-[120px] shrink-0">
+        <div className="flex border-b border-border-primary shrink-0">
           {UTILITY_TABS.map((tab) => (
-            <button
+            <TabButton
               key={tab.id}
+              isActive={utilityTab === tab.id}
               onClick={() => setUtilityTab(tab.id)}
-              style={tabButtonStyle(utilityTab === tab.id)}
             >
               {tab.label}
-            </button>
+            </TabButton>
           ))}
         </div>
 
-        <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
+        <div className="flex-1 overflow-auto p-3">
           {utilityTab === 'guide' ? (
             <GuidePanel />
           ) : (
-            <div
-              style={{
-                color: 'var(--text-tertiary)',
-                fontSize: 11,
-                textAlign: 'center',
-                marginTop: 20,
-              }}
-            >
+            <div className="text-text-tertiary text-[11px] text-center mt-5">
               {utilityTab === 'narrative'
                 ? 'AI Narrative \u2014 coming soon'
                 : 'Refactor Brief \u2014 coming soon'}

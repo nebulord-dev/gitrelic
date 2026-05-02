@@ -27,31 +27,27 @@ export function Tooltip({ content, children, position = 'top', wrapperStyle }: T
     setVisible(true);
   }, [position]);
 
-  const tooltipStyle: CSSProperties = {
-    position: 'fixed',
-    left: coords.x,
-    top: position === 'top' ? coords.y - 8 : coords.y + 8,
-    transform: position === 'top' ? 'translate(-50%, -100%)' : 'translate(-50%, 0)',
-    background: 'var(--tooltip-bg)',
-    color: 'var(--tooltip-text)',
-    padding: '4px 8px',
-    borderRadius: 4,
-    fontSize: 10,
-    whiteSpace: 'nowrap',
-    pointerEvents: 'none',
-    zIndex: 1000,
-    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-  };
-
   return (
     <div
       ref={wrapRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setVisible(false)}
-      style={{ display: 'inline-block', cursor: 'help', ...wrapperStyle }}
+      className="inline-block cursor-help"
+      style={wrapperStyle}
     >
       {children}
-      {visible && <div style={tooltipStyle}>{content}</div>}
+      {visible && (
+        <div
+          className="fixed bg-tooltip-bg text-tooltip-text px-2 py-1 rounded text-[10px] whitespace-nowrap pointer-events-none z-[1000] shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+          style={{
+            left: coords.x,
+            top: position === 'top' ? coords.y - 8 : coords.y + 8,
+            transform: position === 'top' ? 'translate(-50%, -100%)' : 'translate(-50%, 0)',
+          }}
+        >
+          {content}
+        </div>
+      )}
     </div>
   );
 }

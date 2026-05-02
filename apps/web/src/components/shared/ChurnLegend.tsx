@@ -11,18 +11,13 @@ interface SwatchProps {
 
 function Swatch({ category, label, range }: SwatchProps) {
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+    <span className="inline-flex items-center gap-1">
       <span
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: 1,
-          background: categoryColor(severityForChurn(category), 0.85),
-          display: 'inline-block',
-        }}
+        className="w-2 h-2 rounded-[1px] inline-block"
+        style={{ background: categoryColor(severityForChurn(category), 0.85) }}
       />
       <span>
-        {label} <span style={{ color: 'var(--text-tertiary)' }}>({range})</span>
+        {label} <span className="text-text-tertiary">({range})</span>
       </span>
     </span>
   );
@@ -33,13 +28,7 @@ export function ChurnLegend() {
     <div
       role="group"
       aria-label="Churn category legend"
-      style={{
-        display: 'flex',
-        gap: 14,
-        fontSize: 9,
-        color: 'var(--text-secondary)',
-        padding: '4px 16px',
-      }}
+      className="flex gap-3.5 text-[9px] text-text-secondary px-4 py-1"
     >
       <Swatch category="hot" label="hot" range="76+" />
       <Swatch category="warm" label="warm" range="41–75" />
