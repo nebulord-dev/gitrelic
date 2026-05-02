@@ -133,15 +133,7 @@ export function LanguagesStackedBar({ report }: LanguagesStackedBarProps) {
     return (
       <div
         ref={containerRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--text-tertiary)',
-          fontSize: 12,
-        }}
+        className="w-full h-full flex items-center justify-center text-text-tertiary text-xs"
       >
         No language data detected.
       </div>
@@ -157,7 +149,7 @@ export function LanguagesStackedBar({ report }: LanguagesStackedBarProps) {
   const barHeight = Math.max(10, rowHeight - 6);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div ref={containerRef} className="w-full h-full relative">
       <svg width={dims.width} height={dims.height}>
         {rows.map((row, i) => {
           const y = topPad + i * rowHeight;
@@ -192,7 +184,7 @@ export function LanguagesStackedBar({ report }: LanguagesStackedBarProps) {
                     height={barHeight}
                     fill={languageColor(seg.language)}
                     fillOpacity={0.8}
-                    style={{ cursor: 'pointer' }}
+                    className="cursor-pointer"
                     onMouseEnter={(evt) => {
                       const rect = containerRef.current?.getBoundingClientRect();
                       if (!rect) return;
@@ -215,7 +207,7 @@ export function LanguagesStackedBar({ report }: LanguagesStackedBarProps) {
                 fontSize={10}
                 fontFamily="var(--font-mono)"
                 fill="var(--text-secondary)"
-                style={{ pointerEvents: 'none' }}
+                className="pointer-events-none"
               >
                 {row.totalLoc.toLocaleString()}
               </text>
@@ -224,33 +216,12 @@ export function LanguagesStackedBar({ report }: LanguagesStackedBarProps) {
         })}
       </svg>
       {/* Language legend overlaid in the bottom-right */}
-      <div
-        style={{
-          position: 'absolute',
-          right: 8,
-          bottom: 8,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '4px 10px',
-          maxWidth: 320,
-          fontSize: 9,
-          color: 'var(--text-tertiary)',
-          background: 'var(--surface-elevated)',
-          border: '1px solid var(--border-primary)',
-          borderRadius: 4,
-          padding: '6px 8px',
-        }}
-      >
+      <div className="absolute right-2 bottom-2 flex flex-wrap gap-x-2.5 gap-y-1 max-w-80 text-[9px] text-text-tertiary bg-surface-elevated border border-border-primary rounded px-2 py-1.5">
         {legendLanguages.map((lang) => (
-          <span key={lang} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <span key={lang} className="inline-flex items-center gap-1">
             <span
-              style={{
-                display: 'inline-block',
-                width: 8,
-                height: 8,
-                background: languageColor(lang),
-                borderRadius: 2,
-              }}
+              className="inline-block w-2 h-2 rounded-xs"
+              style={{ background: languageColor(lang) }}
             />
             {lang}
           </span>
@@ -258,23 +229,10 @@ export function LanguagesStackedBar({ report }: LanguagesStackedBarProps) {
       </div>
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 320,
-            wordBreak: 'break-all',
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-80 break-all"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.directory}</div>
+          <div className="font-semibold mb-0.5">{tooltip.directory}</div>
           <div style={{ color: languageColor(tooltip.segment.language) }}>
             {tooltip.segment.language} · {tooltip.segment.loc.toLocaleString()} LOC ·{' '}
             {tooltip.rowTotal > 0

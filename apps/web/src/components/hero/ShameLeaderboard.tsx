@@ -82,25 +82,8 @@ export function ShameLeaderboard({ report, selectedFile, onSelectFile }: ShameLe
 
   if (entries.length === 0) {
     return (
-      <div
-        ref={containerRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text-tertiary)',
-            fontSize: 12,
-          }}
-        >
+      <div ref={containerRef} className="w-full h-full flex flex-col">
+        <div className="flex-1 flex items-center justify-center text-text-tertiary text-xs">
           No shame signals detected.
         </div>
         <HeroCaption
@@ -121,11 +104,8 @@ export function ShameLeaderboard({ report, selectedFile, onSelectFile }: ShameLe
   const barHeight = Math.max(10, rowHeight - 6);
 
   return (
-    <div
-      ref={containerRef}
-      style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
-    >
-      <div style={{ flex: 1, position: 'relative' }}>
+    <div ref={containerRef} className="w-full h-full flex flex-col">
+      <div className="flex-1 relative">
         <svg
           width={dims.width}
           height={svgHeight}
@@ -142,7 +122,7 @@ export function ShameLeaderboard({ report, selectedFile, onSelectFile }: ShameLe
               <g
                 key={e.file}
                 onClick={() => onSelectFile(e.file)}
-                style={{ cursor: 'pointer' }}
+                className="cursor-pointer"
                 onMouseEnter={(evt) => {
                   const rect = containerRef.current?.getBoundingClientRect();
                   if (!rect) return;
@@ -184,7 +164,7 @@ export function ShameLeaderboard({ report, selectedFile, onSelectFile }: ShameLe
                     dominantBaseline="middle"
                     fontSize={9}
                     fill="rgba(255,255,255,0.8)"
-                    style={{ pointerEvents: 'none' }}
+                    className="pointer-events-none"
                   >
                     {e.topKeyword}
                   </text>
@@ -197,7 +177,7 @@ export function ShameLeaderboard({ report, selectedFile, onSelectFile }: ShameLe
                   fontFamily="var(--font-mono)"
                   fill={color}
                   fontWeight={600}
-                  style={{ pointerEvents: 'none' }}
+                  className="pointer-events-none"
                 >
                   {e.score}
                 </text>
@@ -207,29 +187,16 @@ export function ShameLeaderboard({ report, selectedFile, onSelectFile }: ShameLe
         </svg>
         {tooltip && (
           <div
-            style={{
-              position: 'absolute',
-              left: tooltip.x + 12,
-              top: tooltip.y - 8,
-              background: 'var(--surface-elevated)',
-              border: '1px solid var(--border-primary)',
-              borderRadius: 4,
-              padding: '6px 10px',
-              fontSize: 10,
-              color: 'var(--text-primary)',
-              pointerEvents: 'none',
-              zIndex: 20,
-              maxWidth: 320,
-              wordBreak: 'break-all',
-            }}
+            className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-80 break-all"
+            style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
           >
-            <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.entry.file}</div>
-            <div style={{ color: 'var(--text-secondary)' }}>
+            <div className="font-semibold mb-0.5">{tooltip.entry.file}</div>
+            <div className="text-text-secondary">
               Shame {tooltip.entry.score} · {tooltip.entry.shameCommitCount} shame commit
               {tooltip.entry.shameCommitCount !== 1 ? 's' : ''}
             </div>
             {tooltip.entry.topKeyword && (
-              <div style={{ color: 'var(--text-tertiary)', marginTop: 2 }}>
+              <div className="text-text-tertiary mt-0.5">
                 Top keyword: {tooltip.entry.topKeyword}
               </div>
             )}

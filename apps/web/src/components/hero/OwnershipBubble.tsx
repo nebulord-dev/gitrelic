@@ -22,9 +22,10 @@ export interface DirBubble {
   fileCount: number;
 }
 
+type DirBubbleRoot = { children: DirBubble[] };
+
 const UNKNOWN_AUTHOR = 'unknown';
 const UNKNOWN_BUBBLE_COLOR = 'rgb(110, 110, 115)';
-const LEGEND_WIDTH = 320;
 // Empirical character-width factor for the SVG monospace fallback at small
 // sizes. Slightly conservative so labels don't graze the bubble edge.
 const CHAR_WIDTH_FACTOR = 0.58;
@@ -150,11 +151,11 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
 
   const packData = useMemo(() => {
     const dirs = buildDirectoryBubbles(report);
-    const root = hierarchy<DirBubble>({ children: dirs } as any)
-      .sum((d) => d.totalLoc ?? 0)
+    const root = hierarchy<DirBubble | DirBubbleRoot>({ children: dirs })
+      .sum((d) => ('totalLoc' in d ? (d.totalLoc ?? 0) : 0))
       .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
-    const layout = pack<DirBubble>().size([dims.width, dims.height]).padding(8);
+    const layout = pack<DirBubble | DirBubbleRoot>().size([dims.width, dims.height]).padding(8);
     return layout(root).leaves() as HierarchyCircularNode<DirBubble>[];
   }, [report, dims.width, dims.height]);
 
@@ -181,66 +182,18 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
   );
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width: '100%',
-        height: '100%',
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <div style={{ display: 'flex', flex: 1, minHeight: 0, minWidth: 0 }}>
-        <div
-          style={{
-            flexShrink: 0,
-            width: LEGEND_WIDTH,
-            borderRight: '1px solid var(--border-primary)',
-            padding: '12px 12px',
-            overflowY: 'auto',
-            fontSize: 10,
-            color: 'var(--text-tertiary)',
-          }}
-        >
-          <div
-            style={{
-              fontSize: 9,
-              textTransform: 'uppercase',
-              letterSpacing: 1,
-              marginBottom: 8,
-              color: 'var(--text-tertiary)',
-            }}
-          >
-            Authors
-          </div>
+    <div ref={containerRef} className="w-full h-full relative flex flex-col">
+      <div className="flex flex-1 min-h-0 min-w-0">
+        <div className="w-80 shrink-0 border-r border-border-primary p-3 overflow-y-auto text-[10px] text-text-tertiary">
+          <div className="text-[9px] uppercase tracking-[1px] mb-2 text-text-tertiary">Authors</div>
           {legendAuthors.map((author) => (
-            <div
-              key={author}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                marginBottom: 5,
-              }}
-            >
+            <div key={author} className="flex items-center gap-1.5 mb-[5px]">
               <span
-                style={{
-                  flexShrink: 0,
-                  width: 10,
-                  height: 10,
-                  background: bubbleColor(author),
-                  borderRadius: 5,
-                  opacity: 0.7,
-                }}
+                className="shrink-0 w-2.5 h-2.5 rounded-full opacity-70"
+                style={{ background: bubbleColor(author) }}
               />
               <span
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
+                className="font-mono overflow-hidden text-ellipsis whitespace-nowrap"
                 title={author}
               >
                 {author}
@@ -248,31 +201,17 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
             </div>
           ))}
           {hasUnknown && (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                marginTop: 8,
-                fontStyle: 'italic',
-              }}
-            >
+            <div className="flex items-center gap-1.5 mt-2 italic">
               <span
-                style={{
-                  flexShrink: 0,
-                  width: 10,
-                  height: 10,
-                  background: UNKNOWN_BUBBLE_COLOR,
-                  borderRadius: 5,
-                  opacity: 0.7,
-                }}
+                className="shrink-0 w-2.5 h-2.5 rounded-full opacity-70"
+                style={{ background: UNKNOWN_BUBBLE_COLOR }}
               />
               <span>no commit data</span>
             </div>
           )}
         </div>
-        <div ref={chartRef} style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
-          <svg width={dims.width} height={dims.height} style={{ display: 'block' }}>
+        <div ref={chartRef} className="flex-1 min-w-0 min-h-0">
+          <svg width={dims.width} height={dims.height} className="block">
             {packData.map((leaf) => {
               const d = leaf.data;
               // d3.hierarchy returns a synthetic root with no DirBubble fields
@@ -295,7 +234,7 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
                 <g
                   key={d.dirPath}
                   onClick={() => onSelectFile(firstFile)}
-                  style={{ cursor: 'pointer' }}
+                  className="cursor-pointer"
                   onMouseEnter={(e) => {
                     const rect = containerRef.current?.getBoundingClientRect();
                     if (rect) {
@@ -333,7 +272,7 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
                       dominantBaseline="central"
                       fontSize={labelFontSize}
                       fill={isUnknown ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.9)'}
-                      style={{ pointerEvents: 'none' }}
+                      className="pointer-events-none"
                     >
                       {fittedName}
                     </text>
@@ -346,7 +285,7 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
                       dominantBaseline="central"
                       fontSize={subFontSize}
                       fill={isUnknown ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.6)'}
-                      style={{ pointerEvents: 'none' }}
+                      className="pointer-events-none"
                     >
                       {fittedSub}
                     </text>
@@ -359,15 +298,8 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
       </div>
 
       {/* Sticky caption strip */}
-      <div
-        style={{
-          flexShrink: 0,
-          padding: '10px 16px',
-          borderTop: '1px solid var(--border-primary)',
-          background: 'var(--surface-primary)',
-        }}
-      >
-        <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+      <div className="shrink-0 px-4 py-2.5 border-t border-border-primary bg-surface-primary">
+        <div className="text-xs text-text-secondary">
           One bubble per directory (2 levels deep) · size = total LOC · color = dominant author ·
           click to drill in
         </div>
@@ -375,27 +307,14 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
 
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 320,
-            wordBreak: 'break-all',
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-80 break-all"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.dir.dirPath}/</div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="font-semibold mb-0.5">{tooltip.dir.dirPath}/</div>
+          <div className="text-text-secondary">
             {tooltip.dir.totalLoc.toLocaleString()} LOC · {tooltip.dir.fileCount} files
           </div>
-          <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>
+          <div className="text-text-secondary mt-0.5">
             {tooltip.dir.dominantAuthor === UNKNOWN_AUTHOR
               ? 'No commit data for this directory'
               : `Owner: ${tooltip.dir.dominantAuthor} (${tooltip.dir.dominantPercent}%)`}

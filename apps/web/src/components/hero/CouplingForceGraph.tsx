@@ -5,7 +5,11 @@ import { forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY
 import { categoryColor } from '../../utils/colors';
 
 import type { GitrelicReport, CoupledPair } from '@gitrelic/core';
-import type { Simulation as D3Simulation } from 'd3-force';
+import type {
+  Simulation as D3Simulation,
+  SimulationLinkDatum,
+  SimulationNodeDatum,
+} from 'd3-force';
 
 interface CouplingForceGraphProps {
   report: GitrelicReport;
@@ -13,17 +17,13 @@ interface CouplingForceGraphProps {
   onSelectFile: (file: string) => void;
 }
 
-interface GraphNode {
+interface GraphNode extends SimulationNodeDatum {
   id: string;
   hotspotScore: number;
   category: string;
-  x?: number;
-  y?: number;
 }
 
-interface GraphLink {
-  source: string;
-  target: string;
+interface GraphLink extends SimulationLinkDatum<GraphNode> {
   strength: number;
 }
 
@@ -64,7 +64,7 @@ export function CouplingForceGraph({
     new Map(),
   );
   const [tooltip, setTooltip] = useState<{ x: number; y: number; node: GraphNode } | null>(null);
-  const simRef = useRef<D3Simulation<any, any> | null>(null);
+  const simRef = useRef<D3Simulation<GraphNode, GraphLink> | null>(null);
   const dimsRef = useRef(dims);
   dimsRef.current = dims;
 
@@ -85,21 +85,21 @@ export function CouplingForceGraph({
     if (nodes.length === 0) return;
 
     const { width, height } = dimsRef.current;
-    const simNodes = nodes.map((n) => ({
+    const simNodes: GraphNode[] = nodes.map((n) => ({
       ...n,
       x: width / 2 + (Math.random() - 0.5) * width * 0.5,
       y: height / 2 + (Math.random() - 0.5) * height * 0.5,
     }));
-    const simLinks = links.map((l) => ({ ...l }));
+    const simLinks: GraphLink[] = links.map((l) => ({ ...l }));
 
     const padding = 30;
     const sim = forceSimulation(simNodes)
       .force(
         'link',
-        forceLink(simLinks)
-          .id((d: any) => d.id)
+        forceLink<GraphNode, GraphLink>(simLinks)
+          .id((d) => d.id)
           .distance(100)
-          .strength((d: any) => d.strength * 0.5),
+          .strength((d) => d.strength * 0.5),
       )
       .force('charge', forceManyBody().strength(-200))
       .force('x', forceX(width / 2).strength(0.1))
@@ -151,18 +151,22 @@ export function CouplingForceGraph({
   const partnerCount = useMemo(() => {
     const counts = new Map<string, number>();
     for (const l of links) {
-      counts.set(l.source, (counts.get(l.source) ?? 0) + 1);
-      counts.set(l.target, (counts.get(l.target) ?? 0) + 1);
+      const src = typeof l.source === 'string' ? l.source : (l.source as GraphNode).id;
+      const tgt = typeof l.target === 'string' ? l.target : (l.target as GraphNode).id;
+      counts.set(src, (counts.get(src) ?? 0) + 1);
+      counts.set(tgt, (counts.get(tgt) ?? 0) + 1);
     }
     return counts;
   }, [links]);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div ref={containerRef} className="w-full h-full relative">
       <svg width={dims.width} height={dims.height}>
         {links.map((l, i) => {
-          const s = getPos(l.source);
-          const t = getPos(l.target);
+          const srcId = typeof l.source === 'string' ? l.source : (l.source as GraphNode).id;
+          const tgtId = typeof l.target === 'string' ? l.target : (l.target as GraphNode).id;
+          const s = getPos(srcId);
+          const t = getPos(tgtId);
           return (
             <line
               key={i}
@@ -186,7 +190,7 @@ export function CouplingForceGraph({
             <g
               key={n.id}
               onClick={() => onSelectFile(n.id)}
-              style={{ cursor: 'pointer' }}
+              className="cursor-pointer"
               onMouseEnter={(e) => {
                 const rect = containerRef.current?.getBoundingClientRect();
                 if (!rect) return;
@@ -209,7 +213,7 @@ export function CouplingForceGraph({
                   textAnchor="middle"
                   fontSize={8}
                   fill="rgba(255,255,255,0.6)"
-                  style={{ pointerEvents: 'none' }}
+                  className="pointer-events-none"
                 >
                   {fileName(n.id)}
                 </text>
@@ -220,23 +224,11 @@ export function CouplingForceGraph({
       </svg>
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 300,
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-[300px]"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.node.id}</div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="font-semibold mb-0.5">{tooltip.node.id}</div>
+          <div className="text-text-secondary">
             Score: {tooltip.node.hotspotScore} · {tooltip.node.category} ·{' '}
             {partnerCount.get(tooltip.node.id) ?? 0} partners
           </div>

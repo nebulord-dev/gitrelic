@@ -160,23 +160,12 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
   }
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width: '100%',
-        height: '100%',
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <div ref={scrollRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+    <div ref={containerRef} className="w-full h-full relative flex flex-col">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
         {rows.length === 0 ? (
-          <div style={{ color: 'var(--text-tertiary)', padding: 20, fontSize: 12 }}>
-            No files exceed the risk threshold.
-          </div>
+          <div className="text-text-tertiary p-5 text-xs">No files exceed the risk threshold.</div>
         ) : (
-          <svg width={width} height={svgHeight} style={{ display: 'block' }}>
+          <svg width={width} height={svgHeight} className="block">
             {/* Column headers */}
             <g>
               {DIMENSIONS.map((dim, di) => (
@@ -200,11 +189,7 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
               const isSelected = selectedFile === row.file;
 
               return (
-                <g
-                  key={row.file}
-                  onClick={() => onSelectFile(row.file)}
-                  style={{ cursor: 'pointer' }}
-                >
+                <g key={row.file} onClick={() => onSelectFile(row.file)} className="cursor-pointer">
                   {/* Row background for selected state */}
                   {isSelected && (
                     <rect
@@ -290,40 +275,15 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
       </div>
 
       {/* Sticky caption + legend strip */}
-      <div
-        style={{
-          flexShrink: 0,
-          padding: '10px 16px',
-          borderTop: '1px solid var(--border-primary)',
-          background: 'var(--surface-primary)',
-        }}
-      >
-        <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+      <div className="shrink-0 px-4 py-2.5 border-t border-border-primary bg-surface-primary">
+        <div className="text-xs text-text-secondary">
           Files scoring high across multiple risk axes · churn, blast radius, shame, ghost risk ·
           color = severity tier
         </div>
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            gap: 14,
-            marginTop: 6,
-            fontSize: 10,
-            color: 'var(--text-tertiary)',
-          }}
-        >
+        <div className="flex flex-wrap items-center gap-3.5 mt-1.5 text-[10px] text-text-tertiary">
           {LEGEND_ITEMS.map(({ color, label }) => (
-            <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: 10,
-                  height: 10,
-                  background: color,
-                  borderRadius: 2,
-                }}
-              />
+            <span key={label} className="flex items-center gap-[5px]">
+              <span className="inline-block w-2.5 h-2.5 rounded-xs" style={{ background: color }} />
               {label}
             </span>
           ))}
@@ -333,32 +293,11 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
       {/* Tooltip */}
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 320,
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-80"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div
-            style={{
-              fontWeight: 600,
-              marginBottom: 2,
-              fontFamily: 'var(--font-mono)',
-              wordBreak: 'break-all',
-            }}
-          >
-            {tooltip.file}
-          </div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="font-semibold mb-0.5 font-mono break-all">{tooltip.file}</div>
+          <div className="text-text-secondary">
             {tooltip.dimension}: {Math.round(tooltip.value)}
           </div>
         </div>

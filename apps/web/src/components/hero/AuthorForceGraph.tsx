@@ -6,13 +6,20 @@ import { authorColor } from '../../utils/colors';
 import { type AuthorGraphNode, buildAuthorGraph } from './authorGraph';
 
 import type { GitrelicReport } from '@gitrelic/core';
-import type { Simulation as D3Simulation } from 'd3-force';
+import type {
+  Simulation as D3Simulation,
+  SimulationLinkDatum,
+  SimulationNodeDatum,
+} from 'd3-force';
 
 interface AuthorForceGraphProps {
   report: GitrelicReport;
   selectedContributor: string | null;
   onSelectContributor: (author: string) => void;
 }
+
+type SimNode = AuthorGraphNode & SimulationNodeDatum;
+type SimLink = SimulationLinkDatum<SimNode> & { coAuthoredCommits: number; sharedFiles: number };
 
 export function AuthorForceGraph({
   report,
@@ -27,7 +34,7 @@ export function AuthorForceGraph({
   const [tooltip, setTooltip] = useState<{ x: number; y: number; node: AuthorGraphNode } | null>(
     null,
   );
-  const simRef = useRef<D3Simulation<any, any> | null>(null);
+  const simRef = useRef<D3Simulation<SimNode, SimLink> | null>(null);
   const dimsRef = useRef(dims);
   dimsRef.current = dims;
 
@@ -55,21 +62,21 @@ export function AuthorForceGraph({
     if (nodes.length === 0) return;
 
     const { width, height } = dimsRef.current;
-    const simNodes = nodes.map((n) => ({
+    const simNodes: SimNode[] = nodes.map((n) => ({
       ...n,
       x: width / 2 + (Math.random() - 0.5) * width * 0.5,
       y: height / 2 + (Math.random() - 0.5) * height * 0.5,
     }));
-    const simLinks = links.map((l) => ({ ...l }));
+    const simLinks: SimLink[] = links.map((l) => ({ ...l }));
 
     const padding = 30;
     const sim = forceSimulation(simNodes)
       .force(
         'link',
-        forceLink(simLinks)
-          .id((d: any) => d.id)
+        forceLink<SimNode, SimLink>(simLinks)
+          .id((d) => d.id)
           .distance(120)
-          .strength((d: any) =>
+          .strength((d) =>
             maxLinkCommits > 0 ? Math.min(0.8, (d.coAuthoredCommits / maxLinkCommits) * 0.8) : 0.2,
           ),
       )
@@ -122,7 +129,7 @@ export function AuthorForceGraph({
   );
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div ref={containerRef} className="w-full h-full relative">
       <svg width={dims.width} height={dims.height}>
         {links.map((l, i) => {
           const s = getPos(l.source);
@@ -152,7 +159,7 @@ export function AuthorForceGraph({
             <g
               key={n.id}
               onClick={() => onSelectContributor(n.id)}
-              style={{ cursor: 'pointer' }}
+              className="cursor-pointer"
               onMouseEnter={(e) => {
                 const rect = containerRef.current?.getBoundingClientRect();
                 if (!rect) return;
@@ -176,7 +183,7 @@ export function AuthorForceGraph({
                   textAnchor="middle"
                   fontSize={9}
                   fill="rgba(255,255,255,0.7)"
-                  style={{ pointerEvents: 'none' }}
+                  className="pointer-events-none"
                 >
                   {n.label}
                 </text>
@@ -187,29 +194,17 @@ export function AuthorForceGraph({
       </svg>
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 300,
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-[300px]"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.node.label}</div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="font-semibold mb-0.5">{tooltip.node.label}</div>
+          <div className="text-text-secondary">
             {tooltip.node.coAuthoredCommits} co-commit
             {tooltip.node.coAuthoredCommits !== 1 ? 's' : ''} · {tooltip.node.partnerCount} partner
             {tooltip.node.partnerCount !== 1 ? 's' : ''}
           </div>
           {tooltip.node.primaryPartner && (
-            <div style={{ color: 'var(--text-tertiary)', marginTop: 2 }}>
+            <div className="text-text-tertiary mt-0.5">
               Top: {tooltip.node.primaryPartner.split(' <')[0]}
             </div>
           )}
