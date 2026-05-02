@@ -22,6 +22,8 @@ export default withMermaid(
       '/analyzers/knowledge-silos',
       '/analyzers/ghost-files',
       '/analyzers/contributors',
+      '/analyzers/dead-code',
+      '/analyzers/complexity-trend',
     ],
 
     themeConfig: {
@@ -52,6 +54,7 @@ export default withMermaid(
           collapsed: false,
           items: [
             { text: 'Overview', link: '/analyzers/' },
+            { text: 'Age Map', link: '/analyzers/age-map' },
             { text: 'Blast Radius', link: '/analyzers/blast-radius' },
             { text: 'Bus Factor', link: '/analyzers/bus-factor' },
             { text: 'Churn', link: '/analyzers/churn' },
