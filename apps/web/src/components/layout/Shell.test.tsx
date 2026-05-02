@@ -15,8 +15,8 @@ describe('Shell layout mode', () => {
   it('renders sidebar, bottom panel, and inspector by default', () => {
     const { container } = render(<Shell report={makeMinimalReport()} />);
     expect(container.querySelector('nav')).not.toBeNull();
-    // Bottom panel has a resize handle div with cursor: row-resize
-    expect(container.querySelector('[style*="row-resize"]')).not.toBeNull();
+    // Bottom panel has a resize handle div with cursor-row-resize Tailwind class
+    expect(container.querySelector('[class*="cursor-row-resize"]')).not.toBeNull();
   });
 });
 
@@ -94,21 +94,22 @@ describe('Shell keyboard shortcuts', () => {
     const { container } = render(<Shell report={makeMinimalReport()} />);
     fireEvent.keyDown(window, { key: '.', metaKey: true, shiftKey: true });
     // Bottom panel hidden
-    expect(container.querySelector('[style*="row-resize"]')).toBeNull();
+    expect(container.querySelector('[class*="cursor-row-resize"]')).toBeNull();
   });
 
   it('⌘⇧, enters fullscreen-table mode with a filled bottom panel', () => {
     const { container } = render(<Shell report={makeMinimalReport()} />);
     // Default: bottom panel uses a fixed height so the hero can take the remaining space
-    const defaultPanel = container.querySelector('[style*="row-resize"]')!.parentElement!;
+    const defaultPanel = container.querySelector('[class*="cursor-row-resize"]')!.parentElement!;
     expect(defaultPanel.style.height).toBe('320px');
 
     fireEvent.keyDown(window, { key: ',', metaKey: true, shiftKey: true });
 
     // In fullscreen-table the hero is hidden; the bottom panel must expand to fill
     // or the viewport ends up with a 320px panel and a tall empty gap below it.
-    const fullPanel = container.querySelector('[style*="row-resize"]')!.parentElement!;
-    expect(fullPanel.style.flexGrow).toBe('1');
+    const fullPanel = container.querySelector('[class*="cursor-row-resize"]')!.parentElement!;
+    // fillAvailable=true switches from inline style to Tailwind flex-1 class; no inline height.
+    expect(fullPanel.classList.contains('flex-1')).toBe(true);
     expect(fullPanel.style.height).toBe('');
   });
 });
