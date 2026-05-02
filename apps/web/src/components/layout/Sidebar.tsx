@@ -1,4 +1,5 @@
 import { PRESETS } from '../../presets/registry';
+import { cn } from '../../utils/cn';
 
 import type { PresetId, SidebarGroupLabel } from '../../presets/types';
 import type { GitrelicReport } from '@gitrelic/core';
@@ -157,28 +158,11 @@ export function Sidebar({ report, activePresetId, onApplyPreset }: SidebarProps)
   return (
     <nav
       aria-label="Dashboard navigation"
-      style={{
-        width: 200,
-        minWidth: 200,
-        background: 'var(--surface-primary)',
-        borderRight: '1px solid var(--border-primary)',
-        padding: '12px 0',
-        overflowY: 'auto',
-        flexShrink: 0,
-      }}
+      className="w-[200px] min-w-[200px] bg-surface-primary border-r border-border-primary py-3 overflow-y-auto shrink-0"
     >
       {groups.map((group) => (
-        <div key={group.label} style={{ marginBottom: 16, padding: '0 12px' }}>
-          <div
-            style={{
-              fontSize: 9,
-              textTransform: 'uppercase',
-              letterSpacing: 1.5,
-              color: 'var(--text-tertiary)',
-              marginBottom: 8,
-              padding: '0 8px',
-            }}
-          >
+        <div key={group.label} className="mb-4 px-3">
+          <div className="text-[9px] uppercase tracking-[1.5px] text-text-tertiary mb-2 px-2">
             {group.label}
           </div>
           {group.items.map((item) => {
@@ -188,34 +172,16 @@ export function Sidebar({ report, activePresetId, onApplyPreset }: SidebarProps)
                 key={item.id}
                 onClick={() => onApplyPreset(item.id)}
                 aria-current={isActive ? 'page' : undefined}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  width: '100%',
-                  padding: '6px 8px',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  fontSize: 12,
-                  textAlign: 'left',
-                  background: isActive ? 'var(--nav-item-active-bg)' : 'transparent',
-                  color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                  marginBottom: 2,
-                }}
+                className={cn(
+                  'flex items-center gap-2 w-full py-1.5 px-2 border-none rounded-md cursor-pointer text-xs text-left mb-0.5',
+                  isActive
+                    ? 'bg-nav-item-active-bg text-accent-primary'
+                    : 'bg-transparent text-text-secondary',
+                )}
               >
-                <span style={{ flex: 1 }}>{item.label}</span>
+                <span className="flex-1">{item.label}</span>
                 {item.badge != null && item.badge > 0 && (
-                  <span
-                    style={{
-                      fontSize: 9,
-                      padding: '1px 5px',
-                      borderRadius: 8,
-                      fontWeight: 600,
-                      background: 'var(--nav-badge-critical)',
-                      color: '#fff',
-                    }}
-                  >
+                  <span className="text-[9px] py-px px-[5px] rounded-lg font-semibold bg-nav-badge-critical text-white">
                     {item.badge}
                   </span>
                 )}
