@@ -1,3 +1,5 @@
+import { cn } from '../../utils/cn';
+
 import type { LayoutMode } from './Shell';
 
 interface LayoutControlsProps {
@@ -15,13 +17,13 @@ const MODE_LABELS: Record<LayoutMode, string> = {
 
 export function LayoutControls({ mode, onModeChange }: LayoutControlsProps) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div className="flex items-center gap-2">
       <button
         aria-label="Hide sidebars"
         title="Hide sidebars (⌘.)"
         aria-pressed={mode === 'focus-canvas'}
         onClick={() => onModeChange(mode === 'focus-canvas' ? 'default' : 'focus-canvas')}
-        style={iconButtonStyle(mode === 'focus-canvas')}
+        className={iconButtonClass(mode === 'focus-canvas')}
       >
         ◧
       </button>
@@ -30,7 +32,7 @@ export function LayoutControls({ mode, onModeChange }: LayoutControlsProps) {
         title="Fullscreen hero (⌘⇧.)"
         aria-pressed={mode === 'fullscreen-hero'}
         onClick={() => onModeChange(mode === 'fullscreen-hero' ? 'default' : 'fullscreen-hero')}
-        style={iconButtonStyle(mode === 'fullscreen-hero')}
+        className={iconButtonClass(mode === 'fullscreen-hero')}
       >
         ⬒
       </button>
@@ -39,7 +41,7 @@ export function LayoutControls({ mode, onModeChange }: LayoutControlsProps) {
         title="Fullscreen table (⌘⇧,)"
         aria-pressed={mode === 'fullscreen-table'}
         onClick={() => onModeChange(mode === 'fullscreen-table' ? 'default' : 'fullscreen-table')}
-        style={iconButtonStyle(mode === 'fullscreen-table')}
+        className={iconButtonClass(mode === 'fullscreen-table')}
       >
         ⬓
       </button>
@@ -47,14 +49,7 @@ export function LayoutControls({ mode, onModeChange }: LayoutControlsProps) {
         aria-label="Layout mode"
         value={mode}
         onChange={(e) => onModeChange(e.target.value as LayoutMode)}
-        style={{
-          fontSize: 11,
-          padding: '2px 6px',
-          background: 'var(--surface-tertiary)',
-          color: 'var(--text-primary)',
-          border: '1px solid var(--border-primary)',
-          borderRadius: 4,
-        }}
+        className="text-[11px] px-1.5 py-0.5 bg-surface-tertiary text-text-primary border border-border-primary rounded"
       >
         {(Object.keys(MODE_LABELS) as LayoutMode[]).map((m) => (
           <option key={m} value={m}>
@@ -66,15 +61,9 @@ export function LayoutControls({ mode, onModeChange }: LayoutControlsProps) {
   );
 }
 
-function iconButtonStyle(active: boolean): React.CSSProperties {
-  return {
-    padding: '4px 8px',
-    fontSize: 14,
-    lineHeight: 1,
-    border: '1px solid var(--border-primary)',
-    borderRadius: 4,
-    background: active ? 'var(--surface-elevated)' : 'transparent',
-    color: 'var(--text-secondary)',
-    cursor: 'pointer',
-  };
+function iconButtonClass(active: boolean): string {
+  return cn(
+    'px-2 py-1 text-sm leading-none border border-border-primary rounded text-text-secondary cursor-pointer',
+    active ? 'bg-surface-elevated' : 'bg-transparent',
+  );
 }
