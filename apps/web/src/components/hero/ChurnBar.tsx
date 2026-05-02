@@ -93,20 +93,8 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
 
   if (rows.length === 0) {
     return (
-      <div
-        ref={containerRef}
-        style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
-      >
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text-tertiary)',
-            fontSize: 12,
-          }}
-        >
+      <div ref={containerRef} className="w-full h-full flex flex-col">
+        <div className="flex-1 flex items-center justify-center text-text-tertiary text-xs">
           No file churn detected.
         </div>
         <ChurnLegend />
@@ -136,18 +124,9 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
     : `${rows.length.toLocaleString()} churned file${rows.length === 1 ? '' : 's'}. Sorted by commits, ties broken by file path.`;
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width: '100%',
-        height: '100%',
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <div ref={scrollRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-        <svg width={width} height={chartHeight} style={{ display: 'block' }}>
+    <div ref={containerRef} className="w-full h-full relative flex flex-col">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
+        <svg width={width} height={chartHeight} className="block">
           {rows.map((row, i) => {
             const y = TOP_PAD + i * ROW_HEIGHT;
             const barTop = y + (ROW_HEIGHT - BAR_HEIGHT) / 2;
@@ -163,7 +142,7 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
               <g
                 key={row.file}
                 onClick={() => onSelectFile(row.file)}
-                style={{ cursor: 'pointer' }}
+                className="cursor-pointer"
                 onMouseEnter={(evt) => {
                   const rect = containerRef.current?.getBoundingClientRect();
                   if (!rect) return;
@@ -217,7 +196,7 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
                   fontSize={10}
                   fontFamily="var(--font-mono)"
                   fill={fillFor(row.category, isSelected ? 1 : 0.85)}
-                  style={{ pointerEvents: 'none' }}
+                  className="pointer-events-none"
                 >
                   {trailingLabel}
                 </text>
@@ -233,37 +212,18 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
       />
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 320,
-            wordBreak: 'break-all',
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-[320px] break-all"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.row.file}</div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="font-semibold mb-0.5">{tooltip.row.file}</div>
+          <div className="text-text-secondary">
             {tooltip.row.commitCount.toLocaleString()} commit
             {tooltip.row.commitCount === 1 ? '' : 's'}
           </div>
-          <div
-            style={{
-              color: fillFor(tooltip.row.category, 1),
-              marginTop: 2,
-              textTransform: 'capitalize',
-            }}
-          >
+          <div className="mt-0.5 capitalize" style={{ color: fillFor(tooltip.row.category, 1) }}>
             {tooltip.row.category}
           </div>
-          <div style={{ color: 'var(--text-tertiary)', fontSize: 9, marginTop: 1 }}>
+          <div className="text-text-tertiary text-[9px] mt-px">
             {churnCategoryDescription(tooltip.row.category)}
           </div>
         </div>
