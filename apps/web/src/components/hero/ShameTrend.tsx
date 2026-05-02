@@ -38,25 +38,8 @@ export function ShameTrend({ report }: ShameTrendProps) {
 
   if (months.length === 0) {
     return (
-      <div
-        ref={containerRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text-tertiary)',
-            fontSize: 12,
-          }}
-        >
+      <div ref={containerRef} className="w-full h-full flex flex-col">
+        <div className="flex-1 flex items-center justify-center text-text-tertiary text-xs">
           No shame commits in the analysis window.
         </div>
         <HeroCaption
@@ -132,11 +115,8 @@ export function ShameTrend({ report }: ShameTrendProps) {
   };
 
   return (
-    <div
-      ref={containerRef}
-      style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
-    >
-      <div style={{ flex: 1, position: 'relative' }}>
+    <div ref={containerRef} className="w-full h-full flex flex-col">
+      <div className="flex-1 relative">
         <svg
           width={dims.width}
           height={dims.height - 56}
@@ -170,29 +150,18 @@ export function ShameTrend({ report }: ShameTrendProps) {
         </svg>
         {tooltip && (
           <div
-            style={{
-              position: 'absolute',
-              left: tooltip.x + 12,
-              top: tooltip.y - 8,
-              background: 'var(--surface-elevated)',
-              border: '1px solid var(--border-primary)',
-              borderRadius: 4,
-              padding: '6px 10px',
-              fontSize: 10,
-              color: 'var(--text-primary)',
-              pointerEvents: 'none',
-              zIndex: 20,
-            }}
+            className="absolute bg-surface-elevated border border-border-primary rounded-xs px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20"
+            style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
           >
-            <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.month.month}</div>
-            <div style={{ color: 'var(--text-secondary)' }}>
+            <div className="font-semibold mb-0.5">{tooltip.month.month}</div>
+            <div className="text-text-secondary">
               <span style={{ color: TIER_COLORS.critical }}>critical {tooltip.month.critical}</span>
               {' · '}
               <span style={{ color: TIER_COLORS.moderate }}>moderate {tooltip.month.moderate}</span>
               {' · '}
               <span style={{ color: TIER_COLORS.mild }}>mild {tooltip.month.mild}</span>
             </div>
-            <div style={{ color: 'var(--text-tertiary)', marginTop: 2 }}>total {tooltip.total}</div>
+            <div className="text-text-tertiary mt-0.5">total {tooltip.total}</div>
           </div>
         )}
       </div>
