@@ -15,12 +15,7 @@ export function CouplingTab({ report, onSelectFile }: CouplingTabProps) {
       label: 'File A',
       render: (p) => (
         <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--text-primary)',
-            cursor: 'pointer',
-          }}
+          className="font-mono text-[11px] text-text-primary cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
             onSelectFile(p.fileA);
@@ -35,19 +30,14 @@ export function CouplingTab({ report, onSelectFile }: CouplingTabProps) {
       label: '',
       width: '30px',
       align: 'center',
-      render: () => <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>↔</span>,
+      render: () => <span className="text-text-tertiary text-[10px]">↔</span>,
     },
     {
       key: 'fileB',
       label: 'File B',
       render: (p) => (
         <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--text-primary)',
-            cursor: 'pointer',
-          }}
+          className="font-mono text-[11px] text-text-primary cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
             onSelectFile(p.fileB);
@@ -64,40 +54,14 @@ export function CouplingTab({ report, onSelectFile }: CouplingTabProps) {
       align: 'right',
       sortValue: (p) => p.couplingStrength,
       render: (p) => (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            justifyContent: 'flex-end',
-          }}
-        >
-          <div
-            style={{
-              width: 50,
-              height: 4,
-              background: 'var(--surface-tertiary)',
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}
-          >
+        <div className="flex items-center gap-2 justify-end">
+          <div className="w-[50px] h-1 bg-surface-tertiary rounded-xs overflow-hidden">
             <div
-              style={{
-                width: `${p.couplingStrength}%`,
-                height: '100%',
-                borderRadius: 2,
-                background: 'var(--accent-coupling)',
-              }}
+              className="h-full rounded-xs bg-accent-coupling"
+              style={{ width: `${p.couplingStrength}%` }}
             />
           </div>
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 11,
-              color: 'var(--accent-coupling)',
-              fontWeight: 600,
-            }}
-          >
+          <span className="font-mono text-[11px] text-accent-coupling font-semibold">
             {Math.round(p.couplingStrength)}%
           </span>
         </div>
@@ -110,15 +74,7 @@ export function CouplingTab({ report, onSelectFile }: CouplingTabProps) {
       align: 'right',
       sortValue: (p) => p.coCommits,
       render: (p) => (
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--text-secondary)',
-          }}
-        >
-          {p.coCommits}
-        </span>
+        <span className="font-mono text-[11px] text-text-secondary">{p.coCommits}</span>
       ),
     },
   ];
