@@ -41,7 +41,7 @@ export function prepareAgeHistogramData(report: GitrelicReport): AgeHistogramDat
   const thresholds = report.ageMap.thresholds;
   const files = report.ageMap.files;
 
-  if (repoAgeDays === 0 || (files.length === 0 && repoAgeDays === 0)) {
+  if (repoAgeDays === 0) {
     return {
       bins: [],
       maxCount: 0,
