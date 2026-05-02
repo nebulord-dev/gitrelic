@@ -118,12 +118,8 @@ export function BusFactorTab({ report, onApplyPreset }: BusFactorTabProps) {
                   </Tooltip>
                   <div className="w-20 h-1 bg-surface-tertiary rounded-xs overflow-hidden shrink-0">
                     <div
-                      style={{
-                        width: `${(row.count / maxDirCount) * 100}%`,
-                        background: 'var(--severity-critical)',
-                        opacity: 0.7,
-                      }}
-                      className="h-full"
+                      className="h-full bg-severity-critical opacity-70"
+                      style={{ width: `${(row.count / maxDirCount) * 100}%` }}
                     />
                   </div>
                   <span className="font-mono text-text-primary font-semibold inline-block min-w-8 text-right">
