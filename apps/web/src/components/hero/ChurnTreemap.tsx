@@ -4,21 +4,14 @@ import { hierarchy, treemap, treemapSquarify } from 'd3-hierarchy';
 
 import { categoryColor } from '../../utils/colors';
 
-import type { AgeStatus, GitrelicReport } from '@gitrelic/core';
+import type { GitrelicReport } from '@gitrelic/core';
 import type { HierarchyRectangularNode } from 'd3-hierarchy';
 
-export type TreemapColorBy = 'churn' | 'age' | 'test-proximity';
+export type TreemapColorBy = 'churn' | 'test-proximity';
 
 interface ColorMode {
   fill: (filePath: string, report: GitrelicReport) => string;
 }
-
-const AGE_COLORS = {
-  fresh: '#1f4e7a',
-  aging: '#3a6b8c',
-  stale: '#7a4a1f',
-  ancient: '#a06222',
-} as const;
 
 const TEST_COLORS = {
   tested: '#2f5a2f',
@@ -28,10 +21,6 @@ const TEST_COLORS = {
 
 function churnFillFor(category: string | undefined): string {
   return categoryColor(category ?? 'low', 0.35);
-}
-
-function ageFillFor(status: AgeStatus | undefined): string {
-  return AGE_COLORS[status ?? 'aging'];
 }
 
 function testFillFor(hasSibling: boolean | undefined): string {
@@ -44,12 +33,6 @@ export const colorByMode: Record<TreemapColorBy, ColorMode> = {
     fill: (file, report) => {
       const h = report.hotspots.files.find((f) => f.file === file);
       return churnFillFor(h?.category);
-    },
-  },
-  age: {
-    fill: (file, report) => {
-      const a = report.ageMap.files.find((f) => f.file === file);
-      return ageFillFor(a?.status);
     },
   },
   'test-proximity': {
@@ -149,12 +132,6 @@ export function ChurnTreemap({
     return layout(root).leaves() as HierarchyRectangularNode<TreeNode>[];
   }, [report, dims.width, dims.height]);
 
-  const ageIndex = useMemo(() => {
-    const m = new Map<string, AgeStatus>();
-    for (const f of report.ageMap.files) m.set(f.file, f.status);
-    return m;
-  }, [report.ageMap.files]);
-
   const testIndex = useMemo(() => {
     const m = new Map<string, boolean>();
     for (const f of report.testCoverage.files) m.set(f.file, f.hasTestSibling);
@@ -174,11 +151,7 @@ export function ChurnTreemap({
           const isSelected = selectedFile === d.fullPath;
           const showLabel = w > 40 && h > 16;
           const fillColor =
-            colorBy === 'churn'
-              ? churnFillFor(d.category)
-              : colorBy === 'age'
-                ? ageFillFor(ageIndex.get(d.fullPath))
-                : testFillFor(testIndex.get(d.fullPath));
+            colorBy === 'churn' ? churnFillFor(d.category) : testFillFor(testIndex.get(d.fullPath));
 
           return (
             <g

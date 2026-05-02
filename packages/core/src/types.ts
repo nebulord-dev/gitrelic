@@ -98,9 +98,17 @@ export type AgeStatus = 'fresh' | 'aging' | 'stale' | 'ancient';
 
 export interface AgeMapReport {
   files: FileAge[];
-  staleFiles: FileAge[]; // not touched in >180 days
-  ancientFiles: FileAge[]; // not touched in >365 days
+  staleFiles: FileAge[];
+  ancientFiles: FileAge[];
   medianAgeDays: number;
+  thresholds: {
+    /** Files at or below `freshLimit` days are tier "fresh". */
+    freshLimit: number;
+    /** Files at or below `agingLimit` (and above `freshLimit`) are tier "aging". */
+    agingLimit: number;
+    /** Files at or below `staleLimit` (and above `agingLimit`) are tier "stale". Files above this are "ancient". */
+    staleLimit: number;
+  };
   summary: string;
 }
 

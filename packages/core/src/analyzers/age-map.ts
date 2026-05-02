@@ -1,5 +1,21 @@
-import type { AgeMapReport, FileAge, AgeStatus } from '../types.js';
+import type { AgeMapReport, AgeStatus, FileAge } from '../types.js';
 import type { RawCommit } from '../utils/git.js';
+
+/**
+ * Computes repo-age-relative thresholds used to bucket files into the
+ * `fresh / aging / stale / ancient` tiers. Pure helper used inside
+ * `analyzeAgeMap` and exposed for analyzer-internal callers. The web
+ * layer (`apps/web/src/utils/normalizeReport.ts`) duplicates this formula
+ * inline because the project rule is type-only imports from @gitrelic/core
+ * — keep the two in sync if the multipliers ever change.
+ */
+export function getAgeThresholds(repoAgeDays: number): AgeMapReport['thresholds'] {
+  return {
+    freshLimit: Math.round(repoAgeDays * 0.08),
+    agingLimit: Math.round(repoAgeDays * 0.33),
+    staleLimit: Math.round(repoAgeDays * 0.66),
+  };
+}
 
 /**
  * Analyzes the age of files based on the provided commits, tracked files, and repository age in days.
@@ -13,7 +29,6 @@ export function analyzeAgeMap(
   trackedFiles: string[],
   repoAgeDays: number,
 ): AgeMapReport {
-  // Map: file → most recent commit date
   const fileLastCommit: Map<string, string> = new Map();
   const trackedSet = new Set(trackedFiles);
 
@@ -28,11 +43,12 @@ export function analyzeAgeMap(
   }
 
   const now = Date.now();
+  const thresholds = getAgeThresholds(repoAgeDays);
 
   const files: FileAge[] = Array.from(fileLastCommit.entries())
     .map(([file, lastCommitDate]) => {
       const ageInDays = Math.floor((now - new Date(lastCommitDate).getTime()) / 86_400_000);
-      return { file, lastCommitDate, ageInDays, status: getAgeStatus(ageInDays, repoAgeDays) };
+      return { file, lastCommitDate, ageInDays, status: getAgeStatus(ageInDays, thresholds) };
     })
     .sort((a, b) => b.ageInDays - a.ageInDays);
 
@@ -44,21 +60,17 @@ export function analyzeAgeMap(
 
   const summary =
     ancientFiles.length > 0
-      ? `${ancientFiles.length} files haven't been touched in over ${Math.round(repoAgeDays * 0.66)} days — they may be dead weight or critical infrastructure nobody dares touch`
+      ? `${ancientFiles.length} files haven't been touched in over ${thresholds.staleLimit} days — they may be dead weight or critical infrastructure nobody dares touch`
       : staleFiles.length > 0
-        ? `${staleFiles.length} files are going stale (no commits in ${Math.round(repoAgeDays * 0.33)}+ days)`
+        ? `${staleFiles.length} files are going stale (no commits in ${thresholds.agingLimit}+ days)`
         : 'The codebase is actively maintained across most files';
 
-  return { files, staleFiles, ancientFiles, medianAgeDays, summary };
+  return { files, staleFiles, ancientFiles, medianAgeDays, thresholds, summary };
 }
 
-function getAgeStatus(ageInDays: number, repoAgeDays: number): AgeStatus {
-  const freshLimit = Math.round(repoAgeDays * 0.08);
-  const agingLimit = Math.round(repoAgeDays * 0.33);
-  const staleLimit = Math.round(repoAgeDays * 0.66);
-
-  if (ageInDays <= freshLimit) return 'fresh';
-  if (ageInDays <= agingLimit) return 'aging';
-  if (ageInDays <= staleLimit) return 'stale';
+function getAgeStatus(ageInDays: number, thresholds: AgeMapReport['thresholds']): AgeStatus {
+  if (ageInDays <= thresholds.freshLimit) return 'fresh';
+  if (ageInDays <= thresholds.agingLimit) return 'aging';
+  if (ageInDays <= thresholds.staleLimit) return 'stale';
   return 'ancient';
 }
