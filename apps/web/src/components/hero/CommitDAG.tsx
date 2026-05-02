@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { cn } from '../../utils/cn';
 import { authorColor } from '../../utils/colors';
 
 import type { RawCommit } from '@gitrelic/core';
@@ -37,10 +38,7 @@ export function CommitDAG({ commits, selectedFile, onSelectFile }: CommitDAGProp
   const totalHeight = displayed.length * ROW_HEIGHT + 40;
 
   return (
-    <div
-      ref={containerRef}
-      style={{ width: '100%', height: '100%', overflow: 'auto', position: 'relative' }}
-    >
+    <div ref={containerRef} className="w-full h-full overflow-auto relative">
       <svg width={width} height={totalHeight}>
         <line
           x1={PADDING_LEFT}
@@ -63,7 +61,7 @@ export function CommitDAG({ commits, selectedFile, onSelectFile }: CommitDAGProp
               onClick={() => {
                 if (topFile) onSelectFile(topFile);
               }}
-              style={{ cursor: topFile ? 'pointer' : 'default' }}
+              className={cn(topFile ? 'cursor-pointer' : 'cursor-default')}
               onMouseEnter={(e) => {
                 const rect = containerRef.current?.getBoundingClientRect();
                 if (!rect) return;
@@ -119,23 +117,11 @@ export function CommitDAG({ commits, selectedFile, onSelectFile }: CommitDAGProp
       </svg>
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 350,
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-[10px] py-[6px] text-[10px] text-text-primary pointer-events-none z-20 max-w-[350px]"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.commit.message}</div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="font-semibold mb-0.5">{tooltip.commit.message}</div>
+          <div className="text-text-secondary">
             {tooltip.commit.authorName} · {tooltip.commit.date.slice(0, 10)} ·{' '}
             {tooltip.commit.files.length} files · +{tooltip.commit.insertions}/ -
             {tooltip.commit.deletions}
