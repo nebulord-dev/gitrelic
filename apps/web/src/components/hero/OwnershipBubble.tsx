@@ -26,7 +26,6 @@ type DirBubbleRoot = { children: DirBubble[] };
 
 const UNKNOWN_AUTHOR = 'unknown';
 const UNKNOWN_BUBBLE_COLOR = 'rgb(110, 110, 115)';
-const LEGEND_WIDTH = 320;
 // Empirical character-width factor for the SVG monospace fallback at small
 // sizes. Slightly conservative so labels don't graze the bubble edge.
 const CHAR_WIDTH_FACTOR = 0.58;
@@ -185,13 +184,10 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
   return (
     <div ref={containerRef} className="w-full h-full relative flex flex-col">
       <div className="flex flex-1 min-h-0 min-w-0">
-        <div
-          className="shrink-0 border-r border-border-primary p-3 overflow-y-auto text-[10px] text-text-tertiary"
-          style={{ width: LEGEND_WIDTH }}
-        >
+        <div className="w-80 shrink-0 border-r border-border-primary p-3 overflow-y-auto text-[10px] text-text-tertiary">
           <div className="text-[9px] uppercase tracking-[1px] mb-2 text-text-tertiary">Authors</div>
           {legendAuthors.map((author) => (
-            <div key={author} className="flex items-center gap-[6px] mb-[5px]">
+            <div key={author} className="flex items-center gap-1.5 mb-[5px]">
               <span
                 className="shrink-0 w-2.5 h-2.5 rounded-full opacity-70"
                 style={{ background: bubbleColor(author) }}
@@ -205,7 +201,7 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
             </div>
           ))}
           {hasUnknown && (
-            <div className="flex items-center gap-[6px] mt-2 italic">
+            <div className="flex items-center gap-1.5 mt-2 italic">
               <span
                 className="shrink-0 w-2.5 h-2.5 rounded-full opacity-70"
                 style={{ background: UNKNOWN_BUBBLE_COLOR }}
@@ -302,7 +298,7 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
       </div>
 
       {/* Sticky caption strip */}
-      <div className="shrink-0 px-4 py-[10px] border-t border-border-primary bg-surface-primary">
+      <div className="shrink-0 px-4 py-2.5 border-t border-border-primary bg-surface-primary">
         <div className="text-xs text-text-secondary">
           One bubble per directory (2 levels deep) · size = total LOC · color = dominant author ·
           click to drill in
