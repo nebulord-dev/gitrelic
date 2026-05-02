@@ -63,7 +63,7 @@ export function CommitBranches({ commits, selectedFile, onSelectFile }: CommitBr
     <div ref={containerRef} className="relative w-full h-full overflow-auto">
       {/* Time axis */}
       <div className="flex mb-1 h-5">
-        <div className="shrink-0" style={{ width: LABEL_WIDTH }} />
+        <div className="shrink-0 w-[120px]" />
         <svg className="flex-1" height={20}>
           {lanes.length > 0 &&
             xScale.ticks(6).map((date) => (
@@ -83,11 +83,8 @@ export function CommitBranches({ commits, selectedFile, onSelectFile }: CommitBr
       {lanes.map((lane) => {
         const color = authorColor(lane.email);
         return (
-          <div key={lane.email} className="flex mb-0.5" style={{ height: LANE_HEIGHT }}>
-            <div
-              className="shrink-0 text-[10px] text-text-secondary flex items-center pr-2"
-              style={{ width: LABEL_WIDTH }}
-            >
+          <div key={lane.email} className="flex mb-0.5 h-7">
+            <div className="shrink-0 w-[120px] text-[10px] text-text-secondary flex items-center pr-2">
               {lane.name}
             </div>
             <svg className="flex-1" height={LANE_HEIGHT}>

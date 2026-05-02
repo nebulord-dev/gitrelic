@@ -23,18 +23,8 @@ export default function App() {
 
   if (error) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-          flexDirection: 'column',
-          gap: 12,
-          color: 'var(--text-secondary)',
-        }}
-      >
-        <div style={{ fontSize: 32 }}>☠</div>
+      <div className="flex items-center justify-center h-screen flex-col gap-3 text-text-secondary">
+        <div className="text-[32px]">☠</div>
         <div>{error}</div>
       </div>
     );
@@ -42,19 +32,9 @@ export default function App() {
 
   if (!report) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-          flexDirection: 'column',
-          gap: 12,
-          color: 'var(--text-secondary)',
-        }}
-      >
-        <div style={{ fontSize: 18 }}>◌</div>
-        <div style={{ fontSize: 12 }}>Excavating git history...</div>
+      <div className="flex items-center justify-center h-screen flex-col gap-3 text-text-secondary">
+        <div className="text-lg">◌</div>
+        <div className="text-xs">Excavating git history...</div>
       </div>
     );
   }

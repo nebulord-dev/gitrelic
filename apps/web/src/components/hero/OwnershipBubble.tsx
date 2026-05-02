@@ -202,10 +202,7 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
           ))}
           {hasUnknown && (
             <div className="flex items-center gap-1.5 mt-2 italic">
-              <span
-                className="shrink-0 w-2.5 h-2.5 rounded-full opacity-70"
-                style={{ background: UNKNOWN_BUBBLE_COLOR }}
-              />
+              <span className="shrink-0 w-2.5 h-2.5 rounded-full opacity-70 bg-[rgb(110,110,115)]" />
               <span>no commit data</span>
             </div>
           )}

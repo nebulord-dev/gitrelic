@@ -87,10 +87,7 @@ export function CommitHeatmap({ commits }: CommitHeatmapProps) {
         const name = email.split('@')[0];
         return (
           <div key={email} className="flex h-6 mb-0.5">
-            <div
-              className="shrink-0 text-[10px] text-text-secondary flex items-center pr-2 overflow-hidden text-ellipsis whitespace-nowrap"
-              style={{ width: LABEL_WIDTH }}
-            >
+            <div className="shrink-0 w-[120px] text-[10px] text-text-secondary flex items-center pr-2 overflow-hidden text-ellipsis whitespace-nowrap">
               {name}
             </div>
             <div className="flex flex-1 gap-px">

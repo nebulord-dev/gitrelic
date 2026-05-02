@@ -201,11 +201,10 @@ export function ContributorSwimlanes({
                 {lane.weeklyIntensity.map((count, i) => (
                   <div
                     key={i}
+                    className="flex-1 rounded-[1px]"
                     style={{
-                      flex: 1,
                       background: count > 0 ? color : 'transparent',
                       opacity: count > 0 ? 0.15 + intensityScale(count) * 0.15 : 0,
-                      borderRadius: 1,
                     }}
                   />
                 ))}
@@ -252,11 +251,10 @@ export function ContributorSwimlanes({
                 {lane.weeklyIntensity.map((count, i) => (
                   <div
                     key={i}
+                    className="flex-1 rounded-[1px]"
                     style={{
-                      flex: 1,
                       background: color,
                       opacity: intensityScale(count),
-                      borderRadius: 1,
                     }}
                   />
                 ))}
@@ -266,18 +264,15 @@ export function ContributorSwimlanes({
               {lane.isGhost && lane.lastActiveDate && (
                 <>
                   <div
-                    className="absolute top-0 bottom-0"
+                    className="absolute top-0 bottom-0 border-l border-dashed"
                     style={{
                       left: xScale(lane.lastActiveDate),
-                      borderLeft: '1px dashed rgba(248,81,73,0.3)',
+                      borderLeftColor: 'rgba(248,81,73,0.3)',
                     }}
                   />
                   <div
                     className="absolute top-1 text-[8px]"
-                    style={{
-                      left: xScale(lane.lastActiveDate) + 4,
-                      color: 'rgba(248,81,73,0.5)',
-                    }}
+                    style={{ left: xScale(lane.lastActiveDate) + 4, color: 'rgba(248,81,73,0.5)' }}
                   >
                     inactive
                   </div>
