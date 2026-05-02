@@ -219,7 +219,7 @@ export function RewriteHistogram({ report }: RewriteHistogramProps) {
                     strokeOpacity={isHover ? 1 : 0}
                     onMouseEnter={() => setHoverIdx(i)}
                     onMouseLeave={() => setHoverIdx(null)}
-                    style={{ cursor: 'default' }}
+                    className="cursor-default"
                   />
                   {b.count > 0 && (
                     <text
