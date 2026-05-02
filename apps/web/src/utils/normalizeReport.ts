@@ -37,12 +37,17 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       overallBusFactor: 0,
       summary: 'Not available',
     },
-    ageMap: raw.ageMap ?? {
-      files: [],
-      staleFiles: [],
-      ancientFiles: [],
-      medianAgeDays: 0,
-      summary: 'Not available',
+    ageMap: {
+      files: raw.ageMap?.files ?? [],
+      staleFiles: raw.ageMap?.staleFiles ?? [],
+      ancientFiles: raw.ageMap?.ancientFiles ?? [],
+      medianAgeDays: raw.ageMap?.medianAgeDays ?? 0,
+      thresholds: raw.ageMap?.thresholds ?? {
+        freshLimit: Math.round((raw.meta?.ageInDays ?? 0) * 0.08),
+        agingLimit: Math.round((raw.meta?.ageInDays ?? 0) * 0.33),
+        staleLimit: Math.round((raw.meta?.ageInDays ?? 0) * 0.66),
+      },
+      summary: raw.ageMap?.summary ?? 'Not available',
     },
     contributors: raw.contributors ?? {
       contributors: [],
