@@ -103,7 +103,7 @@ export function DebtScatter({ report, selectedFile, onSelectFile }: DebtScatterP
   const midY = plotH / 2;
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div ref={containerRef} className="w-full h-full relative">
       <svg width={dims.width} height={dims.height}>
         <g transform={`translate(${PADDING.left},${PADDING.top})`}>
           {/* Quadrant labels */}
@@ -230,7 +230,7 @@ export function DebtScatter({ report, selectedFile, onSelectFile }: DebtScatterP
                   }
                 }}
                 onMouseLeave={() => setTooltip(null)}
-                style={{ cursor: 'pointer' }}
+                className="cursor-pointer"
               />
             );
           })}
@@ -258,32 +258,11 @@ export function DebtScatter({ report, selectedFile, onSelectFile }: DebtScatterP
 
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 320,
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-[10px] py-[6px] text-[10px] text-text-primary pointer-events-none z-20 max-w-[320px]"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div
-            style={{
-              fontWeight: 600,
-              marginBottom: 2,
-              wordBreak: 'break-all',
-              fontFamily: 'var(--font-mono)',
-            }}
-          >
-            {tooltip.point.file}
-          </div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="font-semibold mb-0.5 break-all font-mono">{tooltip.point.file}</div>
+          <div className="text-text-secondary">
             Age: {tooltip.point.ageDays}d · Rewrite: {tooltip.point.rewriteScore} · LOC:{' '}
             {tooltip.point.loc} · Trend: {tooltip.point.churnTrend}
           </div>
