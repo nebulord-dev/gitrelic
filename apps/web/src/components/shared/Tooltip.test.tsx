@@ -28,19 +28,19 @@ describe('Tooltip', () => {
     expect(screen.queryByText('full path')).toBeNull();
   });
 
-  it('applies the default wrapper styling (inline-block + help cursor)', () => {
+  it('applies the default wrapper styling (inline-block + help cursor via Tailwind classes)', () => {
     render(
       <Tooltip content="info">
         <span>label</span>
       </Tooltip>,
     );
     const wrapper = screen.getByText('label').parentElement!;
-    const style = wrapper.getAttribute('style') ?? '';
-    expect(style).toContain('display: inline-block');
-    expect(style).toContain('cursor: help');
+    const className = wrapper.getAttribute('class') ?? '';
+    expect(className).toContain('inline-block');
+    expect(className).toContain('cursor-help');
   });
 
-  it('merges wrapperStyle over defaults so callers can override layout props', () => {
+  it('forwards wrapperStyle so callers can override layout props', () => {
     render(
       <Tooltip
         content="info"
@@ -51,14 +51,10 @@ describe('Tooltip', () => {
     );
     const wrapper = screen.getByText('label').parentElement!;
     const style = wrapper.getAttribute('style') ?? '';
-    // override wins
-    expect(style).toContain('display: block');
-    expect(style).not.toContain('display: inline-block');
     // additive props applied (happy-dom expands `flex: 1` to its longhands)
+    expect(style).toContain('display: block');
     expect(style).toContain('flex-grow: 1');
     expect(style).toContain('min-width: 0');
     expect(style).toContain('overflow: hidden');
-    // defaults that weren't overridden remain
-    expect(style).toContain('cursor: help');
   });
 });
