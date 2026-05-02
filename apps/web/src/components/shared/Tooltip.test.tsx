@@ -57,4 +57,18 @@ describe('Tooltip', () => {
     expect(style).toContain('min-width: 0');
     expect(style).toContain('overflow: hidden');
   });
+
+  it('applies wrapperClassName and allows block to override inline-block', () => {
+    render(
+      <Tooltip content="info" wrapperClassName="block flex-1">
+        <span>label</span>
+      </Tooltip>,
+    );
+    const wrapper = screen.getByText('label').parentElement!;
+    const className = wrapper.getAttribute('class') ?? '';
+    expect(className).toContain('block');
+    expect(className).toContain('flex-1');
+    // tailwind-merge in cn() drops `inline-block` when `block` is added later
+    expect(className).not.toContain('inline-block');
+  });
 });
