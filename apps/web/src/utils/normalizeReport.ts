@@ -42,6 +42,10 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       staleFiles: raw.ageMap?.staleFiles ?? [],
       ancientFiles: raw.ageMap?.ancientFiles ?? [],
       medianAgeDays: raw.ageMap?.medianAgeDays ?? 0,
+      // Mirrors `getAgeThresholds` in packages/core/src/analyzers/age-map.ts —
+      // duplicated because apps/web only does `import type` from @gitrelic/core
+      // (value imports leak Node into the browser bundle). Keep these multipliers
+      // in sync with core if they change.
       thresholds: raw.ageMap?.thresholds ?? {
         freshLimit: Math.round((raw.meta?.ageInDays ?? 0) * 0.08),
         agingLimit: Math.round((raw.meta?.ageInDays ?? 0) * 0.33),
