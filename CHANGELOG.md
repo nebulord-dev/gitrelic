@@ -1,3 +1,10 @@
+# [0.38.0](https://github.com/nebulord-dev/gitrelic/compare/v0.37.0...v0.38.0) (2026-05-02)
+
+
+### Features
+
+* **web:** tailwind migration PR4 — tabs + closer (RELIC-336) ([#64](https://github.com/nebulord-dev/gitrelic/issues/64)) ([8ec0f11](https://github.com/nebulord-dev/gitrelic/commit/8ec0f11e29cb088c5f809ebcde8d068ce2cefaac))
+
 # [0.37.0](https://github.com/nebulord-dev/gitrelic/compare/v0.36.0...v0.37.0) (2026-05-02)
 
 
