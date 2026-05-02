@@ -73,15 +73,7 @@ export function TestCoverageByDir({ report }: TestCoverageByDirProps) {
     return (
       <div
         ref={containerRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--text-tertiary)',
-          fontSize: 12,
-        }}
+        className="w-full h-full flex items-center justify-center text-text-tertiary text-xs"
       >
         No directories with source files detected.
       </div>
@@ -97,7 +89,7 @@ export function TestCoverageByDir({ report }: TestCoverageByDirProps) {
   const barHeight = Math.max(10, rowHeight - 6);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div ref={containerRef} className="w-full h-full relative">
       <svg width={dims.width} height={dims.height}>
         {rows.map((row, i) => {
           const y = topPad + i * rowHeight;
@@ -113,7 +105,7 @@ export function TestCoverageByDir({ report }: TestCoverageByDirProps) {
                 setTooltip({ x: evt.clientX - rect.left, y: evt.clientY - rect.top, row });
               }}
               onMouseLeave={() => setTooltip(null)}
-              style={{ cursor: 'default' }}
+              className="cursor-default"
             >
               <text
                 x={labelWidth - 8}
@@ -152,7 +144,7 @@ export function TestCoverageByDir({ report }: TestCoverageByDirProps) {
                 fontFamily="var(--font-mono)"
                 fill={color}
                 fontWeight={600}
-                style={{ pointerEvents: 'none' }}
+                className="pointer-events-none"
               >
                 {Math.round(row.coverageRatio * 100)}%
               </text>
@@ -162,34 +154,15 @@ export function TestCoverageByDir({ report }: TestCoverageByDirProps) {
       </svg>
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 320,
-            wordBreak: 'break-all',
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-[10px] py-[6px] text-[10px] text-text-primary pointer-events-none z-20 max-w-[320px] break-all"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.row.directory}</div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="font-semibold mb-0.5">{tooltip.row.directory}</div>
+          <div className="text-text-secondary">
             {tooltip.row.testFiles} test{tooltip.row.testFiles === 1 ? '' : 's'} ·{' '}
             {tooltip.row.sourceFiles} source file{tooltip.row.sourceFiles === 1 ? '' : 's'}
           </div>
-          <div
-            style={{
-              color: TIER_COLORS[tooltip.row.tier],
-              marginTop: 2,
-              textTransform: 'capitalize',
-            }}
-          >
+          <div className="mt-0.5 capitalize" style={{ color: TIER_COLORS[tooltip.row.tier] }}>
             {Math.round(tooltip.row.coverageRatio * 100)}% · {tooltip.row.tier}
           </div>
         </div>
