@@ -96,15 +96,7 @@ export function StalenessScatter({ report, selectedFile, onSelectFile }: Stalene
     return (
       <div
         ref={containerRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--text-tertiary)',
-          fontSize: 12,
-        }}
+        className="w-full h-full flex items-center justify-center text-text-tertiary text-xs"
       >
         No dead-code candidates detected.
       </div>
@@ -119,7 +111,7 @@ export function StalenessScatter({ report, selectedFile, onSelectFile }: Stalene
   const showDangerZone = xMax > DANGER_AGE_THRESHOLD;
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div ref={containerRef} className="w-full h-full relative">
       <svg width={dims.width} height={dims.height}>
         <g transform={`translate(${PADDING.left},${PADDING.top})`}>
           {/* Danger zone shading */}
@@ -215,7 +207,7 @@ export function StalenessScatter({ report, selectedFile, onSelectFile }: Stalene
                   setTooltip({ x: e.clientX - rect.left, y: e.clientY - rect.top, point: p });
                 }}
                 onMouseLeave={() => setTooltip(null)}
-                style={{ cursor: 'pointer' }}
+                className="cursor-pointer"
               />
             );
           })}
@@ -233,34 +225,15 @@ export function StalenessScatter({ report, selectedFile, onSelectFile }: Stalene
       </svg>
       {tooltip && (
         <div
-          style={{
-            position: 'absolute',
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            fontSize: 10,
-            color: 'var(--text-primary)',
-            pointerEvents: 'none',
-            zIndex: 20,
-            maxWidth: 320,
-            wordBreak: 'break-all',
-          }}
+          className="absolute bg-surface-elevated border border-border-primary rounded px-[10px] py-[6px] text-[10px] text-text-primary pointer-events-none z-20 max-w-[320px] break-all"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.point.file}</div>
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div className="font-semibold mb-0.5">{tooltip.point.file}</div>
+          <div className="text-text-secondary">
             {tooltip.point.x} day{tooltip.point.x === 1 ? '' : 's'} since last commit ·{' '}
             {tooltip.point.y} LOC
           </div>
-          <div
-            style={{
-              color: TIER_COLORS[tooltip.point.tier],
-              marginTop: 2,
-              textTransform: 'capitalize',
-            }}
-          >
+          <div className="mt-0.5 capitalize" style={{ color: TIER_COLORS[tooltip.point.tier] }}>
             {tooltip.point.tier}
           </div>
         </div>
