@@ -178,7 +178,11 @@ export function ContributorSwimlanes({
                   {lane.name}
                 </div>
                 <div className="text-[9px] text-text-tertiary">
-                  {lane.isGhost && <span className="mr-1 text-[rgba(248,81,73,0.8)]">ghost</span>}
+                  {lane.isGhost && (
+                    <span className="mr-1" style={{ color: 'rgba(248,81,73,0.8)' }}>
+                      ghost
+                    </span>
+                  )}
                   {lane.commitCount} commits
                 </div>
               </div>
@@ -186,8 +190,9 @@ export function ContributorSwimlanes({
 
             {/* Swimlane track */}
             <div
-              className="flex-1 relative rounded overflow-hidden bg-[rgba(255,255,255,0.02)]"
+              className="flex-1 relative rounded overflow-hidden"
               style={{
+                background: 'rgba(255,255,255,0.02)',
                 border: `1px solid ${isSelected ? 'var(--accent-primary)' : 'rgba(255,255,255,0.06)'}`,
               }}
             >
@@ -259,12 +264,15 @@ export function ContributorSwimlanes({
               {lane.isGhost && lane.lastActiveDate && (
                 <>
                   <div
-                    className="absolute top-0 bottom-0 border-l border-dashed border-l-[rgba(248,81,73,0.3)]"
-                    style={{ left: xScale(lane.lastActiveDate) }}
+                    className="absolute top-0 bottom-0 border-l border-dashed"
+                    style={{
+                      left: xScale(lane.lastActiveDate),
+                      borderLeftColor: 'rgba(248,81,73,0.3)',
+                    }}
                   />
                   <div
-                    className="absolute top-1 text-[8px] text-[rgba(248,81,73,0.5)]"
-                    style={{ left: xScale(lane.lastActiveDate) + 4 }}
+                    className="absolute top-1 text-[8px]"
+                    style={{ left: xScale(lane.lastActiveDate) + 4, color: 'rgba(248,81,73,0.5)' }}
                   >
                     inactive
                   </div>
@@ -285,7 +293,9 @@ export function ContributorSwimlanes({
           <div className="font-semibold mb-0.5">
             {tooltip.commit.files[0] ?? 'no files'}
             {tooltip.commit.isHotspot && (
-              <span className="ml-1 text-[rgba(248,81,73,0.9)]">hotspot</span>
+              <span className="ml-1" style={{ color: 'rgba(248,81,73,0.9)' }}>
+                hotspot
+              </span>
             )}
           </div>
           <div className="text-text-secondary">
