@@ -77,20 +77,8 @@ export function RewriteDivergingBar({
 
   if (rows.length === 0) {
     return (
-      <div
-        ref={containerRef}
-        style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
-      >
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text-tertiary)',
-            fontSize: 12,
-          }}
-        >
+      <div ref={containerRef} className="w-full h-full flex flex-col">
+        <div className="flex-1 flex items-center justify-center text-text-tertiary text-xs">
           No rewrite activity detected.
         </div>
         <HeroCaption primary={CAPTION_PRIMARY} subtitle={CAPTION_SUBTITLE} />
@@ -111,11 +99,8 @@ export function RewriteDivergingBar({
   const deletionColor = 'var(--severity-critical)';
 
   return (
-    <div
-      ref={containerRef}
-      style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
-    >
-      <div style={{ flex: 1, position: 'relative' }}>
+    <div ref={containerRef} className="w-full h-full flex flex-col">
+      <div className="flex-1 relative">
         <svg width={dims.width} height={dims.height}>
           {/* Header axis labels */}
           <text
@@ -158,7 +143,7 @@ export function RewriteDivergingBar({
               <g
                 key={row.file}
                 onClick={() => onSelectFile(row.file)}
-                style={{ cursor: 'pointer' }}
+                className="cursor-pointer"
                 onMouseEnter={(evt) => {
                   const rect = containerRef.current?.getBoundingClientRect();
                   if (!rect) return;
@@ -210,7 +195,7 @@ export function RewriteDivergingBar({
                   fontFamily="var(--font-mono)"
                   fill="var(--text-secondary)"
                   fontWeight={600}
-                  style={{ pointerEvents: 'none' }}
+                  className="pointer-events-none"
                 >
                   {row.rewriteScore}
                 </text>
@@ -220,26 +205,13 @@ export function RewriteDivergingBar({
         </svg>
         {tooltip && (
           <div
-            style={{
-              position: 'absolute',
-              left: tooltip.x + 12,
-              top: tooltip.y - 8,
-              background: 'var(--surface-elevated)',
-              border: '1px solid var(--border-primary)',
-              borderRadius: 4,
-              padding: '6px 10px',
-              fontSize: 10,
-              color: 'var(--text-primary)',
-              pointerEvents: 'none',
-              zIndex: 20,
-              maxWidth: 320,
-              wordBreak: 'break-all',
-            }}
+            className="absolute bg-surface-elevated border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-text-primary pointer-events-none z-20 max-w-[320px] break-all"
+            style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
           >
-            <div style={{ fontWeight: 600, marginBottom: 2 }}>{tooltip.row.file}</div>
-            <div style={{ color: insertionColor }}>+{tooltip.row.totalInsertions} insertions</div>
-            <div style={{ color: deletionColor }}>−{tooltip.row.totalDeletions} deletions</div>
-            <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>
+            <div className="font-semibold mb-0.5">{tooltip.row.file}</div>
+            <div className="text-severity-healthy">+{tooltip.row.totalInsertions} insertions</div>
+            <div className="text-severity-critical">−{tooltip.row.totalDeletions} deletions</div>
+            <div className="text-text-secondary mt-0.5">
               Rewrite score {tooltip.row.rewriteScore} · ratio {tooltip.row.ratio.toFixed(2)}
             </div>
           </div>
