@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
 import { findCursedFiles } from './cursed-files.js';
-
 import type {
   ChurnReport,
   BusFactorReport,

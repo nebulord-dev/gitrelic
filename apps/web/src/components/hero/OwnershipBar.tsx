@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { sortCriticalByImpact } from '../../utils/sortBusFactor';
 import { HeroCaption } from '../shared/HeroCaption';
-
 import type { BusFactorRisk, GitrelicReport } from '@gitrelic/core';
 
 export interface OwnershipBarRow {

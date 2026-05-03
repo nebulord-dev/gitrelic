@@ -1,7 +1,6 @@
 import { cn } from '../../utils/cn';
 import Badge from '../shared/Badge';
 import { fileName } from '../theme';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface ActivityInspectorProps {

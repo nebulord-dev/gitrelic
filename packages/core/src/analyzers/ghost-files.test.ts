@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
 import { analyzeGhostFiles } from './ghost-files.js';
-
 import type {
   BusFactorReport,
   ContributorReport,

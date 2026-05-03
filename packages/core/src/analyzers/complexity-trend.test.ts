@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
 import { analyzeComplexityTrend } from './complexity-trend.js';
-
 import type { RawCommit } from '../utils/git.js';
 
 function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {

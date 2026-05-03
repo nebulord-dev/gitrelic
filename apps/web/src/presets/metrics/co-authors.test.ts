@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { coAuthorsMetrics } from './co-authors';
-
 import type { CoAuthorPair, GitrelicReport } from '@gitrelic/core';
 
 function makePair(overrides: Partial<CoAuthorPair> = {}): CoAuthorPair {

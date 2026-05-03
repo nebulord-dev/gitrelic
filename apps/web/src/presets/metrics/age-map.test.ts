@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { ageMapMetrics } from './age-map';
-
 import type { AgeMapReport, FileAge, GitrelicReport } from '@gitrelic/core';
 
 function makeFile(overrides: Partial<FileAge> = {}): FileAge {

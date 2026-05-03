@@ -1,7 +1,6 @@
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath } from '../theme';
-
 import type { FileChurnVelocity, GitrelicReport } from '@gitrelic/core';
 
 interface ChurnVelocityTabProps {

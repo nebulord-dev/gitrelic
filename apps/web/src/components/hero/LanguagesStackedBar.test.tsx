@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { directoryFor, prepareLanguagesData } from './LanguagesStackedBar';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface LocFixture {

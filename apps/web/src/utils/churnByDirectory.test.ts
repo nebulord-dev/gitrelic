@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { aggregateChurnByDirectory } from './churnByDirectory';
-
 import type { FileChurn } from '@gitrelic/core';
 
 function file(path: string, commitCount: number): FileChurn {

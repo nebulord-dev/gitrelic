@@ -33,7 +33,6 @@ import { InspectorPanel } from './InspectorPanel';
 import { MetricsStrip } from './MetricsStrip';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
-
 import type { HeroViz } from '../../presets/types';
 import type { GitrelicReport } from '@gitrelic/core';
 

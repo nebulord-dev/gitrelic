@@ -1,6 +1,5 @@
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName } from '../theme';
-
 import type { CoupledPair, GitrelicReport } from '@gitrelic/core';
 
 interface CouplingTabProps {

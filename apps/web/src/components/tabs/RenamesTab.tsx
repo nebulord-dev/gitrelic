@@ -1,6 +1,5 @@
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath, fmt } from '../theme';
-
 import type { FileRenameChain, GitrelicReport } from '@gitrelic/core';
 
 interface RenamesTabProps {

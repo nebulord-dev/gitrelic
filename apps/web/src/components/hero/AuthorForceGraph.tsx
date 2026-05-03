@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
 import {
   forceCollide,
   forceLink,
@@ -11,7 +10,6 @@ import {
 
 import { authorColor } from '../../utils/colors';
 import { type AuthorGraphNode, buildAuthorGraph } from './authorGraph';
-
 import type { GitrelicReport } from '@gitrelic/core';
 import type {
   Simulation as D3Simulation,

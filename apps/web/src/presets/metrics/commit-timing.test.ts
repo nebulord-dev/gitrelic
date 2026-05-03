@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { commitTimingMetrics } from './commit-timing';
-
 import type {
   CommitTimingReport,
   FileTimingProfile,

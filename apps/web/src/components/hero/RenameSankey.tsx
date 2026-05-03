@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 
 import type { GitrelicReport } from '@gitrelic/core';

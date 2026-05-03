@@ -1,6 +1,5 @@
 import { severityForChurn } from '../../utils/churn';
 import { categoryColor } from '../../utils/colors';
-
 import type { ChurnCategory } from '@gitrelic/core';
 
 interface SwatchProps {

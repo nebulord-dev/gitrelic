@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-
 import { hierarchy, pack } from 'd3-hierarchy';
 
 import { authorColor } from '../../utils/colors';
-
 import type { GitrelicReport } from '@gitrelic/core';
 import type { HierarchyCircularNode } from 'd3-hierarchy';
 

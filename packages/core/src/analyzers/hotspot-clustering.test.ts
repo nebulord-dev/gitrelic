@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
 import { analyzeHotspotClustering } from './hotspot-clustering.js';
-
 import type {
   HotspotReport,
   HotspotEntry,

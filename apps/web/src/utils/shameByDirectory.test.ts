@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
 import { aggregateShameByDirectory } from './shameByDirectory';
-
 import type { FileForensics } from '@gitrelic/core';
 
 const makeFile = (file: string): FileForensics => ({

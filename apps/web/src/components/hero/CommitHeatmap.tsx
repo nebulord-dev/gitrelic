@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { authorColor } from '../../utils/colors';
-
 import type { RawCommit } from '@gitrelic/core';
 
 interface CommitHeatmapProps {

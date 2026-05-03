@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
 import { analyzeDeadCode } from './dead-code.js';
-
 import type { AgeMapReport, LocReport } from '../types.js';
 import type { RawCommit } from '../utils/git.js';
 

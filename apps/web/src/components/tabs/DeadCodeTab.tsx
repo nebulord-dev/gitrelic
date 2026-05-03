@@ -1,7 +1,6 @@
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath, fmt } from '../theme';
-
 import type { DeadCodeCandidate, GitrelicReport } from '@gitrelic/core';
 
 interface DeadCodeTabProps {

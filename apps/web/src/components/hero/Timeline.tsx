@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-
 import { scaleLinear, scaleTime } from 'd3-scale';
 import { area, stack, stackOrderNone, stackOffsetNone } from 'd3-shape';
 
 import { authorColor } from '../../utils/colors';
-
 import type { GitrelicReport, RawCommit } from '@gitrelic/core';
 
 interface TimelineProps {

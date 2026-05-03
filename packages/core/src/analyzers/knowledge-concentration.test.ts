@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
 import { analyzeKnowledgeConcentration } from './knowledge-concentration.js';
-
 import type { BusFactorReport } from '../types.js';
 
 function makeBusReport(

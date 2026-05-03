@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { renamesMetrics } from './renames';
-
 import type { FileRenameChain, GitrelicReport } from '@gitrelic/core';
 
 function makeChain(

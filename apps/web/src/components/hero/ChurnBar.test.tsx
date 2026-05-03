@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { ChurnBar, prepareChurnBarData } from './ChurnBar';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface ChurnFixture {

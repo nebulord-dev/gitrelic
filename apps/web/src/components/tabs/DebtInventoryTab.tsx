@@ -2,7 +2,6 @@ import { cn } from '../../utils/cn';
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { type BadgeVariant, fileName, filePath, fmt } from '../theme';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface DebtInventoryTabProps {

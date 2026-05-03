@@ -5,7 +5,6 @@ import { ActivityInspector } from '../inspector/ActivityInspector';
 import { ContributorsInspector } from '../inspector/ContributorsInspector';
 import { FileInspector } from '../inspector/FileInspector';
 import { GuidePanel } from '../inspector/GuidePanel';
-
 import type { InspectorTab } from '../../hooks/useSelection';
 import type { GitrelicReport } from '@gitrelic/core';
 

@@ -21,7 +21,6 @@ import { riskMetrics } from './metrics/risk';
 import { shameMetrics } from './metrics/shame';
 import { techDebtMetrics } from './metrics/tech-debt';
 import { testCoverageMetrics } from './metrics/test-coverage';
-
 import type { PresetDefinition, PresetId } from './types';
 
 export const PRESETS: Record<PresetId, PresetDefinition> = {

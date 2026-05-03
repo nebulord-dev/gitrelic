@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import { getDefaultMode } from './CommitGraph';
 import { binCommitsForHeatmap } from './CommitHeatmap';
-
 import type { RawCommit } from '@gitrelic/core';
 
 describe('getDefaultMode', () => {

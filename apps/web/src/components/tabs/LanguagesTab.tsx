@@ -1,6 +1,5 @@
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fmt } from '../theme';
-
 import type { GitrelicReport, LanguageBreakdown } from '@gitrelic/core';
 
 interface LanguagesTabProps {

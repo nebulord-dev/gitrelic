@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-
 import { scaleLinear } from 'd3-scale';
 
 import { categoryColor } from '../../utils/colors';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface HotspotScatterProps {

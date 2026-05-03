@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { knowledgeSilosMetrics } from './knowledge-silos';
-
 import type {
   GitrelicReport,
   KnowledgeConcentrationReport,

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { coverageTierFor, prepareCoverageByDirData } from './TestCoverageByDir';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface DirectoryFixture {

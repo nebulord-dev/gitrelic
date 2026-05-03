@@ -7,7 +7,6 @@ import {
 import { isTestPath } from '../../utils/isTestPath';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fmt } from '../theme';
-
 import type { PresetId } from '../../presets/types';
 import type { GitrelicReport } from '@gitrelic/core';
 

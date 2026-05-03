@@ -2,16 +2,13 @@ import { readFileSync, existsSync } from 'node:fs';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-
 import { useState, useEffect } from 'react';
-
 import { runGitrelic } from '@gitrelic/core';
 import { program } from 'commander';
 import { render } from 'ink';
 import open from 'open';
 
 import { App } from './components/App.js';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

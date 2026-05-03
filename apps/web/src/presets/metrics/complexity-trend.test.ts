@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { complexityTrendMetrics } from './complexity-trend';
-
 import type {
   ComplexityTrendReport,
   FileComplexityTrend,

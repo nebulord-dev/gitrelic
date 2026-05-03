@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { deadCodeMetrics } from './dead-code';
-
 import type {
   DeadCodeCandidate,
   DeadCodeReport,

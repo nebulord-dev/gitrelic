@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { HeroCaption } from '../shared/HeroCaption';
-
 import type { GitrelicReport, ShameByMonth } from '@gitrelic/core';
 
 const TIER_COLORS = {

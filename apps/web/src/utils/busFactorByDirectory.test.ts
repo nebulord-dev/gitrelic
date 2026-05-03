@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { aggregateBusFactorByDirectory } from './busFactorByDirectory';
-
 import type { FileBusFactor } from '@gitrelic/core';
 
 function f(path: string): FileBusFactor {

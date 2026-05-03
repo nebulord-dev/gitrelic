@@ -1,5 +1,4 @@
 import { getRenameLog } from '../utils/git.js';
-
 import type {
   RenameTrackingReport,
   FileRename,

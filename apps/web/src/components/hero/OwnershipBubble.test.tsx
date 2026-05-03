@@ -5,7 +5,6 @@ import {
   fitLabel,
   fitSubLabel,
 } from './OwnershipBubble';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 function makeReport(overrides: Partial<GitrelicReport> = {}): GitrelicReport {

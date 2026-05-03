@@ -1,6 +1,5 @@
 import Badge from '../shared/Badge';
 import { fileName, fmt, severityColor } from '../theme';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface FileInspectorProps {

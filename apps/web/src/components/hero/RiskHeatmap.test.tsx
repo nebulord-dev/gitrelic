@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { prepareRiskRows, truncateLabel } from './RiskHeatmap';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface FixtureFile {

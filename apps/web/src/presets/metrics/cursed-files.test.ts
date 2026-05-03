@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { cursedFilesMetrics } from './cursed-files';
-
 import type { CursedFile, GitrelicReport } from '@gitrelic/core';
 
 function makeFile(overrides: Partial<CursedFile> = {}): CursedFile {

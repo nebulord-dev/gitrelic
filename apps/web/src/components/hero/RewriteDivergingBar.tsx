@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { HeroCaption } from '../shared/HeroCaption';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 export interface RewriteRow {

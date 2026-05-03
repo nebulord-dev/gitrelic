@@ -1,6 +1,5 @@
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fmt } from '../theme';
-
 import type { CoAuthorPair, GitrelicReport } from '@gitrelic/core';
 
 interface CoAuthorsTabProps {

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { PRESETS } from './registry';
-
 import type { PresetDefinition, PresetId } from './types';
 import type { GitrelicReport } from '@gitrelic/core';
 

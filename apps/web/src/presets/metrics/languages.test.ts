@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { languagesMetrics } from './languages';
-
 import type { GitrelicReport, LocReport } from '@gitrelic/core';
 
 function makeReport(loc: Partial<LocReport>): GitrelicReport {

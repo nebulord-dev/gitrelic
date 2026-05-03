@@ -1,5 +1,4 @@
 import * as fs from 'node:fs/promises';
-
 import { describe, it, expect, vi } from 'vitest';
 
 import { analyzeLoc } from './loc.js';

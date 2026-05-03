@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { aggregateRewriteByDirectory } from './rewriteByDirectory';
-
 import type { FileRewriteRatio } from '@gitrelic/core';
 
 function f(path: string): FileRewriteRatio {

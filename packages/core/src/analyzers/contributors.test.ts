@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { analyzeContributors } from './contributors.js';
-
 import type { RawCommit } from '../utils/git.js';
 
 const FAKE_NOW = new Date('2026-03-08T12:00:00Z').getTime();

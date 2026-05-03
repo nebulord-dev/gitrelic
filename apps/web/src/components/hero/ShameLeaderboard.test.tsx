@@ -8,7 +8,6 @@ import {
   classifyTier,
   prepareShameData,
 } from './ShameLeaderboard';
-
 import type { GitrelicReport, FileForensics } from '@gitrelic/core';
 
 const makeFile = (overrides: Partial<FileForensics> = {}): FileForensics => ({

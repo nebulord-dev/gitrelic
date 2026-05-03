@@ -1,6 +1,5 @@
 import Badge from '../shared/Badge';
 import { fileName, fmt } from '../theme';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface ContributorsInspectorProps {

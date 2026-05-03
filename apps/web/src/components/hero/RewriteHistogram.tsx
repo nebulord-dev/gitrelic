@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-
 import { scaleLinear } from 'd3-scale';
 
 import { HeroCaption } from '../shared/HeroCaption';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 export type RewriteTier = 'low' | 'medium' | 'high' | 'critical';

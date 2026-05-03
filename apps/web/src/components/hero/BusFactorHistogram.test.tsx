@@ -7,7 +7,6 @@ import {
   busFactorTierFor,
   prepareBusFactorHistogramData,
 } from './BusFactorHistogram';
-
 import type { FileBusFactor, GitrelicReport } from '@gitrelic/core';
 
 function fileFixture(

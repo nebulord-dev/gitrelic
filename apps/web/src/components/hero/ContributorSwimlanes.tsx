@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-
 import { scaleLinear, scaleTime } from 'd3-scale';
 
 import { authorColor } from '../../utils/colors';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface ContributorSwimlanesProps {

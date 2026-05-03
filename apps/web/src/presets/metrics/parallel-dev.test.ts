@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { parallelDevMetrics } from './parallel-dev';
-
 import type {
   FileParallelDev,
   GitrelicReport,

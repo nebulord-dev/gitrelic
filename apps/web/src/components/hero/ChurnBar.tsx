@@ -4,7 +4,6 @@ import { churnCategoryDescription, severityForChurn } from '../../utils/churn';
 import { categoryColor } from '../../utils/colors';
 import { ChurnLegend } from '../shared/ChurnLegend';
 import { HeroCaption } from '../shared/HeroCaption';
-
 import type { ChurnCategory, GitrelicReport } from '@gitrelic/core';
 
 export interface ChurnBarRow {

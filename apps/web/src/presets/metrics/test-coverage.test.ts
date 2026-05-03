@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { testCoverageMetrics } from './test-coverage';
-
 import type {
   DirectoryCoverage,
   GitrelicReport,

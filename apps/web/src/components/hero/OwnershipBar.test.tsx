@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { prepareOwnershipBarData } from './OwnershipBar';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface CriticalFixture {

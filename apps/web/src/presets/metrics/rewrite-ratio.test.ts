@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { rewriteRatioMetrics } from './rewrite-ratio';
-
 import type {
   FileRewriteRatio,
   GitrelicReport,

@@ -25,7 +25,6 @@ import { RewriteRatioTab } from '../tabs/RewriteRatioTab';
 import { RiskRegisterTab } from '../tabs/RiskRegisterTab';
 import { ShameTab } from '../tabs/ShameTab';
 import { TestCoverageTab } from '../tabs/TestCoverageTab';
-
 import type { BottomTab, PresetId } from '../../presets/types';
 import type { GitrelicReport } from '@gitrelic/core';
 

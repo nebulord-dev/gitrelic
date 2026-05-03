@@ -2,7 +2,6 @@ import { aggregateShameByDirectory } from '../../utils/shameByDirectory';
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { Tooltip } from '../shared/Tooltip';
 import { fileName } from '../theme';
-
 import type { PresetId } from '../../presets/types';
 import type { BadgeVariant } from '../theme';
 import type { GitrelicReport } from '@gitrelic/core';

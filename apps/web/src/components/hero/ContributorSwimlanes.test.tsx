@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { prepareSwimlaneData } from './ContributorSwimlanes';
-
 import type { GitrelicReport, RawCommit } from '@gitrelic/core';
 
 function makeCommit(overrides: Partial<RawCommit>): RawCommit {

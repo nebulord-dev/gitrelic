@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
 import { parseRenameLog, buildRenameChains } from './rename-tracking.js';
-
 import type { FileRename } from '../types.js';
 
 describe('parseRenameLog', () => {

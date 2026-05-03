@@ -31,7 +31,6 @@ import {
   getCurrentBranch,
   detectPrimaryLanguage,
 } from './utils/git.js';
-
 import type {
   AgeMapReport,
   BlastRadiusReport,

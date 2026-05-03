@@ -7,7 +7,6 @@ import {
   prepareRewriteHistogramData,
   rewriteTierFor,
 } from './RewriteHistogram';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 const makeReport = (

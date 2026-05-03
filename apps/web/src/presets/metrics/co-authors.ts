@@ -1,5 +1,4 @@
 import { fmt } from '../../components/theme';
-
 import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 

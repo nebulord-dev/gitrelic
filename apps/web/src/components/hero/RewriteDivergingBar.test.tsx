@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { prepareRewriteData } from './RewriteDivergingBar';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface RewriteFixture {

@@ -2,7 +2,6 @@ import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { Tooltip } from '../shared/Tooltip';
 import { fileName, filePath, fmt } from '../theme';
-
 import type { CursedFile, GitrelicReport } from '@gitrelic/core';
 
 interface CursedFilesTabProps {

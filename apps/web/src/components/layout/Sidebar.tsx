@@ -1,6 +1,5 @@
 import { PRESETS } from '../../presets/registry';
 import { cn } from '../../utils/cn';
-
 import type { PresetId, SidebarGroupLabel } from '../../presets/types';
 import type { GitrelicReport } from '@gitrelic/core';
 

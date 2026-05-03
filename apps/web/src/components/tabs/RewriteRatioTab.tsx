@@ -3,7 +3,6 @@ import { HIGH_REWRITE_THRESHOLD } from '../hero/RewriteHistogram';
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { Tooltip } from '../shared/Tooltip';
 import { fileName, fmt } from '../theme';
-
 import type { PresetId } from '../../presets/types';
 import type { BadgeVariant } from '../theme';
 import type { GitrelicReport } from '@gitrelic/core';

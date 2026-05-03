@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { aggregateBlastByDirectory } from './blastByDirectory';
-
 import type { FileBlastRadius } from '@gitrelic/core';
 
 function f(path: string): FileBlastRadius {

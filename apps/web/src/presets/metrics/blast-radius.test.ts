@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { blastRadiusMetrics } from './blast-radius';
-
 import type {
   BlastRadiusReport,
   FileBlastRadius,

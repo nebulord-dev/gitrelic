@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { ghostFilesMetrics } from './ghost-files';
-
 import type { GhostFile, GitrelicReport } from '@gitrelic/core';
 
 function makeFile(overrides: Partial<GhostFile> = {}): GhostFile {

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { topDominantOwners } from './topDominantOwners';
-
 import type { FileBusFactor } from '@gitrelic/core';
 
 function file(path: string, dominantAuthor: string): FileBusFactor {

@@ -2,7 +2,6 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { BusFactorTab } from './BusFactorTab';
-
 import type { FileBusFactor, GitrelicReport } from '@gitrelic/core';
 
 function file(

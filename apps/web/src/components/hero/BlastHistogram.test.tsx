@@ -7,7 +7,6 @@ import {
   blastTierFor,
   prepareBlastHistogramData,
 } from './BlastHistogram';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface BlastFixture {

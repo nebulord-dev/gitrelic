@@ -6,7 +6,6 @@ import {
   ageTierFor,
   prepareAgeHistogramData,
 } from './AgeHistogram';
-
 import type { FileAge, GitrelicReport } from '@gitrelic/core';
 
 function f(

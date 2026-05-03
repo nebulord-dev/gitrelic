@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { shameMetrics } from './shame';
-
 import type { FileForensics, GitrelicReport } from '@gitrelic/core';
 
 function makeEntry(overrides: Partial<FileForensics> = {}): FileForensics {

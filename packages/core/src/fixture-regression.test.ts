@@ -18,11 +18,9 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { runGitrelic } from './runner.js';
-
 import type {
   AgeMapReport,
   BlastRadiusReport,

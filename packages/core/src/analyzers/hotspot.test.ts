@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
 import { analyzeHotspots } from './hotspot.js';
-
 import type { ChurnReport, LocReport } from '../types.js';
 
 function makeChurnReport(

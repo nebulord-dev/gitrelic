@@ -4,7 +4,6 @@ import { cn } from '../../utils/cn';
 import { CommitBranches } from './CommitBranches';
 import { CommitDAG } from './CommitDAG';
 import { CommitHeatmap } from './CommitHeatmap';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface CommitGraphProps {

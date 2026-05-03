@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { churnMetrics } from './churn';
-
 import type { FileChurn, GitrelicReport, RawCommit } from '@gitrelic/core';
 
 function makeFile(overrides: Partial<FileChurn> = {}): FileChurn {

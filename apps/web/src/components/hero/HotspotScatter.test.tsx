@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { prepareScatterData } from './HotspotScatter';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 function makeReport(): GitrelicReport {

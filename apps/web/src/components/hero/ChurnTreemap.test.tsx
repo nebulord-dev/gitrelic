@@ -3,7 +3,6 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { categoryColor } from '../../utils/colors';
 import { ChurnTreemap, colorByMode } from './ChurnTreemap';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 function makeReport(overrides: Partial<GitrelicReport> = {}): GitrelicReport {

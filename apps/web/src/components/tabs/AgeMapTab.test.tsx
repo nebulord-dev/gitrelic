@@ -2,7 +2,6 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AgeMapTab } from './AgeMapTab';
-
 import type { FileAge, GitrelicReport } from '@gitrelic/core';
 
 function f(

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { aggregateAgeByDirectory } from './ageByDirectory';
-
 import type { FileAge } from '@gitrelic/core';
 
 function f(

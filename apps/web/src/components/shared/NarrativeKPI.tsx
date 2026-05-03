@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import { severityText } from '../../utils/classMaps';
 import { cn } from '../../utils/cn';
 import Badge from './Badge';
-
 import type { PresetId } from '../../presets/types';
 import type { BadgeVariant } from '../theme';
 

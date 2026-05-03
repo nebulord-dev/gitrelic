@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { prepareStalenessData, staleTierFor } from './StalenessScatter';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 interface CandidateFixture {

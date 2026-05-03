@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react';
 
 import { PRESETS } from '../presets/registry';
-
 import type { BottomTab, HeroViz, Metric, PresetId } from '../presets/types';
 import type { GitrelicReport } from '@gitrelic/core';
 

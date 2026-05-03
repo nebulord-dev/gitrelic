@@ -3,7 +3,6 @@ import { useState } from 'react';
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath, fmt, severityColor } from '../theme';
-
 import type { GitrelicReport, HotspotEntry } from '@gitrelic/core';
 
 interface HotspotsTabProps {

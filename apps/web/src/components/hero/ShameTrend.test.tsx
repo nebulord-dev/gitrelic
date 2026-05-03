@@ -2,7 +2,6 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 
 import { ShameTrend } from './ShameTrend';
-
 import type { GitrelicReport } from '@gitrelic/core';
 
 const baseReport = {

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildAuthorGraph } from './authorGraph';
-
 import type {
   CoAuthorPair,
   CoAuthorStats,

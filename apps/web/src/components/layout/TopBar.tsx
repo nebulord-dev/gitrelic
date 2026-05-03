@@ -1,6 +1,5 @@
 import { fmt } from '../theme';
 import { LayoutControls } from './LayoutControls';
-
 import type { LayoutMode } from './Shell';
 import type { GitrelicReport } from '@gitrelic/core';
 

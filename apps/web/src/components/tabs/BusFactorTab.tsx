@@ -2,7 +2,6 @@ import { aggregateBusFactorByDirectory } from '../../utils/busFactorByDirectory'
 import { topDominantOwners } from '../../utils/topDominantOwners';
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { Tooltip } from '../shared/Tooltip';
-
 import type { PresetId } from '../../presets/types';
 import type { BadgeVariant } from '../theme';
 import type { GitrelicReport } from '@gitrelic/core';

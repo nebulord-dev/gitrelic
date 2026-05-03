@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
 import {
   forceCollide,
   forceLink,
@@ -10,7 +9,6 @@ import {
 } from 'd3-force';
 
 import { categoryColor } from '../../utils/colors';
-
 import type { GitrelicReport, CoupledPair } from '@gitrelic/core';
 import type {
   Simulation as D3Simulation,
