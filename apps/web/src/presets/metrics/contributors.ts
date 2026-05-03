@@ -39,7 +39,9 @@ export function contributorsMetrics(report: GitrelicReport): Metric[] {
         ? 'var(--severity-warning)'
         : 'var(--severity-critical)';
 
-  // Slot 4 — Newcomers (90d) (0 neutral via stale token / 1+ healthy)
+  // Slot 4 — Newcomers (90d) (0 neutral via stale token / 1+ healthy).
+  // Uses --text-tertiary (the "stale" token in classMaps.ts) — a quiet grey,
+  // not a danger signal. No newcomers is a neutral observation, not a warning.
   const newcomerColor =
     newcomers90d === 0 ? 'var(--text-tertiary)' : 'var(--severity-healthy)';
 

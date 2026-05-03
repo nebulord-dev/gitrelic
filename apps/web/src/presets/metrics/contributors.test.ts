@@ -52,6 +52,15 @@ describe('contributorsMetrics', () => {
   });
 
   describe('slot 1 — Active Contributors', () => {
+    it('is critical at 0 active (empty repo)', () => {
+      // Default makeReport() has activeContributors: []. Spec table starts at
+      // 1=critical and is silent on 0; treating 0 as critical matches intent —
+      // an empty repo is more alarming than a single-author one, not less.
+      const m = contributorsMetrics(makeReport());
+      expect(m[0].value).toBe('0');
+      expect(m[0].color).toBe('var(--severity-critical)');
+    });
+
     it('is critical at 1 active', () => {
       const m = contributorsMetrics(
         makeReport({ activeContributors: [makeContributor()] }),
