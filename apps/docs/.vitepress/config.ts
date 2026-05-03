@@ -24,6 +24,7 @@ export default withMermaid(
       '/analyzers/contributors',
       '/analyzers/dead-code',
       '/analyzers/complexity-trend',
+      '/analyzers/co-authors',
     ],
 
     themeConfig: {
@@ -58,6 +59,7 @@ export default withMermaid(
             { text: 'Blast Radius', link: '/analyzers/blast-radius' },
             { text: 'Bus Factor', link: '/analyzers/bus-factor' },
             { text: 'Churn', link: '/analyzers/churn' },
+            { text: 'Parallel Dev', link: '/analyzers/parallel-dev' },
             { text: 'Rewrite Ratio', link: '/analyzers/rewrite-ratio' },
             { text: 'Shame', link: '/analyzers/shame' },
           ],
