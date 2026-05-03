@@ -136,7 +136,7 @@ function TabContent({
     case 'co-authors':
       return <CoAuthorsTab report={report} />;
     case 'commit-timing':
-      return <CommitTimingTab report={report} onSelectFile={onSelectFile} />;
+      return <CommitTimingTab report={report} onApplyPreset={onApplyPreset} />;
     case 'languages':
       return <LanguagesTab report={report} />;
     case 'test-coverage':
