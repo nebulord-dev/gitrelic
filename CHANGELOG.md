@@ -1,3 +1,10 @@
+# [0.43.0](https://github.com/nebulord-dev/gitrelic/compare/v0.42.0...v0.43.0) (2026-05-03)
+
+
+### Features
+
+* **web:** contributors analyzer polish (RELIC-306) ([#70](https://github.com/nebulord-dev/gitrelic/issues/70)) ([c29a213](https://github.com/nebulord-dev/gitrelic/commit/c29a213fa4fac6e6d5ebb40b3fe267bbf775cb10))
+
 # [0.42.0](https://github.com/nebulord-dev/gitrelic/compare/v0.41.0...v0.42.0) (2026-05-03)
 
 
