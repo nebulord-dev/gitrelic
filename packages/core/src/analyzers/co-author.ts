@@ -36,8 +36,14 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
         const key = pairKey(uniqueAuthors[i], uniqueAuthors[j]);
         if (!pairMap.has(key)) {
           pairMap.set(key, {
-            authorA: uniqueAuthors[i] < uniqueAuthors[j] ? uniqueAuthors[i] : uniqueAuthors[j],
-            authorB: uniqueAuthors[i] < uniqueAuthors[j] ? uniqueAuthors[j] : uniqueAuthors[i],
+            authorA:
+              uniqueAuthors[i] < uniqueAuthors[j]
+                ? uniqueAuthors[i]
+                : uniqueAuthors[j],
+            authorB:
+              uniqueAuthors[i] < uniqueAuthors[j]
+                ? uniqueAuthors[j]
+                : uniqueAuthors[i],
             commits: 0,
             files: new Set(),
           });
@@ -50,7 +56,10 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
 
     // Count co-author appearances
     for (const coAuthor of coAuthors) {
-      authorCoAuthorCount.set(coAuthor, (authorCoAuthorCount.get(coAuthor) ?? 0) + 1);
+      authorCoAuthorCount.set(
+        coAuthor,
+        (authorCoAuthorCount.get(coAuthor) ?? 0) + 1,
+      );
     }
   }
 
@@ -64,7 +73,10 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
     .sort((a, b) => b.coAuthoredCommits - a.coAuthoredCommits);
 
   // Build per-author stats
-  const authorPairCounts = new Map<string, { total: number; partners: Map<string, number> }>();
+  const authorPairCounts = new Map<
+    string,
+    { total: number; partners: Map<string, number> }
+  >();
   for (const pair of pairs) {
     for (const author of [pair.authorA, pair.authorB]) {
       if (!authorPairCounts.has(author))
@@ -72,7 +84,10 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
       const entry = authorPairCounts.get(author)!;
       entry.total += pair.coAuthoredCommits;
       const partner = author === pair.authorA ? pair.authorB : pair.authorA;
-      entry.partners.set(partner, (entry.partners.get(partner) ?? 0) + pair.coAuthoredCommits);
+      entry.partners.set(
+        partner,
+        (entry.partners.get(partner) ?? 0) + pair.coAuthoredCommits,
+      );
     }
   }
 

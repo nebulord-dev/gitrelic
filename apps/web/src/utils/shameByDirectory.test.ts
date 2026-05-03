@@ -30,14 +30,24 @@ describe('aggregateShameByDirectory', () => {
   });
 
   it('computes share as fraction of total', () => {
-    const files = [makeFile('a/x.ts'), makeFile('a/y.ts'), makeFile('a/z.ts'), makeFile('b/q.ts')];
+    const files = [
+      makeFile('a/x.ts'),
+      makeFile('a/y.ts'),
+      makeFile('a/z.ts'),
+      makeFile('b/q.ts'),
+    ];
     const rows = aggregateShameByDirectory(files);
     expect(rows[0].share).toBeCloseTo(0.75);
     expect(rows[1].share).toBeCloseTo(0.25);
   });
 
   it('sorts by count desc with secondary alpha', () => {
-    const files = [makeFile('z/1.ts'), makeFile('a/1.ts'), makeFile('a/2.ts'), makeFile('z/2.ts')];
+    const files = [
+      makeFile('z/1.ts'),
+      makeFile('a/1.ts'),
+      makeFile('a/2.ts'),
+      makeFile('z/2.ts'),
+    ];
     const rows = aggregateShameByDirectory(files);
     // both directories tied at count=2 → alpha
     expect(rows.map((r) => r.directory)).toEqual(['a', 'z']);

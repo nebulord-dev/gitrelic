@@ -53,7 +53,10 @@ function rewriteVariant(score: number): BadgeVariant {
   return 'healthy';
 }
 
-export function DebtInventoryTab({ report, onSelectFile }: DebtInventoryTabProps) {
+export function DebtInventoryTab({
+  report,
+  onSelectFile,
+}: DebtInventoryTabProps) {
   // Collect all files appearing in any debt signal
   const fileSet = new Set<string>();
   for (const f of report.deadCode.candidates) fileSet.add(f.file);
@@ -63,17 +66,26 @@ export function DebtInventoryTab({ report, onSelectFile }: DebtInventoryTabProps
 
   // Build lookup maps
   const ageMap = new Map(report.ageMap.files.map((f) => [f.file, f.ageInDays]));
-  const rewriteMap = new Map(report.rewriteRatio.files.map((f) => [f.file, f.rewriteScore]));
+  const rewriteMap = new Map(
+    report.rewriteRatio.files.map((f) => [f.file, f.rewriteScore]),
+  );
   const complexityMap = new Map(
     report.complexityTrend.files.map((f) => [f.file, f.recentGrowthRate]),
   );
   const churnVelMap = new Map(
-    report.churnVelocity.files.map((f) => [f.file, { score: f.velocityScore, trend: f.trend }]),
+    report.churnVelocity.files.map((f) => [
+      f.file,
+      { score: f.velocityScore, trend: f.trend },
+    ]),
   );
-  const shameMap = new Map(report.forensics.files.map((f) => [f.file, f.shameScore]));
+  const shameMap = new Map(
+    report.forensics.files.map((f) => [f.file, f.shameScore]),
+  );
 
   // Compute max absolute growth rate for normalization
-  const allGrowthRates = report.complexityTrend.files.map((f) => Math.abs(f.recentGrowthRate));
+  const allGrowthRates = report.complexityTrend.files.map((f) =>
+    Math.abs(f.recentGrowthRate),
+  );
   const maxGrowth = Math.max(...allGrowthRates, 1);
   const repoAgeDays = report.meta.ageInDays;
 
@@ -81,7 +93,10 @@ export function DebtInventoryTab({ report, onSelectFile }: DebtInventoryTabProps
     const ageDays = ageMap.get(file) ?? 0;
     const rewriteScore = rewriteMap.get(file) ?? 0;
     const rawGrowthRate = complexityMap.get(file) ?? 0;
-    const growthNorm = Math.min(100, (Math.abs(rawGrowthRate) / maxGrowth) * 100);
+    const growthNorm = Math.min(
+      100,
+      (Math.abs(rawGrowthRate) / maxGrowth) * 100,
+    );
     const churnVel = churnVelMap.get(file) ?? { score: 0, trend: 'stable' };
     const shameScore = shameMap.get(file) ?? 0;
     const ageNorm = Math.min(100, (ageDays / repoAgeDays) * 100);
@@ -115,7 +130,9 @@ export function DebtInventoryTab({ report, onSelectFile }: DebtInventoryTabProps
       render: (r) => (
         <span className="font-mono text-[11px]">
           {fileName(r.file)}
-          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(r.file)}</span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">
+            {filePath(r.file)}
+          </span>
         </span>
       ),
     },
@@ -138,7 +155,9 @@ export function DebtInventoryTab({ report, onSelectFile }: DebtInventoryTabProps
       align: 'center',
       sortValue: (r) => r.rewriteScore,
       render: (r) => (
-        <Badge variant={rewriteVariant(r.rewriteScore)}>{(r.rewriteScore / 100).toFixed(2)}</Badge>
+        <Badge variant={rewriteVariant(r.rewriteScore)}>
+          {(r.rewriteScore / 100).toFixed(2)}
+        </Badge>
       ),
     },
     {
@@ -166,7 +185,9 @@ export function DebtInventoryTab({ report, onSelectFile }: DebtInventoryTabProps
       width: '80px',
       align: 'center',
       sortValue: (r) => r.churnVelocityScore,
-      render: (r) => <Badge variant={churnTrendVariant(r.churnTrend)}>{r.churnTrend}</Badge>,
+      render: (r) => (
+        <Badge variant={churnTrendVariant(r.churnTrend)}>{r.churnTrend}</Badge>
+      ),
     },
     {
       key: 'shame',

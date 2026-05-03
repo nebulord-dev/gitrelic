@@ -12,7 +12,10 @@ export function analyzeBlastRadius(
   }
 
   const trackedSet = new Set(trackedFiles);
-  const fileCoChanges = new Map<string, { coChangedCounts: number[]; maxCoChanged: number }>();
+  const fileCoChanges = new Map<
+    string,
+    { coChangedCounts: number[]; maxCoChanged: number }
+  >();
 
   for (const commit of commits) {
     const files = commit.files.filter((f) => trackedSet.has(f));
@@ -28,10 +31,18 @@ export function analyzeBlastRadius(
     }
   }
 
-  const rawFiles: { file: string; avg: number; max: number; total: number }[] = [];
+  const rawFiles: { file: string; avg: number; max: number; total: number }[] =
+    [];
   for (const [file, data] of fileCoChanges) {
-    const avg = data.coChangedCounts.reduce((s, n) => s + n, 0) / data.coChangedCounts.length;
-    rawFiles.push({ file, avg, max: data.maxCoChanged, total: data.coChangedCounts.length });
+    const avg =
+      data.coChangedCounts.reduce((s, n) => s + n, 0) /
+      data.coChangedCounts.length;
+    rawFiles.push({
+      file,
+      avg,
+      max: data.maxCoChanged,
+      total: data.coChangedCounts.length,
+    });
   }
 
   const maxAvg = Math.max(...rawFiles.map((f) => f.avg), 1);

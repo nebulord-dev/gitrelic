@@ -33,21 +33,30 @@ export function rewriteTierFor(rewriteScore: number): RewriteTier {
   return 'critical';
 }
 
-export function prepareRewriteHistogramData(report: GitrelicReport): RewriteHistogramData {
-  const buckets: RewriteBucket[] = Array.from({ length: BUCKET_COUNT }, (_, i) => {
-    const rangeStart = i * BUCKET_WIDTH;
-    const rangeEnd = i === BUCKET_COUNT - 1 ? 100 : rangeStart + BUCKET_WIDTH - 1;
-    return {
-      rangeStart,
-      rangeEnd,
-      count: 0,
-      tier: rewriteTierFor(rangeStart + BUCKET_WIDTH / 2),
-    };
-  });
+export function prepareRewriteHistogramData(
+  report: GitrelicReport,
+): RewriteHistogramData {
+  const buckets: RewriteBucket[] = Array.from(
+    { length: BUCKET_COUNT },
+    (_, i) => {
+      const rangeStart = i * BUCKET_WIDTH;
+      const rangeEnd =
+        i === BUCKET_COUNT - 1 ? 100 : rangeStart + BUCKET_WIDTH - 1;
+      return {
+        rangeStart,
+        rangeEnd,
+        count: 0,
+        tier: rewriteTierFor(rangeStart + BUCKET_WIDTH / 2),
+      };
+    },
+  );
 
   let highRewriteCount = 0;
   for (const f of report.rewriteRatio.files) {
-    const idx = Math.min(BUCKET_COUNT - 1, Math.max(0, Math.floor(f.rewriteScore / BUCKET_WIDTH)));
+    const idx = Math.min(
+      BUCKET_COUNT - 1,
+      Math.max(0, Math.floor(f.rewriteScore / BUCKET_WIDTH)),
+    );
     buckets[idx].count++;
     if (f.rewriteScore >= HIGH_REWRITE_THRESHOLD) highRewriteCount++;
   }
@@ -132,7 +141,8 @@ export function RewriteHistogram({ report }: RewriteHistogramProps) {
   }
 
   const yTicks = yScale.ticks(4);
-  const hover = hoverIdx == null ? null : { idx: hoverIdx, bucket: buckets[hoverIdx] };
+  const hover =
+    hoverIdx == null ? null : { idx: hoverIdx, bucket: buckets[hoverIdx] };
 
   return (
     <div ref={containerRef} className="w-full h-full flex flex-col">
@@ -174,7 +184,13 @@ export function RewriteHistogram({ report }: RewriteHistogramProps) {
             </text>
 
             {/* Y axis */}
-            <line x1={0} y1={0} x2={0} y2={plotH} stroke="var(--border-primary)" />
+            <line
+              x1={0}
+              y1={0}
+              x2={0}
+              y2={plotH}
+              stroke="var(--border-primary)"
+            />
             <text
               transform={`translate(-40,${plotH / 2}) rotate(-90)`}
               textAnchor="middle"
@@ -186,7 +202,11 @@ export function RewriteHistogram({ report }: RewriteHistogramProps) {
             {yTicks.map((tick) => (
               <g key={`y-${tick}`} transform={`translate(0,${yScale(tick)})`}>
                 <line x2={-4} stroke="var(--border-primary)" />
-                <line x2={plotW} stroke="var(--border-primary)" strokeOpacity={0.15} />
+                <line
+                  x2={plotW}
+                  stroke="var(--border-primary)"
+                  strokeOpacity={0.15}
+                />
                 <text
                   x={-8}
                   textAnchor="end"
@@ -237,13 +257,27 @@ export function RewriteHistogram({ report }: RewriteHistogramProps) {
             })}
 
             {/* X axis */}
-            <line x1={0} y1={plotH} x2={plotW} y2={plotH} stroke="var(--border-primary)" />
+            <line
+              x1={0}
+              y1={plotH}
+              x2={plotW}
+              y2={plotH}
+              stroke="var(--border-primary)"
+            />
             {buckets.map((b, i) => {
               const x = i * (barWidth + BAR_GAP) + barWidth / 2;
               return (
-                <g key={`x-${b.rangeStart}`} transform={`translate(${x},${plotH})`}>
+                <g
+                  key={`x-${b.rangeStart}`}
+                  transform={`translate(${x},${plotH})`}
+                >
                   <line y2={4} stroke="var(--border-primary)" />
-                  <text y={14} textAnchor="middle" fontSize={8} fill="var(--text-tertiary)">
+                  <text
+                    y={14}
+                    textAnchor="middle"
+                    fontSize={8}
+                    fill="var(--text-tertiary)"
+                  >
                     {b.rangeStart}
                   </text>
                 </g>
@@ -262,8 +296,17 @@ export function RewriteHistogram({ report }: RewriteHistogramProps) {
 
           {/* Tier legend */}
           {(['low', 'medium', 'high', 'critical'] as const).map((tier, i) => (
-            <g key={tier} transform={`translate(${PADDING.left + i * 80},${PADDING.top - 14})`}>
-              <rect width={10} height={8} y={-6} fill={TIER_COLORS[tier]} fillOpacity={0.75} />
+            <g
+              key={tier}
+              transform={`translate(${PADDING.left + i * 80},${PADDING.top - 14})`}
+            >
+              <rect
+                width={10}
+                height={8}
+                y={-6}
+                fill={TIER_COLORS[tier]}
+                fillOpacity={0.75}
+              />
               <text x={14} y={2} fontSize={9} fill="var(--text-tertiary)">
                 {tier}
               </text>
@@ -274,7 +317,8 @@ export function RewriteHistogram({ report }: RewriteHistogramProps) {
           <div
             className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 whitespace-nowrap"
             style={{
-              left: PADDING.left + hover.idx * (barWidth + BAR_GAP) + barWidth / 2,
+              left:
+                PADDING.left + hover.idx * (barWidth + BAR_GAP) + barWidth / 2,
               top: PADDING.top + yScale(hover.bucket.count) - 8,
               transform: 'translate(-50%, -100%)',
             }}
@@ -285,7 +329,10 @@ export function RewriteHistogram({ report }: RewriteHistogramProps) {
             <div className="text-text-secondary">
               {hover.bucket.count} {hover.bucket.count === 1 ? 'file' : 'files'}
             </div>
-            <div className="mt-0.5 capitalize" style={{ color: TIER_COLORS[hover.bucket.tier] }}>
+            <div
+              className="mt-0.5 capitalize"
+              style={{ color: TIER_COLORS[hover.bucket.tier] }}
+            >
               {hover.bucket.tier}
             </div>
           </div>

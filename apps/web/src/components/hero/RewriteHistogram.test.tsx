@@ -10,7 +10,9 @@ import {
 
 import type { GitrelicReport } from '@gitrelic/core';
 
-const makeReport = (files: Array<{ file: string; rewriteScore: number }> = []): GitrelicReport =>
+const makeReport = (
+  files: Array<{ file: string; rewriteScore: number }> = [],
+): GitrelicReport =>
   ({
     rewriteRatio: {
       files: files.map((f) => ({
@@ -42,7 +44,9 @@ describe('rewriteTierFor', () => {
 
 describe('prepareRewriteHistogramData', () => {
   it('produces ten contiguous bins of width 10', () => {
-    const data = prepareRewriteHistogramData(makeReport([{ file: 'x.ts', rewriteScore: 50 }]));
+    const data = prepareRewriteHistogramData(
+      makeReport([{ file: 'x.ts', rewriteScore: 50 }]),
+    );
     expect(data.buckets).toHaveLength(10);
     expect(data.buckets[0]).toMatchObject({ rangeStart: 0, rangeEnd: 9 });
     expect(data.buckets[9]).toMatchObject({ rangeStart: 90, rangeEnd: 100 });
@@ -115,7 +119,9 @@ describe('RewriteHistogram render', () => {
 
   it('renders the hero caption in both populated and empty states', () => {
     const populated = render(
-      <RewriteHistogram report={makeReport([{ file: 'a.ts', rewriteScore: 50 }])} />,
+      <RewriteHistogram
+        report={makeReport([{ file: 'a.ts', rewriteScore: 50 }])}
+      />,
     );
     expect(populated.getByText(/10-bin histogram/)).toBeTruthy();
     cleanup();
@@ -132,7 +138,9 @@ describe('RewriteHistogram render', () => {
     ]);
     const { container } = render(<RewriteHistogram report={report} />);
     const svg = container.querySelector('svg[role="img"]') as SVGElement | null;
-    expect(svg?.getAttribute('aria-label')).toMatch(/distribution histogram across 3 files/i);
+    expect(svg?.getAttribute('aria-label')).toMatch(
+      /distribution histogram across 3 files/i,
+    );
     expect(svg?.getAttribute('aria-label')).toMatch(
       /2 files.*at or above the high-rewrite threshold of 70/i,
     );

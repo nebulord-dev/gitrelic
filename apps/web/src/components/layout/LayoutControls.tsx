@@ -22,7 +22,9 @@ export function LayoutControls({ mode, onModeChange }: LayoutControlsProps) {
         aria-label="Hide sidebars"
         title="Hide sidebars (⌘.)"
         aria-pressed={mode === 'focus-canvas'}
-        onClick={() => onModeChange(mode === 'focus-canvas' ? 'default' : 'focus-canvas')}
+        onClick={() =>
+          onModeChange(mode === 'focus-canvas' ? 'default' : 'focus-canvas')
+        }
         className={iconButtonClass(mode === 'focus-canvas')}
       >
         ◧
@@ -31,7 +33,11 @@ export function LayoutControls({ mode, onModeChange }: LayoutControlsProps) {
         aria-label="Fullscreen hero"
         title="Fullscreen hero (⌘⇧.)"
         aria-pressed={mode === 'fullscreen-hero'}
-        onClick={() => onModeChange(mode === 'fullscreen-hero' ? 'default' : 'fullscreen-hero')}
+        onClick={() =>
+          onModeChange(
+            mode === 'fullscreen-hero' ? 'default' : 'fullscreen-hero',
+          )
+        }
         className={iconButtonClass(mode === 'fullscreen-hero')}
       >
         ⬒
@@ -40,7 +46,11 @@ export function LayoutControls({ mode, onModeChange }: LayoutControlsProps) {
         aria-label="Fullscreen table"
         title="Fullscreen table (⌘⇧,)"
         aria-pressed={mode === 'fullscreen-table'}
-        onClick={() => onModeChange(mode === 'fullscreen-table' ? 'default' : 'fullscreen-table')}
+        onClick={() =>
+          onModeChange(
+            mode === 'fullscreen-table' ? 'default' : 'fullscreen-table',
+          )
+        }
         className={iconButtonClass(mode === 'fullscreen-table')}
       >
         ⬓

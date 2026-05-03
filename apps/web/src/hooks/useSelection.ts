@@ -38,11 +38,15 @@ export interface SelectionState {
 export function useSelection(): SelectionState {
   const [activePresetId, setActivePresetId] = useState<PresetId>('overview');
   const [heroOverride, setHeroOverrideState] = useState<HeroViz | null>(null);
-  const [bottomTabOverride, setBottomTabOverrideState] = useState<BottomTab | null>(null);
+  const [bottomTabOverride, setBottomTabOverrideState] =
+    useState<BottomTab | null>(null);
 
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [selectedContributor, setSelectedContributor] = useState<string | null>(null);
-  const [activeInspectorTab, setActiveInspectorTab] = useState<InspectorTab>('file');
+  const [selectedContributor, setSelectedContributor] = useState<string | null>(
+    null,
+  );
+  const [activeInspectorTab, setActiveInspectorTab] =
+    useState<InspectorTab>('file');
 
   const preset = PRESETS[activePresetId];
 

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildDirectoryBubbles, fitLabel, fitSubLabel } from './OwnershipBubble';
+import {
+  buildDirectoryBubbles,
+  fitLabel,
+  fitSubLabel,
+} from './OwnershipBubble';
 
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -92,7 +96,9 @@ describe('buildDirectoryBubbles', () => {
       loc: {
         totalFiles: 1,
         totalLines: 50,
-        files: [{ file: 'scripts/bench/index.js', lines: 50, language: 'JavaScript' }],
+        files: [
+          { file: 'scripts/bench/index.js', lines: 50, language: 'JavaScript' },
+        ],
         languages: [],
         summary: '',
       },
@@ -174,11 +180,18 @@ describe('fitLabel', () => {
 
 describe('fitSubLabel', () => {
   it('returns full author + percent when both fit', () => {
-    expect(fitSubLabel('alice@example.com', 80, 200, 10)).toBe('alice@example.com 80%');
+    expect(fitSubLabel('alice@example.com', 80, 200, 10)).toBe(
+      'alice@example.com 80%',
+    );
   });
 
   it('truncates only the author portion when the label is too long', () => {
-    const out = fitSubLabel('6425824+josephsavona@users.noreply.github.com', 28, 50, 10);
+    const out = fitSubLabel(
+      '6425824+josephsavona@users.noreply.github.com',
+      28,
+      50,
+      10,
+    );
     expect(out.endsWith(' 28%')).toBe(true);
     expect(out.includes('…')).toBe(true);
   });

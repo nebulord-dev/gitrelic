@@ -4,7 +4,11 @@ import { aggregateAgeByDirectory } from './ageByDirectory';
 
 import type { FileAge } from '@gitrelic/core';
 
-function f(file: string, ageInDays: number, status: FileAge['status']): FileAge {
+function f(
+  file: string,
+  ageInDays: number,
+  status: FileAge['status'],
+): FileAge {
   return {
     file,
     lastCommitDate: '2025-01-01',

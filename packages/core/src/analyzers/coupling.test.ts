@@ -47,7 +47,9 @@ describe('analyzeCoupling', () => {
 
     const result = analyzeCoupling(commits, ['a.ts', 'b.ts', ...bigFiles]);
 
-    const bigFilePair = result.pairs.find((p) => p.fileA === 'file0.ts' || p.fileB === 'file0.ts');
+    const bigFilePair = result.pairs.find(
+      (p) => p.fileA === 'file0.ts' || p.fileB === 'file0.ts',
+    );
     expect(bigFilePair).toBeUndefined();
   });
 
@@ -64,8 +66,10 @@ describe('analyzeCoupling', () => {
 
   it('requires minimum 30% coupling strength', () => {
     const commits: RawCommit[] = [];
-    for (let i = 0; i < 10; i++) commits.push(makeCommit({ hash: `a${i}`, files: ['a.ts'] }));
-    for (let i = 0; i < 10; i++) commits.push(makeCommit({ hash: `b${i}`, files: ['b.ts'] }));
+    for (let i = 0; i < 10; i++)
+      commits.push(makeCommit({ hash: `a${i}`, files: ['a.ts'] }));
+    for (let i = 0; i < 10; i++)
+      commits.push(makeCommit({ hash: `b${i}`, files: ['b.ts'] }));
     for (let i = 0; i < 3; i++)
       commits.push(makeCommit({ hash: `ab${i}`, files: ['a.ts', 'b.ts'] }));
 
@@ -76,8 +80,10 @@ describe('analyzeCoupling', () => {
 
   it('includes pairs at exactly 30% coupling strength', () => {
     const commits: RawCommit[] = [];
-    for (let i = 0; i < 7; i++) commits.push(makeCommit({ hash: `a${i}`, files: ['a.ts'] }));
-    for (let i = 0; i < 7; i++) commits.push(makeCommit({ hash: `b${i}`, files: ['b.ts'] }));
+    for (let i = 0; i < 7; i++)
+      commits.push(makeCommit({ hash: `a${i}`, files: ['a.ts'] }));
+    for (let i = 0; i < 7; i++)
+      commits.push(makeCommit({ hash: `b${i}`, files: ['b.ts'] }));
     for (let i = 0; i < 3; i++)
       commits.push(makeCommit({ hash: `ab${i}`, files: ['a.ts', 'b.ts'] }));
 

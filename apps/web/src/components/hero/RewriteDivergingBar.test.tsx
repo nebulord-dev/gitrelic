@@ -22,9 +22,27 @@ describe('prepareRewriteData', () => {
   it('sorts rows by rewriteScore desc', () => {
     const { rows } = prepareRewriteData(
       makeReport([
-        { file: 'a', rewriteScore: 30, totalInsertions: 100, totalDeletions: 50, ratio: 0.5 },
-        { file: 'b', rewriteScore: 80, totalInsertions: 200, totalDeletions: 180, ratio: 0.9 },
-        { file: 'c', rewriteScore: 50, totalInsertions: 150, totalDeletions: 100, ratio: 0.66 },
+        {
+          file: 'a',
+          rewriteScore: 30,
+          totalInsertions: 100,
+          totalDeletions: 50,
+          ratio: 0.5,
+        },
+        {
+          file: 'b',
+          rewriteScore: 80,
+          totalInsertions: 200,
+          totalDeletions: 180,
+          ratio: 0.9,
+        },
+        {
+          file: 'c',
+          rewriteScore: 50,
+          totalInsertions: 150,
+          totalDeletions: 100,
+          ratio: 0.66,
+        },
       ]),
     );
     expect(rows.map((r) => r.file)).toEqual(['b', 'c', 'a']);
@@ -45,9 +63,27 @@ describe('prepareRewriteData', () => {
   it('returns maxAbs as the largest absolute insertion or deletion across rendered rows', () => {
     const { maxAbs } = prepareRewriteData(
       makeReport([
-        { file: 'a', rewriteScore: 90, totalInsertions: 100, totalDeletions: 50, ratio: 0.5 },
-        { file: 'b', rewriteScore: 80, totalInsertions: 40, totalDeletions: 250, ratio: 6 },
-        { file: 'c', rewriteScore: 70, totalInsertions: 200, totalDeletions: 200, ratio: 1 },
+        {
+          file: 'a',
+          rewriteScore: 90,
+          totalInsertions: 100,
+          totalDeletions: 50,
+          ratio: 0.5,
+        },
+        {
+          file: 'b',
+          rewriteScore: 80,
+          totalInsertions: 40,
+          totalDeletions: 250,
+          ratio: 6,
+        },
+        {
+          file: 'c',
+          rewriteScore: 70,
+          totalInsertions: 200,
+          totalDeletions: 200,
+          ratio: 1,
+        },
       ]),
     );
     expect(maxAbs).toBe(250);
@@ -73,8 +109,20 @@ describe('prepareRewriteData', () => {
 
   it('does not mutate the input files array', () => {
     const original: RewriteFixture[] = [
-      { file: 'a', rewriteScore: 30, totalInsertions: 100, totalDeletions: 50, ratio: 0.5 },
-      { file: 'b', rewriteScore: 80, totalInsertions: 200, totalDeletions: 180, ratio: 0.9 },
+      {
+        file: 'a',
+        rewriteScore: 30,
+        totalInsertions: 100,
+        totalDeletions: 50,
+        ratio: 0.5,
+      },
+      {
+        file: 'b',
+        rewriteScore: 80,
+        totalInsertions: 200,
+        totalDeletions: 180,
+        ratio: 0.9,
+      },
     ];
     const before = original.map((f) => f.file);
     prepareRewriteData(makeReport(original));

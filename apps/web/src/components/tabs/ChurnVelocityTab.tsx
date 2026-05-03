@@ -22,7 +22,10 @@ function trendVariant(trend: string): 'critical' | 'warning' | 'healthy' {
   }
 }
 
-export function ChurnVelocityTab({ report, onSelectFile }: ChurnVelocityTabProps) {
+export function ChurnVelocityTab({
+  report,
+  onSelectFile,
+}: ChurnVelocityTabProps) {
   const columns: Column<FileChurnVelocity>[] = [
     {
       key: 'file',
@@ -30,7 +33,9 @@ export function ChurnVelocityTab({ report, onSelectFile }: ChurnVelocityTabProps
       render: (f) => (
         <span className="font-mono text-[11px]">
           {fileName(f.file)}
-          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(f.file)}</span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">
+            {filePath(f.file)}
+          </span>
         </span>
       ),
     },
@@ -47,7 +52,9 @@ export function ChurnVelocityTab({ report, onSelectFile }: ChurnVelocityTabProps
       align: 'right',
       sortValue: (f) => f.velocityScore,
       render: (f) => (
-        <span className="font-mono text-[11px] text-text-secondary">{f.velocityScore}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {f.velocityScore}
+        </span>
       ),
     },
     {
@@ -57,7 +64,9 @@ export function ChurnVelocityTab({ report, onSelectFile }: ChurnVelocityTabProps
       align: 'right',
       sortValue: (f) => f.recentCommits,
       render: (f) => (
-        <span className="font-mono text-[11px] text-text-secondary">{f.recentCommits}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {f.recentCommits}
+        </span>
       ),
     },
     {
@@ -67,7 +76,9 @@ export function ChurnVelocityTab({ report, onSelectFile }: ChurnVelocityTabProps
       align: 'right',
       sortValue: (f) => f.olderCommits,
       render: (f) => (
-        <span className="font-mono text-[11px] text-text-tertiary">{f.olderCommits}</span>
+        <span className="font-mono text-[11px] text-text-tertiary">
+          {f.olderCommits}
+        </span>
       ),
     },
   ];

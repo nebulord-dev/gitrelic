@@ -18,7 +18,10 @@ const DIRECTORY_ROLLUP_LIMIT = 5;
 // Cold-share tiering: <25% Healthy · 25-49% Moderate · 50-74% High · ≥75% Critical.
 // Anchored on the share of files in stale + ancient tiers — surfaces the
 // "going cold" verdict the strip's individual counts can't combine.
-function tierBadge(coldShare: number): { variant: BadgeVariant; label: string } {
+function tierBadge(coldShare: number): {
+  variant: BadgeVariant;
+  label: string;
+} {
   if (coldShare < 0.25) return { variant: 'healthy', label: 'Healthy' };
   if (coldShare < 0.5) return { variant: 'warning', label: 'Moderate' };
   if (coldShare < 0.75) return { variant: 'critical', label: 'High' };
@@ -57,13 +60,17 @@ export function AgeMapTab({ report, onApplyPreset }: AgeMapTabProps) {
   // finding to avoid rendering the same directory name twice in the DOM.
   const findingDirs = new Set(topStaleDirs.map((d) => d.directory));
   const ancientDirectoryRows = [...allDirectoryRows].sort(
-    (a, b) => b.ancientCount - a.ancientCount || a.directory.localeCompare(b.directory),
+    (a, b) =>
+      b.ancientCount - a.ancientCount || a.directory.localeCompare(b.directory),
   );
   const eligibleAncientRows = ancientDirectoryRows.filter(
     (r) => r.ancientCount > 0 && !findingDirs.has(r.directory),
   );
   const directoryRows = eligibleAncientRows.slice(0, DIRECTORY_ROLLUP_LIMIT);
-  const hiddenDirectoryCount = Math.max(0, eligibleAncientRows.length - DIRECTORY_ROLLUP_LIMIT);
+  const hiddenDirectoryCount = Math.max(
+    0,
+    eligibleAncientRows.length - DIRECTORY_ROLLUP_LIMIT,
+  );
   const maxAncientCount = directoryRows[0]?.ancientCount ?? 1;
 
   return (
@@ -79,10 +86,18 @@ export function AgeMapTab({ report, onApplyPreset }: AgeMapTabProps) {
             </div>
             {topStaleDirs.map((d) => (
               <div key={d.directory} className="leading-[1.5]">
-                <span className="font-mono text-text-primary">{d.directory || '(root)'}</span>{' '}
+                <span className="font-mono text-text-primary">
+                  {d.directory || '(root)'}
+                </span>{' '}
                 <span className="text-text-tertiary">
-                  — <strong className="text-text-primary">{fmt(d.medianAgeDays)}</strong> days
-                  median · <strong className="text-severity-critical">{fmt(d.ancientCount)}</strong>{' '}
+                  —{' '}
+                  <strong className="text-text-primary">
+                    {fmt(d.medianAgeDays)}
+                  </strong>{' '}
+                  days median ·{' '}
+                  <strong className="text-severity-critical">
+                    {fmt(d.ancientCount)}
+                  </strong>{' '}
                   ancient
                 </span>
               </div>
@@ -95,10 +110,21 @@ export function AgeMapTab({ report, onApplyPreset }: AgeMapTabProps) {
       subline={
         total > 0 ? (
           <>
-            Tier mix: <strong className="text-severity-healthy">{fmt(tierMix.fresh)}</strong> fresh
-            · <strong className="text-text-primary">{fmt(tierMix.aging)}</strong> aging ·{' '}
-            <strong className="text-severity-warning">{fmt(tierMix.stale)}</strong> stale ·{' '}
-            <strong className="text-severity-critical">{fmt(tierMix.ancient)}</strong> ancient.
+            Tier mix:{' '}
+            <strong className="text-severity-healthy">
+              {fmt(tierMix.fresh)}
+            </strong>{' '}
+            fresh ·{' '}
+            <strong className="text-text-primary">{fmt(tierMix.aging)}</strong>{' '}
+            aging ·{' '}
+            <strong className="text-severity-warning">
+              {fmt(tierMix.stale)}
+            </strong>{' '}
+            stale ·{' '}
+            <strong className="text-severity-critical">
+              {fmt(tierMix.ancient)}
+            </strong>{' '}
+            ancient.
           </>
         ) : null
       }
@@ -123,14 +149,20 @@ export function AgeMapTab({ report, onApplyPreset }: AgeMapTabProps) {
                   <div className="w-20 h-1 bg-surface-tertiary rounded-xs overflow-hidden shrink-0">
                     <div
                       className="h-full bg-severity-critical opacity-70"
-                      style={{ width: `${(row.ancientCount / maxAncientCount) * 100}%` }}
+                      style={{
+                        width: `${(row.ancientCount / maxAncientCount) * 100}%`,
+                      }}
                     />
                   </div>
                   <span className="font-mono text-text-primary font-semibold inline-block min-w-8 text-right">
                     {row.ancientCount}
                   </span>
                   <span className="text-text-tertiary text-[10px] inline-block min-w-9 text-right">
-                    {((row.ancientCount / Math.max(1, ancientFiles.length)) * 100).toFixed(0)}%
+                    {(
+                      (row.ancientCount / Math.max(1, ancientFiles.length)) *
+                      100
+                    ).toFixed(0)}
+                    %
                   </span>
                 </div>
               ))}

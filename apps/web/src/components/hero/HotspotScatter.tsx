@@ -51,12 +51,18 @@ export function prepareScatterData(report: GitrelicReport): ScatterPoint[] {
   return points;
 }
 
-export function HotspotScatter({ report, selectedFile, onSelectFile }: HotspotScatterProps) {
+export function HotspotScatter({
+  report,
+  selectedFile,
+  onSelectFile,
+}: HotspotScatterProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; point: ScatterPoint } | null>(
-    null,
-  );
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    point: ScatterPoint;
+  } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -92,12 +98,24 @@ export function HotspotScatter({ report, selectedFile, onSelectFile }: HotspotSc
       <svg width={dims.width} height={dims.height}>
         <g transform={`translate(${PADDING.left},${PADDING.top})`}>
           {/* Quadrant hint */}
-          <text x={plotW - 4} y={4} textAnchor="end" fontSize={9} fill="rgba(255,255,255,0.12)">
+          <text
+            x={plotW - 4}
+            y={4}
+            textAnchor="end"
+            fontSize={9}
+            fill="rgba(255,255,255,0.12)"
+          >
             high churn + high complexity
           </text>
 
           {/* X axis */}
-          <line x1={0} y1={plotH} x2={plotW} y2={plotH} stroke="var(--border-primary)" />
+          <line
+            x1={0}
+            y1={plotH}
+            x2={plotW}
+            y2={plotH}
+            stroke="var(--border-primary)"
+          />
           <text
             x={plotW / 2}
             y={plotH + 30}
@@ -110,16 +128,30 @@ export function HotspotScatter({ report, selectedFile, onSelectFile }: HotspotSc
 
           {/* X axis ticks */}
           {xScale.ticks(5).map((tick) => (
-            <g key={`x-${tick}`} transform={`translate(${xScale(tick)},${plotH})`}>
+            <g
+              key={`x-${tick}`}
+              transform={`translate(${xScale(tick)},${plotH})`}
+            >
               <line y2={4} stroke="var(--border-primary)" />
-              <text y={14} textAnchor="middle" fontSize={8} fill="var(--text-tertiary)">
+              <text
+                y={14}
+                textAnchor="middle"
+                fontSize={8}
+                fill="var(--text-tertiary)"
+              >
                 {tick}
               </text>
             </g>
           ))}
 
           {/* Y axis */}
-          <line x1={0} y1={0} x2={0} y2={plotH} stroke="var(--border-primary)" />
+          <line
+            x1={0}
+            y1={0}
+            x2={0}
+            y2={plotH}
+            stroke="var(--border-primary)"
+          />
           <text
             transform={`translate(-35,${plotH / 2}) rotate(-90)`}
             textAnchor="middle"
@@ -159,7 +191,11 @@ export function HotspotScatter({ report, selectedFile, onSelectFile }: HotspotSc
                 cy={cy}
                 r={r}
                 fill={categoryColor(p.category, 0.4)}
-                stroke={isSelected ? 'var(--accent-primary)' : categoryColor(p.category, 0.7)}
+                stroke={
+                  isSelected
+                    ? 'var(--accent-primary)'
+                    : categoryColor(p.category, 0.7)
+                }
                 strokeWidth={isSelected ? 2.5 : 1}
                 onClick={() => onSelectFile(p.file)}
                 onMouseEnter={(e) => {
@@ -186,8 +222,8 @@ export function HotspotScatter({ report, selectedFile, onSelectFile }: HotspotSc
         >
           <div className="font-semibold mb-0.5">{tooltip.point.file}</div>
           <div className="text-text-secondary">
-            Churn: {tooltip.point.churn} commits · LOC: {tooltip.point.loc} · Score:{' '}
-            {tooltip.point.hotspotScore}
+            Churn: {tooltip.point.churn} commits · LOC: {tooltip.point.loc} ·
+            Score: {tooltip.point.hotspotScore}
           </div>
         </div>
       )}

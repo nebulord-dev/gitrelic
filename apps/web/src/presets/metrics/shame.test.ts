@@ -16,12 +16,16 @@ function makeEntry(overrides: Partial<FileForensics> = {}): FileForensics {
   };
 }
 
-function makeReport(files: FileForensics[], totalShameCommits?: number): GitrelicReport {
+function makeReport(
+  files: FileForensics[],
+  totalShameCommits?: number,
+): GitrelicReport {
   return {
     forensics: {
       files,
       shameLeaderboard: files.slice(0, 10),
-      totalShameCommits: totalShameCommits ?? files.reduce((s, f) => s + f.shameCommitCount, 0),
+      totalShameCommits:
+        totalShameCommits ?? files.reduce((s, f) => s + f.shameCommitCount, 0),
       summary: '',
     },
   } as unknown as GitrelicReport;
@@ -56,7 +60,9 @@ describe('shameMetrics', () => {
   });
 
   it('uses totalShameCommits from the report, not a derived sum', () => {
-    const metrics = shameMetrics(makeReport([makeEntry({ shameCommitCount: 1 })], 999));
+    const metrics = shameMetrics(
+      makeReport([makeEntry({ shameCommitCount: 1 })], 999),
+    );
     expect(metrics[3].value).toBe('999');
   });
 

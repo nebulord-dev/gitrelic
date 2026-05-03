@@ -22,7 +22,9 @@ function median(sorted: number[]): number {
   return sorted[Math.floor(sorted.length / 2)];
 }
 
-export function aggregateAgeByDirectory(files: ReadonlyArray<FileAge>): AgeDirectoryRow[] {
+export function aggregateAgeByDirectory(
+  files: ReadonlyArray<FileAge>,
+): AgeDirectoryRow[] {
   if (files.length === 0) return [];
 
   // Bucket files by parent directory.
@@ -76,6 +78,10 @@ export function aggregateAgeByDirectory(files: ReadonlyArray<FileAge>): AgeDirec
     });
   }
 
-  rows.sort((a, b) => b.medianAgeDays - a.medianAgeDays || a.directory.localeCompare(b.directory));
+  rows.sort(
+    (a, b) =>
+      b.medianAgeDays - a.medianAgeDays ||
+      a.directory.localeCompare(b.directory),
+  );
   return rows;
 }

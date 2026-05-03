@@ -79,11 +79,13 @@ const METRIC_GROUPS: MetricGroup[] = [
     metrics: [
       {
         name: 'Contributors',
-        description: 'Active and inactive contributors based on recent commit activity.',
+        description:
+          'Active and inactive contributors based on recent commit activity.',
       },
       {
         name: 'Co-Authors',
-        description: 'Pairs who co-author commits together, based on Co-authored-by trailers.',
+        description:
+          'Pairs who co-author commits together, based on Co-authored-by trailers.',
       },
       {
         name: 'Commit Timing',
@@ -110,7 +112,10 @@ const METRIC_GROUPS: MetricGroup[] = [
         description:
           'Time since each file was last modified. Stale files may be stable or abandoned.',
       },
-      { name: 'Languages', description: 'Language breakdown by file count and lines of code.' },
+      {
+        name: 'Languages',
+        description: 'Language breakdown by file count and lines of code.',
+      },
       {
         name: 'Test Coverage',
         description:
@@ -135,7 +140,9 @@ export function GuidePanel() {
           </div>
           {group.metrics.map((metric) => (
             <div key={metric.name} className="mb-2">
-              <div className="text-[11px] text-text-primary font-medium">{metric.name}</div>
+              <div className="text-[11px] text-text-primary font-medium">
+                {metric.name}
+              </div>
               <div className="text-[10px] text-text-secondary leading-[1.4]">
                 {metric.description}
               </div>

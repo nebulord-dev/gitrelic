@@ -21,33 +21,45 @@ export function techDebtMetrics(report: GitrelicReport): Metric[] {
   for (const f of report.rewriteRatio.topRewriters) {
     debtFileSet.add(f.file);
   }
-  const debtLoc = Array.from(debtFileSet).reduce((sum, file) => sum + (locMap.get(file) ?? 0), 0);
+  const debtLoc = Array.from(debtFileSet).reduce(
+    (sum, file) => sum + (locMap.get(file) ?? 0),
+    0,
+  );
 
   return [
     {
       label: 'Dead Files',
       value: String(deadFiles),
-      color: deadFiles > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+      color:
+        deadFiles > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
     },
     {
       label: 'Growing Files',
       value: String(growingFiles),
-      color: growingFiles > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
+      color:
+        growingFiles > 0
+          ? 'var(--severity-critical)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'High Rewrite',
       value: String(highRewrite),
-      color: highRewrite > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+      color:
+        highRewrite > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
     },
     {
       label: 'Accelerating Churn',
       value: String(acceleratingChurn),
-      color: acceleratingChurn > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+      color:
+        acceleratingChurn > 0
+          ? 'var(--severity-warning)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'Debt LOC',
       value: fmt(debtLoc),
-      color: debtLoc > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
+      color:
+        debtLoc > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
     },
   ];
 }

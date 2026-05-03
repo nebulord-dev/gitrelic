@@ -20,7 +20,9 @@ function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
   };
 }
 
-function makeAgeMap(files: { file: string; ageInDays: number }[]): AgeMapReport {
+function makeAgeMap(
+  files: { file: string; ageInDays: number }[],
+): AgeMapReport {
   return {
     files: files.map((f) => ({
       file: f.file,
@@ -39,7 +41,11 @@ function makeLocReport(files: { file: string; lines: number }[]): LocReport {
   return {
     totalFiles: files.length,
     totalLines: 0,
-    files: files.map((f) => ({ file: f.file, lines: f.lines, language: 'TypeScript' })),
+    files: files.map((f) => ({
+      file: f.file,
+      lines: f.lines,
+      language: 'TypeScript',
+    })),
     languages: [],
     summary: '',
   };

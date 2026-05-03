@@ -1,4 +1,7 @@
-import { aggregateAgeByDirectory, type AgeDirectoryRow } from '../../utils/ageByDirectory';
+import {
+  aggregateAgeByDirectory,
+  type AgeDirectoryRow,
+} from '../../utils/ageByDirectory';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath, fmt } from '../theme';
 
@@ -9,7 +12,10 @@ interface AgeMapByDirectoryTabProps {
   onSelectFile: (file: string) => void;
 }
 
-export function AgeMapByDirectoryTab({ report, onSelectFile }: AgeMapByDirectoryTabProps) {
+export function AgeMapByDirectoryTab({
+  report,
+  onSelectFile,
+}: AgeMapByDirectoryTabProps) {
   const rows = aggregateAgeByDirectory(report.ageMap.files);
   const staleLimit = report.ageMap.thresholds.staleLimit;
   const agingLimit = report.ageMap.thresholds.agingLimit;
@@ -34,7 +40,9 @@ export function AgeMapByDirectoryTab({ report, onSelectFile }: AgeMapByDirectory
       label: 'Directory',
       sortValue: (r) => r.directory,
       render: (r) => (
-        <span className="font-mono text-text-secondary">{r.directory || '(root)'}</span>
+        <span className="font-mono text-text-secondary">
+          {r.directory || '(root)'}
+        </span>
       ),
     },
     {
@@ -44,7 +52,9 @@ export function AgeMapByDirectoryTab({ report, onSelectFile }: AgeMapByDirectory
       align: 'right',
       sortValue: (r) => r.fileCount,
       render: (r) => (
-        <span className="font-mono text-[11px] text-text-secondary">{fmt(r.fileCount)}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {fmt(r.fileCount)}
+        </span>
       ),
     },
     {
@@ -54,7 +64,9 @@ export function AgeMapByDirectoryTab({ report, onSelectFile }: AgeMapByDirectory
       align: 'right',
       sortValue: (r) => r.medianAgeDays,
       render: (r) => (
-        <span className={`font-mono text-[11px] ${medianTone(r.medianAgeDays)}`}>
+        <span
+          className={`font-mono text-[11px] ${medianTone(r.medianAgeDays)}`}
+        >
           {fmt(r.medianAgeDays)}
         </span>
       ),
@@ -102,7 +114,9 @@ export function AgeMapByDirectoryTab({ report, onSelectFile }: AgeMapByDirectory
       align: 'right',
       sortValue: (r) => r.freshCount,
       render: (r) => (
-        <span className="font-mono text-[11px] text-text-secondary">{fmt(r.freshCount)}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {fmt(r.freshCount)}
+        </span>
       ),
     },
     {
@@ -112,7 +126,9 @@ export function AgeMapByDirectoryTab({ report, onSelectFile }: AgeMapByDirectory
       render: (r) => (
         <span className="font-mono text-[11px]">
           {fileName(r.oldestFile)}
-          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(r.oldestFile)}</span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">
+            {filePath(r.oldestFile)}
+          </span>
         </span>
       ),
     },

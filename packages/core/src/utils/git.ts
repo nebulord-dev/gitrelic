@@ -32,7 +32,12 @@ export async function getAllCommits(
   repoPath: string,
   options: { since?: string; branch?: string } = {},
 ): Promise<RawCommit[]> {
-  const args = ['log', '--format=COMMIT|%H|%ae|%an|%aI%nMSG|%s', '--numstat', '--no-merges'];
+  const args = [
+    'log',
+    '--format=COMMIT|%H|%ae|%an|%aI%nMSG|%s',
+    '--numstat',
+    '--no-merges',
+  ];
 
   if (options.since) args.push(`--since=${options.since}`);
   if (options.branch) args.push(options.branch);
@@ -155,7 +160,9 @@ export async function getTrackedFiles(repoPath: string): Promise<string[]> {
  */
 export async function getCurrentBranch(repoPath: string): Promise<string> {
   try {
-    const { stdout } = await execa('git', ['branch', '--show-current'], { cwd: repoPath });
+    const { stdout } = await execa('git', ['branch', '--show-current'], {
+      cwd: repoPath,
+    });
     return stdout.trim() || 'HEAD';
   } catch {
     return 'HEAD';
@@ -166,7 +173,11 @@ export async function getCurrentBranch(repoPath: string): Promise<string> {
  * Returns all local branch names.
  */
 export async function getBranches(repoPath: string): Promise<string[]> {
-  const { stdout } = await execa('git', ['branch', '--format=%(refname:short)'], { cwd: repoPath });
+  const { stdout } = await execa(
+    'git',
+    ['branch', '--format=%(refname:short)'],
+    { cwd: repoPath },
+  );
   return stdout.split('\n').filter(Boolean);
 }
 

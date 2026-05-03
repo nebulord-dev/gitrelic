@@ -5,7 +5,10 @@ export function contributorsMetrics(report: GitrelicReport): Metric[] {
   const totalAuthors = report.meta.totalAuthors;
   const ghostCount = report.ghostFiles.totalGhostFiles;
   // Total commits across the repo as a rough activity indicator:
-  const totalCommits = report.churn.files.reduce((sum, f) => sum + f.commitCount, 0);
+  const totalCommits = report.churn.files.reduce(
+    (sum, f) => sum + f.commitCount,
+    0,
+  );
 
   return [
     {
@@ -16,7 +19,8 @@ export function contributorsMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Ghost Authors',
       value: String(ghostCount),
-      color: ghostCount > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+      color:
+        ghostCount > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
     },
     {
       label: 'Total Commits',

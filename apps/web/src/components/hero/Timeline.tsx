@@ -36,7 +36,9 @@ export function binCommitsByWeek(commits: RawCommit[]): {
   for (const c of commits) {
     authorTotals.set(c.authorEmail, (authorTotals.get(c.authorEmail) ?? 0) + 1);
   }
-  const authors = [...authorTotals.entries()].sort((a, b) => b[1] - a[1]).map(([email]) => email);
+  const authors = [...authorTotals.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([email]) => email);
 
   // Find date range
   const dates = commits.map((c) => new Date(c.date).getTime());
@@ -45,7 +47,9 @@ export function binCommitsByWeek(commits: RawCommit[]): {
 
   // Align to Monday
   const startMonday = new Date(minDate);
-  startMonday.setUTCDate(startMonday.getUTCDate() - ((startMonday.getUTCDay() + 6) % 7));
+  startMonday.setUTCDate(
+    startMonday.getUTCDate() - ((startMonday.getUTCDay() + 6) % 7),
+  );
   startMonday.setUTCHours(0, 0, 0, 0);
 
   // Build empty bins
@@ -61,16 +65,23 @@ export function binCommitsByWeek(commits: RawCommit[]): {
   // Fill bins
   for (const c of commits) {
     const d = new Date(c.date);
-    const weekIdx = Math.floor((d.getTime() - startMonday.getTime()) / (7 * 24 * 60 * 60 * 1000));
+    const weekIdx = Math.floor(
+      (d.getTime() - startMonday.getTime()) / (7 * 24 * 60 * 60 * 1000),
+    );
     if (weekIdx >= 0 && weekIdx < bins.length) {
-      bins[weekIdx].counts[c.authorEmail] = (bins[weekIdx].counts[c.authorEmail] ?? 0) + 1;
+      bins[weekIdx].counts[c.authorEmail] =
+        (bins[weekIdx].counts[c.authorEmail] ?? 0) + 1;
     }
   }
 
   return { weeks: bins, authors };
 }
 
-export function Timeline({ report, selectedContributor, onSelectContributor }: TimelineProps) {
+export function Timeline({
+  report,
+  selectedContributor,
+  onSelectContributor,
+}: TimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
   const [hoverWeek, setHoverWeek] = useState<number | null>(null);
@@ -134,7 +145,10 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
 
     const series = stacker(stackData as Record<string, number>[]);
 
-    const maxY = series.reduce((max, s) => s.reduce((m, d) => (d[1] > m ? d[1] : m), max), 1);
+    const maxY = series.reduce(
+      (max, s) => s.reduce((m, d) => (d[1] > m ? d[1] : m), max),
+      1,
+    );
     const yScale = scaleLinear().domain([0, maxY]).range([plotH, 0]);
 
     const areaGen = area<[number, number]>()
@@ -153,17 +167,34 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
       <svg width={dims.width} height={dims.height}>
         <g transform={`translate(${PADDING.left},${PADDING.top})`}>
           {/* X axis line */}
-          <line x1={0} y1={plotH} x2={plotW} y2={plotH} stroke="var(--border-primary)" />
+          <line
+            x1={0}
+            y1={plotH}
+            x2={plotW}
+            y2={plotH}
+            stroke="var(--border-primary)"
+          />
 
           {/* Time axis labels */}
           {xScale &&
             xScale.ticks(6).map((date) => {
               const x = xScale(date);
               return (
-                <g key={date.toISOString()} transform={`translate(${x},${plotH})`}>
+                <g
+                  key={date.toISOString()}
+                  transform={`translate(${x},${plotH})`}
+                >
                   <line y2={4} stroke="var(--border-primary)" />
-                  <text y={16} textAnchor="middle" fontSize={8} fill="var(--text-tertiary)">
-                    {date.toLocaleDateString('en', { month: 'short', year: '2-digit' })}
+                  <text
+                    y={16}
+                    textAnchor="middle"
+                    fontSize={8}
+                    fill="var(--text-tertiary)"
+                  >
+                    {date.toLocaleDateString('en', {
+                      month: 'short',
+                      year: '2-digit',
+                    })}
                   </text>
                 </g>
               );
@@ -171,8 +202,17 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
 
           {/* Author color legend */}
           {displayAuthors.map((email, i) => (
-            <g key={email} transform={`translate(${plotW - 100}, ${i * 14 + 4})`}>
-              <rect width={8} height={8} rx={2} fill={authorColor(email)} fillOpacity={0.5} />
+            <g
+              key={email}
+              transform={`translate(${plotW - 100}, ${i * 14 + 4})`}
+            >
+              <rect
+                width={8}
+                height={8}
+                rx={2}
+                fill={authorColor(email)}
+                fillOpacity={0.5}
+              />
               <text x={12} y={7} fontSize={8} fill="var(--text-secondary)">
                 {email.split('@')[0]}
               </text>
@@ -184,7 +224,8 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
             const isSelected = selectedContributor === key;
             const isOthers = key === '__others__';
             const color = isOthers ? 'var(--text-tertiary)' : authorColor(key);
-            const dimmed = selectedContributor != null && !isSelected && !isOthers;
+            const dimmed =
+              selectedContributor != null && !isSelected && !isOthers;
 
             return (
               <path
@@ -244,7 +285,10 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
       {hoverWeek != null && xScale && (
         <div
           className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20"
-          style={{ left: PADDING.left + xScale(weeks[hoverWeek].weekStart) + 12, top: PADDING.top }}
+          style={{
+            left: PADDING.left + xScale(weeks[hoverWeek].weekStart) + 12,
+            top: PADDING.top,
+          }}
         >
           <div className="font-semibold mb-1">
             {weeks[hoverWeek].weekStart.toLocaleDateString('en', {
@@ -255,14 +299,19 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
           </div>
           {stackKeys
             .filter(
-              (k) => (weeks[hoverWeek].counts[k] ?? 0) > 0 || (k === '__others__' && hasOthers),
+              (k) =>
+                (weeks[hoverWeek].counts[k] ?? 0) > 0 ||
+                (k === '__others__' && hasOthers),
             )
             .map((key) => {
               const count =
                 key === '__others__'
                   ? authors
                       .slice(MAX_AUTHORS)
-                      .reduce((sum, a) => sum + (weeks[hoverWeek].counts[a] ?? 0), 0)
+                      .reduce(
+                        (sum, a) => sum + (weeks[hoverWeek].counts[a] ?? 0),
+                        0,
+                      )
                   : (weeks[hoverWeek].counts[key] ?? 0);
               if (count === 0) return null;
               return (
@@ -270,11 +319,15 @@ export function Timeline({ report, selectedContributor, onSelectContributor }: T
                   <div
                     className="w-1.5 h-1.5 rounded-full"
                     style={{
-                      background: key === '__others__' ? 'var(--text-tertiary)' : authorColor(key),
+                      background:
+                        key === '__others__'
+                          ? 'var(--text-tertiary)'
+                          : authorColor(key),
                     }}
                   />
                   <span className="text-text-secondary">
-                    {key === '__others__' ? 'Others' : key.split('@')[0]}: {count}
+                    {key === '__others__' ? 'Others' : key.split('@')[0]}:{' '}
+                    {count}
                   </span>
                 </div>
               );

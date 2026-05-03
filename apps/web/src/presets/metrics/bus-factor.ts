@@ -7,24 +7,37 @@ export function busFactorMetrics(report: GitrelicReport): Metric[] {
     (f) => f.uniqueAuthors === 1,
   ).length;
   const soloOwnedPct =
-    report.loc.totalFiles > 0 ? Math.round((soloOwnedCount / report.loc.totalFiles) * 100) : 0;
-  const dominantOwners = new Set(report.busFactors.criticalFiles.map((f) => f.dominantAuthor)).size;
+    report.loc.totalFiles > 0
+      ? Math.round((soloOwnedCount / report.loc.totalFiles) * 100)
+      : 0;
+  const dominantOwners = new Set(
+    report.busFactors.criticalFiles.map((f) => f.dominantAuthor),
+  ).size;
 
   return [
     {
       label: 'Critical Files',
       value: String(criticalCount),
-      color: criticalCount > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
+      color:
+        criticalCount > 0
+          ? 'var(--severity-critical)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'Solo-Owned',
       value: String(soloOwnedCount),
-      color: soloOwnedCount > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
+      color:
+        soloOwnedCount > 0
+          ? 'var(--severity-critical)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'Solo-Owned %',
       value: `${soloOwnedPct}%`,
-      color: soloOwnedPct > 20 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+      color:
+        soloOwnedPct > 20
+          ? 'var(--severity-warning)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'Dominant Owners',

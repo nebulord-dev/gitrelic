@@ -27,9 +27,15 @@ const MODE_LABELS: Record<CommitGraphMode, string> = {
   heatmap: 'Heatmap',
 };
 
-export function CommitGraph({ report, selectedFile, onSelectFile }: CommitGraphProps) {
+export function CommitGraph({
+  report,
+  selectedFile,
+  onSelectFile,
+}: CommitGraphProps) {
   const commits = report.commits ?? [];
-  const [mode, setMode] = useState<CommitGraphMode>(() => getDefaultMode(commits.length));
+  const [mode, setMode] = useState<CommitGraphMode>(() =>
+    getDefaultMode(commits.length),
+  );
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
@@ -66,7 +72,11 @@ export function CommitGraph({ report, selectedFile, onSelectFile }: CommitGraphP
 
       <div className="flex-1 min-h-0">
         {mode === 'dag' && (
-          <CommitDAG commits={commits} selectedFile={selectedFile} onSelectFile={onSelectFile} />
+          <CommitDAG
+            commits={commits}
+            selectedFile={selectedFile}
+            onSelectFile={onSelectFile}
+          />
         )}
         {mode === 'branches' && (
           <CommitBranches

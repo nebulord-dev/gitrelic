@@ -57,11 +57,41 @@ describe('prepareBlastHistogramData', () => {
   it('places each file into the bucket whose range contains its blastScore', () => {
     const { buckets } = prepareBlastHistogramData(
       makeReport([
-        { file: 'a', blastScore: 0, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
-        { file: 'b', blastScore: 9, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
-        { file: 'c', blastScore: 35, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
-        { file: 'd', blastScore: 70, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
-        { file: 'e', blastScore: 100, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
+        {
+          file: 'a',
+          blastScore: 0,
+          avgCoChangedFiles: 0,
+          maxCoChangedFiles: 0,
+          totalCommits: 0,
+        },
+        {
+          file: 'b',
+          blastScore: 9,
+          avgCoChangedFiles: 0,
+          maxCoChangedFiles: 0,
+          totalCommits: 0,
+        },
+        {
+          file: 'c',
+          blastScore: 35,
+          avgCoChangedFiles: 0,
+          maxCoChangedFiles: 0,
+          totalCommits: 0,
+        },
+        {
+          file: 'd',
+          blastScore: 70,
+          avgCoChangedFiles: 0,
+          maxCoChangedFiles: 0,
+          totalCommits: 0,
+        },
+        {
+          file: 'e',
+          blastScore: 100,
+          avgCoChangedFiles: 0,
+          maxCoChangedFiles: 0,
+          totalCommits: 0,
+        },
       ]),
     );
     expect(buckets[0].count).toBe(2); // 0 + 9
@@ -73,7 +103,13 @@ describe('prepareBlastHistogramData', () => {
   it('counts files with blastScore >= HIGH_BLAST_THRESHOLD as highBlastCount', () => {
     const { highBlastCount } = prepareBlastHistogramData(
       makeReport([
-        { file: 'a', blastScore: 30, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
+        {
+          file: 'a',
+          blastScore: 30,
+          avgCoChangedFiles: 0,
+          maxCoChangedFiles: 0,
+          totalCommits: 0,
+        },
         {
           file: 'b',
           blastScore: HIGH_BLAST_THRESHOLD,
@@ -88,7 +124,13 @@ describe('prepareBlastHistogramData', () => {
           maxCoChangedFiles: 0,
           totalCommits: 0,
         },
-        { file: 'd', blastScore: 95, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
+        {
+          file: 'd',
+          blastScore: 95,
+          avgCoChangedFiles: 0,
+          maxCoChangedFiles: 0,
+          totalCommits: 0,
+        },
       ]),
     );
     expect(highBlastCount).toBe(2);
@@ -97,10 +139,34 @@ describe('prepareBlastHistogramData', () => {
   it('reports totalFiles and maxCount correctly', () => {
     const { totalFiles, maxCount } = prepareBlastHistogramData(
       makeReport([
-        { file: 'a', blastScore: 5, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
-        { file: 'b', blastScore: 5, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
-        { file: 'c', blastScore: 5, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
-        { file: 'd', blastScore: 80, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
+        {
+          file: 'a',
+          blastScore: 5,
+          avgCoChangedFiles: 0,
+          maxCoChangedFiles: 0,
+          totalCommits: 0,
+        },
+        {
+          file: 'b',
+          blastScore: 5,
+          avgCoChangedFiles: 0,
+          maxCoChangedFiles: 0,
+          totalCommits: 0,
+        },
+        {
+          file: 'c',
+          blastScore: 5,
+          avgCoChangedFiles: 0,
+          maxCoChangedFiles: 0,
+          totalCommits: 0,
+        },
+        {
+          file: 'd',
+          blastScore: 80,
+          avgCoChangedFiles: 0,
+          maxCoChangedFiles: 0,
+          totalCommits: 0,
+        },
       ]),
     );
     expect(totalFiles).toBe(4);
@@ -108,9 +174,8 @@ describe('prepareBlastHistogramData', () => {
   });
 
   it('handles an empty file list', () => {
-    const { buckets, maxCount, totalFiles, highBlastCount } = prepareBlastHistogramData(
-      makeReport([]),
-    );
+    const { buckets, maxCount, totalFiles, highBlastCount } =
+      prepareBlastHistogramData(makeReport([]));
     expect(buckets.every((b) => b.count === 0)).toBe(true);
     expect(maxCount).toBe(0);
     expect(totalFiles).toBe(0);
@@ -121,8 +186,20 @@ describe('prepareBlastHistogramData', () => {
 describe('BlastHistogram', () => {
   it('renders the hero caption', () => {
     const report = makeReport([
-      { file: 'a', blastScore: 10, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
-      { file: 'b', blastScore: 80, avgCoChangedFiles: 0, maxCoChangedFiles: 0, totalCommits: 0 },
+      {
+        file: 'a',
+        blastScore: 10,
+        avgCoChangedFiles: 0,
+        maxCoChangedFiles: 0,
+        totalCommits: 0,
+      },
+      {
+        file: 'b',
+        blastScore: 80,
+        avgCoChangedFiles: 0,
+        maxCoChangedFiles: 0,
+        totalCommits: 0,
+      },
     ]);
     render(<BlastHistogram report={report} />);
     expect(screen.getByText(/10-bin histogram/)).toBeTruthy();

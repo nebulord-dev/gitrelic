@@ -51,7 +51,10 @@ import type {
 } from './types.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const BUILD_SCRIPT = path.resolve(__dirname, '../tests/fixtures/build-sample-repo.sh');
+const BUILD_SCRIPT = path.resolve(
+  __dirname,
+  '../tests/fixtures/build-sample-repo.sh',
+);
 
 // Pin "now" 26 days after the fixture's last commit (2026-04-05). All
 // time-sensitive analyzer logic (contributor.isActive, ghost detection,
@@ -138,7 +141,9 @@ describe('fixture regression', () => {
   });
 
   it('contributors report is stable', () => {
-    expect(scrubHashes<ContributorReport>(report.contributors)).toMatchSnapshot();
+    expect(
+      scrubHashes<ContributorReport>(report.contributors),
+    ).toMatchSnapshot();
   });
 
   it('cursed files list is stable', () => {
@@ -150,7 +155,9 @@ describe('fixture regression', () => {
   });
 
   it('parallel dev report is stable', () => {
-    expect(scrubHashes<ParallelDevReport>(report.parallelDev)).toMatchSnapshot();
+    expect(
+      scrubHashes<ParallelDevReport>(report.parallelDev),
+    ).toMatchSnapshot();
   });
 
   it('loc report is stable', () => {
@@ -166,15 +173,21 @@ describe('fixture regression', () => {
   });
 
   it('churn velocity report is stable', () => {
-    expect(scrubHashes<ChurnVelocityReport>(report.churnVelocity)).toMatchSnapshot();
+    expect(
+      scrubHashes<ChurnVelocityReport>(report.churnVelocity),
+    ).toMatchSnapshot();
   });
 
   it('rewrite ratio report is stable', () => {
-    expect(scrubHashes<RewriteRatioReport>(report.rewriteRatio)).toMatchSnapshot();
+    expect(
+      scrubHashes<RewriteRatioReport>(report.rewriteRatio),
+    ).toMatchSnapshot();
   });
 
   it('blast radius report is stable', () => {
-    expect(scrubHashes<BlastRadiusReport>(report.blastRadius)).toMatchSnapshot();
+    expect(
+      scrubHashes<BlastRadiusReport>(report.blastRadius),
+    ).toMatchSnapshot();
   });
 
   it('dead code report is stable', () => {
@@ -182,7 +195,9 @@ describe('fixture regression', () => {
   });
 
   it('test coverage report is stable', () => {
-    expect(scrubHashes<TestCoverageProxyReport>(report.testCoverage)).toMatchSnapshot();
+    expect(
+      scrubHashes<TestCoverageProxyReport>(report.testCoverage),
+    ).toMatchSnapshot();
   });
 
   it('ghost files report is stable', () => {
@@ -200,19 +215,27 @@ describe('fixture regression', () => {
   });
 
   it('hotspot clusters report is stable', () => {
-    expect(scrubHashes<HotspotClusterReport>(report.hotspotClusters)).toMatchSnapshot();
+    expect(
+      scrubHashes<HotspotClusterReport>(report.hotspotClusters),
+    ).toMatchSnapshot();
   });
 
   it('complexity trend report is stable', () => {
-    expect(scrubHashes<ComplexityTrendReport>(report.complexityTrend)).toMatchSnapshot();
+    expect(
+      scrubHashes<ComplexityTrendReport>(report.complexityTrend),
+    ).toMatchSnapshot();
   });
 
   it('commit timing report is stable', () => {
-    expect(scrubHashes<CommitTimingReport>(report.commitTiming)).toMatchSnapshot();
+    expect(
+      scrubHashes<CommitTimingReport>(report.commitTiming),
+    ).toMatchSnapshot();
   });
 
   it('rename tracking report is stable', () => {
-    expect(scrubHashes<RenameTrackingReport>(report.renameTracking)).toMatchSnapshot();
+    expect(
+      scrubHashes<RenameTrackingReport>(report.renameTracking),
+    ).toMatchSnapshot();
   });
 
   it('top-level report keys are stable', () => {

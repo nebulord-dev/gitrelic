@@ -1,4 +1,7 @@
-import type { BusFactorReport, KnowledgeConcentrationReport } from '../types.js';
+import type {
+  BusFactorReport,
+  KnowledgeConcentrationReport,
+} from '../types.js';
 
 const SINGLE_AUTHOR_THRESHOLD = 80;
 

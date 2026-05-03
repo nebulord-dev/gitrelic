@@ -10,7 +10,10 @@ import {
 
 import type { FileBusFactor, GitrelicReport } from '@gitrelic/core';
 
-function fileFixture(file: string, dominantAuthorPercent: number): FileBusFactor {
+function fileFixture(
+  file: string,
+  dominantAuthorPercent: number,
+): FileBusFactor {
   return {
     file,
     uniqueAuthors: dominantAuthorPercent === 100 ? 1 : 3,
@@ -99,9 +102,8 @@ describe('prepareBusFactorHistogramData', () => {
   });
 
   it('handles an empty file list', () => {
-    const { buckets, maxCount, totalFiles, highOwnershipCount } = prepareBusFactorHistogramData(
-      makeReport([]),
-    );
+    const { buckets, maxCount, totalFiles, highOwnershipCount } =
+      prepareBusFactorHistogramData(makeReport([]));
     expect(buckets.every((b) => b.count === 0)).toBe(true);
     expect(maxCount).toBe(0);
     expect(totalFiles).toBe(0);

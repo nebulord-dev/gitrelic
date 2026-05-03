@@ -2,10 +2,18 @@ import { describe, it, expect } from 'vitest';
 
 import { analyzeGhostFiles } from './ghost-files.js';
 
-import type { BusFactorReport, ContributorReport, LocReport } from '../types.js';
+import type {
+  BusFactorReport,
+  ContributorReport,
+  LocReport,
+} from '../types.js';
 
 function makeBusReport(
-  files: { file: string; dominantAuthor: string; dominantAuthorPercent: number }[],
+  files: {
+    file: string;
+    dominantAuthor: string;
+    dominantAuthorPercent: number;
+  }[],
 ): BusFactorReport {
   return {
     files: files.map((f) => ({
@@ -73,7 +81,11 @@ function makeLocReport(files: { file: string; lines: number }[]): LocReport {
   return {
     totalFiles: files.length,
     totalLines: 0,
-    files: files.map((f) => ({ file: f.file, lines: f.lines, language: 'TypeScript' })),
+    files: files.map((f) => ({
+      file: f.file,
+      lines: f.lines,
+      language: 'TypeScript',
+    })),
     languages: [],
     summary: '',
   };
@@ -82,9 +94,15 @@ function makeLocReport(files: { file: string; lines: number }[]): LocReport {
 describe('analyzeGhostFiles', () => {
   it('flags files owned >70% by inactive authors', () => {
     const bus = makeBusReport([
-      { file: 'auth.ts', dominantAuthor: 'ghost@co.com', dominantAuthorPercent: 85 },
+      {
+        file: 'auth.ts',
+        dominantAuthor: 'ghost@co.com',
+        dominantAuthorPercent: 85,
+      },
     ]);
-    const contribs = makeContributors([{ email: 'ghost@co.com', name: 'Ghost', isActive: false }]);
+    const contribs = makeContributors([
+      { email: 'ghost@co.com', name: 'Ghost', isActive: false },
+    ]);
     const loc = makeLocReport([{ file: 'auth.ts', lines: 200 }]);
 
     const result = analyzeGhostFiles(bus, contribs, loc);
@@ -97,9 +115,15 @@ describe('analyzeGhostFiles', () => {
 
   it('excludes files where dominant author is active', () => {
     const bus = makeBusReport([
-      { file: 'safe.ts', dominantAuthor: 'active@co.com', dominantAuthorPercent: 90 },
+      {
+        file: 'safe.ts',
+        dominantAuthor: 'active@co.com',
+        dominantAuthorPercent: 90,
+      },
     ]);
-    const contribs = makeContributors([{ email: 'active@co.com', name: 'Active', isActive: true }]);
+    const contribs = makeContributors([
+      { email: 'active@co.com', name: 'Active', isActive: true },
+    ]);
     const loc = makeLocReport([{ file: 'safe.ts', lines: 100 }]);
 
     const result = analyzeGhostFiles(bus, contribs, loc);
@@ -109,9 +133,15 @@ describe('analyzeGhostFiles', () => {
 
   it('excludes files where ownership is below 70%', () => {
     const bus = makeBusReport([
-      { file: 'shared.ts', dominantAuthor: 'ghost@co.com', dominantAuthorPercent: 50 },
+      {
+        file: 'shared.ts',
+        dominantAuthor: 'ghost@co.com',
+        dominantAuthorPercent: 50,
+      },
     ]);
-    const contribs = makeContributors([{ email: 'ghost@co.com', name: 'Ghost', isActive: false }]);
+    const contribs = makeContributors([
+      { email: 'ghost@co.com', name: 'Ghost', isActive: false },
+    ]);
     const loc = makeLocReport([{ file: 'shared.ts', lines: 100 }]);
 
     const result = analyzeGhostFiles(bus, contribs, loc);
@@ -121,10 +151,20 @@ describe('analyzeGhostFiles', () => {
 
   it('sorts by ownership percent descending', () => {
     const bus = makeBusReport([
-      { file: 'a.ts', dominantAuthor: 'ghost@co.com', dominantAuthorPercent: 75 },
-      { file: 'b.ts', dominantAuthor: 'ghost@co.com', dominantAuthorPercent: 95 },
+      {
+        file: 'a.ts',
+        dominantAuthor: 'ghost@co.com',
+        dominantAuthorPercent: 75,
+      },
+      {
+        file: 'b.ts',
+        dominantAuthor: 'ghost@co.com',
+        dominantAuthorPercent: 95,
+      },
     ]);
-    const contribs = makeContributors([{ email: 'ghost@co.com', name: 'Ghost', isActive: false }]);
+    const contribs = makeContributors([
+      { email: 'ghost@co.com', name: 'Ghost', isActive: false },
+    ]);
     const loc = makeLocReport([
       { file: 'a.ts', lines: 50 },
       { file: 'b.ts', lines: 100 },
@@ -137,15 +177,25 @@ describe('analyzeGhostFiles', () => {
   });
 
   it('returns totalGhostFiles count', () => {
-    const result = analyzeGhostFiles(makeBusReport([]), makeContributors([]), makeLocReport([]));
+    const result = analyzeGhostFiles(
+      makeBusReport([]),
+      makeContributors([]),
+      makeLocReport([]),
+    );
     expect(result.totalGhostFiles).toBe(0);
   });
 
   it('produces a summary', () => {
     const bus = makeBusReport([
-      { file: 'a.ts', dominantAuthor: 'ghost@co.com', dominantAuthorPercent: 80 },
+      {
+        file: 'a.ts',
+        dominantAuthor: 'ghost@co.com',
+        dominantAuthorPercent: 80,
+      },
     ]);
-    const contribs = makeContributors([{ email: 'ghost@co.com', name: 'Ghost', isActive: false }]);
+    const contribs = makeContributors([
+      { email: 'ghost@co.com', name: 'Ghost', isActive: false },
+    ]);
     const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
 
     const result = analyzeGhostFiles(bus, contribs, loc);

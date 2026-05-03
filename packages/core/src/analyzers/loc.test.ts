@@ -28,7 +28,10 @@ describe('analyzeLoc', () => {
     mockReadFile.mockResolvedValueOnce('x\n');
     mockReadFile.mockResolvedValueOnce('x\n');
 
-    const result = await analyzeLoc(['app.py', 'main.go', 'style.css'], '/repo');
+    const result = await analyzeLoc(
+      ['app.py', 'main.go', 'style.css'],
+      '/repo',
+    );
 
     expect(result.files[0].language).toBe('Python');
     expect(result.files[1].language).toBe('Go');

@@ -29,9 +29,24 @@ function weekDate(weeksFromBase: number): string {
 describe('analyzeParallelDev', () => {
   it('returns empty report when all commits are single-author', () => {
     const commits = [
-      makeCommit({ hash: '1', authorEmail: 'alice@x.com', date: weekDate(0), files: ['a.ts'] }),
-      makeCommit({ hash: '2', authorEmail: 'alice@x.com', date: weekDate(1), files: ['a.ts'] }),
-      makeCommit({ hash: '3', authorEmail: 'alice@x.com', date: weekDate(2), files: ['a.ts'] }),
+      makeCommit({
+        hash: '1',
+        authorEmail: 'alice@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        authorEmail: 'alice@x.com',
+        date: weekDate(1),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '3',
+        authorEmail: 'alice@x.com',
+        date: weekDate(2),
+        files: ['a.ts'],
+      }),
     ];
     const result = analyzeParallelDev(commits, ['a.ts']);
     expect(result.files).toHaveLength(0);
@@ -40,10 +55,30 @@ describe('analyzeParallelDev', () => {
 
   it('detects two authors committing to the same file in the same week', () => {
     const commits = [
-      makeCommit({ hash: '1', authorEmail: 'alice@x.com', date: weekDate(0), files: ['a.ts'] }),
-      makeCommit({ hash: '2', authorEmail: 'bob@x.com', date: weekDate(0), files: ['a.ts'] }),
-      makeCommit({ hash: '3', authorEmail: 'alice@x.com', date: weekDate(1), files: ['a.ts'] }),
-      makeCommit({ hash: '4', authorEmail: 'alice@x.com', date: weekDate(2), files: ['a.ts'] }),
+      makeCommit({
+        hash: '1',
+        authorEmail: 'alice@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        authorEmail: 'bob@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '3',
+        authorEmail: 'alice@x.com',
+        date: weekDate(1),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '4',
+        authorEmail: 'alice@x.com',
+        date: weekDate(2),
+        files: ['a.ts'],
+      }),
     ];
     const result = analyzeParallelDev(commits, ['a.ts']);
     expect(result.files).toHaveLength(1);
@@ -53,9 +88,24 @@ describe('analyzeParallelDev', () => {
 
   it('excludes files with fewer than 3 active weeks', () => {
     const commits = [
-      makeCommit({ hash: '1', authorEmail: 'alice@x.com', date: weekDate(0), files: ['a.ts'] }),
-      makeCommit({ hash: '2', authorEmail: 'bob@x.com', date: weekDate(0), files: ['a.ts'] }),
-      makeCommit({ hash: '3', authorEmail: 'alice@x.com', date: weekDate(1), files: ['a.ts'] }),
+      makeCommit({
+        hash: '1',
+        authorEmail: 'alice@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        authorEmail: 'bob@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '3',
+        authorEmail: 'alice@x.com',
+        date: weekDate(1),
+        files: ['a.ts'],
+      }),
     ];
     const result = analyzeParallelDev(commits, ['a.ts']);
     expect(result.files).toHaveLength(0);
@@ -73,7 +123,12 @@ describe('analyzeParallelDev', () => {
     );
     // Add one commit from bob in week 0 to create 1 parallel week
     commits.push(
-      makeCommit({ hash: 'b0', authorEmail: 'bob@x.com', date: weekDate(0), files: ['a.ts'] }),
+      makeCommit({
+        hash: 'b0',
+        authorEmail: 'bob@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
     );
 
     const result = analyzeParallelDev(commits, ['a.ts']);
@@ -85,21 +140,73 @@ describe('analyzeParallelDev', () => {
     // File B: 4 authors overlap (same number of parallel weeks)
     const commits = [
       // File A: weeks 0-2, parallel in week 0 (2 authors)
-      makeCommit({ hash: 'a1', authorEmail: 'alice@x.com', date: weekDate(0), files: ['a.ts'] }),
-      makeCommit({ hash: 'a2', authorEmail: 'bob@x.com', date: weekDate(0), files: ['a.ts'] }),
-      makeCommit({ hash: 'a3', authorEmail: 'alice@x.com', date: weekDate(1), files: ['a.ts'] }),
-      makeCommit({ hash: 'a4', authorEmail: 'alice@x.com', date: weekDate(2), files: ['a.ts'] }),
+      makeCommit({
+        hash: 'a1',
+        authorEmail: 'alice@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: 'a2',
+        authorEmail: 'bob@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: 'a3',
+        authorEmail: 'alice@x.com',
+        date: weekDate(1),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: 'a4',
+        authorEmail: 'alice@x.com',
+        date: weekDate(2),
+        files: ['a.ts'],
+      }),
       // File B: weeks 0-2, parallel in week 0 (4 authors)
-      makeCommit({ hash: 'b1', authorEmail: 'alice@x.com', date: weekDate(0), files: ['b.ts'] }),
-      makeCommit({ hash: 'b2', authorEmail: 'bob@x.com', date: weekDate(0), files: ['b.ts'] }),
-      makeCommit({ hash: 'b3', authorEmail: 'charlie@x.com', date: weekDate(0), files: ['b.ts'] }),
-      makeCommit({ hash: 'b4', authorEmail: 'dave@x.com', date: weekDate(0), files: ['b.ts'] }),
-      makeCommit({ hash: 'b5', authorEmail: 'alice@x.com', date: weekDate(1), files: ['b.ts'] }),
-      makeCommit({ hash: 'b6', authorEmail: 'alice@x.com', date: weekDate(2), files: ['b.ts'] }),
+      makeCommit({
+        hash: 'b1',
+        authorEmail: 'alice@x.com',
+        date: weekDate(0),
+        files: ['b.ts'],
+      }),
+      makeCommit({
+        hash: 'b2',
+        authorEmail: 'bob@x.com',
+        date: weekDate(0),
+        files: ['b.ts'],
+      }),
+      makeCommit({
+        hash: 'b3',
+        authorEmail: 'charlie@x.com',
+        date: weekDate(0),
+        files: ['b.ts'],
+      }),
+      makeCommit({
+        hash: 'b4',
+        authorEmail: 'dave@x.com',
+        date: weekDate(0),
+        files: ['b.ts'],
+      }),
+      makeCommit({
+        hash: 'b5',
+        authorEmail: 'alice@x.com',
+        date: weekDate(1),
+        files: ['b.ts'],
+      }),
+      makeCommit({
+        hash: 'b6',
+        authorEmail: 'alice@x.com',
+        date: weekDate(2),
+        files: ['b.ts'],
+      }),
     ];
     const result = analyzeParallelDev(commits, ['a.ts', 'b.ts']);
-    const aScore = result.files.find((f) => f.file === 'a.ts')?.parallelScore ?? 0;
-    const bScore = result.files.find((f) => f.file === 'b.ts')?.parallelScore ?? 0;
+    const aScore =
+      result.files.find((f) => f.file === 'a.ts')?.parallelScore ?? 0;
+    const bScore =
+      result.files.find((f) => f.file === 'b.ts')?.parallelScore ?? 0;
     expect(bScore).toBeGreaterThan(aScore);
   });
 
@@ -127,7 +234,12 @@ describe('analyzeParallelDev', () => {
         date: weekDate(0),
         files: ['deleted.ts'],
       }),
-      makeCommit({ hash: '2', authorEmail: 'bob@x.com', date: weekDate(0), files: ['deleted.ts'] }),
+      makeCommit({
+        hash: '2',
+        authorEmail: 'bob@x.com',
+        date: weekDate(0),
+        files: ['deleted.ts'],
+      }),
       makeCommit({
         hash: '3',
         authorEmail: 'alice@x.com',
@@ -148,14 +260,44 @@ describe('analyzeParallelDev', () => {
   it('populates peakWindow with the highest-overlap week', () => {
     const commits = [
       // Week 0: 3 authors (peak)
-      makeCommit({ hash: '1', authorEmail: 'alice@x.com', date: weekDate(0), files: ['a.ts'] }),
-      makeCommit({ hash: '2', authorEmail: 'bob@x.com', date: weekDate(0), files: ['a.ts'] }),
-      makeCommit({ hash: '3', authorEmail: 'charlie@x.com', date: weekDate(0), files: ['a.ts'] }),
+      makeCommit({
+        hash: '1',
+        authorEmail: 'alice@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        authorEmail: 'bob@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '3',
+        authorEmail: 'charlie@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
       // Week 1: 2 authors
-      makeCommit({ hash: '4', authorEmail: 'alice@x.com', date: weekDate(1), files: ['a.ts'] }),
-      makeCommit({ hash: '5', authorEmail: 'bob@x.com', date: weekDate(1), files: ['a.ts'] }),
+      makeCommit({
+        hash: '4',
+        authorEmail: 'alice@x.com',
+        date: weekDate(1),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '5',
+        authorEmail: 'bob@x.com',
+        date: weekDate(1),
+        files: ['a.ts'],
+      }),
       // Week 2: 1 author
-      makeCommit({ hash: '6', authorEmail: 'alice@x.com', date: weekDate(2), files: ['a.ts'] }),
+      makeCommit({
+        hash: '6',
+        authorEmail: 'alice@x.com',
+        date: weekDate(2),
+        files: ['a.ts'],
+      }),
     ];
     const result = analyzeParallelDev(commits, ['a.ts']);
     expect(result.files[0].peakAuthors).toBe(3);
@@ -166,10 +308,30 @@ describe('analyzeParallelDev', () => {
   it('limits hotFiles to top 10', () => {
     const files = Array.from({ length: 15 }, (_, i) => `file${i}.ts`);
     const commits = files.flatMap((file, i) => [
-      makeCommit({ hash: `a${i}`, authorEmail: 'alice@x.com', date: weekDate(0), files: [file] }),
-      makeCommit({ hash: `b${i}`, authorEmail: 'bob@x.com', date: weekDate(0), files: [file] }),
-      makeCommit({ hash: `c${i}`, authorEmail: 'alice@x.com', date: weekDate(1), files: [file] }),
-      makeCommit({ hash: `d${i}`, authorEmail: 'alice@x.com', date: weekDate(2), files: [file] }),
+      makeCommit({
+        hash: `a${i}`,
+        authorEmail: 'alice@x.com',
+        date: weekDate(0),
+        files: [file],
+      }),
+      makeCommit({
+        hash: `b${i}`,
+        authorEmail: 'bob@x.com',
+        date: weekDate(0),
+        files: [file],
+      }),
+      makeCommit({
+        hash: `c${i}`,
+        authorEmail: 'alice@x.com',
+        date: weekDate(1),
+        files: [file],
+      }),
+      makeCommit({
+        hash: `d${i}`,
+        authorEmail: 'alice@x.com',
+        date: weekDate(2),
+        files: [file],
+      }),
     ]);
     const result = analyzeParallelDev(commits, files);
     expect(result.hotFiles.length).toBeLessThanOrEqual(10);
@@ -177,12 +339,42 @@ describe('analyzeParallelDev', () => {
 
   it('generates narrative for files with parallel score >= 20', () => {
     const commits = [
-      makeCommit({ hash: '1', authorEmail: 'alice@x.com', date: weekDate(0), files: ['a.ts'] }),
-      makeCommit({ hash: '2', authorEmail: 'bob@x.com', date: weekDate(0), files: ['a.ts'] }),
-      makeCommit({ hash: '3', authorEmail: 'alice@x.com', date: weekDate(1), files: ['a.ts'] }),
-      makeCommit({ hash: '4', authorEmail: 'bob@x.com', date: weekDate(1), files: ['a.ts'] }),
-      makeCommit({ hash: '5', authorEmail: 'alice@x.com', date: weekDate(2), files: ['a.ts'] }),
-      makeCommit({ hash: '6', authorEmail: 'bob@x.com', date: weekDate(2), files: ['a.ts'] }),
+      makeCommit({
+        hash: '1',
+        authorEmail: 'alice@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        authorEmail: 'bob@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '3',
+        authorEmail: 'alice@x.com',
+        date: weekDate(1),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '4',
+        authorEmail: 'bob@x.com',
+        date: weekDate(1),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '5',
+        authorEmail: 'alice@x.com',
+        date: weekDate(2),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '6',
+        authorEmail: 'bob@x.com',
+        date: weekDate(2),
+        files: ['a.ts'],
+      }),
     ];
     const result = analyzeParallelDev(commits, ['a.ts']);
     expect(result.files[0].narrative.length).toBeGreaterThan(0);
@@ -201,6 +393,8 @@ describe('analyzeParallelDev', () => {
       ),
     ).flat();
     const result = analyzeParallelDev(commits, ['hot.ts']);
-    expect(result.files[0].narrative).toContain('correlates with increased defect risk');
+    expect(result.files[0].narrative).toContain(
+      'correlates with increased defect risk',
+    );
   });
 });

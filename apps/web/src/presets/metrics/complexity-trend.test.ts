@@ -2,9 +2,15 @@ import { describe, expect, it } from 'vitest';
 
 import { complexityTrendMetrics } from './complexity-trend';
 
-import type { ComplexityTrendReport, FileComplexityTrend, GitrelicReport } from '@gitrelic/core';
+import type {
+  ComplexityTrendReport,
+  FileComplexityTrend,
+  GitrelicReport,
+} from '@gitrelic/core';
 
-function makeFile(overrides: Partial<FileComplexityTrend> = {}): FileComplexityTrend {
+function makeFile(
+  overrides: Partial<FileComplexityTrend> = {},
+): FileComplexityTrend {
   return {
     file: 'a.ts',
     buckets: [],
@@ -15,7 +21,9 @@ function makeFile(overrides: Partial<FileComplexityTrend> = {}): FileComplexityT
   };
 }
 
-function makeReport(complexityTrend: Partial<ComplexityTrendReport>): GitrelicReport {
+function makeReport(
+  complexityTrend: Partial<ComplexityTrendReport>,
+): GitrelicReport {
   return {
     complexityTrend: {
       files: complexityTrend.files ?? [],
@@ -43,7 +51,9 @@ describe('complexityTrendMetrics', () => {
     ];
     const growingFiles = [makeFile({ file: 'a.ts', recentGrowthRate: 120 })];
     const shrinkingFiles = [makeFile({ file: 'b.ts', trend: 'shrinking' })];
-    const metrics = complexityTrendMetrics(makeReport({ files, growingFiles, shrinkingFiles }));
+    const metrics = complexityTrendMetrics(
+      makeReport({ files, growingFiles, shrinkingFiles }),
+    );
     expect(metrics[0].value).toBe('1');
     expect(metrics[0].color).toBe('var(--severity-warning)');
     expect(metrics[1].value).toBe('1');
@@ -54,7 +64,9 @@ describe('complexityTrendMetrics', () => {
 
   it('rounds fractional top growth rates', () => {
     const growingFiles = [makeFile({ recentGrowthRate: 87.6 })];
-    const metrics = complexityTrendMetrics(makeReport({ files: [makeFile()], growingFiles }));
+    const metrics = complexityTrendMetrics(
+      makeReport({ files: [makeFile()], growingFiles }),
+    );
     expect(metrics[2].value).toBe('88');
   });
 });

@@ -16,7 +16,9 @@ describe('Shell layout mode', () => {
     const { container } = render(<Shell report={makeMinimalReport()} />);
     expect(container.querySelector('nav')).not.toBeNull();
     // Bottom panel has a resize handle div with cursor-row-resize Tailwind class
-    expect(container.querySelector('[class*="cursor-row-resize"]')).not.toBeNull();
+    expect(
+      container.querySelector('[class*="cursor-row-resize"]'),
+    ).not.toBeNull();
   });
 });
 
@@ -100,14 +102,18 @@ describe('Shell keyboard shortcuts', () => {
   it('⌘⇧, enters fullscreen-table mode with a filled bottom panel', () => {
     const { container } = render(<Shell report={makeMinimalReport()} />);
     // Default: bottom panel uses a fixed height so the hero can take the remaining space
-    const defaultPanel = container.querySelector('[class*="cursor-row-resize"]')!.parentElement!;
+    const defaultPanel = container.querySelector(
+      '[class*="cursor-row-resize"]',
+    )!.parentElement!;
     expect(defaultPanel.style.height).toBe('320px');
 
     fireEvent.keyDown(window, { key: ',', metaKey: true, shiftKey: true });
 
     // In fullscreen-table the hero is hidden; the bottom panel must expand to fill
     // or the viewport ends up with a 320px panel and a tall empty gap below it.
-    const fullPanel = container.querySelector('[class*="cursor-row-resize"]')!.parentElement!;
+    const fullPanel = container.querySelector(
+      '[class*="cursor-row-resize"]',
+    )!.parentElement!;
     // fillAvailable=true switches from inline style to Tailwind flex-1 class; no inline height.
     expect(fullPanel.classList.contains('flex-1')).toBe(true);
     expect(fullPanel.style.height).toBe('');
@@ -139,7 +145,9 @@ describe('HERO_LABELS', () => {
 
 describe('Shell sidebar → preset wiring', () => {
   it('clicking Hotspots reshapes the hero to scatter', () => {
-    const { container, getByText } = render(<Shell report={makeMinimalReport()} />);
+    const { container, getByText } = render(
+      <Shell report={makeMinimalReport()} />,
+    );
     // Default hero label is "Treemap"
     expect(getByText('Treemap')).toBeDefined();
     // Narrow click to sidebar nav — "Hotspots" also appears as a bottom-panel tab label
@@ -151,7 +159,9 @@ describe('Shell sidebar → preset wiring', () => {
   });
 
   it('overrides clear when another preset is clicked', () => {
-    const { container, getByText } = render(<Shell report={makeMinimalReport()} />);
+    const { container, getByText } = render(
+      <Shell report={makeMinimalReport()} />,
+    );
     const sidebar = container.querySelector('nav')!;
     fireEvent.click(within(sidebar).getByText('Hotspots'));
     // Default hero for hotspots is Scatter. Override to Treemap.

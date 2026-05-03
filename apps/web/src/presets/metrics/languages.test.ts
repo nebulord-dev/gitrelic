@@ -32,7 +32,9 @@ describe('languagesMetrics', () => {
       { language: 'TypeScript', files: 40, lines: 4000, percentage: 72.5 },
       { language: 'JavaScript', files: 10, lines: 1200, percentage: 21.8 },
     ];
-    const metrics = languagesMetrics(makeReport({ totalFiles: 50, totalLines: 5200, languages }));
+    const metrics = languagesMetrics(
+      makeReport({ totalFiles: 50, totalLines: 5200, languages }),
+    );
     expect(metrics[0].value).toBe('2');
     expect(metrics[1].value).toBe('TypeScript');
     expect(metrics[2].value).toBe('73%');

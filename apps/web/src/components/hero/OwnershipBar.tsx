@@ -27,11 +27,18 @@ const MIN_RIGHT_PAD = 120;
 const MIN_BAR_LANE = 120;
 
 function truncateToFit(label: string, maxChars: number): string {
-  return label.length > maxChars ? `${label.slice(0, Math.max(1, maxChars - 1))}…` : label;
+  return label.length > maxChars
+    ? `${label.slice(0, Math.max(1, maxChars - 1))}…`
+    : label;
 }
 
-export function prepareOwnershipBarData(report: GitrelicReport, topN = 100): OwnershipBarRow[] {
-  const churnByFile = new Map((report.churn?.files ?? []).map((c) => [c.file, c.commitCount]));
+export function prepareOwnershipBarData(
+  report: GitrelicReport,
+  topN = 100,
+): OwnershipBarRow[] {
+  const churnByFile = new Map(
+    (report.churn?.files ?? []).map((c) => [c.file, c.commitCount]),
+  );
   return sortCriticalByImpact(report)
     .slice(0, topN)
     .map((f) => {
@@ -66,13 +73,19 @@ interface OwnershipBarProps {
   onSelectFile: (file: string) => void;
 }
 
-export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBarProps) {
+export function OwnershipBar({
+  report,
+  selectedFile,
+  onSelectFile,
+}: OwnershipBarProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(800);
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; row: OwnershipBarRow } | null>(
-    null,
-  );
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    row: OwnershipBarRow;
+  } | null>(null);
 
   const rows = useMemo(() => prepareOwnershipBarData(report), [report]);
   const totalCriticalFiles = report.busFactors.criticalFiles.length;
@@ -96,7 +109,10 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
     const viewTop = scrollRef.current.scrollTop;
     const viewBottom = viewTop + scrollRef.current.clientHeight;
     if (rowTop < viewTop || rowBottom > viewBottom) {
-      scrollRef.current.scrollTo({ top: Math.max(0, rowTop - 40), behavior: 'smooth' });
+      scrollRef.current.scrollTo({
+        top: Math.max(0, rowTop - 40),
+        behavior: 'smooth',
+      });
     }
   }, [selectedFile, rows]);
 
@@ -123,10 +139,19 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
     return len > max ? len : max;
   }, 0);
   const desiredRightPad = longestLabelChars * CHAR_PX + LABEL_PAD_PX;
-  const maxAllowedRightPad = Math.max(MIN_RIGHT_PAD, width - LABEL_WIDTH - MIN_BAR_LANE);
-  const rightPad = Math.max(MIN_RIGHT_PAD, Math.min(desiredRightPad, maxAllowedRightPad));
+  const maxAllowedRightPad = Math.max(
+    MIN_RIGHT_PAD,
+    width - LABEL_WIDTH - MIN_BAR_LANE,
+  );
+  const rightPad = Math.max(
+    MIN_RIGHT_PAD,
+    Math.min(desiredRightPad, maxAllowedRightPad),
+  );
   const available = Math.max(MIN_BAR_LANE, width - LABEL_WIDTH - rightPad);
-  const labelMaxChars = Math.max(8, Math.floor((rightPad - LABEL_PAD_PX) / CHAR_PX));
+  const labelMaxChars = Math.max(
+    8,
+    Math.floor((rightPad - LABEL_PAD_PX) / CHAR_PX),
+  );
   const chartHeight = TOP_PAD + rows.length * ROW_HEIGHT + BOTTOM_PAD;
   const truncated = totalCriticalFiles > rows.length;
   const subtitle = truncated
@@ -140,7 +165,10 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
           {rows.map((row, i) => {
             const y = TOP_PAD + i * ROW_HEIGHT;
             const barTop = y + (ROW_HEIGHT - BAR_HEIGHT) / 2;
-            const barWidth = Math.max(2, (row.dominantAuthorPercent / 100) * available);
+            const barWidth = Math.max(
+              2,
+              (row.dominantAuthorPercent / 100) * available,
+            );
             const isSelected = selectedFile === row.file;
             const color = riskColor(row.risk);
 
@@ -152,14 +180,22 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
                 onMouseEnter={(evt) => {
                   const rect = containerRef.current?.getBoundingClientRect();
                   if (!rect) return;
-                  setTooltip({ x: evt.clientX - rect.left, y: evt.clientY - rect.top, row });
+                  setTooltip({
+                    x: evt.clientX - rect.left,
+                    y: evt.clientY - rect.top,
+                    row,
+                  });
                 }}
                 onMouseMove={(evt) => {
                   const rect = containerRef.current?.getBoundingClientRect();
                   if (!rect) return;
                   setTooltip((prev) =>
                     prev
-                      ? { ...prev, x: evt.clientX - rect.left, y: evt.clientY - rect.top }
+                      ? {
+                          ...prev,
+                          x: evt.clientX - rect.left,
+                          y: evt.clientY - rect.top,
+                        }
                       : prev,
                   );
                 }}
@@ -172,7 +208,11 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
                   dominantBaseline="middle"
                   fontSize={10}
                   fontFamily="var(--font-mono)"
-                  fill={isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)'}
+                  fill={
+                    isSelected
+                      ? 'var(--accent-primary)'
+                      : 'var(--text-secondary)'
+                  }
                 >
                   {row.name}
                 </text>
@@ -227,14 +267,19 @@ export function OwnershipBar({ report, selectedFile, onSelectFile }: OwnershipBa
         >
           <div className="font-semibold mb-0.5">{tooltip.row.file}</div>
           <div className="text-text-secondary">
-            {tooltip.row.dominantAuthor} owns {tooltip.row.dominantAuthorPercent}%
+            {tooltip.row.dominantAuthor} owns{' '}
+            {tooltip.row.dominantAuthorPercent}%
           </div>
           {tooltip.row.commitCount > 0 && (
             <div className="text-text-secondary">
-              {tooltip.row.commitCount} commit{tooltip.row.commitCount === 1 ? '' : 's'}
+              {tooltip.row.commitCount} commit
+              {tooltip.row.commitCount === 1 ? '' : 's'}
             </div>
           )}
-          <div className="mt-0.5 capitalize" style={{ color: riskColor(tooltip.row.risk) }}>
+          <div
+            className="mt-0.5 capitalize"
+            style={{ color: riskColor(tooltip.row.risk) }}
+          >
             {tooltip.row.risk} risk
           </div>
         </div>

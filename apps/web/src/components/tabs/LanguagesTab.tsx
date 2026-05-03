@@ -13,7 +13,9 @@ export function LanguagesTab({ report }: LanguagesTabProps) {
       key: 'language',
       label: 'Language',
       render: (l) => (
-        <span className="text-[11px] text-text-primary font-medium">{l.language}</span>
+        <span className="text-[11px] text-text-primary font-medium">
+          {l.language}
+        </span>
       ),
     },
     {
@@ -42,7 +44,9 @@ export function LanguagesTab({ report }: LanguagesTabProps) {
       align: 'right',
       sortValue: (l) => l.files,
       render: (l) => (
-        <span className="font-mono text-[11px] text-text-secondary">{fmt(l.files)}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {fmt(l.files)}
+        </span>
       ),
     },
     {
@@ -52,10 +56,18 @@ export function LanguagesTab({ report }: LanguagesTabProps) {
       align: 'right',
       sortValue: (l) => l.lines,
       render: (l) => (
-        <span className="font-mono text-[11px] text-text-secondary">{fmt(l.lines)}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {fmt(l.lines)}
+        </span>
       ),
     },
   ];
 
-  return <SortableTable data={report.loc.languages} columns={columns} rowKey={(l) => l.language} />;
+  return (
+    <SortableTable
+      data={report.loc.languages}
+      columns={columns}
+      rowKey={(l) => l.language}
+    />
+  );
 }

@@ -4,7 +4,9 @@ import { analyzeKnowledgeConcentration } from './knowledge-concentration.js';
 
 import type { BusFactorReport } from '../types.js';
 
-function makeBusReport(files: { file: string; dominantAuthorPercent: number }[]): BusFactorReport {
+function makeBusReport(
+  files: { file: string; dominantAuthorPercent: number }[],
+): BusFactorReport {
   return {
     files: files.map((f) => ({
       file: f.file,
@@ -12,7 +14,8 @@ function makeBusReport(files: { file: string; dominantAuthorPercent: number }[])
       uniqueAuthors: 1,
       authors: ['a@b.com'],
       dominantAuthor: 'a@b.com',
-      risk: f.dominantAuthorPercent > 80 ? ('critical' as const) : ('low' as const),
+      risk:
+        f.dominantAuthorPercent > 80 ? ('critical' as const) : ('low' as const),
     })),
     criticalFiles: [],
     overallBusFactor: 1,

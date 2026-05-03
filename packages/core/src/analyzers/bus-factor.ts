@@ -1,4 +1,8 @@
-import type { BusFactorReport, FileBusFactor, BusFactorRisk } from '../types.js';
+import type {
+  BusFactorReport,
+  FileBusFactor,
+  BusFactorRisk,
+} from '../types.js';
 import type { RawCommit } from '../utils/git.js';
 
 /**
@@ -7,7 +11,10 @@ import type { RawCommit } from '../utils/git.js';
  * @param trackedFiles - The list of currently tracked files in the repository.
  * @Returns a report with the top 20 files by bus factor, the number of critical files, and a summary.
  */
-export function analyzeBusFactor(commits: RawCommit[], trackedFiles: string[]): BusFactorReport {
+export function analyzeBusFactor(
+  commits: RawCommit[],
+  trackedFiles: string[],
+): BusFactorReport {
   // Map: file → Map<author, commitCount>
   const fileAuthors: Map<string, Map<string, number>> = new Map();
   const trackedSet = new Set(trackedFiles);
@@ -17,17 +24,25 @@ export function analyzeBusFactor(commits: RawCommit[], trackedFiles: string[]): 
       if (!trackedSet.has(file)) continue;
       if (!fileAuthors.has(file)) fileAuthors.set(file, new Map());
       const authors = fileAuthors.get(file)!;
-      authors.set(commit.authorEmail, (authors.get(commit.authorEmail) ?? 0) + 1);
+      authors.set(
+        commit.authorEmail,
+        (authors.get(commit.authorEmail) ?? 0) + 1,
+      );
     }
   }
 
   const files: FileBusFactor[] = [];
 
   for (const [file, authors] of fileAuthors.entries()) {
-    const totalCommits = Array.from(authors.values()).reduce((a, b) => a + b, 0);
+    const totalCommits = Array.from(authors.values()).reduce(
+      (a, b) => a + b,
+      0,
+    );
     const sorted = Array.from(authors.entries()).sort((a, b) => b[1] - a[1]);
     const [dominantAuthor, dominantCount] = sorted[0];
-    const dominantAuthorPercent = Math.round((dominantCount / totalCommits) * 100);
+    const dominantAuthorPercent = Math.round(
+      (dominantCount / totalCommits) * 100,
+    );
     const uniqueAuthors = authors.size;
 
     files.push({
@@ -42,14 +57,16 @@ export function analyzeBusFactor(commits: RawCommit[], trackedFiles: string[]): 
 
   files.sort(
     (a, b) =>
-      a.uniqueAuthors - b.uniqueAuthors || b.dominantAuthorPercent - a.dominantAuthorPercent,
+      a.uniqueAuthors - b.uniqueAuthors ||
+      b.dominantAuthorPercent - a.dominantAuthorPercent,
   );
 
   const criticalFiles = files.filter((f) => f.risk === 'critical');
 
   // Overall bus factor: if removed this many people, half of high-churn files become single-author
   const top20 = files.slice(0, 20);
-  const overallBusFactor = top20.length === 0 ? 0 : Math.min(...top20.map((f) => f.uniqueAuthors));
+  const overallBusFactor =
+    top20.length === 0 ? 0 : Math.min(...top20.map((f) => f.uniqueAuthors));
 
   const worstFile = criticalFiles[0];
   const summary = worstFile
@@ -59,7 +76,10 @@ export function analyzeBusFactor(commits: RawCommit[], trackedFiles: string[]): 
   return { files, criticalFiles, overallBusFactor, summary };
 }
 
-function getBusFactorRisk(uniqueAuthors: number, dominantPercent: number): BusFactorRisk {
+function getBusFactorRisk(
+  uniqueAuthors: number,
+  dominantPercent: number,
+): BusFactorRisk {
   if (uniqueAuthors === 1 || dominantPercent >= 90) return 'critical';
   if (dominantPercent >= 75) return 'high';
   if (dominantPercent >= 50) return 'medium';

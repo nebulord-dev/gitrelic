@@ -37,7 +37,8 @@ export function shameMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Critical (≥70)',
       value: String(critical),
-      color: critical > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
+      color:
+        critical > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
     },
     {
       label: 'Shame Commits',

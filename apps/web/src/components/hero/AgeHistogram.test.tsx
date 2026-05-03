@@ -1,11 +1,19 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { AgeHistogram, ageTierFor, prepareAgeHistogramData } from './AgeHistogram';
+import {
+  AgeHistogram,
+  ageTierFor,
+  prepareAgeHistogramData,
+} from './AgeHistogram';
 
 import type { FileAge, GitrelicReport } from '@gitrelic/core';
 
-function f(file: string, ageInDays: number, status: FileAge['status']): FileAge {
+function f(
+  file: string,
+  ageInDays: number,
+  status: FileAge['status'],
+): FileAge {
   return { file, lastCommitDate: '2025-01-01', ageInDays, status };
 }
 
@@ -142,20 +150,30 @@ describe('prepareAgeHistogramData', () => {
 describe('AgeHistogram', () => {
   it('renders the hero caption when files exist', () => {
     render(
-      <AgeHistogram report={makeReport([f('a', 100, 'aging'), f('b', 250, 'ancient')], 365)} />,
+      <AgeHistogram
+        report={makeReport([f('a', 100, 'aging'), f('b', 250, 'ancient')], 365)}
+      />,
     );
     expect(screen.getByText(/Distribution of last-commit age/)).toBeTruthy();
   });
 
   it('renders the hero caption in the empty state', () => {
     render(
-      <AgeHistogram report={makeReport([], 0, { freshLimit: 0, agingLimit: 0, staleLimit: 0 })} />,
+      <AgeHistogram
+        report={makeReport([], 0, {
+          freshLimit: 0,
+          agingLimit: 0,
+          staleLimit: 0,
+        })}
+      />,
     );
     expect(screen.getByText(/Distribution of last-commit age/)).toBeTruthy();
   });
 
   it('shows the empty-state copy when no files exist', () => {
     render(<AgeHistogram report={makeReport([], 365)} />);
-    expect(screen.getByText('No tracked files in the repository.')).toBeTruthy();
+    expect(
+      screen.getByText('No tracked files in the repository.'),
+    ).toBeTruthy();
   });
 });

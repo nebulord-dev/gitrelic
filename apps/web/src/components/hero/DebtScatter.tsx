@@ -67,10 +67,18 @@ function prepareDebtData(report: GitrelicReport): DebtPoint[] {
   return points;
 }
 
-export function DebtScatter({ report, selectedFile, onSelectFile }: DebtScatterProps) {
+export function DebtScatter({
+  report,
+  selectedFile,
+  onSelectFile,
+}: DebtScatterProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; point: DebtPoint } | null>(null);
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    point: DebtPoint;
+  } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -107,7 +115,13 @@ export function DebtScatter({ report, selectedFile, onSelectFile }: DebtScatterP
       <svg width={dims.width} height={dims.height}>
         <g transform={`translate(${PADDING.left},${PADDING.top})`}>
           {/* Quadrant labels */}
-          <text x={4} y={12} textAnchor="start" fontSize={9} fill="rgba(255,255,255,0.10)">
+          <text
+            x={4}
+            y={12}
+            textAnchor="start"
+            fontSize={9}
+            fill="rgba(255,255,255,0.10)"
+          >
             Active Churn
           </text>
           <text
@@ -120,7 +134,13 @@ export function DebtScatter({ report, selectedFile, onSelectFile }: DebtScatterP
           >
             Legacy Debt
           </text>
-          <text x={4} y={plotH - 6} textAnchor="start" fontSize={9} fill="rgba(255,255,255,0.10)">
+          <text
+            x={4}
+            y={plotH - 6}
+            textAnchor="start"
+            fontSize={9}
+            fill="rgba(255,255,255,0.10)"
+          >
             Healthy
           </text>
           <text
@@ -154,7 +174,13 @@ export function DebtScatter({ report, selectedFile, onSelectFile }: DebtScatterP
           />
 
           {/* X axis */}
-          <line x1={0} y1={plotH} x2={plotW} y2={plotH} stroke="var(--border-primary)" />
+          <line
+            x1={0}
+            y1={plotH}
+            x2={plotW}
+            y2={plotH}
+            stroke="var(--border-primary)"
+          />
           <text
             x={plotW / 2}
             y={plotH + 30}
@@ -167,16 +193,30 @@ export function DebtScatter({ report, selectedFile, onSelectFile }: DebtScatterP
 
           {/* X axis ticks */}
           {xScale.ticks(5).map((tick) => (
-            <g key={`x-${tick}`} transform={`translate(${xScale(tick)},${plotH})`}>
+            <g
+              key={`x-${tick}`}
+              transform={`translate(${xScale(tick)},${plotH})`}
+            >
               <line y2={4} stroke="var(--border-primary)" />
-              <text y={14} textAnchor="middle" fontSize={8} fill="var(--text-tertiary)">
+              <text
+                y={14}
+                textAnchor="middle"
+                fontSize={8}
+                fill="var(--text-tertiary)"
+              >
                 {tick}
               </text>
             </g>
           ))}
 
           {/* Y axis */}
-          <line x1={0} y1={0} x2={0} y2={plotH} stroke="var(--border-primary)" />
+          <line
+            x1={0}
+            y1={0}
+            x2={0}
+            y2={plotH}
+            stroke="var(--border-primary)"
+          />
           <text
             transform={`translate(-42,${plotH / 2}) rotate(-90)`}
             textAnchor="middle"
@@ -216,7 +256,11 @@ export function DebtScatter({ report, selectedFile, onSelectFile }: DebtScatterP
                 cy={cy}
                 r={r}
                 fill={trendColor(p.churnTrend, 0.4)}
-                stroke={isSelected ? 'var(--accent-primary)' : trendColor(p.churnTrend, 0.8)}
+                stroke={
+                  isSelected
+                    ? 'var(--accent-primary)'
+                    : trendColor(p.churnTrend, 0.8)
+                }
                 strokeWidth={isSelected ? 2.5 : 1}
                 onClick={() => onSelectFile(p.file)}
                 onMouseEnter={(e) => {
@@ -236,23 +280,30 @@ export function DebtScatter({ report, selectedFile, onSelectFile }: DebtScatterP
           })}
 
           {/* Legend */}
-          {(['accelerating', 'stable', 'decelerating'] as const).map((trend, i) => {
-            const lx = plotW - 110;
-            const ly = plotH - 58 + i * 18;
-            return (
-              <g key={trend} transform={`translate(${lx},${ly})`}>
-                <circle
-                  r={5}
-                  fill={trendColor(trend, 0.5)}
-                  stroke={trendColor(trend, 0.9)}
-                  strokeWidth={1}
-                />
-                <text x={10} dominantBaseline="central" fontSize={8} fill="var(--text-secondary)">
-                  {trend.charAt(0).toUpperCase() + trend.slice(1)}
-                </text>
-              </g>
-            );
-          })}
+          {(['accelerating', 'stable', 'decelerating'] as const).map(
+            (trend, i) => {
+              const lx = plotW - 110;
+              const ly = plotH - 58 + i * 18;
+              return (
+                <g key={trend} transform={`translate(${lx},${ly})`}>
+                  <circle
+                    r={5}
+                    fill={trendColor(trend, 0.5)}
+                    stroke={trendColor(trend, 0.9)}
+                    strokeWidth={1}
+                  />
+                  <text
+                    x={10}
+                    dominantBaseline="central"
+                    fontSize={8}
+                    fill="var(--text-secondary)"
+                  >
+                    {trend.charAt(0).toUpperCase() + trend.slice(1)}
+                  </text>
+                </g>
+              );
+            },
+          )}
         </g>
       </svg>
 
@@ -261,10 +312,13 @@ export function DebtScatter({ report, selectedFile, onSelectFile }: DebtScatterP
           className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-80"
           style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div className="font-semibold mb-0.5 break-all font-mono">{tooltip.point.file}</div>
+          <div className="font-semibold mb-0.5 break-all font-mono">
+            {tooltip.point.file}
+          </div>
           <div className="text-text-secondary">
-            Age: {tooltip.point.ageDays}d · Rewrite: {tooltip.point.rewriteScore} · LOC:{' '}
-            {tooltip.point.loc} · Trend: {tooltip.point.churnTrend}
+            Age: {tooltip.point.ageDays}d · Rewrite:{' '}
+            {tooltip.point.rewriteScore} · LOC: {tooltip.point.loc} · Trend:{' '}
+            {tooltip.point.churnTrend}
           </div>
         </div>
       )}

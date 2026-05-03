@@ -37,8 +37,14 @@ describe('binCommitsForHeatmap', () => {
 
   it('creates a grid of week × author', () => {
     const commits = [
-      makeCommit({ date: '2025-06-02T10:00:00Z', authorEmail: 'alice@dev.com' }),
-      makeCommit({ date: '2025-06-02T12:00:00Z', authorEmail: 'alice@dev.com' }),
+      makeCommit({
+        date: '2025-06-02T10:00:00Z',
+        authorEmail: 'alice@dev.com',
+      }),
+      makeCommit({
+        date: '2025-06-02T12:00:00Z',
+        authorEmail: 'alice@dev.com',
+      }),
       makeCommit({ date: '2025-06-09T10:00:00Z', authorEmail: 'bob@dev.com' }),
     ];
 

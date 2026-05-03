@@ -26,14 +26,20 @@ describe('churnCategoryDescription', () => {
   });
 
   it('describes warm as the mid-high tier', () => {
-    expect(churnCategoryDescription('warm')).toBe('mid-high tier — 41–75 churn score');
+    expect(churnCategoryDescription('warm')).toBe(
+      'mid-high tier — 41–75 churn score',
+    );
   });
 
   it('describes cold as the low tier', () => {
-    expect(churnCategoryDescription('cold')).toBe('low tier — 11–40 churn score');
+    expect(churnCategoryDescription('cold')).toBe(
+      'low tier — 11–40 churn score',
+    );
   });
 
   it('describes frozen as rarely touched', () => {
-    expect(churnCategoryDescription('frozen')).toBe('rarely touched — ≤10 churn score');
+    expect(churnCategoryDescription('frozen')).toBe(
+      'rarely touched — ≤10 churn score',
+    );
   });
 });

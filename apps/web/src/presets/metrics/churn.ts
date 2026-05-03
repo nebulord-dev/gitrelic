@@ -7,7 +7,10 @@ export function churnMetrics(report: GitrelicReport): Metric[] {
   const files = report.churn?.files ?? [];
   const fileCount = files.length;
   const hotCount = files.filter((f) => f.churnScore > 75).length;
-  const topCommitCount = files.reduce((max, f) => (f.commitCount > max ? f.commitCount : max), 0);
+  const topCommitCount = files.reduce(
+    (max, f) => (f.commitCount > max ? f.commitCount : max),
+    0,
+  );
   const totalCommits = report.commits?.length ?? 0;
   const topFilePct =
     fileCount > 0 && totalCommits > 0
@@ -18,7 +21,8 @@ export function churnMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Hot Files',
       value: String(hotCount),
-      color: hotCount > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
+      color:
+        hotCount > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
     },
     {
       label: 'Top File Commits',

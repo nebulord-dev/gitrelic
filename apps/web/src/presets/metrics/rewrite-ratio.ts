@@ -7,7 +7,10 @@ import type { GitrelicReport } from '@gitrelic/core';
 export function rewriteRatioMetrics(report: GitrelicReport): Metric[] {
   const { files, topRewriters } = report.rewriteRatio;
   const topScore = topRewriters[0]?.rewriteScore ?? 0;
-  const avgRatio = files.length > 0 ? files.reduce((sum, f) => sum + f.ratio, 0) / files.length : 0;
+  const avgRatio =
+    files.length > 0
+      ? files.reduce((sum, f) => sum + f.ratio, 0) / files.length
+      : 0;
 
   return [
     {

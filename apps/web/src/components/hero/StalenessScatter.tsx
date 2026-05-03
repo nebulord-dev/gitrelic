@@ -59,12 +59,18 @@ interface StalenessScatterProps {
 const PADDING = { top: 24, right: 20, bottom: 40, left: 56 };
 const DANGER_AGE_THRESHOLD = 365;
 
-export function StalenessScatter({ report, selectedFile, onSelectFile }: StalenessScatterProps) {
+export function StalenessScatter({
+  report,
+  selectedFile,
+  onSelectFile,
+}: StalenessScatterProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; point: StalenessPoint } | null>(
-    null,
-  );
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    point: StalenessPoint;
+  } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -76,7 +82,10 @@ export function StalenessScatter({ report, selectedFile, onSelectFile }: Stalene
     return () => observer.disconnect();
   }, []);
 
-  const { points, xMax, yMax } = useMemo(() => prepareStalenessData(report), [report]);
+  const { points, xMax, yMax } = useMemo(
+    () => prepareStalenessData(report),
+    [report],
+  );
 
   const plotW = Math.max(40, dims.width - PADDING.left - PADDING.right);
   const plotH = Math.max(40, dims.height - PADDING.top - PADDING.bottom);
@@ -139,7 +148,13 @@ export function StalenessScatter({ report, selectedFile, onSelectFile }: Stalene
           )}
 
           {/* X axis */}
-          <line x1={0} y1={plotH} x2={plotW} y2={plotH} stroke="var(--border-primary)" />
+          <line
+            x1={0}
+            y1={plotH}
+            x2={plotW}
+            y2={plotH}
+            stroke="var(--border-primary)"
+          />
           <text
             x={plotW / 2}
             y={plotH + 30}
@@ -150,16 +165,30 @@ export function StalenessScatter({ report, selectedFile, onSelectFile }: Stalene
             Days since last commit
           </text>
           {xScale.ticks(5).map((tick) => (
-            <g key={`x-${tick}`} transform={`translate(${xScale(tick)},${plotH})`}>
+            <g
+              key={`x-${tick}`}
+              transform={`translate(${xScale(tick)},${plotH})`}
+            >
               <line y2={4} stroke="var(--border-primary)" />
-              <text y={14} textAnchor="middle" fontSize={8} fill="var(--text-tertiary)">
+              <text
+                y={14}
+                textAnchor="middle"
+                fontSize={8}
+                fill="var(--text-tertiary)"
+              >
                 {tick}
               </text>
             </g>
           ))}
 
           {/* Y axis */}
-          <line x1={0} y1={0} x2={0} y2={plotH} stroke="var(--border-primary)" />
+          <line
+            x1={0}
+            y1={0}
+            x2={0}
+            y2={plotH}
+            stroke="var(--border-primary)"
+          />
           <text
             transform={`translate(-40,${plotH / 2}) rotate(-90)`}
             textAnchor="middle"
@@ -204,7 +233,11 @@ export function StalenessScatter({ report, selectedFile, onSelectFile }: Stalene
                 onMouseEnter={(e) => {
                   const rect = containerRef.current?.getBoundingClientRect();
                   if (!rect) return;
-                  setTooltip({ x: e.clientX - rect.left, y: e.clientY - rect.top, point: p });
+                  setTooltip({
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top,
+                    point: p,
+                  });
                 }}
                 onMouseLeave={() => setTooltip(null)}
                 className="cursor-pointer"
@@ -215,8 +248,17 @@ export function StalenessScatter({ report, selectedFile, onSelectFile }: Stalene
 
         {/* Tier legend */}
         {(['fresh', 'aging', 'stale', 'ancient'] as const).map((tier, i) => (
-          <g key={tier} transform={`translate(${PADDING.left + i * 80},${PADDING.top - 10})`}>
-            <circle cx={4} cy={0} r={4} fill={TIER_COLORS[tier]} fillOpacity={0.7} />
+          <g
+            key={tier}
+            transform={`translate(${PADDING.left + i * 80},${PADDING.top - 10})`}
+          >
+            <circle
+              cx={4}
+              cy={0}
+              r={4}
+              fill={TIER_COLORS[tier]}
+              fillOpacity={0.7}
+            />
             <text x={12} y={3} fontSize={9} fill="var(--text-tertiary)">
               {tier}
             </text>
@@ -230,10 +272,13 @@ export function StalenessScatter({ report, selectedFile, onSelectFile }: Stalene
         >
           <div className="font-semibold mb-0.5">{tooltip.point.file}</div>
           <div className="text-text-secondary">
-            {tooltip.point.x} day{tooltip.point.x === 1 ? '' : 's'} since last commit ·{' '}
-            {tooltip.point.y} LOC
+            {tooltip.point.x} day{tooltip.point.x === 1 ? '' : 's'} since last
+            commit · {tooltip.point.y} LOC
           </div>
-          <div className="mt-0.5 capitalize" style={{ color: TIER_COLORS[tooltip.point.tier] }}>
+          <div
+            className="mt-0.5 capitalize"
+            style={{ color: TIER_COLORS[tooltip.point.tier] }}
+          >
             {tooltip.point.tier}
           </div>
         </div>

@@ -20,7 +20,8 @@ function makeReport(
     renameTracking: {
       renames: [],
       chains,
-      totalRenames: opts?.totalRenames ?? chains.reduce((s, c) => s + c.renameCount, 0),
+      totalRenames:
+        opts?.totalRenames ?? chains.reduce((s, c) => s + c.renameCount, 0),
       filesWithRenames: opts?.filesWithRenames ?? chains.length,
       summary: '',
     },
@@ -55,14 +56,18 @@ describe('renamesMetrics', () => {
 
   it('uses totalRenames and filesWithRenames from the report directly', () => {
     const chains = [makeChain('a.ts', 1)];
-    const metrics = renamesMetrics(makeReport(chains, { totalRenames: 42, filesWithRenames: 7 }));
+    const metrics = renamesMetrics(
+      makeReport(chains, { totalRenames: 42, filesWithRenames: 7 }),
+    );
     expect(metrics[0].value).toBe('7');
     expect(metrics[1].value).toBe('42');
     expect(metrics[3].value).toBe('6');
   });
 
   it('Avg Renames/File is em-dash when filesWithRenames is 0', () => {
-    const metrics = renamesMetrics(makeReport([], { totalRenames: 0, filesWithRenames: 0 }));
+    const metrics = renamesMetrics(
+      makeReport([], { totalRenames: 0, filesWithRenames: 0 }),
+    );
     expect(metrics[3].value).toBe('—');
   });
 
@@ -89,7 +94,11 @@ describe('renamesMetrics', () => {
   });
 
   it('rounds Avg Renames/File to an integer', () => {
-    const chains = [makeChain('a.ts', 1), makeChain('b.ts', 2), makeChain('c.ts', 2)];
+    const chains = [
+      makeChain('a.ts', 1),
+      makeChain('b.ts', 2),
+      makeChain('c.ts', 2),
+    ];
     const metrics = renamesMetrics(makeReport(chains));
     expect(metrics[3].value).toBe('2');
   });

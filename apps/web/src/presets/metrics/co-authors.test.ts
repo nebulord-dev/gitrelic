@@ -14,13 +14,17 @@ function makePair(overrides: Partial<CoAuthorPair> = {}): CoAuthorPair {
   };
 }
 
-function makeReport(pairs: CoAuthorPair[], totalCoAuthoredCommits?: number): GitrelicReport {
+function makeReport(
+  pairs: CoAuthorPair[],
+  totalCoAuthoredCommits?: number,
+): GitrelicReport {
   return {
     coAuthors: {
       pairs,
       authorStats: [],
       totalCoAuthoredCommits:
-        totalCoAuthoredCommits ?? pairs.reduce((s, p) => s + p.coAuthoredCommits, 0),
+        totalCoAuthoredCommits ??
+        pairs.reduce((s, p) => s + p.coAuthoredCommits, 0),
       summary: '',
     },
   } as unknown as GitrelicReport;
@@ -40,9 +44,21 @@ describe('coAuthorsMetrics', () => {
 
   it('returns correct aggregates for a non-empty list', () => {
     const pairs = [
-      makePair({ authorA: 'Alice <a@e.com>', authorB: 'Bob <b@e.com>', coAuthoredCommits: 10 }),
-      makePair({ authorA: 'Alice <a@e.com>', authorB: 'Cara <c@e.com>', coAuthoredCommits: 4 }),
-      makePair({ authorA: 'Bob <b@e.com>', authorB: 'Cara <c@e.com>', coAuthoredCommits: 2 }),
+      makePair({
+        authorA: 'Alice <a@e.com>',
+        authorB: 'Bob <b@e.com>',
+        coAuthoredCommits: 10,
+      }),
+      makePair({
+        authorA: 'Alice <a@e.com>',
+        authorB: 'Cara <c@e.com>',
+        coAuthoredCommits: 4,
+      }),
+      makePair({
+        authorA: 'Bob <b@e.com>',
+        authorB: 'Cara <c@e.com>',
+        coAuthoredCommits: 2,
+      }),
     ];
     const metrics = coAuthorsMetrics(makeReport(pairs));
     expect(metrics[0].value).toBe('3');
@@ -60,8 +76,16 @@ describe('coAuthorsMetrics', () => {
 
   it('rounds Avg Commits/Pair to an integer', () => {
     const pairs = [
-      makePair({ authorA: 'a@e.com', authorB: 'b@e.com', coAuthoredCommits: 3 }),
-      makePair({ authorA: 'a@e.com', authorB: 'c@e.com', coAuthoredCommits: 4 }),
+      makePair({
+        authorA: 'a@e.com',
+        authorB: 'b@e.com',
+        coAuthoredCommits: 3,
+      }),
+      makePair({
+        authorA: 'a@e.com',
+        authorB: 'c@e.com',
+        coAuthoredCommits: 4,
+      }),
     ];
     const metrics = coAuthorsMetrics(makeReport(pairs));
     expect(metrics[3].value).toBe('4');
@@ -88,7 +112,9 @@ describe('coAuthorsMetrics', () => {
   });
 
   it('formats Co-commits with thousands separator via fmt()', () => {
-    const metrics = coAuthorsMetrics(makeReport([makePair({ coAuthoredCommits: 1234 })]));
+    const metrics = coAuthorsMetrics(
+      makeReport([makePair({ coAuthoredCommits: 1234 })]),
+    );
     expect(metrics[1].value).toBe('1,234');
   });
 });

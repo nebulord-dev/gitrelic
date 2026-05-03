@@ -9,7 +9,13 @@ import type { GitrelicReport } from '@gitrelic/core';
 function makeReport(overrides: Partial<GitrelicReport> = {}): GitrelicReport {
   return {
     hotspots: { files: [], topHotspots: [], summary: '' },
-    ageMap: { files: [], staleFiles: [], ancientFiles: [], medianAgeDays: 0, summary: '' },
+    ageMap: {
+      files: [],
+      staleFiles: [],
+      ancientFiles: [],
+      medianAgeDays: 0,
+      summary: '',
+    },
     testCoverage: {
       directories: [],
       uncoveredDirectories: [],
@@ -27,7 +33,13 @@ describe('colorByMode', () => {
       const report = makeReport({
         hotspots: {
           files: [
-            { file: 'a.ts', hotspotScore: 90, churnScore: 80, loc: 100, category: 'critical' },
+            {
+              file: 'a.ts',
+              hotspotScore: 90,
+              churnScore: 80,
+              loc: 100,
+              category: 'critical',
+            },
           ],
           topHotspots: [],
           summary: '',
@@ -73,7 +85,13 @@ describe('ChurnTreemap render', () => {
   function makeRenderableReport(): GitrelicReport {
     return {
       hotspots: { files: [], topHotspots: [], summary: '' },
-      ageMap: { files: [], staleFiles: [], ancientFiles: [], medianAgeDays: 0, summary: '' },
+      ageMap: {
+        files: [],
+        staleFiles: [],
+        ancientFiles: [],
+        medianAgeDays: 0,
+        summary: '',
+      },
       testCoverage: {
         directories: [],
         uncoveredDirectories: [],
@@ -98,7 +116,11 @@ describe('ChurnTreemap render', () => {
 
   it('renders an SVG with the default size=loc encoding', () => {
     const { container } = render(
-      <ChurnTreemap report={makeRenderableReport()} selectedFile={null} onSelectFile={() => {}} />,
+      <ChurnTreemap
+        report={makeRenderableReport()}
+        selectedFile={null}
+        onSelectFile={() => {}}
+      />,
     );
     expect(container.querySelector('svg')).toBeTruthy();
   });

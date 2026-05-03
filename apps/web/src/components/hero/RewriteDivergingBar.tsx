@@ -18,7 +18,10 @@ export interface RewriteData {
   maxAbs: number;
 }
 
-export function prepareRewriteData(report: GitrelicReport, topN = 30): RewriteData {
+export function prepareRewriteData(
+  report: GitrelicReport,
+  topN = 30,
+): RewriteData {
   const rows: RewriteRow[] = [...report.rewriteRatio.files]
     .sort((a, b) => b.rewriteScore - a.rewriteScore)
     .slice(0, topN)
@@ -61,7 +64,11 @@ export function RewriteDivergingBar({
 }: RewriteDivergingBarProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; row: RewriteRow } | null>(null);
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    row: RewriteRow;
+  } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -93,7 +100,10 @@ export function RewriteDivergingBar({
   const available = Math.max(120, dims.width - labelWidth - rightPad);
   const halfBar = available / 2;
   const centerX = labelWidth + halfBar;
-  const rowHeight = Math.max(20, (dims.height - topPad - bottomPad) / Math.max(rows.length, 1));
+  const rowHeight = Math.max(
+    20,
+    (dims.height - topPad - bottomPad) / Math.max(rows.length, 1),
+  );
   const barHeight = Math.max(10, rowHeight - 6);
   const insertionColor = 'var(--severity-healthy)';
   const deletionColor = 'var(--severity-critical)';
@@ -135,8 +145,10 @@ export function RewriteDivergingBar({
 
           {rows.map((row, i) => {
             const y = topPad + i * rowHeight;
-            const insWidth = maxAbs > 0 ? (row.totalInsertions / maxAbs) * halfBar : 0;
-            const delWidth = maxAbs > 0 ? (row.totalDeletions / maxAbs) * halfBar : 0;
+            const insWidth =
+              maxAbs > 0 ? (row.totalInsertions / maxAbs) * halfBar : 0;
+            const delWidth =
+              maxAbs > 0 ? (row.totalDeletions / maxAbs) * halfBar : 0;
             const isSelected = selectedFile === row.file;
 
             return (
@@ -147,7 +159,11 @@ export function RewriteDivergingBar({
                 onMouseEnter={(evt) => {
                   const rect = containerRef.current?.getBoundingClientRect();
                   if (!rect) return;
-                  setTooltip({ x: evt.clientX - rect.left, y: evt.clientY - rect.top, row });
+                  setTooltip({
+                    x: evt.clientX - rect.left,
+                    y: evt.clientY - rect.top,
+                    row,
+                  });
                 }}
                 onMouseLeave={() => setTooltip(null)}
               >
@@ -158,7 +174,11 @@ export function RewriteDivergingBar({
                   dominantBaseline="middle"
                   fontSize={10}
                   fontFamily="var(--font-mono)"
-                  fill={isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)'}
+                  fill={
+                    isSelected
+                      ? 'var(--accent-primary)'
+                      : 'var(--text-secondary)'
+                  }
                 >
                   {row.name}
                 </text>
@@ -209,10 +229,15 @@ export function RewriteDivergingBar({
             style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
           >
             <div className="font-semibold mb-0.5">{tooltip.row.file}</div>
-            <div className="text-severity-healthy">+{tooltip.row.totalInsertions} insertions</div>
-            <div className="text-severity-critical">−{tooltip.row.totalDeletions} deletions</div>
+            <div className="text-severity-healthy">
+              +{tooltip.row.totalInsertions} insertions
+            </div>
+            <div className="text-severity-critical">
+              −{tooltip.row.totalDeletions} deletions
+            </div>
             <div className="text-text-secondary mt-0.5">
-              Rewrite score {tooltip.row.rewriteScore} · ratio {tooltip.row.ratio.toFixed(2)}
+              Rewrite score {tooltip.row.rewriteScore} · ratio{' '}
+              {tooltip.row.ratio.toFixed(2)}
             </div>
           </div>
         )}

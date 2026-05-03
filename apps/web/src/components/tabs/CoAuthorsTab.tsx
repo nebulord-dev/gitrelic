@@ -39,7 +39,9 @@ export function CoAuthorsTab({ report }: CoAuthorsTabProps) {
       align: 'right',
       sortValue: (p) => p.files.length,
       render: (p) => (
-        <span className="font-mono text-[11px] text-text-secondary">{p.files.length}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {p.files.length}
+        </span>
       ),
     },
   ];

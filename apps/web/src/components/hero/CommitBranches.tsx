@@ -16,10 +16,18 @@ const LANE_HEIGHT = 28;
 const LABEL_WIDTH = 120;
 const DOT_RADIUS = 3;
 
-export function CommitBranches({ commits, selectedFile, onSelectFile }: CommitBranchesProps) {
+export function CommitBranches({
+  commits,
+  selectedFile,
+  onSelectFile,
+}: CommitBranchesProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(800);
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; commit: RawCommit } | null>(null);
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    commit: RawCommit;
+  } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -31,7 +39,8 @@ export function CommitBranches({ commits, selectedFile, onSelectFile }: CommitBr
   }, []);
 
   const { lanes, xScale } = useMemo(() => {
-    if (commits.length === 0) return { lanes: [], xScale: scaleTime().range([0, 1]) };
+    if (commits.length === 0)
+      return { lanes: [], xScale: scaleTime().range([0, 1]) };
 
     const byAuthor = new Map<string, RawCommit[]>();
     for (const c of commits) {
@@ -40,7 +49,9 @@ export function CommitBranches({ commits, selectedFile, onSelectFile }: CommitBr
       byAuthor.set(c.authorEmail, arr);
     }
 
-    const sorted = [...byAuthor.entries()].sort((a, b) => b[1].length - a[1].length);
+    const sorted = [...byAuthor.entries()].sort(
+      (a, b) => b[1].length - a[1].length,
+    );
     const dates = commits.map((c) => new Date(c.date).getTime());
     const xScale = scaleTime()
       .domain([
@@ -75,7 +86,10 @@ export function CommitBranches({ commits, selectedFile, onSelectFile }: CommitBr
                 fontSize={8}
                 fill="var(--text-tertiary)"
               >
-                {date.toLocaleDateString('en', { month: 'short', year: '2-digit' })}
+                {date.toLocaleDateString('en', {
+                  month: 'short',
+                  year: '2-digit',
+                })}
               </text>
             ))}
         </svg>
@@ -116,7 +130,8 @@ export function CommitBranches({ commits, selectedFile, onSelectFile }: CommitBr
                     }}
                     className={topFile ? 'cursor-pointer' : 'cursor-default'}
                     onMouseEnter={(e) => {
-                      const rect = containerRef.current?.getBoundingClientRect();
+                      const rect =
+                        containerRef.current?.getBoundingClientRect();
                       if (rect) {
                         setTooltip({
                           x: e.clientX - rect.left,
@@ -140,8 +155,8 @@ export function CommitBranches({ commits, selectedFile, onSelectFile }: CommitBr
         >
           <div className="font-semibold mb-0.5">{tooltip.commit.message}</div>
           <div className="text-text-secondary">
-            {tooltip.commit.date.slice(0, 10)} · {tooltip.commit.files.length} files · +
-            {tooltip.commit.insertions}/-{tooltip.commit.deletions}
+            {tooltip.commit.date.slice(0, 10)} · {tooltip.commit.files.length}{' '}
+            files · +{tooltip.commit.insertions}/-{tooltip.commit.deletions}
           </div>
         </div>
       )}

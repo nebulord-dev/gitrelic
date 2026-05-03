@@ -28,6 +28,8 @@ export function aggregateRewriteByDirectory(
     rows.push({ directory, count, share: count / total });
   }
 
-  rows.sort((a, b) => b.count - a.count || a.directory.localeCompare(b.directory));
+  rows.sort(
+    (a, b) => b.count - a.count || a.directory.localeCompare(b.directory),
+  );
   return rows;
 }

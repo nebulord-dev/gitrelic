@@ -45,7 +45,9 @@ export function ContributorsTab({ report }: ContributorsTabProps) {
       align: 'right',
       sortValue: (c) => c.filesOwned,
       render: (c) => (
-        <span className="font-mono text-[11px] text-text-secondary">{c.filesOwned}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {c.filesOwned}
+        </span>
       ),
     },
     {

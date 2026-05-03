@@ -54,7 +54,13 @@ function signalVariant(
   return 'parallel';
 }
 
-function ExpandedDetail({ file, report }: { file: string; report: GitrelicReport }) {
+function ExpandedDetail({
+  file,
+  report,
+}: {
+  file: string;
+  report: GitrelicReport;
+}) {
   const bf = report.busFactors.files.find((f) => f.file === file);
   const cp = report.coupling.fileProfiles.find((f) => f.file === file);
   const sh = report.forensics.files.find((f) => f.file === file);
@@ -71,7 +77,8 @@ function ExpandedDetail({ file, report }: { file: string; report: GitrelicReport
             {bf.uniqueAuthors} author{bf.uniqueAuthors !== 1 ? 's' : ''}
             {bf.dominantAuthor && (
               <div>
-                dominant: {bf.dominantAuthor.split('@')[0]} ({bf.dominantAuthorPercent}%)
+                dominant: {bf.dominantAuthor.split('@')[0]} (
+                {bf.dominantAuthorPercent}%)
               </div>
             )}
           </div>
@@ -87,7 +94,8 @@ function ExpandedDetail({ file, report }: { file: string; report: GitrelicReport
           <div className="text-[10px] text-text-secondary">
             {cp.partners.slice(0, 3).map((p) => (
               <div key={p.fileB === file ? p.fileA : p.fileB}>
-                {Math.round(p.couplingStrength)}% {fileName(p.fileB === file ? p.fileA : p.fileB)}
+                {Math.round(p.couplingStrength)}%{' '}
+                {fileName(p.fileB === file ? p.fileA : p.fileB)}
               </div>
             ))}
           </div>
@@ -101,7 +109,9 @@ function ExpandedDetail({ file, report }: { file: string; report: GitrelicReport
         </div>
         {sh && sh.topShameCommits.length > 0 ? (
           <div className="text-[10px] text-text-secondary">
-            <div className="italic">"{sh.topShameCommits[0].message.slice(0, 40)}..."</div>
+            <div className="italic">
+              "{sh.topShameCommits[0].message.slice(0, 40)}..."
+            </div>
             <div>{sh.dominantKeywords.slice(0, 3).join(', ')}</div>
           </div>
         ) : (
@@ -115,7 +125,9 @@ function ExpandedDetail({ file, report }: { file: string; report: GitrelicReport
         <div className="text-[10px] text-text-secondary">
           {churn ? `${fmt(churn.commitCount)} commits` : '—'}
           {report.loc.files.find((f) => f.file === file) && (
-            <div>{fmt(report.loc.files.find((f) => f.file === file)!.lines)} lines</div>
+            <div>
+              {fmt(report.loc.files.find((f) => f.file === file)!.lines)} lines
+            </div>
           )}
         </div>
       </div>
@@ -123,7 +135,11 @@ function ExpandedDetail({ file, report }: { file: string; report: GitrelicReport
   );
 }
 
-export function HotspotsTab({ report, selectedFile, onSelectFile }: HotspotsTabProps) {
+export function HotspotsTab({
+  report,
+  selectedFile,
+  onSelectFile,
+}: HotspotsTabProps) {
   const [expandedFile, setExpandedFile] = useState<string | null>(null);
 
   const columns: Column<HotspotEntry>[] = [
@@ -132,8 +148,12 @@ export function HotspotsTab({ report, selectedFile, onSelectFile }: HotspotsTabP
       label: 'File',
       render: (h) => (
         <div className="min-w-0">
-          <span className="font-mono text-[11px] text-text-primary">{fileName(h.file)}</span>
-          <span className="text-[10px] text-text-tertiary ml-1.5">{filePath(h.file)}</span>
+          <span className="font-mono text-[11px] text-text-primary">
+            {fileName(h.file)}
+          </span>
+          <span className="text-[10px] text-text-tertiary ml-1.5">
+            {filePath(h.file)}
+          </span>
         </div>
       ),
     },
@@ -144,7 +164,11 @@ export function HotspotsTab({ report, selectedFile, onSelectFile }: HotspotsTabP
       render: (h) => (
         <div className="flex gap-1 flex-wrap">
           {getSignals(h.file, report).map((s) => (
-            <Badge key={s.label} variant={signalVariant(s.label)} title={s.title}>
+            <Badge
+              key={s.label}
+              variant={signalVariant(s.label)}
+              title={s.title}
+            >
               {s.label}
             </Badge>
           ))}
@@ -181,7 +205,9 @@ export function HotspotsTab({ report, selectedFile, onSelectFile }: HotspotsTabP
       align: 'right',
       sortValue: (h) => h.churnScore,
       render: (h) => (
-        <span className="font-mono text-[11px] text-text-secondary">{h.churnScore}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {h.churnScore}
+        </span>
       ),
     },
     {
@@ -191,7 +217,9 @@ export function HotspotsTab({ report, selectedFile, onSelectFile }: HotspotsTabP
       align: 'right',
       sortValue: (h) => h.loc,
       render: (h) => (
-        <span className="font-mono text-[11px] text-text-secondary">{fmt(h.loc)}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {fmt(h.loc)}
+        </span>
       ),
     },
     {
@@ -199,7 +227,9 @@ export function HotspotsTab({ report, selectedFile, onSelectFile }: HotspotsTabP
       label: 'Severity',
       width: '70px',
       align: 'center',
-      render: (h) => <Badge variant={severityColor(h.category)}>{h.category}</Badge>,
+      render: (h) => (
+        <Badge variant={severityColor(h.category)}>{h.category}</Badge>
+      ),
     },
   ];
 

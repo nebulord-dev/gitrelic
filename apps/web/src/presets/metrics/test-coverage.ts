@@ -4,7 +4,8 @@ import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export function testCoverageMetrics(report: GitrelicReport): Metric[] {
-  const { directories, uncoveredDirectories, overallRatio } = report.testCoverage;
+  const { directories, uncoveredDirectories, overallRatio } =
+    report.testCoverage;
   const overallPercent = Math.round(overallRatio * 100);
 
   return [
@@ -24,7 +25,9 @@ export function testCoverageMetrics(report: GitrelicReport): Metric[] {
       label: 'Uncovered Dirs',
       value: fmt(uncoveredDirectories.length),
       color:
-        uncoveredDirectories.length > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+        uncoveredDirectories.length > 0
+          ? 'var(--severity-warning)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'Total Dirs',

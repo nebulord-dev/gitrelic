@@ -39,7 +39,9 @@ describe('directoryFor', () => {
 
   it('respects a custom depth', () => {
     expect(directoryFor('packages/core/src/foo.ts', 1)).toBe('packages');
-    expect(directoryFor('packages/core/src/foo.ts', 3)).toBe('packages/core/src');
+    expect(directoryFor('packages/core/src/foo.ts', 3)).toBe(
+      'packages/core/src',
+    );
   });
 });
 
@@ -52,7 +54,10 @@ describe('prepareLanguagesData', () => {
         { file: 'packages/core/x.ts', lines: 200, language: 'TypeScript' },
       ]),
     );
-    expect(rows.map((r) => r.directory).sort()).toEqual(['apps/web', 'packages/core']);
+    expect(rows.map((r) => r.directory).sort()).toEqual([
+      'apps/web',
+      'packages/core',
+    ]);
   });
 
   it('aggregates LOC per language within each row', () => {
@@ -91,13 +96,21 @@ describe('prepareLanguagesData', () => {
         { file: 'src/c.md', lines: 50, language: 'Markdown' },
       ]),
     );
-    expect(rows[0].segments.map((s) => s.language)).toEqual(['CSS', 'Markdown', 'TypeScript']);
+    expect(rows[0].segments.map((s) => s.language)).toEqual([
+      'CSS',
+      'Markdown',
+      'TypeScript',
+    ]);
   });
 
   it('caps at 30 rows by default', () => {
     const many: LocFixture[] = [];
     for (let i = 0; i < 50; i += 1) {
-      many.push({ file: `dir${i}/foo.ts`, lines: 100 - i, language: 'TypeScript' });
+      many.push({
+        file: `dir${i}/foo.ts`,
+        lines: 100 - i,
+        language: 'TypeScript',
+      });
     }
     const { rows } = prepareLanguagesData(makeReport(many));
     expect(rows).toHaveLength(30);

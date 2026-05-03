@@ -9,7 +9,9 @@ interface ComplexityTrendTabProps {
   onSelectFile: (file: string) => void;
 }
 
-function trendVariant(trend: string): 'critical' | 'warning' | 'healthy' | 'stale' {
+function trendVariant(
+  trend: string,
+): 'critical' | 'warning' | 'healthy' | 'stale' {
   switch (trend) {
     case 'growing':
       return 'critical';
@@ -22,7 +24,10 @@ function trendVariant(trend: string): 'critical' | 'warning' | 'healthy' | 'stal
   }
 }
 
-export function ComplexityTrendTab({ report, onSelectFile }: ComplexityTrendTabProps) {
+export function ComplexityTrendTab({
+  report,
+  onSelectFile,
+}: ComplexityTrendTabProps) {
   const columns: Column<FileComplexityTrend>[] = [
     {
       key: 'file',
@@ -30,7 +35,9 @@ export function ComplexityTrendTab({ report, onSelectFile }: ComplexityTrendTabP
       render: (f) => (
         <span className="font-mono text-[11px]">
           {fileName(f.file)}
-          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(f.file)}</span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">
+            {filePath(f.file)}
+          </span>
         </span>
       ),
     },

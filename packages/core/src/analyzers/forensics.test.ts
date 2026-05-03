@@ -22,7 +22,11 @@ function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
 describe('analyzeForensics', () => {
   it('returns empty report for commits with no shame keywords', () => {
     const commits = [
-      makeCommit({ hash: '1', files: ['a.ts'], message: 'feat: add new feature' }),
+      makeCommit({
+        hash: '1',
+        files: ['a.ts'],
+        message: 'feat: add new feature',
+      }),
       makeCommit({ hash: '2', files: ['a.ts'], message: 'chore: update deps' }),
     ];
     const result = analyzeForensics(commits, ['a.ts']);
@@ -33,7 +37,11 @@ describe('analyzeForensics', () => {
 
   it('detects critical shame keywords (weight 3)', () => {
     const commits = [
-      makeCommit({ hash: '1', files: ['a.ts'], message: 'revert: undo broken change' }),
+      makeCommit({
+        hash: '1',
+        files: ['a.ts'],
+        message: 'revert: undo broken change',
+      }),
     ];
     const result = analyzeForensics(commits, ['a.ts']);
     expect(result.files[0].rawShamePoints).toBe(3);
@@ -43,14 +51,24 @@ describe('analyzeForensics', () => {
 
   it('detects moderate shame keywords (weight 2)', () => {
     const commits = [
-      makeCommit({ hash: '1', files: ['a.ts'], message: 'add workaround for upstream issue' }),
+      makeCommit({
+        hash: '1',
+        files: ['a.ts'],
+        message: 'add workaround for upstream issue',
+      }),
     ];
     const result = analyzeForensics(commits, ['a.ts']);
     expect(result.files[0].rawShamePoints).toBe(2);
   });
 
   it('detects mild shame keywords (weight 1)', () => {
-    const commits = [makeCommit({ hash: '1', files: ['a.ts'], message: 'cleanup unused imports' })];
+    const commits = [
+      makeCommit({
+        hash: '1',
+        files: ['a.ts'],
+        message: 'cleanup unused imports',
+      }),
+    ];
     const result = analyzeForensics(commits, ['a.ts']);
     expect(result.files[0].rawShamePoints).toBe(1);
   });
@@ -58,7 +76,11 @@ describe('analyzeForensics', () => {
   it('accumulates points from multiple keywords in one message', () => {
     // 'fix' (1) + 'typo' (1) = 2 points
     const commits = [
-      makeCommit({ hash: '1', files: ['a.ts'], message: 'fix typo in error message' }),
+      makeCommit({
+        hash: '1',
+        files: ['a.ts'],
+        message: 'fix typo in error message',
+      }),
     ];
     const result = analyzeForensics(commits, ['a.ts']);
     expect(result.files[0].rawShamePoints).toBe(2);
@@ -68,7 +90,11 @@ describe('analyzeForensics', () => {
     // 5 commits all with revert (3pts each) = 15 raw pts / 5 commits = 300% raw
     // confidence = 5/5 = 1 → 300 × 1 = 300 → capped at 100
     const commits = Array.from({ length: 5 }, (_, i) =>
-      makeCommit({ hash: `h${i}`, files: ['a.ts'], message: 'revert: everything is on fire' }),
+      makeCommit({
+        hash: `h${i}`,
+        files: ['a.ts'],
+        message: 'revert: everything is on fire',
+      }),
     );
     const result = analyzeForensics(commits, ['a.ts']);
     expect(result.files[0].shameScore).toBe(100);
@@ -77,16 +103,31 @@ describe('analyzeForensics', () => {
   it('scores files with more shame commits proportionally higher', () => {
     // a.ts: 5 reverts in 5 commits → raw 300 → cap 100. confidence 5/5 = 1 → 100
     const commitsFew = Array.from({ length: 5 }, (_, i) =>
-      makeCommit({ hash: `a${i}`, files: ['a.ts'], message: 'revert: bad change' }),
+      makeCommit({
+        hash: `a${i}`,
+        files: ['a.ts'],
+        message: 'revert: bad change',
+      }),
     );
     // b.ts: 1 revert in 10 commits → raw 30. confidence 10/5 capped at 1 → 30
     const commitsMany: RawCommit[] = [
-      makeCommit({ hash: 'r1', files: ['b.ts'], message: 'revert: bad change' }),
+      makeCommit({
+        hash: 'r1',
+        files: ['b.ts'],
+        message: 'revert: bad change',
+      }),
       ...Array.from({ length: 9 }, (_, i) =>
-        makeCommit({ hash: `m${i}`, files: ['b.ts'], message: 'feat: good stuff' }),
+        makeCommit({
+          hash: `m${i}`,
+          files: ['b.ts'],
+          message: 'feat: good stuff',
+        }),
       ),
     ];
-    const result = analyzeForensics([...commitsFew, ...commitsMany], ['a.ts', 'b.ts']);
+    const result = analyzeForensics(
+      [...commitsFew, ...commitsMany],
+      ['a.ts', 'b.ts'],
+    );
     const aScore = result.files.find((f) => f.file === 'a.ts')!.shameScore;
     const bScore = result.files.find((f) => f.file === 'b.ts')!.shameScore;
     expect(aScore).toBeGreaterThan(bScore);
@@ -98,7 +139,11 @@ describe('analyzeForensics', () => {
     // for the leaderboard; otherwise sub-floor files are filtered out.
     const commits = files.flatMap((file, i) =>
       Array.from({ length: 5 }, (_, j) =>
-        makeCommit({ hash: `h${i}-${j}`, files: [file], message: 'revert: oops' }),
+        makeCommit({
+          hash: `h${i}-${j}`,
+          files: [file],
+          message: 'revert: oops',
+        }),
       ),
     );
     const result = analyzeForensics(commits, files);
@@ -126,14 +171,24 @@ describe('analyzeForensics', () => {
   });
 
   it('ignores files not in the tracked set', () => {
-    const commits = [makeCommit({ hash: '1', files: ['untracked.ts'], message: 'revert: bad' })];
+    const commits = [
+      makeCommit({
+        hash: '1',
+        files: ['untracked.ts'],
+        message: 'revert: bad',
+      }),
+    ];
     const result = analyzeForensics(commits, ['a.ts']);
     expect(result.files).toHaveLength(0);
   });
 
   it('is case-insensitive for keyword matching', () => {
     const commits = [
-      makeCommit({ hash: '1', files: ['a.ts'], message: 'REVERT: Breaking Change' }),
+      makeCommit({
+        hash: '1',
+        files: ['a.ts'],
+        message: 'REVERT: Breaking Change',
+      }),
     ];
     const result = analyzeForensics(commits, ['a.ts']);
     expect(result.files[0].rawShamePoints).toBeGreaterThan(0);
@@ -141,7 +196,13 @@ describe('analyzeForensics', () => {
 
   it('uses whole-word matching (does not match partial words)', () => {
     // "fixing" should not match "fix" as a whole word
-    const commits = [makeCommit({ hash: '1', files: ['a.ts'], message: 'fixing up the config' })];
+    const commits = [
+      makeCommit({
+        hash: '1',
+        files: ['a.ts'],
+        message: 'fixing up the config',
+      }),
+    ];
     const result = analyzeForensics(commits, ['a.ts']);
     expect(result.files).toHaveLength(0);
   });
@@ -191,7 +252,9 @@ describe('shameLeaderboard redefinition (floor-passing only)', () => {
     const result = analyzeForensics(commits, ['lone.yml', 'solid.ts']);
 
     expect(result.files.map((f) => f.file)).toContain('lone.yml');
-    expect(result.shameLeaderboard.map((f) => f.file)).not.toContain('lone.yml');
+    expect(result.shameLeaderboard.map((f) => f.file)).not.toContain(
+      'lone.yml',
+    );
     expect(result.shameLeaderboard.map((f) => f.file)).toContain('solid.ts');
   });
 });
@@ -228,8 +291,16 @@ describe('summary text', () => {
 describe('keywordTiers aggregate', () => {
   it('counts unique commits at the highest matched tier', () => {
     const commits = [
-      makeCommit({ message: 'revert broken refactor', files: ['a.ts'], hash: 'c1' }), // critical
-      makeCommit({ message: 'temporary hack to ship', files: ['a.ts'], hash: 'c2' }), // moderate
+      makeCommit({
+        message: 'revert broken refactor',
+        files: ['a.ts'],
+        hash: 'c1',
+      }), // critical
+      makeCommit({
+        message: 'temporary hack to ship',
+        files: ['a.ts'],
+        hash: 'c2',
+      }), // moderate
       makeCommit({ message: 'fix typo', files: ['a.ts'], hash: 'c3' }), // mild
       makeCommit({ message: 'revert and fix', files: ['a.ts'], hash: 'c4' }), // critical (top-tier wins)
     ];
@@ -247,8 +318,18 @@ describe('keywordTiers aggregate', () => {
 describe('byMonth aggregate', () => {
   it('buckets shame commits by YYYY-MM with contiguous empty months', () => {
     const commits = [
-      makeCommit({ hash: 'c1', message: 'revert', files: ['a.ts'], date: '2026-01-15T10:00:00Z' }),
-      makeCommit({ hash: 'c2', message: 'fix', files: ['a.ts'], date: '2026-03-04T10:00:00Z' }),
+      makeCommit({
+        hash: 'c1',
+        message: 'revert',
+        files: ['a.ts'],
+        date: '2026-01-15T10:00:00Z',
+      }),
+      makeCommit({
+        hash: 'c2',
+        message: 'fix',
+        files: ['a.ts'],
+        date: '2026-03-04T10:00:00Z',
+      }),
     ];
     const result = analyzeForensics(commits, ['a.ts']);
     expect(result.byMonth).toEqual([
@@ -266,8 +347,18 @@ describe('byMonth aggregate', () => {
 
   it('handles December → January year rollover', () => {
     const commits = [
-      makeCommit({ hash: 'c1', message: 'revert', files: ['a.ts'], date: '2025-12-15T10:00:00Z' }),
-      makeCommit({ hash: 'c2', message: 'fix', files: ['a.ts'], date: '2026-02-04T10:00:00Z' }),
+      makeCommit({
+        hash: 'c1',
+        message: 'revert',
+        files: ['a.ts'],
+        date: '2025-12-15T10:00:00Z',
+      }),
+      makeCommit({
+        hash: 'c2',
+        message: 'fix',
+        files: ['a.ts'],
+        date: '2026-02-04T10:00:00Z',
+      }),
     ];
     const result = analyzeForensics(commits, ['a.ts']);
     expect(result.byMonth).toEqual([

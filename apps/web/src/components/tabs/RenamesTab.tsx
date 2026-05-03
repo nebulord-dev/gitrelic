@@ -16,7 +16,9 @@ export function RenamesTab({ report, onSelectFile }: RenamesTabProps) {
       render: (r) => (
         <span className="font-mono text-[11px]">
           {fileName(r.currentPath)}
-          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(r.currentPath)}</span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">
+            {filePath(r.currentPath)}
+          </span>
         </span>
       ),
     },
@@ -44,7 +46,9 @@ export function RenamesTab({ report, onSelectFile }: RenamesTabProps) {
       align: 'right',
       sortValue: (r) => r.renameCount,
       render: (r) => (
-        <span className="font-mono text-[11px] text-text-secondary">{fmt(r.renameCount)}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {fmt(r.renameCount)}
+        </span>
       ),
     },
   ];

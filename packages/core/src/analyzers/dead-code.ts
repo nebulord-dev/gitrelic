@@ -1,4 +1,9 @@
-import type { AgeMapReport, LocReport, DeadCodeReport, DeadCodeCandidate } from '../types.js';
+import type {
+  AgeMapReport,
+  LocReport,
+  DeadCodeReport,
+  DeadCodeCandidate,
+} from '../types.js';
 import type { RawCommit } from '../utils/git.js';
 
 export function analyzeDeadCode(

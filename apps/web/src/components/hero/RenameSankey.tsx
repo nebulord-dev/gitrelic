@@ -23,7 +23,10 @@ function suffixDepthToDistinguish(target: string, peer: string): number {
   return minLen + 1;
 }
 
-export function computeDisplayName(target: string, chainPaths: string[]): string {
+export function computeDisplayName(
+  target: string,
+  chainPaths: string[],
+): string {
   const tSeg = target.split('/');
   if (tSeg.length === 0) return target;
   let depth = 1;
@@ -81,7 +84,12 @@ export function prepareSankeyData(
     if (chain.previousNames.length === 0) continue;
     const path = [...chain.previousNames, chain.currentPath];
     const indices = path.map((name) =>
-      addNode(name, computeDisplayName(name, path), chain.currentPath, name === chain.currentPath),
+      addNode(
+        name,
+        computeDisplayName(name, path),
+        chain.currentPath,
+        name === chain.currentPath,
+      ),
     );
     for (let i = 0; i < indices.length - 1; i++) {
       links.push({ source: indices[i], target: indices[i + 1], value: 1 });
@@ -97,7 +105,11 @@ interface RenameSankeyProps {
   onSelectFile: (file: string) => void;
 }
 
-export function RenameSankey({ report, selectedFile, onSelectFile }: RenameSankeyProps) {
+export function RenameSankey({
+  report,
+  selectedFile,
+  onSelectFile,
+}: RenameSankeyProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
   const [tooltip, setTooltip] = useState<{
@@ -116,7 +128,10 @@ export function RenameSankey({ report, selectedFile, onSelectFile }: RenameSanke
     return () => observer.disconnect();
   }, []);
 
-  const { nodes: rawNodes, links: rawLinks } = useMemo(() => prepareSankeyData(report), [report]);
+  const { nodes: rawNodes, links: rawLinks } = useMemo(
+    () => prepareSankeyData(report),
+    [report],
+  );
 
   const sankeyGraph = useMemo(() => {
     if (rawNodes.length === 0 || rawLinks.length === 0) return null;
@@ -173,7 +188,9 @@ export function RenameSankey({ report, selectedFile, onSelectFile }: RenameSanke
           const height = Math.max(1, y1 - y0);
           const width = Math.max(1, x1 - x0);
           const midY = (y0 + y1) / 2;
-          const color = n.isTerminus ? 'var(--accent-primary)' : 'var(--text-tertiary)';
+          const color = n.isTerminus
+            ? 'var(--accent-primary)'
+            : 'var(--text-tertiary)';
 
           return (
             <g
@@ -224,7 +241,9 @@ export function RenameSankey({ report, selectedFile, onSelectFile }: RenameSanke
         >
           <div className="font-semibold mb-0.5">{tooltip.node.name}</div>
           {!tooltip.node.isTerminus && (
-            <div className="text-text-secondary">Now: {tooltip.node.currentPath}</div>
+            <div className="text-text-secondary">
+              Now: {tooltip.node.currentPath}
+            </div>
           )}
           <div className="text-text-tertiary mt-0.5">
             {tooltip.node.isTerminus ? 'Current name' : 'Previous name'}

@@ -58,7 +58,9 @@ describe('ageMapMetrics', () => {
   });
 
   it('warns when median age exceeds a year', () => {
-    const metrics = ageMapMetrics(makeReport({ files: [makeFile()], medianAgeDays: 400 }));
+    const metrics = ageMapMetrics(
+      makeReport({ files: [makeFile()], medianAgeDays: 400 }),
+    );
     expect(metrics[0].color).toBe('var(--severity-warning)');
   });
 });

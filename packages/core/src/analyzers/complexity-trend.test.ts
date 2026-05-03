@@ -193,9 +193,21 @@ describe('analyzeComplexityTrend', () => {
     ];
     const result = analyzeComplexityTrend(commits, ['a.ts']);
     const buckets = result.files[0].buckets;
-    expect(buckets[0]).toEqual({ month: '2025-01', netLines: 10, cumulative: 10 });
-    expect(buckets[1]).toEqual({ month: '2025-02', netLines: -3, cumulative: 7 });
-    expect(buckets[2]).toEqual({ month: '2025-03', netLines: 8, cumulative: 15 });
+    expect(buckets[0]).toEqual({
+      month: '2025-01',
+      netLines: 10,
+      cumulative: 10,
+    });
+    expect(buckets[1]).toEqual({
+      month: '2025-02',
+      netLines: -3,
+      cumulative: 7,
+    });
+    expect(buckets[2]).toEqual({
+      month: '2025-03',
+      netLines: 8,
+      cumulative: 15,
+    });
   });
 
   it('sorts by absolute recentGrowthRate with alphabetical tiebreaker', () => {

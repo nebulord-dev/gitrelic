@@ -17,7 +17,12 @@ export function analyzeComplexityTrend(
   trackedFiles: string[],
 ): ComplexityTrendReport {
   if (commits.length === 0) {
-    return { files: [], growingFiles: [], shrinkingFiles: [], summary: 'No commits to analyze' };
+    return {
+      files: [],
+      growingFiles: [],
+      shrinkingFiles: [],
+      summary: 'No commits to analyze',
+    };
   }
 
   const trackedSet = new Set(trackedFiles);
@@ -31,7 +36,10 @@ export function analyzeComplexityTrend(
       if (stat.insertions === 0 && stat.deletions === 0) continue;
       if (!fileBuckets.has(stat.file)) fileBuckets.set(stat.file, new Map());
       const months = fileBuckets.get(stat.file)!;
-      months.set(month, (months.get(month) ?? 0) + stat.insertions - stat.deletions);
+      months.set(
+        month,
+        (months.get(month) ?? 0) + stat.insertions - stat.deletions,
+      );
     }
   }
 
@@ -51,7 +59,8 @@ export function analyzeComplexityTrend(
     const totalNetLines = buckets.reduce((sum, b) => sum + b.netLines, 0);
     const recentBuckets = buckets.slice(-3);
     const recentGrowthRate = Math.round(
-      recentBuckets.reduce((sum, b) => sum + b.netLines, 0) / recentBuckets.length,
+      recentBuckets.reduce((sum, b) => sum + b.netLines, 0) /
+        recentBuckets.length,
     );
 
     files.push({

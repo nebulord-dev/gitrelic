@@ -30,8 +30,12 @@ interface SunburstNode {
   children?: SunburstNode[];
 }
 
-function filterSetForMode(report: GitrelicReport, mode: SunburstMode): Set<string> | null {
-  if (mode === 'ghost') return new Set(report.ghostFiles.files.map((f) => f.file));
+function filterSetForMode(
+  report: GitrelicReport,
+  mode: SunburstMode,
+): Set<string> | null {
+  if (mode === 'ghost')
+    return new Set(report.ghostFiles.files.map((f) => f.file));
   if (mode === 'single-author') {
     return new Set(
       report.busFactors.files
@@ -42,7 +46,10 @@ function filterSetForMode(report: GitrelicReport, mode: SunburstMode): Set<strin
   return null;
 }
 
-export function prepareSunburstData(report: GitrelicReport, mode: SunburstMode): SunburstNode {
+export function prepareSunburstData(
+  report: GitrelicReport,
+  mode: SunburstMode,
+): SunburstNode {
   const locMap = new Map<string, number>();
   for (const f of report.loc.files) {
     locMap.set(f.file, f.lines);
@@ -85,7 +92,10 @@ export function prepareSunburstData(report: GitrelicReport, mode: SunburstMode):
   return { name: 'root', children: authorNodes };
 }
 
-export function countSunburstFiles(report: GitrelicReport, mode: SunburstMode): number {
+export function countSunburstFiles(
+  report: GitrelicReport,
+  mode: SunburstMode,
+): number {
   const filterSet = filterSetForMode(report, mode);
   if (!filterSet) return report.busFactors.files.length;
   let count = 0;
@@ -115,7 +125,14 @@ function riskColor(risk: string, opacity: number): string {
 }
 
 type TooltipState =
-  | { kind: 'author'; x: number; y: number; name: string; email: string; fileCount: number }
+  | {
+      kind: 'author';
+      x: number;
+      y: number;
+      name: string;
+      email: string;
+      fileCount: number;
+    }
   | { kind: 'file'; x: number; y: number; file: string; risk: string };
 
 export function OwnershipSunburst({
@@ -142,8 +159,14 @@ export function OwnershipSunburst({
 
   const radius = Math.min(dims.width, dims.height) / 2;
 
-  const treeData = useMemo(() => prepareSunburstData(report, mode), [report, mode]);
-  const totalFiles = useMemo(() => countSunburstFiles(report, mode), [report, mode]);
+  const treeData = useMemo(
+    () => prepareSunburstData(report, mode),
+    [report, mode],
+  );
+  const totalFiles = useMemo(
+    () => countSunburstFiles(report, mode),
+    [report, mode],
+  );
 
   // Build layout
   const { nodes, authorNames } = useMemo(() => {
@@ -154,7 +177,9 @@ export function OwnershipSunburst({
     const layout = partition<SunburstNode>().size([2 * Math.PI, radius]);
     layout(root);
 
-    const allNodes = (root as HierarchyRectangularNode<SunburstNode>).descendants().slice(1);
+    const allNodes = (root as HierarchyRectangularNode<SunburstNode>)
+      .descendants()
+      .slice(1);
 
     const names: string[] = [];
     for (const node of allNodes) {
@@ -194,7 +219,8 @@ export function OwnershipSunburst({
               ? authorColor(d.email ?? d.name)
               : riskColor(d.risk ?? 'low', 0.75);
 
-            const isSelectedAuthor = isAuthor && d.email === selectedContributor;
+            const isSelectedAuthor =
+              isAuthor && d.email === selectedContributor;
             const isSelectedFile = isFile && d.file === selectedFile;
             const isSelected = isSelectedAuthor || isSelectedFile;
 
@@ -206,7 +232,11 @@ export function OwnershipSunburst({
                 d={pathD}
                 fill={fill}
                 fillOpacity={isAuthor ? 0.85 : 0.75}
-                stroke={isSelected ? 'var(--accent-primary)' : 'var(--surface-primary)'}
+                stroke={
+                  isSelected
+                    ? 'var(--accent-primary)'
+                    : 'var(--surface-primary)'
+                }
                 strokeWidth={isSelected ? 2 : 0.5}
                 className="cursor-pointer"
                 onClick={() => {
@@ -231,7 +261,13 @@ export function OwnershipSunburst({
                       fileCount: node.children?.length ?? 0,
                     });
                   } else if (isFile && d.file) {
-                    setTooltip({ kind: 'file', x, y, file: d.file, risk: d.risk ?? 'low' });
+                    setTooltip({
+                      kind: 'file',
+                      x,
+                      y,
+                      file: d.file,
+                      risk: d.risk ?? 'low',
+                    });
                   }
                 }}
                 onMouseLeave={() => setTooltip(null)}
@@ -267,7 +303,10 @@ export function OwnershipSunburst({
 
         {/* Risk legend */}
         {(['critical', 'high', 'medium', 'low'] as const).map((risk, i) => (
-          <g key={risk} transform={`translate(10, ${dims.height - 80 + i * 17})`}>
+          <g
+            key={risk}
+            transform={`translate(10, ${dims.height - 80 + i * 17})`}
+          >
             <rect width={10} height={10} rx={2} fill={riskColor(risk, 0.75)} />
             <text x={16} y={9} fontSize={9} fill="var(--text-secondary)">
               {risk.charAt(0).toUpperCase() + risk.slice(1)} risk
@@ -281,7 +320,13 @@ export function OwnershipSunburst({
             key={email}
             transform={`translate(${dims.width - 110}, ${dims.height - Math.min(authorNames.length, 8) * 16 + i * 16})`}
           >
-            <circle cx={5} cy={4} r={5} fill={authorColor(email)} fillOpacity={0.85} />
+            <circle
+              cx={5}
+              cy={4}
+              r={5}
+              fill={authorColor(email)}
+              fillOpacity={0.85}
+            />
             <text x={14} y={8} fontSize={9} fill="var(--text-secondary)">
               {email.split('@')[0]}
             </text>
@@ -299,13 +344,19 @@ export function OwnershipSunburst({
               <div className="font-semibold mb-0.5">{tooltip.name}</div>
               <div className="text-text-secondary">{tooltip.email}</div>
               <div className="text-text-secondary mt-0.5">
-                {tooltip.fileCount} file{tooltip.fileCount !== 1 ? 's' : ''} owned
+                {tooltip.fileCount} file{tooltip.fileCount !== 1 ? 's' : ''}{' '}
+                owned
               </div>
             </>
           ) : (
             <>
-              <div className="font-semibold mb-0.5 break-all">{tooltip.file}</div>
-              <div className="mt-0.5 capitalize" style={{ color: riskColor(tooltip.risk, 1) }}>
+              <div className="font-semibold mb-0.5 break-all">
+                {tooltip.file}
+              </div>
+              <div
+                className="mt-0.5 capitalize"
+                style={{ color: riskColor(tooltip.risk, 1) }}
+              >
                 {tooltip.risk} risk
               </div>
             </>

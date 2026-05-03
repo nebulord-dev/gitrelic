@@ -2,7 +2,13 @@ import { defineConfig } from 'oxlint';
 
 export default defineConfig({
   plugins: ['typescript', 'react'],
-  ignorePatterns: ['dist/**', '.turbo/**', 'coverage/**', 'build/**', '.sickbay/**'],
+  ignorePatterns: [
+    'dist/**',
+    '.turbo/**',
+    'coverage/**',
+    'build/**',
+    '.sickbay/**',
+  ],
   rules: {
     // TypeScript
     'no-unused-vars': 'warn',

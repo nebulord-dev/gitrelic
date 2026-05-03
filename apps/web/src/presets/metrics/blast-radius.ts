@@ -12,8 +12,11 @@ export function blastRadiusMetrics(report: GitrelicReport): Metric[] {
   );
   const avgCoChanged =
     files.length > 0
-      ? Math.round((files.reduce((sum, f) => sum + f.avgCoChangedFiles, 0) / files.length) * 10) /
-        10
+      ? Math.round(
+          (files.reduce((sum, f) => sum + f.avgCoChangedFiles, 0) /
+            files.length) *
+            10,
+        ) / 10
       : 0;
 
   return [
@@ -30,7 +33,8 @@ export function blastRadiusMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Max Co-Changed',
       value: files.length > 0 ? fmt(maxCoChanged) : '—',
-      color: maxCoChanged > 20 ? 'var(--severity-warning)' : 'var(--text-primary)',
+      color:
+        maxCoChanged > 20 ? 'var(--severity-warning)' : 'var(--text-primary)',
     },
     {
       label: 'Avg Co-Changed',

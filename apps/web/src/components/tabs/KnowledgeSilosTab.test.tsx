@@ -27,20 +27,26 @@ describe('KnowledgeSilosTab', () => {
     expect(screen.getByText('Bus Factor')).toBeTruthy();
     expect(screen.getByText('Ghost Files')).toBeTruthy();
     expect(
-      screen.getByText('of 2792 files have a single dominant author (80%+ commits)'),
+      screen.getByText(
+        'of 2792 files have a single dominant author (80%+ commits)',
+      ),
     ).toBeTruthy();
   });
 
   it('routes Bus Factor click to onApplyPreset("bus-factor")', () => {
     const onApplyPreset = vi.fn();
-    render(<KnowledgeSilosTab report={makeReport()} onApplyPreset={onApplyPreset} />);
+    render(
+      <KnowledgeSilosTab report={makeReport()} onApplyPreset={onApplyPreset} />,
+    );
     screen.getByText('Bus Factor').click();
     expect(onApplyPreset).toHaveBeenCalledWith('bus-factor');
   });
 
   it('routes Ghost Files click to onApplyPreset("ghost-files")', () => {
     const onApplyPreset = vi.fn();
-    render(<KnowledgeSilosTab report={makeReport()} onApplyPreset={onApplyPreset} />);
+    render(
+      <KnowledgeSilosTab report={makeReport()} onApplyPreset={onApplyPreset} />,
+    );
     screen.getByText('Ghost Files').click();
     expect(onApplyPreset).toHaveBeenCalledWith('ghost-files');
   });

@@ -23,11 +23,20 @@ export function ContributorsInspector({
 }: ContributorsInspectorProps) {
   // If a contributor is selected, show their profile
   if (contributor) {
-    const person = report.contributors.contributors.find((c) => c.email === contributor);
-    if (!person) return <div className="text-text-tertiary text-[11px]">Contributor not found</div>;
+    const person = report.contributors.contributors.find(
+      (c) => c.email === contributor,
+    );
+    if (!person)
+      return (
+        <div className="text-text-tertiary text-[11px]">
+          Contributor not found
+        </div>
+      );
 
     // Find files owned by this contributor
-    const ownedFiles = report.busFactors.files.filter((f) => f.dominantAuthor === contributor);
+    const ownedFiles = report.busFactors.files.filter(
+      (f) => f.dominantAuthor === contributor,
+    );
 
     return (
       <div>
@@ -36,7 +45,9 @@ export function ContributorsInspector({
             {person.name.slice(0, 2).toUpperCase()}
           </div>
           <div>
-            <div className="text-[12px] font-semibold text-text-primary">{person.name}</div>
+            <div className="text-[12px] font-semibold text-text-primary">
+              {person.name}
+            </div>
             <div className="text-[10px] text-text-tertiary">{person.email}</div>
           </div>
           {!person.isActive && <Badge variant="stale">ghost</Badge>}
@@ -56,12 +67,16 @@ export function ContributorsInspector({
         </div>
         <div className={statRow}>
           <span className={statLabel}>Focus Areas</span>
-          <span className={statValue}>{person.focusAreas.slice(0, 2).join(', ')}</span>
+          <span className={statValue}>
+            {person.focusAreas.slice(0, 2).join(', ')}
+          </span>
         </div>
 
         {ownedFiles.length > 0 && (
           <div className="mt-4">
-            <div className="text-[10px] text-text-tertiary mb-2">Dominant Owner Of</div>
+            <div className="text-[10px] text-text-tertiary mb-2">
+              Dominant Owner Of
+            </div>
             {ownedFiles.slice(0, 10).map((f) => (
               <div
                 key={f.file}
@@ -69,7 +84,9 @@ export function ContributorsInspector({
                 className="py-1 border-b border-border-primary text-[10px] font-mono text-text-primary cursor-pointer"
               >
                 {fileName(f.file)}
-                <span className="text-text-tertiary ml-2">{f.dominantAuthorPercent}%</span>
+                <span className="text-text-tertiary ml-2">
+                  {f.dominantAuthorPercent}%
+                </span>
               </div>
             ))}
           </div>
@@ -81,7 +98,12 @@ export function ContributorsInspector({
   // If a file is selected, show its contributors
   if (file) {
     const bf = report.busFactors.files.find((f) => f.file === file);
-    if (!bf) return <div className="text-text-tertiary text-[11px]">No contributor data</div>;
+    if (!bf)
+      return (
+        <div className="text-text-tertiary text-[11px]">
+          No contributor data
+        </div>
+      );
 
     return (
       <div>
@@ -92,7 +114,9 @@ export function ContributorsInspector({
           {bf.uniqueAuthors} contributor{bf.uniqueAuthors !== 1 ? 's' : ''}
         </div>
         {bf.authors.map((email) => {
-          const person = report.contributors.contributors.find((c) => c.email === email);
+          const person = report.contributors.contributors.find(
+            (c) => c.email === email,
+          );
           const isDominant = email === bf.dominantAuthor;
           return (
             <div

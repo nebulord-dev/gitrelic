@@ -24,13 +24,18 @@ h6,
 .VPHero .text,
 .VPHero .tagline {
   font-family:
-    'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', ui-monospace, monospace !important;
+    'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', ui-monospace,
+    monospace !important;
 }
 
 /* Hero name gradient — bright blue */
 :root {
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+  --vp-home-hero-name-background: linear-gradient(
+    135deg,
+    #38bdf8 0%,
+    #0ea5e9 100%
+  );
 }
 
 /* Hero image glow — scoped to hero only */

@@ -44,7 +44,12 @@ describe('Tooltip', () => {
     render(
       <Tooltip
         content="info"
-        wrapperStyle={{ display: 'block', flex: 1, minWidth: 0, overflow: 'hidden' }}
+        wrapperStyle={{
+          display: 'block',
+          flex: 1,
+          minWidth: 0,
+          overflow: 'hidden',
+        }}
       >
         <span>label</span>
       </Tooltip>,

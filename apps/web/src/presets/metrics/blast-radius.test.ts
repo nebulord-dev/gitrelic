@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import { blastRadiusMetrics } from './blast-radius';
 
-import type { BlastRadiusReport, FileBlastRadius, GitrelicReport } from '@gitrelic/core';
+import type {
+  BlastRadiusReport,
+  FileBlastRadius,
+  GitrelicReport,
+} from '@gitrelic/core';
 
 function makeFile(overrides: Partial<FileBlastRadius> = {}): FileBlastRadius {
   return {
@@ -52,7 +56,9 @@ describe('blastRadiusMetrics', () => {
   });
 
   it('returns em-dash for Top Blast Score when files exist but topBlasters is empty', () => {
-    const metrics = blastRadiusMetrics(makeReport({ files: [makeFile()], topBlasters: [] }));
+    const metrics = blastRadiusMetrics(
+      makeReport({ files: [makeFile()], topBlasters: [] }),
+    );
     expect(metrics[0].value).toBe('—');
     expect(metrics[0].color).toBe('var(--severity-healthy)');
     expect(metrics[3].value).toBe('1');

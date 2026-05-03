@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import { rewriteRatioMetrics } from './rewrite-ratio';
 
-import type { FileRewriteRatio, GitrelicReport, RewriteRatioReport } from '@gitrelic/core';
+import type {
+  FileRewriteRatio,
+  GitrelicReport,
+  RewriteRatioReport,
+} from '@gitrelic/core';
 
 function makeFile(overrides: Partial<FileRewriteRatio> = {}): FileRewriteRatio {
   return {
@@ -42,25 +46,35 @@ describe('rewriteRatioMetrics', () => {
 
   it('surfaces rounded top rewriter score with critical color at/above 70', () => {
     const topRewriters = [makeFile({ rewriteScore: 82 })];
-    const metrics = rewriteRatioMetrics(makeReport({ files: [makeFile()], topRewriters }));
+    const metrics = rewriteRatioMetrics(
+      makeReport({ files: [makeFile()], topRewriters }),
+    );
     expect(metrics[0].value).toBe('82');
     expect(metrics[0].color).toBe('var(--severity-critical)');
   });
 
   it('warns between 30 and 69', () => {
     const topRewriters = [makeFile({ rewriteScore: 55 })];
-    const metrics = rewriteRatioMetrics(makeReport({ files: [makeFile()], topRewriters }));
+    const metrics = rewriteRatioMetrics(
+      makeReport({ files: [makeFile()], topRewriters }),
+    );
     expect(metrics[0].color).toBe('var(--severity-warning)');
   });
 
   it('stays healthy below 30 even with a top rewriter present', () => {
     const topRewriters = [makeFile({ rewriteScore: 15 })];
-    const metrics = rewriteRatioMetrics(makeReport({ files: [makeFile()], topRewriters }));
+    const metrics = rewriteRatioMetrics(
+      makeReport({ files: [makeFile()], topRewriters }),
+    );
     expect(metrics[0].color).toBe('var(--severity-healthy)');
   });
 
   it('formats avg ratio as a two-decimal fixed string', () => {
-    const files = [makeFile({ ratio: 0.33 }), makeFile({ ratio: 0.66 }), makeFile({ ratio: 1.0 })];
+    const files = [
+      makeFile({ ratio: 0.33 }),
+      makeFile({ ratio: 0.66 }),
+      makeFile({ ratio: 1.0 }),
+    ];
     const metrics = rewriteRatioMetrics(makeReport({ files }));
     expect(metrics[2].value).toBe('0.66');
     expect(metrics[3].value).toBe('3');
@@ -73,7 +87,9 @@ describe('rewriteRatioMetrics', () => {
   });
 
   it('returns em-dash for Top Rewriter Score when topRewriters is empty but files exist', () => {
-    const metrics = rewriteRatioMetrics(makeReport({ files: [makeFile()], topRewriters: [] }));
+    const metrics = rewriteRatioMetrics(
+      makeReport({ files: [makeFile()], topRewriters: [] }),
+    );
     expect(metrics[0].value).toBe('—');
     expect(metrics[0].color).toBe('var(--severity-healthy)');
   });
@@ -91,13 +107,21 @@ describe('slot 2 — Files ≥70', () => {
     const filler = Array.from({ length: 10 }, (_, i) =>
       makeFile({ file: `f${i}.ts`, rewriteScore: 50 }),
     );
-    const m = rewriteRatioMetrics(makeReport({ topRewriters: filler, highRewrite: 2 }));
+    const m = rewriteRatioMetrics(
+      makeReport({ topRewriters: filler, highRewrite: 2 }),
+    );
     expect(m[1].value).toBe('2');
   });
 
   it('severity bands at 0 / 1 / 5', () => {
-    expect(rewriteRatioMetrics(makeReport({ highRewrite: 0 }))[1].color).toContain('healthy');
-    expect(rewriteRatioMetrics(makeReport({ highRewrite: 4 }))[1].color).toContain('warning');
-    expect(rewriteRatioMetrics(makeReport({ highRewrite: 5 }))[1].color).toContain('critical');
+    expect(
+      rewriteRatioMetrics(makeReport({ highRewrite: 0 }))[1].color,
+    ).toContain('healthy');
+    expect(
+      rewriteRatioMetrics(makeReport({ highRewrite: 4 }))[1].color,
+    ).toContain('warning');
+    expect(
+      rewriteRatioMetrics(makeReport({ highRewrite: 5 }))[1].color,
+    ).toContain('critical');
   });
 });

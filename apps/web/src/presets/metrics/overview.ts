@@ -2,13 +2,18 @@ import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export function overviewMetrics(report: GitrelicReport): Metric[] {
-  const criticalCount = report.hotspots.topHotspots.filter((h) => h.category === 'critical').length;
+  const criticalCount = report.hotspots.topHotspots.filter(
+    (h) => h.category === 'critical',
+  ).length;
 
   return [
     {
       label: 'Cursed Files',
       value: String(report.cursedFiles.length),
-      color: report.cursedFiles.length > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
+      color:
+        report.cursedFiles.length > 0
+          ? 'var(--severity-critical)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'Hotspots',

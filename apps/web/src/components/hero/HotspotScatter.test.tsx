@@ -8,8 +8,18 @@ function makeReport(): GitrelicReport {
   return {
     churn: {
       files: [
-        { file: 'a.ts', commitCount: 20, churnScore: 80, category: 'hot' as const },
-        { file: 'b.ts', commitCount: 5, churnScore: 20, category: 'cold' as const },
+        {
+          file: 'a.ts',
+          commitCount: 20,
+          churnScore: 80,
+          category: 'hot' as const,
+        },
+        {
+          file: 'b.ts',
+          commitCount: 5,
+          churnScore: 20,
+          category: 'cold' as const,
+        },
       ],
       topFiles: [],
       hotspotCount: 1,
@@ -27,8 +37,20 @@ function makeReport(): GitrelicReport {
     },
     hotspots: {
       files: [
-        { file: 'a.ts', hotspotScore: 90, churnScore: 80, loc: 200, category: 'critical' as const },
-        { file: 'b.ts', hotspotScore: 15, churnScore: 20, loc: 100, category: 'low' as const },
+        {
+          file: 'a.ts',
+          hotspotScore: 90,
+          churnScore: 80,
+          loc: 200,
+          category: 'critical' as const,
+        },
+        {
+          file: 'b.ts',
+          hotspotScore: 15,
+          churnScore: 20,
+          loc: 100,
+          category: 'low' as const,
+        },
       ],
       topHotspots: [],
       summary: '',

@@ -19,7 +19,10 @@ describe('aggregateChurnByDirectory', () => {
       file('src/components/Footer.tsx', 5),
       file('src/utils/format.ts', 3),
     ]);
-    expect(rows.map((r) => r.directory).sort()).toEqual(['src/components', 'src/utils']);
+    expect(rows.map((r) => r.directory).sort()).toEqual([
+      'src/components',
+      'src/utils',
+    ]);
   });
 
   it('sums commit counts per directory', () => {
@@ -42,7 +45,10 @@ describe('aggregateChurnByDirectory', () => {
   });
 
   it('computes share as the directory commit-sum over the total commit-sum', () => {
-    const rows = aggregateChurnByDirectory([file('a/x.ts', 30), file('b/y.ts', 70)]);
+    const rows = aggregateChurnByDirectory([
+      file('a/x.ts', 30),
+      file('b/y.ts', 70),
+    ]);
     expect(rows.find((r) => r.directory === 'a')?.share).toBeCloseTo(0.3, 5);
     expect(rows.find((r) => r.directory === 'b')?.share).toBeCloseTo(0.7, 5);
   });
@@ -65,12 +71,16 @@ describe('aggregateChurnByDirectory', () => {
   });
 
   it('limits the result to top 10 directories by default', () => {
-    const files = Array.from({ length: 15 }, (_, i) => file(`dir${i}/file.ts`, i + 1));
+    const files = Array.from({ length: 15 }, (_, i) =>
+      file(`dir${i}/file.ts`, i + 1),
+    );
     expect(aggregateChurnByDirectory(files)).toHaveLength(10);
   });
 
   it('honors a custom limit option', () => {
-    const files = Array.from({ length: 15 }, (_, i) => file(`dir${i}/file.ts`, i + 1));
+    const files = Array.from({ length: 15 }, (_, i) =>
+      file(`dir${i}/file.ts`, i + 1),
+    );
     expect(aggregateChurnByDirectory(files, { limit: 5 })).toHaveLength(5);
   });
 

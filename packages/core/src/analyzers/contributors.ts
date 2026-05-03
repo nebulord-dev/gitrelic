@@ -7,7 +7,10 @@ import type { RawCommit } from '../utils/git.js';
  * @param repoAgeDays - The age of the repository in days.
  * @Returns a report with the top 20 contributors by commit count, the number of active contributors, and a summary.
  */
-export function analyzeContributors(commits: RawCommit[], repoAgeDays: number): ContributorReport {
+export function analyzeContributors(
+  commits: RawCommit[],
+  repoAgeDays: number,
+): ContributorReport {
   const authorMap: Map<
     string,
     {
@@ -21,13 +24,20 @@ export function analyzeContributors(commits: RawCommit[], repoAgeDays: number): 
   for (const commit of commits) {
     const email = commit.authorEmail;
     if (!authorMap.has(email)) {
-      authorMap.set(email, { name: commit.authorName, commits: [], files: new Set(), dirs: {} });
+      authorMap.set(email, {
+        name: commit.authorName,
+        commits: [],
+        files: new Set(),
+        dirs: {},
+      });
     }
     const entry = authorMap.get(email)!;
     entry.commits.push(commit);
     for (const file of commit.files) {
       entry.files.add(file);
-      const dir = file.includes('/') ? file.split('/').slice(0, 2).join('/') : '.';
+      const dir = file.includes('/')
+        ? file.split('/').slice(0, 2).join('/')
+        : '.';
       entry.dirs[dir] = (entry.dirs[dir] ?? 0) + 1;
     }
   }
@@ -35,18 +45,30 @@ export function analyzeContributors(commits: RawCommit[], repoAgeDays: number): 
   const now = Date.now();
   const MIN_ACTIVE_DAYS = 90;
   const MIN_GHOST_DAYS = 180;
-  const activeWindowDays = Math.max(MIN_ACTIVE_DAYS, Math.round(repoAgeDays * 0.25));
-  const ghostWindowDays = Math.max(MIN_GHOST_DAYS, Math.round(repoAgeDays * 0.5));
+  const activeWindowDays = Math.max(
+    MIN_ACTIVE_DAYS,
+    Math.round(repoAgeDays * 0.25),
+  );
+  const ghostWindowDays = Math.max(
+    MIN_GHOST_DAYS,
+    Math.round(repoAgeDays * 0.5),
+  );
   const activeCutoff = now - activeWindowDays * 86_400_000;
   const ghostCutoff = now - ghostWindowDays * 86_400_000;
 
   const contributors: Contributor[] = Array.from(authorMap.entries())
     .map(([email, data]) => {
-      const sorted = [...data.commits].sort((a, b) => a.date.localeCompare(b.date));
+      const sorted = [...data.commits].sort((a, b) =>
+        a.date.localeCompare(b.date),
+      );
       const firstCommit = sorted[0].date;
       const lastCommit = sorted[sorted.length - 1].date;
-      const activeDays = new Set(data.commits.map((c) => c.date.slice(0, 10))).size;
-      const linesChanged = data.commits.reduce((sum, c) => sum + c.insertions + c.deletions, 0);
+      const activeDays = new Set(data.commits.map((c) => c.date.slice(0, 10)))
+        .size;
+      const linesChanged = data.commits.reduce(
+        (sum, c) => sum + c.insertions + c.deletions,
+        0,
+      );
       const focusAreas = Object.entries(data.dirs)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3)
@@ -95,5 +117,11 @@ export function analyzeContributors(commits: RawCommit[], repoAgeDays: number): 
         ? `${contributors.length} contributors total — ${activeContributors.length} active, ${ghostContributors.length} ghosts who haven't committed in ${ghostWindowDays}+ days`
         : `${contributors.length} contributors — ${activeContributors.length} actively committing`;
 
-  return { contributors, activeContributors, ghostContributors, topContributor, summary };
+  return {
+    contributors,
+    activeContributors,
+    ghostContributors,
+    topContributor,
+    summary,
+  };
 }

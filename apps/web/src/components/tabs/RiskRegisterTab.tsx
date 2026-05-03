@@ -33,7 +33,9 @@ function busFacValue(risk: string): number {
   }
 }
 
-function busFactorVariant(risk: string): 'critical' | 'warning' | 'moderate' | 'healthy' {
+function busFactorVariant(
+  risk: string,
+): 'critical' | 'warning' | 'moderate' | 'healthy' {
   switch (risk) {
     case 'critical':
       return 'critical';
@@ -46,9 +48,14 @@ function busFactorVariant(risk: string): 'critical' | 'warning' | 'moderate' | '
   }
 }
 
-export function RiskRegisterTab({ report, onSelectFile }: RiskRegisterTabProps) {
+export function RiskRegisterTab({
+  report,
+  onSelectFile,
+}: RiskRegisterTabProps) {
   const ghostSet = new Set(report.ghostFiles.files.map((g) => g.file));
-  const blastMap = new Map(report.blastRadius.files.map((b) => [b.file, b.blastScore]));
+  const blastMap = new Map(
+    report.blastRadius.files.map((b) => [b.file, b.blastScore]),
+  );
 
   const rows: RiskRow[] = report.busFactors.files
     .map((f) => {
@@ -58,7 +65,10 @@ export function RiskRegisterTab({ report, onSelectFile }: RiskRegisterTabProps) 
       const bfScore = busFacValue(f.risk);
 
       const riskScore = Math.round(
-        bfScore * 0.35 + (ghost ? 100 : 0) * 0.25 + concentration * 0.25 + blast * 0.15,
+        bfScore * 0.35 +
+          (ghost ? 100 : 0) * 0.25 +
+          concentration * 0.25 +
+          blast * 0.15,
       );
 
       return {
@@ -89,7 +99,9 @@ export function RiskRegisterTab({ report, onSelectFile }: RiskRegisterTabProps) 
       render: (r) => (
         <span className="font-mono text-[11px]">
           {fileName(r.file)}
-          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(r.file)}</span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">
+            {filePath(r.file)}
+          </span>
         </span>
       ),
     },
@@ -99,7 +111,11 @@ export function RiskRegisterTab({ report, onSelectFile }: RiskRegisterTabProps) 
       width: '90px',
       align: 'center',
       sortValue: (r) => r.busFactorScore,
-      render: (r) => <Badge variant={busFactorVariant(r.busFactorRisk)}>{r.busFactorRisk}</Badge>,
+      render: (r) => (
+        <Badge variant={busFactorVariant(r.busFactorRisk)}>
+          {r.busFactorRisk}
+        </Badge>
+      ),
     },
     {
       key: 'ghost',

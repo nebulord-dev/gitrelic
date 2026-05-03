@@ -23,7 +23,11 @@ function dirLabel(d: string): string {
   return parts[parts.length - 1];
 }
 
-export function CouplingHeatmap({ report, selectedFile, onSelectFile }: CouplingHeatmapProps) {
+export function CouplingHeatmap({
+  report,
+  selectedFile,
+  onSelectFile,
+}: CouplingHeatmapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
   const [tooltip, setTooltip] = useState<{
@@ -80,7 +84,9 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
 
     const dirIdx = new Map(dirs.map((d, i) => [d, i]));
     const n = dirs.length;
-    const matrix: number[][] = Array.from({ length: n }, () => new Array(n).fill(0));
+    const matrix: number[][] = Array.from({ length: n }, () =>
+      new Array(n).fill(0),
+    );
 
     let maxValue = 0;
     for (const [key, count] of pairMap) {
@@ -97,14 +103,23 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
     return { dirs, matrix, maxValue, dirFilesMap };
   }, [report.coupling.pairs]);
 
-  const gridSize = Math.min(dims.width - ROW_LABEL_WIDTH, dims.height - COL_HEADER_HEIGHT);
-  const cellSize = Math.max(dirs.length > 0 ? gridSize / dirs.length : MIN_CELL, MIN_CELL);
+  const gridSize = Math.min(
+    dims.width - ROW_LABEL_WIDTH,
+    dims.height - COL_HEADER_HEIGHT,
+  );
+  const cellSize = Math.max(
+    dirs.length > 0 ? gridSize / dirs.length : MIN_CELL,
+    MIN_CELL,
+  );
   const totalSize = cellSize * dirs.length;
 
   const selectedDir = selectedFile ? getDirectory(selectedFile) : null;
 
   return (
-    <div ref={containerRef} className="relative w-full h-full overflow-auto -mt-[15px]">
+    <div
+      ref={containerRef}
+      className="relative w-full h-full overflow-auto -mt-[15px]"
+    >
       <div className="absolute top-1 left-2 text-[9px] uppercase tracking-[1px] text-text-tertiary pointer-events-none z-[1]">
         Cross-directory coupling · same-dir pairs in table below
       </div>
@@ -122,7 +137,11 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
             transform={`translate(${ROW_LABEL_WIDTH + i * cellSize + cellSize / 2}, 150) rotate(-45)`}
             textAnchor="start"
             fontSize={9}
-            fill={selectedDir === d ? 'var(--text-primary)' : 'var(--text-secondary)'}
+            fill={
+              selectedDir === d
+                ? 'var(--text-primary)'
+                : 'var(--text-secondary)'
+            }
             fontWeight={selectedDir === d ? 700 : 400}
           >
             {dirLabel(d)}
@@ -131,7 +150,10 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
 
         {/* Row headers + cells */}
         {dirs.map((rowDir, ri) => (
-          <g key={`row-${rowDir}`} transform={`translate(0, ${COL_HEADER_HEIGHT + ri * cellSize})`}>
+          <g
+            key={`row-${rowDir}`}
+            transform={`translate(0, ${COL_HEADER_HEIGHT + ri * cellSize})`}
+          >
             {/* Row label */}
             <text
               x={ROW_LABEL_WIDTH - 8}
@@ -139,7 +161,11 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
               textAnchor="end"
               dominantBaseline="central"
               fontSize={9}
-              fill={selectedDir === rowDir ? 'var(--text-primary)' : 'var(--text-secondary)'}
+              fill={
+                selectedDir === rowDir
+                  ? 'var(--text-primary)'
+                  : 'var(--text-secondary)'
+              }
               fontWeight={selectedDir === rowDir ? 700 : 400}
             >
               {dirLabel(rowDir)}
@@ -164,7 +190,8 @@ export function CouplingHeatmap({ report, selectedFile, onSelectFile }: Coupling
               }
 
               const intensity = maxValue > 0 ? value / maxValue : 0;
-              const isHighlighted = selectedDir === rowDir || selectedDir === colDir;
+              const isHighlighted =
+                selectedDir === rowDir || selectedDir === colDir;
 
               return (
                 <rect

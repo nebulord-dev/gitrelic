@@ -23,11 +23,18 @@ describe('analyzeTestCoverage', () => {
   it('identifies uncovered directories', () => {
     const files = ['src/a.ts', 'src/a.test.ts', 'utils/helper.ts'];
     const result = analyzeTestCoverage(files);
-    expect(result.uncoveredDirectories.map((d) => d.directory)).toContain('utils');
+    expect(result.uncoveredDirectories.map((d) => d.directory)).toContain(
+      'utils',
+    );
   });
 
   it('ignores non-code files for source count', () => {
-    const files = ['src/a.ts', 'src/readme.md', 'src/config.json', 'src/style.css'];
+    const files = [
+      'src/a.ts',
+      'src/readme.md',
+      'src/config.json',
+      'src/style.css',
+    ];
     const result = analyzeTestCoverage(files);
     const dir = result.directories.find((d) => d.directory === 'src')!;
     expect(dir.sourceFiles).toBe(1); // only a.ts
@@ -66,13 +73,17 @@ describe('analyzeTestCoverage — files[]', () => {
   it('detects siblings across .spec naming', () => {
     const files = ['lib/util.ts', 'lib/util.spec.ts'];
     const { files: perFile } = analyzeTestCoverage(files);
-    expect(perFile.find((f) => f.file === 'lib/util.ts')!.hasTestSibling).toBe(true);
+    expect(perFile.find((f) => f.file === 'lib/util.ts')!.hasTestSibling).toBe(
+      true,
+    );
   });
 
   it('detects siblings under a __tests__ subdirectory', () => {
     const files = ['src/foo.ts', 'src/__tests__/foo.test.ts'];
     const { files: perFile } = analyzeTestCoverage(files);
-    expect(perFile.find((f) => f.file === 'src/foo.ts')!.hasTestSibling).toBe(true);
+    expect(perFile.find((f) => f.file === 'src/foo.ts')!.hasTestSibling).toBe(
+      true,
+    );
   });
 
   it('does not include test files themselves in files[]', () => {

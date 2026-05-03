@@ -10,17 +10,31 @@ function makeReport(): GitrelicReport {
   return {
     meta: { totalAuthors: 5, ageInDays: 365 },
     churn: { files: [], topFiles: [], hotspotCount: 0, summary: '' },
-    loc: { totalFiles: 10, totalLines: 1000, files: [], languages: [], summary: '' },
+    loc: {
+      totalFiles: 10,
+      totalLines: 1000,
+      files: [],
+      languages: [],
+      summary: '',
+    },
     hotspots: { files: [], topHotspots: [], summary: '' },
     cursedFiles: [],
     busFactors: { criticalFiles: [] },
     coupling: { pairs: [], topPairs: [], fileProfiles: [], summary: '' },
     deadCode: { totalDeadFiles: 0, totalDeadLines: 0, candidates: [] },
     ghostFiles: { files: [], totalGhostFiles: 0 },
-    knowledgeConcentration: { singleAuthorFiles: 0, totalFiles: 0, concentrationIndex: 0 },
+    knowledgeConcentration: {
+      singleAuthorFiles: 0,
+      totalFiles: 0,
+      concentrationIndex: 0,
+    },
     parallelDev: { files: [], hotFiles: [], totalParallelFiles: 0 },
     ageMap: { files: [], staleFiles: [], ancientFiles: [], medianAgeDays: 0 },
-    testCoverage: { directories: [], uncoveredDirectories: [], overallRatio: 0 },
+    testCoverage: {
+      directories: [],
+      uncoveredDirectories: [],
+      overallRatio: 0,
+    },
     blastRadius: { files: [], topBlasters: [] },
     complexityTrend: { files: [], growingFiles: [], shrinkingFiles: [] },
     rewriteRatio: {
@@ -38,8 +52,18 @@ function makeReport(): GitrelicReport {
       repoWeekendPercent: 0,
       summary: '',
     },
-    coAuthors: { pairs: [], authorStats: [], totalCoAuthoredCommits: 0, summary: '' },
-    forensics: { files: [], shameLeaderboard: [], totalShameCommits: 0, summary: '' },
+    coAuthors: {
+      pairs: [],
+      authorStats: [],
+      totalCoAuthoredCommits: 0,
+      summary: '',
+    },
+    forensics: {
+      files: [],
+      shameLeaderboard: [],
+      totalShameCommits: 0,
+      summary: '',
+    },
     renameTracking: {
       renames: [],
       chains: [],
@@ -50,18 +74,26 @@ function makeReport(): GitrelicReport {
   } as unknown as GitrelicReport;
 }
 
-const DEFINED_PRESETS = (Object.entries(PRESETS) as [PresetId, PresetDefinition | undefined][])
+const DEFINED_PRESETS = (
+  Object.entries(PRESETS) as [PresetId, PresetDefinition | undefined][]
+)
   .filter(([, def]) => def !== undefined)
   .map(([id, def]) => ({ id, def: def as PresetDefinition }));
 
 describe('PRESETS registry contract', () => {
-  it.each(DEFINED_PRESETS)('$id: defaultViz is included in hero.altTabs', ({ def }) => {
-    expect(def.hero.altTabs).toContain(def.hero.defaultViz);
-  });
+  it.each(DEFINED_PRESETS)(
+    '$id: defaultViz is included in hero.altTabs',
+    ({ def }) => {
+      expect(def.hero.altTabs).toContain(def.hero.defaultViz);
+    },
+  );
 
-  it.each(DEFINED_PRESETS)('$id: defaultTab is included in bottomPanel.altTabs', ({ def }) => {
-    expect(def.bottomPanel.altTabs).toContain(def.bottomPanel.defaultTab);
-  });
+  it.each(DEFINED_PRESETS)(
+    '$id: defaultTab is included in bottomPanel.altTabs',
+    ({ def }) => {
+      expect(def.bottomPanel.altTabs).toContain(def.bottomPanel.defaultTab);
+    },
+  );
 
   it.each(DEFINED_PRESETS)('$id: metrics returns 1 to 5 entries', ({ def }) => {
     const result = def.metrics(makeReport());
@@ -69,14 +101,19 @@ describe('PRESETS registry contract', () => {
     expect(result.length).toBeLessThanOrEqual(5);
   });
 
-  it.each(DEFINED_PRESETS)('$id: id field matches the registry key', ({ id, def }) => {
-    expect(def.id).toBe(id);
-  });
+  it.each(DEFINED_PRESETS)(
+    '$id: id field matches the registry key',
+    ({ id, def }) => {
+      expect(def.id).toBe(id);
+    },
+  );
 
   it('includes all three Tier 1 presets', () => {
-    const tier1Ids = DEFINED_PRESETS.filter(({ def }) => def.tier === 'dashboard').map(
-      ({ id }) => id,
+    const tier1Ids = DEFINED_PRESETS.filter(
+      ({ def }) => def.tier === 'dashboard',
+    ).map(({ id }) => id);
+    expect(tier1Ids).toEqual(
+      expect.arrayContaining(['overview', 'risk', 'tech-debt']),
     );
-    expect(tier1Ids).toEqual(expect.arrayContaining(['overview', 'risk', 'tech-debt']));
   });
 });

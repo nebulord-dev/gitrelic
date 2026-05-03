@@ -23,27 +23,36 @@ export function coAuthorsMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Pairs',
       value: String(pairCount),
-      color: pairCount > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
+      color:
+        pairCount > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
     },
     {
       label: 'Co-commits',
       value: fmt(totalCoAuthoredCommits),
-      color: totalCoAuthoredCommits > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
+      color:
+        totalCoAuthoredCommits > 0
+          ? 'var(--accent-primary)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'Collaborators',
       value: String(collaborators.size),
-      color: collaborators.size > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
+      color:
+        collaborators.size > 0
+          ? 'var(--accent-primary)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'Avg Commits/Pair',
       value: pairCount > 0 ? String(avgPerPair) : '—',
-      color: pairCount > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
+      color:
+        pairCount > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
     },
     {
       label: 'Top Pair Commits',
       value: pairCount > 0 ? String(topPair) : '—',
-      color: pairCount > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
+      color:
+        pairCount > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
     },
   ];
 }

@@ -36,9 +36,18 @@ function bubbleColor(author: string): string {
 
 // Trim a label to fit inside a bubble of the given radius at the given font
 // size. Adds an ellipsis when trimmed.
-export function fitLabel(text: string, radius: number, fontSize: number): string {
-  const maxChars = Math.max(4, Math.floor((radius * 1.7) / (fontSize * CHAR_WIDTH_FACTOR)));
-  return text.length <= maxChars ? text : `${text.slice(0, Math.max(1, maxChars - 1))}…`;
+export function fitLabel(
+  text: string,
+  radius: number,
+  fontSize: number,
+): string {
+  const maxChars = Math.max(
+    4,
+    Math.floor((radius * 1.7) / (fontSize * CHAR_WIDTH_FACTOR)),
+  );
+  return text.length <= maxChars
+    ? text
+    : `${text.slice(0, Math.max(1, maxChars - 1))}…`;
 }
 
 // Same as fitLabel but preserves the trailing percent suffix; only the author
@@ -52,7 +61,10 @@ export function fitSubLabel(
   fontSize: number,
 ): string {
   const suffix = ` ${percent}%`;
-  const maxChars = Math.max(4, Math.floor((radius * 1.7) / (fontSize * CHAR_WIDTH_FACTOR)));
+  const maxChars = Math.max(
+    4,
+    Math.floor((radius * 1.7) / (fontSize * CHAR_WIDTH_FACTOR)),
+  );
   if (author.length + suffix.length <= maxChars) return `${author}${suffix}`;
   const authorBudget = maxChars - suffix.length - 1;
   if (authorBudget < 2) return `${percent}%`;
@@ -76,7 +88,11 @@ export function buildDirectoryBubbles(report: GitrelicReport): DirBubble[] {
     const parts = f.file.split('/');
     // Use up to 2 levels: "src/analyzers", "apps/web", etc.
     const dirKey =
-      parts.length > 2 ? parts.slice(0, 2).join('/') : parts.length > 1 ? parts[0] : '.';
+      parts.length > 2
+        ? parts.slice(0, 2).join('/')
+        : parts.length > 1
+          ? parts[0]
+          : '.';
 
     if (!dirStats.has(dirKey)) {
       dirStats.set(dirKey, { loc: 0, authors: new Map(), fileCount: 0 });
@@ -104,7 +120,9 @@ export function buildDirectoryBubbles(report: GitrelicReport): DirBubble[] {
       }
     }
     const dominantPercent =
-      dominantAuthor === UNKNOWN_AUTHOR ? 0 : Math.round((maxCount / stats.fileCount) * 100);
+      dominantAuthor === UNKNOWN_AUTHOR
+        ? 0
+        : Math.round((maxCount / stats.fileCount) * 100);
 
     bubbles.push({
       name: dirPath,
@@ -119,11 +137,19 @@ export function buildDirectoryBubbles(report: GitrelicReport): DirBubble[] {
   return bubbles;
 }
 
-export function OwnershipBubble({ report, selectedFile, onSelectFile }: OwnershipBubbleProps) {
+export function OwnershipBubble({
+  report,
+  selectedFile,
+  onSelectFile,
+}: OwnershipBubbleProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; dir: DirBubble } | null>(null);
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    dir: DirBubble;
+  } | null>(null);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -141,7 +167,11 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
     for (const f of report.loc.files) {
       const parts = f.file.split('/');
       const dirKey =
-        parts.length > 2 ? parts.slice(0, 2).join('/') : parts.length > 1 ? parts[0] : '.';
+        parts.length > 2
+          ? parts.slice(0, 2).join('/')
+          : parts.length > 1
+            ? parts[0]
+            : '.';
       if (!map.has(dirKey)) {
         map.set(dirKey, f.file);
       }
@@ -155,7 +185,9 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
       .sum((d) => ('totalLoc' in d ? (d.totalLoc ?? 0) : 0))
       .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
-    const layout = pack<DirBubble | DirBubbleRoot>().size([dims.width, dims.height]).padding(8);
+    const layout = pack<DirBubble | DirBubbleRoot>()
+      .size([dims.width, dims.height])
+      .padding(8);
     return layout(root).leaves() as HierarchyCircularNode<DirBubble>[];
   }, [report, dims.width, dims.height]);
 
@@ -168,15 +200,22 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
     for (const leaf of packData) {
       const a = leaf.data?.dominantAuthor;
       if (!a || a === UNKNOWN_AUTHOR) continue;
-      fileCountByAuthor.set(a, (fileCountByAuthor.get(a) ?? 0) + (leaf.data.fileCount ?? 0));
+      fileCountByAuthor.set(
+        a,
+        (fileCountByAuthor.get(a) ?? 0) + (leaf.data.fileCount ?? 0),
+      );
     }
-    return [...fileCountByAuthor.entries()].sort((a, b) => b[1] - a[1]).map(([author]) => author);
+    return [...fileCountByAuthor.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([author]) => author);
   }, [packData]);
 
   const hasUnknown = useMemo(
     () =>
       packData.some(
-        (leaf) => leaf.data?.dominantAuthor === UNKNOWN_AUTHOR && (leaf.data?.fileCount ?? 0) > 0,
+        (leaf) =>
+          leaf.data?.dominantAuthor === UNKNOWN_AUTHOR &&
+          (leaf.data?.fileCount ?? 0) > 0,
       ),
     [packData],
   );
@@ -185,7 +224,9 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
     <div ref={containerRef} className="w-full h-full relative flex flex-col">
       <div className="flex flex-1 min-h-0 min-w-0">
         <div className="w-80 shrink-0 border-r border-border-primary p-3 overflow-y-auto text-[10px] text-text-tertiary">
-          <div className="text-[9px] uppercase tracking-[1px] mb-2 text-text-tertiary">Authors</div>
+          <div className="text-[9px] uppercase tracking-[1px] mb-2 text-text-tertiary">
+            Authors
+          </div>
           {legendAuthors.map((author) => (
             <div key={author} className="flex items-center gap-1.5 mb-[5px]">
               <span
@@ -217,7 +258,8 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
 
               const author = d.dominantAuthor ?? UNKNOWN_AUTHOR;
               const firstFile = dirFirstFileMap.get(d.dirPath) ?? d.dirPath;
-              const isSelected = selectedFile !== null && firstFile === selectedFile;
+              const isSelected =
+                selectedFile !== null && firstFile === selectedFile;
               const isUnknown = author === UNKNOWN_AUTHOR;
               const color = bubbleColor(author);
               const labelFontSize = Math.min(leaf.r / 4, 12);
@@ -246,7 +288,13 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
                     const rect = containerRef.current?.getBoundingClientRect();
                     if (!rect) return;
                     setTooltip((prev) =>
-                      prev ? { ...prev, x: e.clientX - rect.left, y: e.clientY - rect.top } : prev,
+                      prev
+                        ? {
+                            ...prev,
+                            x: e.clientX - rect.left,
+                            y: e.clientY - rect.top,
+                          }
+                        : prev,
                     );
                   }}
                   onMouseLeave={() => setTooltip(null)}
@@ -268,7 +316,11 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
                       textAnchor="middle"
                       dominantBaseline="central"
                       fontSize={labelFontSize}
-                      fill={isUnknown ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.9)'}
+                      fill={
+                        isUnknown
+                          ? 'rgba(255,255,255,0.55)'
+                          : 'rgba(255,255,255,0.9)'
+                      }
                       className="pointer-events-none"
                     >
                       {fittedName}
@@ -281,7 +333,11 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
                       textAnchor="middle"
                       dominantBaseline="central"
                       fontSize={subFontSize}
-                      fill={isUnknown ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.6)'}
+                      fill={
+                        isUnknown
+                          ? 'rgba(255,255,255,0.4)'
+                          : 'rgba(255,255,255,0.6)'
+                      }
                       className="pointer-events-none"
                     >
                       {fittedSub}
@@ -297,8 +353,8 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
       {/* Sticky caption strip */}
       <div className="shrink-0 px-4 py-2.5 border-t border-border-primary bg-surface-primary">
         <div className="text-xs text-text-secondary">
-          One bubble per directory (2 levels deep) · size = total LOC · color = dominant author ·
-          click to drill in
+          One bubble per directory (2 levels deep) · size = total LOC · color =
+          dominant author · click to drill in
         </div>
       </div>
 
@@ -309,7 +365,8 @@ export function OwnershipBubble({ report, selectedFile, onSelectFile }: Ownershi
         >
           <div className="font-semibold mb-0.5">{tooltip.dir.dirPath}/</div>
           <div className="text-text-secondary">
-            {tooltip.dir.totalLoc.toLocaleString()} LOC · {tooltip.dir.fileCount} files
+            {tooltip.dir.totalLoc.toLocaleString()} LOC ·{' '}
+            {tooltip.dir.fileCount} files
           </div>
           <div className="text-text-secondary mt-0.5">
             {tooltip.dir.dominantAuthor === UNKNOWN_AUTHOR

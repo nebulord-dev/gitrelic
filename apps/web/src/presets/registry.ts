@@ -44,7 +44,13 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     },
     bottomPanel: {
       defaultTab: 'hotspots',
-      altTabs: ['hotspots', 'cursed-files', 'bus-factor', 'churn-velocity', 'ghost-files'],
+      altTabs: [
+        'hotspots',
+        'cursed-files',
+        'bus-factor',
+        'churn-velocity',
+        'ghost-files',
+      ],
     },
     metrics: overviewMetrics,
   },
@@ -59,7 +65,12 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     },
     bottomPanel: {
       defaultTab: 'risk-register',
-      altTabs: ['risk-register', 'bus-factor', 'ghost-files', 'knowledge-silos'],
+      altTabs: [
+        'risk-register',
+        'bus-factor',
+        'ghost-files',
+        'knowledge-silos',
+      ],
     },
     metrics: riskMetrics,
   },

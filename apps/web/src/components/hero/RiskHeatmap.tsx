@@ -55,7 +55,9 @@ export function truncateLabel(file: string, maxChars = 30): string {
   if (segments.length === 0) return file;
   const basename = segments[segments.length - 1];
   if (segments.length === 1) {
-    return basename.length <= maxChars ? basename : basename.slice(0, maxChars - 1) + '\u2026';
+    return basename.length <= maxChars
+      ? basename
+      : basename.slice(0, maxChars - 1) + '\u2026';
   }
   const parent = segments[segments.length - 2];
   const combined = `${parent}/${basename}`;
@@ -73,8 +75,12 @@ export function prepareRiskRows(report: GitrelicReport): RiskRow[] {
   const churnFiles = report.churn?.files ?? [];
   const churnMap = new Map(churnFiles.map((c) => [c.file, c.churnScore]));
   const commitMap = new Map(churnFiles.map((c) => [c.file, c.commitCount]));
-  const blastMap = new Map((report.blastRadius?.files ?? []).map((b) => [b.file, b.blastScore]));
-  const shameMap = new Map((report.forensics?.files ?? []).map((f) => [f.file, f.shameScore]));
+  const blastMap = new Map(
+    (report.blastRadius?.files ?? []).map((b) => [b.file, b.blastScore]),
+  );
+  const shameMap = new Map(
+    (report.forensics?.files ?? []).map((f) => [f.file, f.shameScore]),
+  );
   const ghostSet = new Set((report.ghostFiles?.files ?? []).map((g) => g.file));
 
   // Iterate the bus-factor list because every tracked file gets an entry there;
@@ -111,7 +117,11 @@ const LEGEND_ITEMS = [
   { color: 'rgba(63, 185, 80, 0.2)', label: '<25 Low' },
 ] as const;
 
-export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapProps) {
+export function RiskHeatmap({
+  report,
+  selectedFile,
+  onSelectFile,
+}: RiskHeatmapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(700);
@@ -139,7 +149,10 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
     const viewTop = scrollRef.current.scrollTop;
     const viewBottom = viewTop + scrollRef.current.clientHeight;
     if (rowTop < viewTop || rowBottom > viewBottom) {
-      scrollRef.current.scrollTo({ top: Math.max(0, rowTop - 40), behavior: 'smooth' });
+      scrollRef.current.scrollTo({
+        top: Math.max(0, rowTop - 40),
+        behavior: 'smooth',
+      });
     }
   }, [selectedFile, rows]);
 
@@ -163,7 +176,9 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
     <div ref={containerRef} className="w-full h-full relative flex flex-col">
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
         {rows.length === 0 ? (
-          <div className="text-text-tertiary p-5 text-xs">No files exceed the risk threshold.</div>
+          <div className="text-text-tertiary p-5 text-xs">
+            No files exceed the risk threshold.
+          </div>
         ) : (
           <svg width={width} height={svgHeight} className="block">
             {/* Column headers */}
@@ -189,7 +204,11 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
               const isSelected = selectedFile === row.file;
 
               return (
-                <g key={row.file} onClick={() => onSelectFile(row.file)} className="cursor-pointer">
+                <g
+                  key={row.file}
+                  onClick={() => onSelectFile(row.file)}
+                  className="cursor-pointer"
+                >
                   {/* Row background for selected state */}
                   {isSelected && (
                     <rect
@@ -209,7 +228,11 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
                     dominantBaseline="central"
                     fontSize={10}
                     fontFamily="monospace"
-                    fill={isSelected ? 'var(--text-primary)' : 'var(--text-secondary)'}
+                    fill={
+                      isSelected
+                        ? 'var(--text-primary)'
+                        : 'var(--text-secondary)'
+                    }
                   >
                     {row.label}
                   </text>
@@ -228,10 +251,13 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
                           height={CELL_HEIGHT - 2}
                           fill={cellColor(val)}
                           rx={2}
-                          stroke={isSelected ? 'var(--accent-primary)' : 'transparent'}
+                          stroke={
+                            isSelected ? 'var(--accent-primary)' : 'transparent'
+                          }
                           strokeWidth={isSelected ? 1 : 0}
                           onMouseEnter={(e) => {
-                            const rect = containerRef.current?.getBoundingClientRect();
+                            const rect =
+                              containerRef.current?.getBoundingClientRect();
                             if (rect) {
                               setTooltip({
                                 x: e.clientX - rect.left,
@@ -243,11 +269,16 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
                             }
                           }}
                           onMouseMove={(e) => {
-                            const rect = containerRef.current?.getBoundingClientRect();
+                            const rect =
+                              containerRef.current?.getBoundingClientRect();
                             if (!rect) return;
                             setTooltip((prev) =>
                               prev
-                                ? { ...prev, x: e.clientX - rect.left, y: e.clientY - rect.top }
+                                ? {
+                                    ...prev,
+                                    x: e.clientX - rect.left,
+                                    y: e.clientY - rect.top,
+                                  }
                                 : prev,
                             );
                           }}
@@ -277,13 +308,16 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
       {/* Sticky caption + legend strip */}
       <div className="shrink-0 px-4 py-2.5 border-t border-border-primary bg-surface-primary">
         <div className="text-xs text-text-secondary">
-          Files scoring high across multiple risk axes · churn, blast radius, shame, ghost risk ·
-          color = severity tier
+          Files scoring high across multiple risk axes · churn, blast radius,
+          shame, ghost risk · color = severity tier
         </div>
         <div className="flex flex-wrap items-center gap-3.5 mt-1.5 text-[10px] text-text-tertiary">
           {LEGEND_ITEMS.map(({ color, label }) => (
             <span key={label} className="flex items-center gap-[5px]">
-              <span className="inline-block w-2.5 h-2.5 rounded-xs" style={{ background: color }} />
+              <span
+                className="inline-block w-2.5 h-2.5 rounded-xs"
+                style={{ background: color }}
+              />
               {label}
             </span>
           ))}
@@ -296,7 +330,9 @@ export function RiskHeatmap({ report, selectedFile, onSelectFile }: RiskHeatmapP
           className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-80"
           style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
         >
-          <div className="font-semibold mb-0.5 font-mono break-all">{tooltip.file}</div>
+          <div className="font-semibold mb-0.5 font-mono break-all">
+            {tooltip.file}
+          </div>
           <div className="text-text-secondary">
             {tooltip.dimension}: {Math.round(tooltip.value)}
           </div>

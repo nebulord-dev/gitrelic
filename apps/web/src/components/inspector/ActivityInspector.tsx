@@ -22,7 +22,8 @@ function trendVariant(trend: string): 'critical' | 'warning' | 'healthy' {
   }
 }
 
-const sectionLabel = 'text-[9px] uppercase tracking-[1px] text-text-tertiary mb-1.5 mt-3.5';
+const sectionLabel =
+  'text-[9px] uppercase tracking-[1px] text-text-tertiary mb-1.5 mt-3.5';
 const statRow = 'flex justify-between items-center py-[3px] text-[11px]';
 const statLabel = 'text-text-secondary';
 const statValue = 'font-mono text-text-primary font-medium';
@@ -37,7 +38,9 @@ export function ActivityInspector({ report, file }: ActivityInspectorProps) {
   return (
     <div>
       {/* File header */}
-      <div className="text-xs font-mono text-text-primary font-semibold mb-1">{fileName(file)}</div>
+      <div className="text-xs font-mono text-text-primary font-semibold mb-1">
+        {fileName(file)}
+      </div>
 
       {/* Churn */}
       <div className={sectionLabel}>Churn</div>
@@ -48,7 +51,9 @@ export function ActivityInspector({ report, file }: ActivityInspectorProps) {
       {age && (
         <div className={statRow}>
           <span className={statLabel}>Last modified</span>
-          <span className={cn(statValue, 'text-[10px]')}>{age.lastCommitDate.split('T')[0]}</span>
+          <span className={cn(statValue, 'text-[10px]')}>
+            {age.lastCommitDate.split('T')[0]}
+          </span>
         </div>
       )}
 
@@ -58,7 +63,9 @@ export function ActivityInspector({ report, file }: ActivityInspectorProps) {
           <div className={sectionLabel}>Velocity</div>
           <div className={statRow}>
             <span className={statLabel}>Trend</span>
-            <Badge variant={trendVariant(velocity.trend)}>{velocity.trend}</Badge>
+            <Badge variant={trendVariant(velocity.trend)}>
+              {velocity.trend}
+            </Badge>
           </div>
           <div className={statRow}>
             <span className={statLabel}>Score</span>
@@ -99,7 +106,9 @@ export function ActivityInspector({ report, file }: ActivityInspectorProps) {
           {forensics.topShameCommits.map((c) => (
             <div key={c.hash} className="py-1.5 border-b border-border-primary">
               <div className="text-[10px] text-text-primary mb-[3px]">
-                {c.message.length > 60 ? `${c.message.slice(0, 60)}...` : c.message}
+                {c.message.length > 60
+                  ? `${c.message.slice(0, 60)}...`
+                  : c.message}
               </div>
               <div className="flex gap-1 items-center">
                 <span className="text-[9px] text-text-tertiary font-mono">

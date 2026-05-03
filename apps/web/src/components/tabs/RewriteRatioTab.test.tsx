@@ -5,7 +5,12 @@ import { RewriteRatioTab } from './RewriteRatioTab';
 
 import type { GitrelicReport } from '@gitrelic/core';
 
-const rewriteFile = (file: string, rewriteScore: number, ins = 100, del = 100) => ({
+const rewriteFile = (
+  file: string,
+  rewriteScore: number,
+  ins = 100,
+  del = 100,
+) => ({
   file,
   rewriteScore,
   totalInsertions: ins,
@@ -13,7 +18,9 @@ const rewriteFile = (file: string, rewriteScore: number, ins = 100, del = 100) =
   ratio: del === 0 ? 0 : Math.min(ins, del) / Math.max(ins, del),
 });
 
-const makeReport = (overrides: Partial<GitrelicReport['rewriteRatio']> = {}): GitrelicReport =>
+const makeReport = (
+  overrides: Partial<GitrelicReport['rewriteRatio']> = {},
+): GitrelicReport =>
   ({
     rewriteRatio: {
       files: [],
@@ -35,20 +42,34 @@ describe('RewriteRatioTab', () => {
   });
 
   it('renders Moderate badge when 1–4 files cross threshold', () => {
-    const files = Array.from({ length: 3 }, (_, i) => rewriteFile(`f${i}.ts`, 80));
-    render(
-      <RewriteRatioTab report={makeReport({ files, highRewrite: 3 })} onApplyPreset={vi.fn()} />,
+    const files = Array.from({ length: 3 }, (_, i) =>
+      rewriteFile(`f${i}.ts`, 80),
     );
-    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('3');
+    render(
+      <RewriteRatioTab
+        report={makeReport({ files, highRewrite: 3 })}
+        onApplyPreset={vi.fn()}
+      />,
+    );
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe(
+      '3',
+    );
     expect(screen.getByText('Moderate')).toBeTruthy();
   });
 
   it('renders High Rewrite badge when 5+ files cross threshold', () => {
-    const files = Array.from({ length: 8 }, (_, i) => rewriteFile(`f${i}.ts`, 80));
-    render(
-      <RewriteRatioTab report={makeReport({ files, highRewrite: 8 })} onApplyPreset={vi.fn()} />,
+    const files = Array.from({ length: 8 }, (_, i) =>
+      rewriteFile(`f${i}.ts`, 80),
     );
-    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('8');
+    render(
+      <RewriteRatioTab
+        report={makeReport({ files, highRewrite: 8 })}
+        onApplyPreset={vi.fn()}
+      />,
+    );
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe(
+      '8',
+    );
     expect(screen.getByText('High Rewrite')).toBeTruthy();
   });
 
@@ -60,7 +81,10 @@ describe('RewriteRatioTab', () => {
       rewriteFile('low.ts', 40),
     ];
     render(
-      <RewriteRatioTab report={makeReport({ files, highRewrite: 3 })} onApplyPreset={vi.fn()} />,
+      <RewriteRatioTab
+        report={makeReport({ files, highRewrite: 3 })}
+        onApplyPreset={vi.fn()}
+      />,
     );
     expect(screen.getByText('a.ts')).toBeTruthy();
     expect(screen.getByText('b.ts')).toBeTruthy();
@@ -97,7 +121,10 @@ describe('RewriteRatioTab', () => {
       rewriteFile('low.ts', 30), // sub-threshold, ignored
     ];
     render(
-      <RewriteRatioTab report={makeReport({ files, highRewrite: 5 })} onApplyPreset={vi.fn()} />,
+      <RewriteRatioTab
+        report={makeReport({ files, highRewrite: 5 })}
+        onApplyPreset={vi.fn()}
+      />,
     );
     expect(screen.getByText('Where they live')).toBeTruthy();
     expect(screen.getByText('packages/react-reconciler/src')).toBeTruthy();
@@ -105,7 +132,9 @@ describe('RewriteRatioTab', () => {
 
   it('fires onApplyPreset when see-also links are clicked', () => {
     const onApplyPreset = vi.fn();
-    render(<RewriteRatioTab report={makeReport()} onApplyPreset={onApplyPreset} />);
+    render(
+      <RewriteRatioTab report={makeReport()} onApplyPreset={onApplyPreset} />,
+    );
     screen.getByText('Churn').click();
     screen.getByText('Hotspots').click();
     expect(onApplyPreset).toHaveBeenCalledWith('churn');

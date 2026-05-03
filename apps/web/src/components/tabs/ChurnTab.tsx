@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 
-import { aggregateChurnByDirectory, type DirectoryChurnRow } from '../../utils/churnByDirectory';
+import {
+  aggregateChurnByDirectory,
+  type DirectoryChurnRow,
+} from '../../utils/churnByDirectory';
 import { isTestPath } from '../../utils/isTestPath';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fmt } from '../theme';
@@ -41,7 +44,11 @@ export function ChurnTab({ report, onApplyPreset, mode }: ChurnTabProps) {
       label: 'Directory',
       render: (r) => (
         <span className="font-mono text-[11px]">
-          {r.directory === '' ? <span className="text-text-tertiary">(root)</span> : r.directory}
+          {r.directory === '' ? (
+            <span className="text-text-tertiary">(root)</span>
+          ) : (
+            r.directory
+          )}
         </span>
       ),
     },
@@ -52,7 +59,9 @@ export function ChurnTab({ report, onApplyPreset, mode }: ChurnTabProps) {
       align: 'right',
       sortValue: (r) => r.commits,
       render: (r) => (
-        <span className="font-mono text-[11px] text-text-secondary">{fmt(r.commits)}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {fmt(r.commits)}
+        </span>
       ),
     },
     {
@@ -62,7 +71,9 @@ export function ChurnTab({ report, onApplyPreset, mode }: ChurnTabProps) {
       align: 'right',
       sortValue: (r) => r.share,
       render: (r) => (
-        <span className="font-mono text-[11px] text-text-secondary">{formatShare(r.share)}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {formatShare(r.share)}
+        </span>
       ),
     },
     {
@@ -72,13 +83,19 @@ export function ChurnTab({ report, onApplyPreset, mode }: ChurnTabProps) {
       align: 'right',
       sortValue: (r) => r.files,
       render: (r) => (
-        <span className="font-mono text-[11px] text-text-secondary">{fmt(r.files)}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {fmt(r.files)}
+        </span>
       ),
     },
     {
       key: 'topFile',
       label: 'Top file',
-      render: (r) => <span className="font-mono text-[11px] text-text-secondary">{r.topFile}</span>,
+      render: (r) => (
+        <span className="font-mono text-[11px] text-text-secondary">
+          {r.topFile}
+        </span>
+      ),
     },
   ];
 
@@ -90,7 +107,11 @@ export function ChurnTab({ report, onApplyPreset, mode }: ChurnTabProps) {
             {emptyStateCopy(mode)}
           </div>
         ) : (
-          <SortableTable data={rows} columns={columns} rowKey={(r) => r.directory} />
+          <SortableTable
+            data={rows}
+            columns={columns}
+            rowKey={(r) => r.directory}
+          />
         )}
       </div>
       <div className="sticky bottom-0 mt-auto bg-surface-primary border-t border-border-primary py-1.5 px-1 text-[10px] text-text-tertiary flex gap-2 items-center">

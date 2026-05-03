@@ -17,7 +17,10 @@ function openOverlay(source: Element) {
   overlay.className = OVERLAY_CLASS;
   overlay.setAttribute('role', 'dialog');
   overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-label', 'Zoomed view — click anywhere or press Escape to close');
+  overlay.setAttribute(
+    'aria-label',
+    'Zoomed view — click anywhere or press Escape to close',
+  );
   overlay.tabIndex = -1;
 
   const clone = source.cloneNode(true) as HTMLElement;

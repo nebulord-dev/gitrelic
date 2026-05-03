@@ -16,22 +16,31 @@ const HIGH_SHAME_THRESHOLD = 70;
 const TOP_FILES_COUNT = 3;
 const DIRECTORY_ROLLUP_LIMIT = 5;
 
-function tierBadge(highShameCount: number): { variant: BadgeVariant; label: string } {
+function tierBadge(highShameCount: number): {
+  variant: BadgeVariant;
+  label: string;
+} {
   if (highShameCount === 0) return { variant: 'healthy', label: 'Healthy' };
-  if (highShameCount < 10) return { variant: 'warning', label: 'Moderate Shame' };
+  if (highShameCount < 10)
+    return { variant: 'warning', label: 'Moderate Shame' };
   return { variant: 'critical', label: 'High Shame' };
 }
 
 export function ShameTab({ report, onApplyPreset }: ShameTabProps) {
   const { files, totalShameCommits, keywordTiers } = report.forensics;
-  const highShameFiles = files.filter((f) => f.shameScore >= HIGH_SHAME_THRESHOLD);
+  const highShameFiles = files.filter(
+    (f) => f.shameScore >= HIGH_SHAME_THRESHOLD,
+  );
   const tier = tierBadge(highShameFiles.length);
   // Slice from the threshold-filtered subset, not from the whole-repo list,
   // so the "Top files" header never includes sub-threshold rows. (Lesson from RELIC-315.)
   const topFiles = highShameFiles.slice(0, TOP_FILES_COUNT);
   const allDirectoryRows = aggregateShameByDirectory(highShameFiles);
   const directoryRows = allDirectoryRows.slice(0, DIRECTORY_ROLLUP_LIMIT);
-  const hiddenDirectoryCount = Math.max(0, allDirectoryRows.length - DIRECTORY_ROLLUP_LIMIT);
+  const hiddenDirectoryCount = Math.max(
+    0,
+    allDirectoryRows.length - DIRECTORY_ROLLUP_LIMIT,
+  );
   const maxDirCount = directoryRows[0]?.count ?? 1;
 
   return (
@@ -47,9 +56,13 @@ export function ShameTab({ report, onApplyPreset }: ShameTabProps) {
             </div>
             {topFiles.map((f) => (
               <div key={f.file} className="leading-[1.5]">
-                <span className="font-mono text-text-primary">{fileName(f.file)}</span>{' '}
+                <span className="font-mono text-text-primary">
+                  {fileName(f.file)}
+                </span>{' '}
                 <span className="text-text-tertiary">
-                  <span className="font-mono text-text-primary font-semibold">{f.shameScore}</span>{' '}
+                  <span className="font-mono text-text-primary font-semibold">
+                    {f.shameScore}
+                  </span>{' '}
                   ·{' '}
                   <span className="font-mono text-text-primary font-semibold">
                     {f.shameCommitCount}
@@ -60,7 +73,10 @@ export function ShameTab({ report, onApplyPreset }: ShameTabProps) {
             ))}
           </div>
         ) : files.length > 0 ? (
-          <>No files cross the high-shame threshold — commit-message hygiene is healthy.</>
+          <>
+            No files cross the high-shame threshold — commit-message hygiene is
+            healthy.
+          </>
         ) : (
           <>No shame signals detected in the analysis window.</>
         )
@@ -70,13 +86,21 @@ export function ShameTab({ report, onApplyPreset }: ShameTabProps) {
           <>
             <strong>{totalShameCommits.toLocaleString()}</strong> shame{' '}
             {totalShameCommits === 1 ? 'commit' : 'commits'} ·{' '}
-            <strong className="text-severity-critical">{keywordTiers.critical}</strong> critical
-            (revert/hotfix/oops) ·{' '}
-            <strong className="text-severity-warning">{keywordTiers.moderate}</strong> moderate
-            (hack/workaround) · <strong className="text-[#9b8b3e]">{keywordTiers.mild}</strong> mild
+            <strong className="text-severity-critical">
+              {keywordTiers.critical}
+            </strong>{' '}
+            critical (revert/hotfix/oops) ·{' '}
+            <strong className="text-severity-warning">
+              {keywordTiers.moderate}
+            </strong>{' '}
+            moderate (hack/workaround) ·{' '}
+            <strong className="text-[#9b8b3e]">{keywordTiers.mild}</strong> mild
             (fix/bug)
             <div className="mt-1 text-[11px] text-text-tertiary">
-              Across <strong className="text-text-secondary">{files.length}</strong>{' '}
+              Across{' '}
+              <strong className="text-text-secondary">
+                {files.length}
+              </strong>{' '}
               {files.length === 1 ? 'file' : 'files'} with any shame signal.
             </div>
           </>

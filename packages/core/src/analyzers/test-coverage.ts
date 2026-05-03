@@ -1,6 +1,10 @@
 import path from 'node:path';
 
-import type { TestCoverageProxyReport, DirectoryCoverage, TestCoverageFile } from '../types.js';
+import type {
+  TestCoverageProxyReport,
+  DirectoryCoverage,
+  TestCoverageFile,
+} from '../types.js';
 
 const CODE_EXTENSIONS = new Set([
   '.ts',
@@ -33,7 +37,9 @@ function isCodeFile(file: string): boolean {
   return CODE_EXTENSIONS.has(ext);
 }
 
-export function analyzeTestCoverage(trackedFiles: string[]): TestCoverageProxyReport {
+export function analyzeTestCoverage(
+  trackedFiles: string[],
+): TestCoverageProxyReport {
   const dirStats = new Map<string, { source: number; test: number }>();
   const sourceFiles: string[] = [];
   const testFileSet = new Set<string>();
@@ -86,11 +92,14 @@ export function analyzeTestCoverage(trackedFiles: string[]): TestCoverageProxyRe
     }))
     .sort((a, b) => a.coverageRatio - b.coverageRatio);
 
-  const uncoveredDirectories = directories.filter((d) => !d.hasTests && d.sourceFiles > 0);
+  const uncoveredDirectories = directories.filter(
+    (d) => !d.hasTests && d.sourceFiles > 0,
+  );
 
   const totalSource = directories.reduce((s, d) => s + d.sourceFiles, 0);
   const totalTest = directories.reduce((s, d) => s + d.testFiles, 0);
-  const overallRatio = totalSource > 0 ? Math.round((totalTest / totalSource) * 100) / 100 : 0;
+  const overallRatio =
+    totalSource > 0 ? Math.round((totalTest / totalSource) * 100) / 100 : 0;
 
   const summary =
     uncoveredDirectories.length > 0

@@ -15,21 +15,27 @@ export function renamesMetrics(report: GitrelicReport): Metric[] {
     }
   }
 
-  const avg = filesWithRenames > 0 ? Math.round(totalRenames / filesWithRenames) : 0;
+  const avg =
+    filesWithRenames > 0 ? Math.round(totalRenames / filesWithRenames) : 0;
   const topBasename = topChain
-    ? (topChain.currentPath.split('/').pop() ?? topChain.currentPath) || topChain.currentPath
+    ? (topChain.currentPath.split('/').pop() ?? topChain.currentPath) ||
+      topChain.currentPath
     : '';
 
   return [
     {
       label: 'Files Renamed',
       value: String(filesWithRenames),
-      color: filesWithRenames > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
+      color:
+        filesWithRenames > 0
+          ? 'var(--accent-primary)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'Total Renames',
       value: fmt(totalRenames),
-      color: totalRenames > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
+      color:
+        totalRenames > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
     },
     {
       label: 'Longest Chain',
@@ -44,7 +50,10 @@ export function renamesMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Avg Renames/File',
       value: filesWithRenames > 0 ? String(avg) : '—',
-      color: filesWithRenames > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
+      color:
+        filesWithRenames > 0
+          ? 'var(--accent-primary)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'Most Renamed',

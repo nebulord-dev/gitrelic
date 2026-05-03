@@ -69,21 +69,31 @@ export function NarrativeKPI({
             <div className="flex flex-col gap-2 text-[11px]">
               <div className="text-text-secondary">{finding}</div>
               {subline != null && (
-                <div className="text-text-tertiary text-[10px] max-w-[400px]">{subline}</div>
+                <div className="text-text-tertiary text-[10px] max-w-[400px]">
+                  {subline}
+                </div>
               )}
             </div>
           </div>
-          {extras != null && <div className="narrative-kpi-extras">{extras}</div>}
+          {extras != null && (
+            <div className="narrative-kpi-extras">{extras}</div>
+          )}
         </div>
       </div>
 
       <div className="sticky bottom-0 mt-auto bg-surface-primary border-t border-border-primary px-1 py-1.5 text-[10px] text-text-tertiary flex gap-2 items-center">
         See also:{' '}
-        <button onClick={() => onApplyPreset(seeAlso[0].presetId)} className={linkClass}>
+        <button
+          onClick={() => onApplyPreset(seeAlso[0].presetId)}
+          className={linkClass}
+        >
           {seeAlso[0].label}
         </button>
         ·
-        <button onClick={() => onApplyPreset(seeAlso[1].presetId)} className={linkClass}>
+        <button
+          onClick={() => onApplyPreset(seeAlso[1].presetId)}
+          className={linkClass}
+        >
           {seeAlso[1].label}
         </button>
       </div>

@@ -12,15 +12,31 @@ export function TestCoverageTab({ report }: TestCoverageTabProps) {
     {
       key: 'directory',
       label: 'Directory',
-      render: (d) => <span className="font-mono text-[11px] text-text-primary">{d.directory}</span>,
+      render: (d) => (
+        <span className="font-mono text-[11px] text-text-primary">
+          {d.directory}
+        </span>
+      ),
     },
     {
       key: 'status',
       label: 'Status',
       width: '90px',
       render: (d) => (
-        <Badge variant={d.hasTests ? (d.coverageRatio >= 0.5 ? 'healthy' : 'warning') : 'critical'}>
-          {d.hasTests ? (d.coverageRatio >= 0.5 ? 'covered' : 'low') : 'untested'}
+        <Badge
+          variant={
+            d.hasTests
+              ? d.coverageRatio >= 0.5
+                ? 'healthy'
+                : 'warning'
+              : 'critical'
+          }
+        >
+          {d.hasTests
+            ? d.coverageRatio >= 0.5
+              ? 'covered'
+              : 'low'
+            : 'untested'}
         </Badge>
       ),
     },
@@ -31,7 +47,9 @@ export function TestCoverageTab({ report }: TestCoverageTabProps) {
       align: 'right',
       sortValue: (d) => d.sourceFiles,
       render: (d) => (
-        <span className="font-mono text-[11px] text-text-secondary">{d.sourceFiles}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {d.sourceFiles}
+        </span>
       ),
     },
     {
@@ -41,7 +59,9 @@ export function TestCoverageTab({ report }: TestCoverageTabProps) {
       align: 'right',
       sortValue: (d) => d.testFiles,
       render: (d) => (
-        <span className="font-mono text-[11px] text-text-secondary">{d.testFiles}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {d.testFiles}
+        </span>
       ),
     },
     {
@@ -58,7 +78,9 @@ export function TestCoverageTab({ report }: TestCoverageTabProps) {
               style={{
                 width: `${Math.min(100, d.coverageRatio * 100)}%`,
                 background:
-                  d.coverageRatio >= 0.5 ? 'var(--severity-healthy)' : 'var(--severity-warning)',
+                  d.coverageRatio >= 0.5
+                    ? 'var(--severity-healthy)'
+                    : 'var(--severity-warning)',
               }}
             />
           </div>

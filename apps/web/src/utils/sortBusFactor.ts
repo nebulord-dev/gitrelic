@@ -7,7 +7,9 @@ import type { FileBusFactor, GitrelicReport } from '@gitrelic/core';
 // desc. Files missing churn data fall back to zero commits and sort last
 // within their share band.
 export function sortCriticalByImpact(report: GitrelicReport): FileBusFactor[] {
-  const churnByFile = new Map((report.churn?.files ?? []).map((c) => [c.file, c.commitCount]));
+  const churnByFile = new Map(
+    (report.churn?.files ?? []).map((c) => [c.file, c.commitCount]),
+  );
   return [...report.busFactors.criticalFiles].sort((a, b) => {
     const pctDiff = b.dominantAuthorPercent - a.dominantAuthorPercent;
     if (pctDiff !== 0) return pctDiff;

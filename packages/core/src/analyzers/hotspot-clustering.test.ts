@@ -13,14 +13,22 @@ import type { RawCommit } from '../utils/git.js';
 
 // ─── Test helpers ────────────────────────────────────────────────────────────
 
-function makeHotspotReport(entries: { file: string; score: number }[]): HotspotReport {
+function makeHotspotReport(
+  entries: { file: string; score: number }[],
+): HotspotReport {
   const files: HotspotEntry[] = entries.map((e) => ({
     file: e.file,
     hotspotScore: e.score,
     churnScore: e.score,
     loc: 100,
     category:
-      e.score >= 75 ? 'critical' : e.score >= 50 ? 'warning' : e.score >= 25 ? 'moderate' : 'low',
+      e.score >= 75
+        ? 'critical'
+        : e.score >= 50
+          ? 'warning'
+          : e.score >= 25
+            ? 'moderate'
+            : 'low',
   }));
   return {
     files,
@@ -73,7 +81,11 @@ function emptyContributors(): ContributorReport {
 }
 
 function makeBusFactor(
-  entries: { file: string; dominantAuthor: string; dominantAuthorPercent: number }[],
+  entries: {
+    file: string;
+    dominantAuthor: string;
+    dominantAuthorPercent: number;
+  }[],
 ): BusFactorReport {
   return {
     files: entries.map((e) => ({
@@ -105,10 +117,17 @@ describe('structural clustering', () => {
       emptyCoupling(),
       emptyContributors(),
       [],
-      ['src/auth/login.ts', 'src/auth/session.ts', 'src/api/handler.ts', 'src/api/routes.ts'],
+      [
+        'src/auth/login.ts',
+        'src/auth/session.ts',
+        'src/api/handler.ts',
+        'src/api/routes.ts',
+      ],
     );
 
-    const structural = result.clusters.filter((c) => c.dimension === 'structural');
+    const structural = result.clusters.filter(
+      (c) => c.dimension === 'structural',
+    );
     expect(structural.length).toBe(1);
     expect(structural[0].sharedTrait).toBe('src/auth');
     expect(structural[0].members).toHaveLength(2);
@@ -128,7 +147,9 @@ describe('structural clustering', () => {
       ['src/auth/login.ts', 'src/api/handler.ts'],
     );
 
-    const structural = result.clusters.filter((c) => c.dimension === 'structural');
+    const structural = result.clusters.filter(
+      (c) => c.dimension === 'structural',
+    );
     expect(structural).toHaveLength(0);
   });
 
@@ -147,7 +168,9 @@ describe('structural clustering', () => {
       ['src/a.ts', 'src/b.ts', 'src/c.ts'],
     );
 
-    const structural = result.clusters.filter((c) => c.dimension === 'structural');
+    const structural = result.clusters.filter(
+      (c) => c.dimension === 'structural',
+    );
     expect(structural).toHaveLength(0);
   });
 });
@@ -162,9 +185,21 @@ describe('ownership clustering', () => {
       { file: 'c.ts', score: 60 },
     ]);
     const bf = makeBusFactor([
-      { file: 'a.ts', dominantAuthor: 'alice@dev.com', dominantAuthorPercent: 85 },
-      { file: 'b.ts', dominantAuthor: 'alice@dev.com', dominantAuthorPercent: 90 },
-      { file: 'c.ts', dominantAuthor: 'bob@dev.com', dominantAuthorPercent: 75 },
+      {
+        file: 'a.ts',
+        dominantAuthor: 'alice@dev.com',
+        dominantAuthorPercent: 85,
+      },
+      {
+        file: 'b.ts',
+        dominantAuthor: 'alice@dev.com',
+        dominantAuthorPercent: 90,
+      },
+      {
+        file: 'c.ts',
+        dominantAuthor: 'bob@dev.com',
+        dominantAuthorPercent: 75,
+      },
     ]);
     const result = analyzeHotspotClustering(
       hotspots,
@@ -175,7 +210,9 @@ describe('ownership clustering', () => {
       ['a.ts', 'b.ts', 'c.ts'],
     );
 
-    const ownership = result.clusters.filter((c) => c.dimension === 'ownership');
+    const ownership = result.clusters.filter(
+      (c) => c.dimension === 'ownership',
+    );
     expect(ownership).toHaveLength(1);
     expect(ownership[0].sharedTrait).toBe('alice@dev.com');
     expect(ownership[0].label).toContain('alice@dev.com');
@@ -189,8 +226,16 @@ describe('ownership clustering', () => {
       { file: 'b.ts', score: 70 },
     ]);
     const bf = makeBusFactor([
-      { file: 'a.ts', dominantAuthor: 'solo@dev.com', dominantAuthorPercent: 100 },
-      { file: 'b.ts', dominantAuthor: 'solo@dev.com', dominantAuthorPercent: 100 },
+      {
+        file: 'a.ts',
+        dominantAuthor: 'solo@dev.com',
+        dominantAuthorPercent: 100,
+      },
+      {
+        file: 'b.ts',
+        dominantAuthor: 'solo@dev.com',
+        dominantAuthorPercent: 100,
+      },
     ]);
     const singleAuthorContribs: ContributorReport = {
       contributors: [
@@ -221,14 +266,18 @@ describe('ownership clustering', () => {
       ['a.ts', 'b.ts'],
     );
 
-    const ownership = result.clusters.filter((c) => c.dimension === 'ownership');
+    const ownership = result.clusters.filter(
+      (c) => c.dimension === 'ownership',
+    );
     expect(ownership).toHaveLength(0);
   });
 });
 
 // ─── Temporal clustering ──────────────────────────────────────────────────────
 
-function makeCommits(fileCommits: { file: string; dates: string[] }[]): RawCommit[] {
+function makeCommits(
+  fileCommits: { file: string; dates: string[] }[],
+): RawCommit[] {
   const commits: RawCommit[] = [];
   for (const fc of fileCommits) {
     for (const date of fc.dates) {
@@ -258,11 +307,25 @@ describe('temporal clustering', () => {
     const commits = makeCommits([
       {
         file: 'a.ts',
-        dates: ['2025-06-01', '2025-07-01', '2025-10-01', '2025-10-10', '2025-10-20', '2025-11-01'],
+        dates: [
+          '2025-06-01',
+          '2025-07-01',
+          '2025-10-01',
+          '2025-10-10',
+          '2025-10-20',
+          '2025-11-01',
+        ],
       },
       {
         file: 'b.ts',
-        dates: ['2025-05-01', '2025-08-01', '2025-10-05', '2025-10-15', '2025-10-25', '2025-11-05'],
+        dates: [
+          '2025-05-01',
+          '2025-08-01',
+          '2025-10-05',
+          '2025-10-15',
+          '2025-10-25',
+          '2025-11-05',
+        ],
       },
     ]);
     const result = analyzeHotspotClustering(
@@ -308,8 +371,14 @@ describe('temporal clustering', () => {
       { file: 'b.ts', score: 70 },
     ]);
     const commits = makeCommits([
-      { file: 'a.ts', dates: ['2025-10-01', '2025-10-10', '2025-10-20', '2025-11-01'] },
-      { file: 'b.ts', dates: ['2025-10-05', '2025-10-15', '2025-10-25', '2025-11-05'] },
+      {
+        file: 'a.ts',
+        dates: ['2025-10-01', '2025-10-10', '2025-10-20', '2025-11-01'],
+      },
+      {
+        file: 'b.ts',
+        dates: ['2025-10-05', '2025-10-15', '2025-10-25', '2025-11-05'],
+      },
     ]);
     const result = analyzeHotspotClustering(
       hotspots,
@@ -328,7 +397,12 @@ describe('temporal clustering', () => {
 // ─── Coupling hub detection ───────────────────────────────────────────────────
 
 function makeCoupling(
-  pairs: { fileA: string; fileB: string; coCommits: number; strength: number }[],
+  pairs: {
+    fileA: string;
+    fileB: string;
+    coCommits: number;
+    strength: number;
+  }[],
 ): CouplingReport {
   return {
     pairs: pairs.map((p) => ({
@@ -449,8 +523,16 @@ describe('assembly and multi-signal detection', () => {
       { file: 'src/auth/b.ts', score: 70 },
     ]);
     const bf = makeBusFactor([
-      { file: 'src/auth/a.ts', dominantAuthor: 'alice@dev.com', dominantAuthorPercent: 85 },
-      { file: 'src/auth/b.ts', dominantAuthor: 'alice@dev.com', dominantAuthorPercent: 90 },
+      {
+        file: 'src/auth/a.ts',
+        dominantAuthor: 'alice@dev.com',
+        dominantAuthorPercent: 85,
+      },
+      {
+        file: 'src/auth/b.ts',
+        dominantAuthor: 'alice@dev.com',
+        dominantAuthorPercent: 90,
+      },
     ]);
     const result = analyzeHotspotClustering(
       hotspots,
@@ -458,7 +540,13 @@ describe('assembly and multi-signal detection', () => {
       emptyCoupling(),
       emptyContributors(),
       [],
-      ['src/auth/a.ts', 'src/auth/b.ts', 'src/other/c.ts', 'src/other/d.ts', 'src/other/e.ts'],
+      [
+        'src/auth/a.ts',
+        'src/auth/b.ts',
+        'src/other/c.ts',
+        'src/other/d.ts',
+        'src/other/e.ts',
+      ],
     );
 
     // Both files should appear in structural (src/auth) and ownership (alice) clusters
@@ -483,7 +571,9 @@ describe('assembly and multi-signal detection', () => {
     );
 
     expect(result.clusters).toHaveLength(0);
-    expect(result.summary).toBe('No root cause patterns detected — hotspots appear independent.');
+    expect(result.summary).toBe(
+      'No root cause patterns detected — hotspots appear independent.',
+    );
   });
 
   it('generates narratives containing dimension-specific content', () => {
@@ -492,8 +582,16 @@ describe('assembly and multi-signal detection', () => {
       { file: 'src/auth/b.ts', score: 70 },
     ]);
     const bf = makeBusFactor([
-      { file: 'src/auth/a.ts', dominantAuthor: 'alice@dev.com', dominantAuthorPercent: 85 },
-      { file: 'src/auth/b.ts', dominantAuthor: 'alice@dev.com', dominantAuthorPercent: 90 },
+      {
+        file: 'src/auth/a.ts',
+        dominantAuthor: 'alice@dev.com',
+        dominantAuthorPercent: 85,
+      },
+      {
+        file: 'src/auth/b.ts',
+        dominantAuthor: 'alice@dev.com',
+        dominantAuthorPercent: 90,
+      },
     ]);
     const result = analyzeHotspotClustering(
       hotspots,
@@ -501,10 +599,18 @@ describe('assembly and multi-signal detection', () => {
       emptyCoupling(),
       emptyContributors(),
       [],
-      ['src/auth/a.ts', 'src/auth/b.ts', 'src/other/c.ts', 'src/other/d.ts', 'src/other/e.ts'],
+      [
+        'src/auth/a.ts',
+        'src/auth/b.ts',
+        'src/other/c.ts',
+        'src/other/d.ts',
+        'src/other/e.ts',
+      ],
     );
 
-    const structural = result.clusters.find((c) => c.dimension === 'structural');
+    const structural = result.clusters.find(
+      (c) => c.dimension === 'structural',
+    );
     expect(structural?.narrative).toContain('src/auth');
     expect(structural?.narrative).toContain('subsystem');
 
@@ -524,7 +630,13 @@ describe('assembly and multi-signal detection', () => {
       emptyCoupling(),
       emptyContributors(),
       [],
-      ['src/auth/a.ts', 'src/auth/b.ts', 'src/other/c.ts', 'src/other/d.ts', 'src/other/e.ts'],
+      [
+        'src/auth/a.ts',
+        'src/auth/b.ts',
+        'src/other/c.ts',
+        'src/other/d.ts',
+        'src/other/e.ts',
+      ],
     );
 
     // Should still attempt clustering with available data
@@ -547,7 +659,13 @@ describe('assembly and multi-signal detection', () => {
       emptyCoupling(),
       emptyContributors(),
       [],
-      ['src/auth/a.ts', 'src/auth/b.ts', 'src/other/c.ts', 'src/other/d.ts', 'src/other/e.ts'],
+      [
+        'src/auth/a.ts',
+        'src/auth/b.ts',
+        'src/other/c.ts',
+        'src/other/d.ts',
+        'src/other/e.ts',
+      ],
     );
 
     expect(result.summary).toContain('root cause cluster');

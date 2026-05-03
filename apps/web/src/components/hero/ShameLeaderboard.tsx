@@ -14,7 +14,14 @@ type ShameTier = 'critical' | 'moderate' | 'mild';
 // If core's keyword tiers change, mirror the change here in the same PR.
 export const TIER_KEYWORDS: Record<ShameTier, ReadonlySet<string>> = {
   critical: new Set(['revert', 'hotfix', 'oops', 'fixup', 'broke']),
-  moderate: new Set(['hack', 'workaround', 'temporary', 'temp', 'kludge', 'band-aid']),
+  moderate: new Set([
+    'hack',
+    'workaround',
+    'temporary',
+    'temp',
+    'kludge',
+    'band-aid',
+  ]),
   mild: new Set(['fix', 'bug', 'wrong', 'mistake', 'typo', 'cleanup']),
 };
 
@@ -61,12 +68,18 @@ interface ShameLeaderboardProps {
   onSelectFile: (file: string) => void;
 }
 
-export function ShameLeaderboard({ report, selectedFile, onSelectFile }: ShameLeaderboardProps) {
+export function ShameLeaderboard({
+  report,
+  selectedFile,
+  onSelectFile,
+}: ShameLeaderboardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; entry: ShameBarEntry } | null>(
-    null,
-  );
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    entry: ShameBarEntry;
+  } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -100,7 +113,10 @@ export function ShameLeaderboard({ report, selectedFile, onSelectFile }: ShameLe
   const bottomPad = 16;
   const available = Math.max(120, dims.width - labelWidth - rightPad);
   const svgHeight = Math.max(120, dims.height - 56);
-  const rowHeight = Math.max(20, (svgHeight - topPad - bottomPad) / Math.max(entries.length, 1));
+  const rowHeight = Math.max(
+    20,
+    (svgHeight - topPad - bottomPad) / Math.max(entries.length, 1),
+  );
   const barHeight = Math.max(10, rowHeight - 6);
 
   return (
@@ -141,7 +157,11 @@ export function ShameLeaderboard({ report, selectedFile, onSelectFile }: ShameLe
                   dominantBaseline="middle"
                   fontSize={10}
                   fontFamily="var(--font-mono)"
-                  fill={isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)'}
+                  fill={
+                    isSelected
+                      ? 'var(--accent-primary)'
+                      : 'var(--text-secondary)'
+                  }
                 >
                   {e.name}
                 </text>
@@ -192,7 +212,8 @@ export function ShameLeaderboard({ report, selectedFile, onSelectFile }: ShameLe
           >
             <div className="font-semibold mb-0.5">{tooltip.entry.file}</div>
             <div className="text-text-secondary">
-              Shame {tooltip.entry.score} · {tooltip.entry.shameCommitCount} shame commit
+              Shame {tooltip.entry.score} · {tooltip.entry.shameCommitCount}{' '}
+              shame commit
               {tooltip.entry.shameCommitCount !== 1 ? 's' : ''}
             </div>
             {tooltip.entry.topKeyword && (

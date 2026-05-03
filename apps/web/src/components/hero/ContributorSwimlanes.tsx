@@ -41,13 +41,19 @@ export function prepareSwimlaneData(report: GitrelicReport): SwimLane[] {
       .filter((h) => h.category === 'critical' || h.category === 'warning')
       .map((h) => h.file),
   );
-  const ghostAuthors = new Set(report.ghostFiles.files.map((g) => g.dominantAuthor));
+  const ghostAuthors = new Set(
+    report.ghostFiles.files.map((g) => g.dominantAuthor),
+  );
 
   // Group commits by author
   const byAuthor = new Map<string, SwimCommit[]>();
   for (const c of commits) {
     const isHotspot = c.files.some((f) => hotspotFiles.has(f));
-    const entry: SwimCommit = { date: new Date(c.date), files: c.files, isHotspot };
+    const entry: SwimCommit = {
+      date: new Date(c.date),
+      files: c.files,
+      isHotspot,
+    };
     const arr = byAuthor.get(c.authorEmail) ?? [];
     arr.push(entry);
     byAuthor.set(c.authorEmail, arr);
@@ -56,12 +62,20 @@ export function prepareSwimlaneData(report: GitrelicReport): SwimLane[] {
   // Date range for weekly binning
   if (commits.length === 0) return [];
   const allDates = commits.map((c) => new Date(c.date).getTime());
-  const minDate = new Date(allDates.reduce((m, d) => (d < m ? d : m), allDates[0]));
-  const maxDate = new Date(allDates.reduce((m, d) => (d > m ? d : m), allDates[0]));
+  const minDate = new Date(
+    allDates.reduce((m, d) => (d < m ? d : m), allDates[0]),
+  );
+  const maxDate = new Date(
+    allDates.reduce((m, d) => (d > m ? d : m), allDates[0]),
+  );
   const startMonday = new Date(minDate);
-  startMonday.setUTCDate(startMonday.getUTCDate() - ((startMonday.getUTCDay() + 6) % 7));
+  startMonday.setUTCDate(
+    startMonday.getUTCDate() - ((startMonday.getUTCDay() + 6) % 7),
+  );
   startMonday.setUTCHours(0, 0, 0, 0);
-  const totalWeeks = Math.ceil((maxDate.getTime() - startMonday.getTime()) / (7 * 86_400_000)) + 1;
+  const totalWeeks =
+    Math.ceil((maxDate.getTime() - startMonday.getTime()) / (7 * 86_400_000)) +
+    1;
 
   // Build lanes from contributor report (sorted by commit count)
   const sorted = [...report.contributors.contributors].sort(
@@ -72,7 +86,9 @@ export function prepareSwimlaneData(report: GitrelicReport): SwimLane[] {
     const authorCommits = byAuthor.get(contrib.email) ?? [];
     const weekly = new Array(totalWeeks).fill(0);
     for (const c of authorCommits) {
-      const idx = Math.floor((c.date.getTime() - startMonday.getTime()) / (7 * 86_400_000));
+      const idx = Math.floor(
+        (c.date.getTime() - startMonday.getTime()) / (7 * 86_400_000),
+      );
       if (idx >= 0 && idx < totalWeeks) weekly[idx]++;
     }
 
@@ -91,7 +107,9 @@ export function prepareSwimlaneData(report: GitrelicReport): SwimLane[] {
       email: contrib.email,
       name: contrib.name,
       commitCount: contrib.commitCount,
-      commits: authorCommits.sort((a, b) => a.date.getTime() - b.date.getTime()),
+      commits: authorCommits.sort(
+        (a, b) => a.date.getTime() - b.date.getTime(),
+      ),
       weeklyIntensity: weekly,
       isGhost,
       lastActiveDate,
@@ -136,7 +154,9 @@ export function ContributorSwimlanes({
   }, [report.commits]);
 
   const trackWidth = width - LABEL_WIDTH;
-  const xScale = scaleTime().domain([timeRange.min, timeRange.max]).range([0, trackWidth]);
+  const xScale = scaleTime()
+    .domain([timeRange.min, timeRange.max])
+    .range([0, trackWidth]);
 
   return (
     <div ref={containerRef} className="w-full h-full overflow-auto relative">
@@ -153,7 +173,10 @@ export function ContributorSwimlanes({
               fontSize={8}
               fill="var(--text-tertiary)"
             >
-              {date.toLocaleDateString('en', { month: 'short', year: '2-digit' })}
+              {date.toLocaleDateString('en', {
+                month: 'short',
+                year: '2-digit',
+              })}
             </text>
           ))}
         </svg>
@@ -161,8 +184,13 @@ export function ContributorSwimlanes({
       {lanes.map((lane) => {
         const isSelected = selectedContributor === lane.email;
         const color = authorColor(lane.email);
-        const maxWeekly = lane.weeklyIntensity.reduce((m, v) => (v > m ? v : m), 1);
-        const intensityScale = scaleLinear().domain([0, maxWeekly]).range([0.03, 0.8]);
+        const maxWeekly = lane.weeklyIntensity.reduce(
+          (m, v) => (v > m ? v : m),
+          1,
+        );
+        const intensityScale = scaleLinear()
+          .domain([0, maxWeekly])
+          .range([0.03, 0.8]);
 
         return (
           <div key={lane.email} className="flex items-stretch h-14 mb-1">
@@ -179,7 +207,10 @@ export function ContributorSwimlanes({
                 </div>
                 <div className="text-[9px] text-text-tertiary">
                   {lane.isGhost && (
-                    <span className="mr-1" style={{ color: 'rgba(248,81,73,0.8)' }}>
+                    <span
+                      className="mr-1"
+                      style={{ color: 'rgba(248,81,73,0.8)' }}
+                    >
                       ghost
                     </span>
                   )}
@@ -204,7 +235,8 @@ export function ContributorSwimlanes({
                     className="flex-1 rounded-[1px]"
                     style={{
                       background: count > 0 ? color : 'transparent',
-                      opacity: count > 0 ? 0.15 + intensityScale(count) * 0.15 : 0,
+                      opacity:
+                        count > 0 ? 0.15 + intensityScale(count) * 0.15 : 0,
                     }}
                   />
                 ))}
@@ -272,7 +304,10 @@ export function ContributorSwimlanes({
                   />
                   <div
                     className="absolute top-1 text-[8px]"
-                    style={{ left: xScale(lane.lastActiveDate) + 4, color: 'rgba(248,81,73,0.5)' }}
+                    style={{
+                      left: xScale(lane.lastActiveDate) + 4,
+                      color: 'rgba(248,81,73,0.5)',
+                    }}
                   >
                     inactive
                   </div>

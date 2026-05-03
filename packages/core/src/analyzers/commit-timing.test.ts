@@ -22,10 +22,26 @@ function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
 describe('analyzeCommitTiming', () => {
   it('late night commits get high lateNightPercent', () => {
     const commits = [
-      makeCommit({ hash: '1', date: '2025-06-02T23:30:00-04:00', files: ['a.ts'] }),
-      makeCommit({ hash: '2', date: '2025-06-03T01:15:00-04:00', files: ['a.ts'] }),
-      makeCommit({ hash: '3', date: '2025-06-04T02:00:00-04:00', files: ['a.ts'] }),
-      makeCommit({ hash: '4', date: '2025-06-05T03:45:00-04:00', files: ['a.ts'] }),
+      makeCommit({
+        hash: '1',
+        date: '2025-06-02T23:30:00-04:00',
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        date: '2025-06-03T01:15:00-04:00',
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '3',
+        date: '2025-06-04T02:00:00-04:00',
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '4',
+        date: '2025-06-05T03:45:00-04:00',
+        files: ['a.ts'],
+      }),
     ];
     const result = analyzeCommitTiming(commits, ['a.ts']);
     expect(result.files).toHaveLength(1);
@@ -90,9 +106,21 @@ describe('analyzeCommitTiming', () => {
 
   it('only tracked files are included', () => {
     const commits = [
-      makeCommit({ hash: '1', date: '2025-06-02T10:00:00Z', files: ['a.ts', 'deleted.ts'] }),
-      makeCommit({ hash: '2', date: '2025-06-03T10:00:00Z', files: ['a.ts', 'deleted.ts'] }),
-      makeCommit({ hash: '3', date: '2025-06-04T10:00:00Z', files: ['a.ts', 'deleted.ts'] }),
+      makeCommit({
+        hash: '1',
+        date: '2025-06-02T10:00:00Z',
+        files: ['a.ts', 'deleted.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        date: '2025-06-03T10:00:00Z',
+        files: ['a.ts', 'deleted.ts'],
+      }),
+      makeCommit({
+        hash: '3',
+        date: '2025-06-04T10:00:00Z',
+        files: ['a.ts', 'deleted.ts'],
+      }),
     ];
     const result = analyzeCommitTiming(commits, ['a.ts']);
     expect(result.files.map((f) => f.file)).toEqual(['a.ts']);

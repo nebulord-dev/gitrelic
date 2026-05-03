@@ -136,23 +136,32 @@ export function Shell({ report }: ShellProps) {
   const selection = useSelection();
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('default');
   const visibility = computeVisibility(layoutMode);
-  const heroVizzes = selection.heroAltTabs.map((id) => ({ id, label: HERO_LABELS[id] }));
+  const heroVizzes = selection.heroAltTabs.map((id) => ({
+    id,
+    label: HERO_LABELS[id],
+  }));
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.metaKey && !e.shiftKey && e.key === '.') {
         e.preventDefault();
-        setLayoutMode((m) => (m === 'focus-canvas' ? 'default' : 'focus-canvas'));
+        setLayoutMode((m) =>
+          m === 'focus-canvas' ? 'default' : 'focus-canvas',
+        );
         return;
       }
       if (e.metaKey && e.shiftKey && e.key === '.') {
         e.preventDefault();
-        setLayoutMode((m) => (m === 'fullscreen-hero' ? 'default' : 'fullscreen-hero'));
+        setLayoutMode((m) =>
+          m === 'fullscreen-hero' ? 'default' : 'fullscreen-hero',
+        );
         return;
       }
       if (e.metaKey && e.shiftKey && e.key === ',') {
         e.preventDefault();
-        setLayoutMode((m) => (m === 'fullscreen-table' ? 'default' : 'fullscreen-table'));
+        setLayoutMode((m) =>
+          m === 'fullscreen-table' ? 'default' : 'fullscreen-table',
+        );
         return;
       }
       if (e.key === 'Escape') {
@@ -174,7 +183,11 @@ export function Shell({ report }: ShellProps) {
     // Style block 1: root container — flex column, full viewport height, surface-primary bg
     <div className="flex flex-col h-screen bg-surface-primary">
       {/* Top bar */}
-      <TopBar report={report} layoutMode={layoutMode} onLayoutModeChange={setLayoutMode} />
+      <TopBar
+        report={report}
+        layoutMode={layoutMode}
+        onLayoutModeChange={setLayoutMode}
+      />
 
       {/* Body: sidebar + center + inspector */}
       {/* Style block 2: body row — flex row, flex-1, min-h-0 to allow children to shrink */}
@@ -191,7 +204,9 @@ export function Shell({ report }: ShellProps) {
         {/* Center area: metrics + hero + bottom */}
         {/* Style block 3: center column — flex-1, flex column, min-w-0 to allow text truncation */}
         <div className="flex-1 flex flex-col min-w-0">
-          {visibility.metricsStrip && <MetricsStrip metrics={selection.metrics(report)} />}
+          {visibility.metricsStrip && (
+            <MetricsStrip metrics={selection.metrics(report)} />
+          )}
 
           {/* Hero visualization */}
           {visibility.hero && (
@@ -201,7 +216,8 @@ export function Shell({ report }: ShellProps) {
               <div className="flex justify-between items-center mb-3 shrink-0">
                 {/* Style block 6: hero title — text-[13px], font-semibold, text-primary */}
                 <span className="text-[13px] font-semibold text-text-primary">
-                  {PRESETS[selection.activePresetId].heroLabel ?? 'Repository Map'}
+                  {PRESETS[selection.activePresetId].heroLabel ??
+                    'Repository Map'}
                 </span>
                 {/* Style block 7: alt-tab pill bar — flex, gap-0.5, surface-tertiary bg, rounded-md, p-0.5 */}
                 <div className="flex gap-0.5 bg-surface-tertiary rounded-md p-0.5">
@@ -347,7 +363,9 @@ export function Shell({ report }: ShellProps) {
                     onSelectFile={selection.selectFile}
                   />
                 )}
-                {selection.activeHeroViz === 'shame-trend' && <ShameTrend report={report} />}
+                {selection.activeHeroViz === 'shame-trend' && (
+                  <ShameTrend report={report} />
+                )}
                 {selection.activeHeroViz === 'rename-sankey' && (
                   <RenameSankey
                     report={report}
@@ -392,7 +410,9 @@ export function Shell({ report }: ShellProps) {
                 {selection.activeHeroViz === 'bus-factor-histogram' && (
                   <BusFactorHistogram report={report} />
                 )}
-                {selection.activeHeroViz === 'age-histogram' && <AgeHistogram report={report} />}
+                {selection.activeHeroViz === 'age-histogram' && (
+                  <AgeHistogram report={report} />
+                )}
                 {selection.activeHeroViz === 'languages-stacked' && (
                   <LanguagesStackedBar report={report} />
                 )}

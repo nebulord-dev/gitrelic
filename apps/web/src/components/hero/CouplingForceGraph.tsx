@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY } from 'd3-force';
+import {
+  forceCollide,
+  forceLink,
+  forceManyBody,
+  forceSimulation,
+  forceX,
+  forceY,
+} from 'd3-force';
 
 import { categoryColor } from '../../utils/colors';
 
@@ -37,7 +44,11 @@ function buildGraph(
   for (const p of pairs) {
     nodeSet.add(p.fileA);
     nodeSet.add(p.fileB);
-    links.push({ source: p.fileA, target: p.fileB, strength: p.couplingStrength });
+    links.push({
+      source: p.fileA,
+      target: p.fileB,
+      strength: p.couplingStrength,
+    });
   }
 
   const hotspotMap = new Map<string, { score: number; category: string }>();
@@ -60,10 +71,14 @@ export function CouplingForceGraph({
 }: CouplingForceGraphProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
-  const [nodePositions, setNodePositions] = useState<Map<string, { x: number; y: number }>>(
-    new Map(),
-  );
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; node: GraphNode } | null>(null);
+  const [nodePositions, setNodePositions] = useState<
+    Map<string, { x: number; y: number }>
+  >(new Map());
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    node: GraphNode;
+  } | null>(null);
   const simRef = useRef<D3Simulation<GraphNode, GraphLink> | null>(null);
   const dimsRef = useRef(dims);
   dimsRef.current = dims;
@@ -78,7 +93,10 @@ export function CouplingForceGraph({
     return () => observer.disconnect();
   }, []);
 
-  const { nodes, links } = useMemo(() => buildGraph(report.coupling.topPairs, report), [report]);
+  const { nodes, links } = useMemo(
+    () => buildGraph(report.coupling.topPairs, report),
+    [report],
+  );
 
   // Create simulation when data changes — uses dims from ref, not dependency
   useEffect(() => {
@@ -142,7 +160,8 @@ export function CouplingForceGraph({
   }, [nodes]);
 
   const getPos = useCallback(
-    (id: string) => nodePositions.get(id) ?? { x: dims.width / 2, y: dims.height / 2 },
+    (id: string) =>
+      nodePositions.get(id) ?? { x: dims.width / 2, y: dims.height / 2 },
     [nodePositions, dims],
   );
 
@@ -151,8 +170,10 @@ export function CouplingForceGraph({
   const partnerCount = useMemo(() => {
     const counts = new Map<string, number>();
     for (const l of links) {
-      const src = typeof l.source === 'string' ? l.source : (l.source as GraphNode).id;
-      const tgt = typeof l.target === 'string' ? l.target : (l.target as GraphNode).id;
+      const src =
+        typeof l.source === 'string' ? l.source : (l.source as GraphNode).id;
+      const tgt =
+        typeof l.target === 'string' ? l.target : (l.target as GraphNode).id;
       counts.set(src, (counts.get(src) ?? 0) + 1);
       counts.set(tgt, (counts.get(tgt) ?? 0) + 1);
     }
@@ -163,8 +184,14 @@ export function CouplingForceGraph({
     <div ref={containerRef} className="w-full h-full relative">
       <svg width={dims.width} height={dims.height}>
         {links.map((l, i) => {
-          const srcId = typeof l.source === 'string' ? l.source : (l.source as GraphNode).id;
-          const tgtId = typeof l.target === 'string' ? l.target : (l.target as GraphNode).id;
+          const srcId =
+            typeof l.source === 'string'
+              ? l.source
+              : (l.source as GraphNode).id;
+          const tgtId =
+            typeof l.target === 'string'
+              ? l.target
+              : (l.target as GraphNode).id;
           const s = getPos(srcId);
           const t = getPos(tgtId);
           return (
@@ -194,7 +221,11 @@ export function CouplingForceGraph({
               onMouseEnter={(e) => {
                 const rect = containerRef.current?.getBoundingClientRect();
                 if (!rect) return;
-                setTooltip({ x: e.clientX - rect.left, y: e.clientY - rect.top, node: n });
+                setTooltip({
+                  x: e.clientX - rect.left,
+                  y: e.clientY - rect.top,
+                  node: n,
+                });
               }}
               onMouseLeave={() => setTooltip(null)}
             >
@@ -203,7 +234,11 @@ export function CouplingForceGraph({
                 cy={pos.y}
                 r={r}
                 fill={categoryColor(n.category, 0.4)}
-                stroke={isSelected ? 'var(--accent-primary)' : categoryColor(n.category, 0.6)}
+                stroke={
+                  isSelected
+                    ? 'var(--accent-primary)'
+                    : categoryColor(n.category, 0.6)
+                }
                 strokeWidth={isSelected ? 2 : 1}
               />
               {showLabel && (

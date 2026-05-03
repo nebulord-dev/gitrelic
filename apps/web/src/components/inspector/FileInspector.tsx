@@ -97,7 +97,9 @@ function getFileData(file: string, report: GitrelicReport): InspectorRow[] {
     rows.push({ label: 'Churn Trend', value: cv.trend });
   }
 
-  const rename = report.renameTracking.chains.find((c) => c.currentPath === file);
+  const rename = report.renameTracking.chains.find(
+    (c) => c.currentPath === file,
+  );
   if (rename && rename.renameCount > 0) {
     rows.push({ label: 'Renames', value: `${rename.renameCount} times` });
   }
@@ -105,7 +107,11 @@ function getFileData(file: string, report: GitrelicReport): InspectorRow[] {
   return rows;
 }
 
-export function FileInspector({ report, file, onSelectContributor }: FileInspectorProps) {
+export function FileInspector({
+  report,
+  file,
+  onSelectContributor,
+}: FileInspectorProps) {
   const rows = getFileData(file, report);
   const hotspot = report.hotspots.topHotspots.find((h) => h.file === file);
   const bf = report.busFactors.files.find((f) => f.file === file);
@@ -119,7 +125,9 @@ export function FileInspector({ report, file, onSelectContributor }: FileInspect
 
       {hotspot && (
         <div className="mb-3">
-          <Badge variant={severityColor(hotspot.category)}>{hotspot.category} hotspot</Badge>
+          <Badge variant={severityColor(hotspot.category)}>
+            {hotspot.category} hotspot
+          </Badge>
         </div>
       )}
 
@@ -131,7 +139,10 @@ export function FileInspector({ report, file, onSelectContributor }: FileInspect
         >
           <span className="text-text-tertiary">{row.label}</span>
           {/* color is a runtime CSS var token — kept as inline style */}
-          <span className="font-medium" style={{ color: row.color ?? 'var(--text-primary)' }}>
+          <span
+            className="font-medium"
+            style={{ color: row.color ?? 'var(--text-primary)' }}
+          >
             {row.value}
           </span>
         </div>
@@ -140,9 +151,13 @@ export function FileInspector({ report, file, onSelectContributor }: FileInspect
       {/* Top contributors for this file */}
       {bf && bf.authors.length > 0 && (
         <div className="mt-4">
-          <div className="text-[10px] text-text-tertiary mb-2">Top Contributors</div>
+          <div className="text-[10px] text-text-tertiary mb-2">
+            Top Contributors
+          </div>
           {bf.authors.slice(0, 5).map((email) => {
-            const contributor = report.contributors.contributors.find((c) => c.email === email);
+            const contributor = report.contributors.contributors.find(
+              (c) => c.email === email,
+            );
             return (
               <div
                 key={email}
@@ -158,7 +173,9 @@ export function FileInspector({ report, file, onSelectContributor }: FileInspect
                   </div>
                 </div>
                 <span className="text-[10px] text-text-secondary">
-                  {email === bf.dominantAuthor ? `${bf.dominantAuthorPercent}%` : ''}
+                  {email === bf.dominantAuthor
+                    ? `${bf.dominantAuthorPercent}%`
+                    : ''}
                 </span>
               </div>
             );

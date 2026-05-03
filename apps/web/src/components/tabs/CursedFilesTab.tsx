@@ -13,15 +13,23 @@ interface CursedFilesTabProps {
 function reasonVariant(
   reason: string,
 ): 'critical' | 'warning' | 'ownership' | 'coupling' | 'parallel' {
-  if (reason.includes('revert') || reason.includes('shame') || reason.includes('break'))
+  if (
+    reason.includes('revert') ||
+    reason.includes('shame') ||
+    reason.includes('break')
+  )
     return 'critical';
   if (reason.includes('author') || reason.includes('owner')) return 'ownership';
-  if (reason.includes('coupling') || reason.includes('coordination')) return 'coupling';
+  if (reason.includes('coupling') || reason.includes('coordination'))
+    return 'coupling';
   if (reason.includes('parallel')) return 'parallel';
   return 'warning';
 }
 
-function getAuthors(file: string, report: GitrelicReport): string[] | undefined {
+function getAuthors(
+  file: string,
+  report: GitrelicReport,
+): string[] | undefined {
   const bf = report.busFactors.files.find((f) => f.file === file);
   return bf ? bf.authors : undefined;
 }
@@ -34,7 +42,9 @@ export function CursedFilesTab({ report, onSelectFile }: CursedFilesTabProps) {
       render: (c) => (
         <span className="font-mono text-[11px] text-severity-critical">
           {fileName(c.file)}
-          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(c.file)}</span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">
+            {filePath(c.file)}
+          </span>
         </span>
       ),
     },
@@ -71,7 +81,9 @@ export function CursedFilesTab({ report, onSelectFile }: CursedFilesTabProps) {
       align: 'right',
       sortValue: (c) => c.churn,
       render: (c) => (
-        <span className="font-mono text-[11px] text-text-secondary">{fmt(c.churn)}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {fmt(c.churn)}
+        </span>
       ),
     },
     {
@@ -82,7 +94,11 @@ export function CursedFilesTab({ report, onSelectFile }: CursedFilesTabProps) {
       sortValue: (c) => c.authors,
       render: (c) => {
         const authors = getAuthors(c.file, report);
-        const span = <span className="font-mono text-[11px] text-text-secondary">{c.authors}</span>;
+        const span = (
+          <span className="font-mono text-[11px] text-text-secondary">
+            {c.authors}
+          </span>
+        );
         if (!authors) return span;
         return (
           <Tooltip

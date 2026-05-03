@@ -17,7 +17,8 @@ export function couplingMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Coupled Pairs',
       value: String(pairCount),
-      color: pairCount > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
+      color:
+        pairCount > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
     },
     {
       label: 'Top Coupling',

@@ -94,7 +94,9 @@ describe('analyzeBusFactor', () => {
   });
 
   it('ignores files not in tracked set', () => {
-    const commits = [makeCommit({ hash: '1', files: ['tracked.ts', 'deleted.ts'] })];
+    const commits = [
+      makeCommit({ hash: '1', files: ['tracked.ts', 'deleted.ts'] }),
+    ];
     const result = analyzeBusFactor(commits, ['tracked.ts']);
     expect(result.files.map((f) => f.file)).toEqual(['tracked.ts']);
   });

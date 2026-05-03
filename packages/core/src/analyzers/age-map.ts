@@ -9,7 +9,9 @@ import type { RawCommit } from '../utils/git.js';
  * inline because the project rule is type-only imports from @gitrelic/core
  * — keep the two in sync if the multipliers ever change.
  */
-export function getAgeThresholds(repoAgeDays: number): AgeMapReport['thresholds'] {
+export function getAgeThresholds(
+  repoAgeDays: number,
+): AgeMapReport['thresholds'] {
   return {
     freshLimit: Math.round(repoAgeDays * 0.08),
     agingLimit: Math.round(repoAgeDays * 0.33),
@@ -47,8 +49,15 @@ export function analyzeAgeMap(
 
   const files: FileAge[] = Array.from(fileLastCommit.entries())
     .map(([file, lastCommitDate]) => {
-      const ageInDays = Math.floor((now - new Date(lastCommitDate).getTime()) / 86_400_000);
-      return { file, lastCommitDate, ageInDays, status: getAgeStatus(ageInDays, thresholds) };
+      const ageInDays = Math.floor(
+        (now - new Date(lastCommitDate).getTime()) / 86_400_000,
+      );
+      return {
+        file,
+        lastCommitDate,
+        ageInDays,
+        status: getAgeStatus(ageInDays, thresholds),
+      };
     })
     .sort((a, b) => b.ageInDays - a.ageInDays);
 
@@ -65,10 +74,20 @@ export function analyzeAgeMap(
         ? `${staleFiles.length} files are going stale (no commits in ${thresholds.agingLimit}+ days)`
         : 'The codebase is actively maintained across most files';
 
-  return { files, staleFiles, ancientFiles, medianAgeDays, thresholds, summary };
+  return {
+    files,
+    staleFiles,
+    ancientFiles,
+    medianAgeDays,
+    thresholds,
+    summary,
+  };
 }
 
-function getAgeStatus(ageInDays: number, thresholds: AgeMapReport['thresholds']): AgeStatus {
+function getAgeStatus(
+  ageInDays: number,
+  thresholds: AgeMapReport['thresholds'],
+): AgeStatus {
   if (ageInDays <= thresholds.freshLimit) return 'fresh';
   if (ageInDays <= thresholds.agingLimit) return 'aging';
   if (ageInDays <= thresholds.staleLimit) return 'stale';

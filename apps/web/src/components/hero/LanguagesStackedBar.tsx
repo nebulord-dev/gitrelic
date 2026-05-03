@@ -27,7 +27,10 @@ export function directoryFor(file: string, depth = 2): string {
   return dirSegments.slice(0, depth).join('/');
 }
 
-export function prepareLanguagesData(report: GitrelicReport, topN = 30): LanguagesData {
+export function prepareLanguagesData(
+  report: GitrelicReport,
+  topN = 30,
+): LanguagesData {
   const dirToLangs = new Map<string, Map<string, number>>();
   for (const f of report.loc.files) {
     const dir = directoryFor(f.file);
@@ -112,7 +115,10 @@ export function LanguagesStackedBar({ report }: LanguagesStackedBarProps) {
     return () => observer.disconnect();
   }, []);
 
-  const { rows, maxRowLoc } = useMemo(() => prepareLanguagesData(report), [report]);
+  const { rows, maxRowLoc } = useMemo(
+    () => prepareLanguagesData(report),
+    [report],
+  );
 
   // Top-N languages across all rows for the legend (computed unconditionally
   // before the early return so the hook order stays stable across renders).
@@ -145,7 +151,10 @@ export function LanguagesStackedBar({ report }: LanguagesStackedBarProps) {
   const topPad = 16;
   const bottomPad = 16;
   const available = Math.max(120, dims.width - labelWidth - rightPad);
-  const rowHeight = Math.max(20, (dims.height - topPad - bottomPad) / Math.max(rows.length, 1));
+  const rowHeight = Math.max(
+    20,
+    (dims.height - topPad - bottomPad) / Math.max(rows.length, 1),
+  );
   const barHeight = Math.max(10, rowHeight - 6);
 
   return (
@@ -171,7 +180,8 @@ export function LanguagesStackedBar({ report }: LanguagesStackedBarProps) {
                 {row.directory}
               </text>
               {row.segments.map((seg) => {
-                const segFraction = row.totalLoc > 0 ? seg.loc / row.totalLoc : 0;
+                const segFraction =
+                  row.totalLoc > 0 ? seg.loc / row.totalLoc : 0;
                 const segWidth = Math.max(0, segFraction * rowWidth);
                 const x = xCursor;
                 xCursor += segWidth;
@@ -186,7 +196,8 @@ export function LanguagesStackedBar({ report }: LanguagesStackedBarProps) {
                     fillOpacity={0.8}
                     className="cursor-pointer"
                     onMouseEnter={(evt) => {
-                      const rect = containerRef.current?.getBoundingClientRect();
+                      const rect =
+                        containerRef.current?.getBoundingClientRect();
                       if (!rect) return;
                       setTooltip({
                         x: evt.clientX - rect.left,
@@ -234,7 +245,8 @@ export function LanguagesStackedBar({ report }: LanguagesStackedBarProps) {
         >
           <div className="font-semibold mb-0.5">{tooltip.directory}</div>
           <div style={{ color: languageColor(tooltip.segment.language) }}>
-            {tooltip.segment.language} · {tooltip.segment.loc.toLocaleString()} LOC ·{' '}
+            {tooltip.segment.language} · {tooltip.segment.loc.toLocaleString()}{' '}
+            LOC ·{' '}
             {tooltip.rowTotal > 0
               ? `${Math.round((tooltip.segment.loc / tooltip.rowTotal) * 100)}%`
               : '0%'}

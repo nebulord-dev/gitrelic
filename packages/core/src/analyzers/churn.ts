@@ -7,7 +7,10 @@ import type { RawCommit } from '../utils/git.js';
  * @param trackedFiles - The list of currently tracked files in the repository.
  * @Returns a report with the top 20 files by commit count, the number of hot files, and a summary.
  */
-export function analyzeChurn(commits: RawCommit[], trackedFiles: string[]): ChurnReport {
+export function analyzeChurn(
+  commits: RawCommit[],
+  trackedFiles: string[],
+): ChurnReport {
   const fileCounts: Record<string, number> = {};
 
   for (const commit of commits) {

@@ -56,15 +56,25 @@ describe('analyzeChurnVelocity', () => {
   });
 
   it('excludes files with fewer than 2 commits', () => {
-    const commits = [makeCommit({ hash: '1', date: '2025-01-01T00:00:00Z', files: ['a.ts'] })];
+    const commits = [
+      makeCommit({ hash: '1', date: '2025-01-01T00:00:00Z', files: ['a.ts'] }),
+    ];
     const result = analyzeChurnVelocity(commits, ['a.ts']);
     expect(result.files).toHaveLength(0);
   });
 
   it('only includes tracked files', () => {
     const commits = [
-      makeCommit({ hash: '1', date: '2025-01-01T00:00:00Z', files: ['a.ts', 'deleted.ts'] }),
-      makeCommit({ hash: '2', date: '2025-06-01T00:00:00Z', files: ['a.ts', 'deleted.ts'] }),
+      makeCommit({
+        hash: '1',
+        date: '2025-01-01T00:00:00Z',
+        files: ['a.ts', 'deleted.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        date: '2025-06-01T00:00:00Z',
+        files: ['a.ts', 'deleted.ts'],
+      }),
     ];
     const result = analyzeChurnVelocity(commits, ['a.ts']);
     expect(result.files.map((f) => f.file)).toEqual(['a.ts']);
@@ -78,7 +88,9 @@ describe('analyzeChurnVelocity', () => {
   });
 
   it('returns empty result for single commit (insufficient history)', () => {
-    const commits = [makeCommit({ hash: '1', date: '2025-06-01T00:00:00Z', files: ['a.ts'] })];
+    const commits = [
+      makeCommit({ hash: '1', date: '2025-06-01T00:00:00Z', files: ['a.ts'] }),
+    ];
     const result = analyzeChurnVelocity(commits, ['a.ts']);
     expect(result.files).toHaveLength(0);
     expect(result.acceleratingFiles).toHaveLength(0);

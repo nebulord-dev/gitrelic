@@ -15,7 +15,12 @@ interface ChurnFixture {
 function makeReport(churnFiles: ChurnFixture[]): GitrelicReport {
   return {
     churn: { files: churnFiles, topFiles: [], hotspotCount: 0, summary: '' },
-    busFactors: { files: [], criticalFiles: [], overallBusFactor: 0, summary: '' },
+    busFactors: {
+      files: [],
+      criticalFiles: [],
+      overallBusFactor: 0,
+      summary: '',
+    },
   } as unknown as GitrelicReport;
 }
 
@@ -34,12 +39,31 @@ describe('prepareChurnBarData', () => {
   it('breaks commit-count ties by file path asc for determinism', () => {
     const rows = prepareChurnBarData(
       makeReport([
-        { file: 'src/zeta.ts', commitCount: 50, churnScore: 70, category: 'warm' },
-        { file: 'src/alpha.ts', commitCount: 50, churnScore: 70, category: 'warm' },
-        { file: 'src/mid.ts', commitCount: 50, churnScore: 70, category: 'warm' },
+        {
+          file: 'src/zeta.ts',
+          commitCount: 50,
+          churnScore: 70,
+          category: 'warm',
+        },
+        {
+          file: 'src/alpha.ts',
+          commitCount: 50,
+          churnScore: 70,
+          category: 'warm',
+        },
+        {
+          file: 'src/mid.ts',
+          commitCount: 50,
+          churnScore: 70,
+          category: 'warm',
+        },
       ]),
     );
-    expect(rows.map((r) => r.file)).toEqual(['src/alpha.ts', 'src/mid.ts', 'src/zeta.ts']);
+    expect(rows.map((r) => r.file)).toEqual([
+      'src/alpha.ts',
+      'src/mid.ts',
+      'src/zeta.ts',
+    ]);
   });
 
   it('caps at 100 rows by default', () => {
@@ -72,7 +96,12 @@ describe('prepareChurnBarData', () => {
   it('exposes basename, full path, commit count, and category on each row', () => {
     const rows = prepareChurnBarData(
       makeReport([
-        { file: 'packages/core/src/runner.ts', commitCount: 99, churnScore: 90, category: 'hot' },
+        {
+          file: 'packages/core/src/runner.ts',
+          commitCount: 99,
+          churnScore: 90,
+          category: 'hot',
+        },
       ]),
     );
     expect(rows[0]).toEqual({
@@ -96,7 +125,13 @@ describe('prepareChurnBarData', () => {
 
 describe('ChurnBar', () => {
   it('renders the empty state when there are no churned files', () => {
-    render(<ChurnBar report={makeReport([])} selectedFile={null} onSelectFile={() => {}} />);
+    render(
+      <ChurnBar
+        report={makeReport([])}
+        selectedFile={null}
+        onSelectFile={() => {}}
+      />,
+    );
     expect(screen.getByText('No file churn detected.')).toBeTruthy();
   });
 });

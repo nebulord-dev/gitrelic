@@ -47,12 +47,16 @@ describe('cursedFilesMetrics', () => {
   });
 
   it('colors Top Curse Score as critical at or above the 70 threshold', () => {
-    const metrics = cursedFilesMetrics(makeReport([makeFile({ curseScore: 70 })]));
+    const metrics = cursedFilesMetrics(
+      makeReport([makeFile({ curseScore: 70 })]),
+    );
     expect(metrics[1].color).toBe('var(--severity-critical)');
   });
 
   it('colors Top Curse Score as warning below the 70 threshold', () => {
-    const metrics = cursedFilesMetrics(makeReport([makeFile({ curseScore: 60 })]));
+    const metrics = cursedFilesMetrics(
+      makeReport([makeFile({ curseScore: 60 })]),
+    );
     expect(metrics[1].color).toBe('var(--severity-warning)');
   });
 

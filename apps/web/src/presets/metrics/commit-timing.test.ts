@@ -2,9 +2,15 @@ import { describe, expect, it } from 'vitest';
 
 import { commitTimingMetrics } from './commit-timing';
 
-import type { CommitTimingReport, FileTimingProfile, GitrelicReport } from '@gitrelic/core';
+import type {
+  CommitTimingReport,
+  FileTimingProfile,
+  GitrelicReport,
+} from '@gitrelic/core';
 
-function makeFile(overrides: Partial<FileTimingProfile> = {}): FileTimingProfile {
+function makeFile(
+  overrides: Partial<FileTimingProfile> = {},
+): FileTimingProfile {
   return {
     file: 'a.ts',
     totalCommits: 10,
@@ -45,13 +51,17 @@ describe('commitTimingMetrics', () => {
   });
 
   it('marks Late Night % as warning between 10 and 20 percent', () => {
-    const metrics = commitTimingMetrics(makeReport({ repoLateNightPercent: 15 }));
+    const metrics = commitTimingMetrics(
+      makeReport({ repoLateNightPercent: 15 }),
+    );
     expect(metrics[0].value).toBe('15%');
     expect(metrics[0].color).toBe('var(--severity-warning)');
   });
 
   it('marks Late Night % as critical at or above 20 percent', () => {
-    const metrics = commitTimingMetrics(makeReport({ repoLateNightPercent: 25 }));
+    const metrics = commitTimingMetrics(
+      makeReport({ repoLateNightPercent: 25 }),
+    );
     expect(metrics[0].value).toBe('25%');
     expect(metrics[0].color).toBe('var(--severity-critical)');
   });
@@ -74,7 +84,9 @@ describe('commitTimingMetrics', () => {
       makeFile({ file: 'b.ts', stressScore: 30 }),
       makeFile({ file: 'c.ts', stressScore: 51 }),
     ];
-    const metrics = commitTimingMetrics(makeReport({ stressFiles, files: stressFiles }));
+    const metrics = commitTimingMetrics(
+      makeReport({ stressFiles, files: stressFiles }),
+    );
     expect(metrics[2].value).toBe('2');
     expect(metrics[2].color).toBe('var(--severity-warning)');
   });
@@ -84,7 +96,9 @@ describe('commitTimingMetrics', () => {
       makeFile({ stressScore: 40 }),
       makeFile({ stressScore: 50 }), // boundary — must be strictly greater than 50
     ];
-    const metrics = commitTimingMetrics(makeReport({ stressFiles, files: stressFiles }));
+    const metrics = commitTimingMetrics(
+      makeReport({ stressFiles, files: stressFiles }),
+    );
     expect(metrics[2].value).toBe('0');
     expect(metrics[2].color).toBe('var(--severity-healthy)');
   });
@@ -93,28 +107,36 @@ describe('commitTimingMetrics', () => {
     const stressFiles = Array.from({ length: 6 }, (_, i) =>
       makeFile({ file: `f${i}.ts`, stressScore: 60 + i }),
     );
-    const metrics = commitTimingMetrics(makeReport({ stressFiles, files: stressFiles }));
+    const metrics = commitTimingMetrics(
+      makeReport({ stressFiles, files: stressFiles }),
+    );
     expect(metrics[2].value).toBe('6');
     expect(metrics[2].color).toBe('var(--severity-critical)');
   });
 
   it('marks Top Stress as critical at or above 70', () => {
     const stressFiles = [makeFile({ stressScore: 82 })];
-    const metrics = commitTimingMetrics(makeReport({ stressFiles, files: stressFiles }));
+    const metrics = commitTimingMetrics(
+      makeReport({ stressFiles, files: stressFiles }),
+    );
     expect(metrics[3].value).toBe('82');
     expect(metrics[3].color).toBe('var(--severity-critical)');
   });
 
   it('marks Top Stress as warning above the 50 threshold but below 70', () => {
     const stressFiles = [makeFile({ stressScore: 55 })];
-    const metrics = commitTimingMetrics(makeReport({ stressFiles, files: stressFiles }));
+    const metrics = commitTimingMetrics(
+      makeReport({ stressFiles, files: stressFiles }),
+    );
     expect(metrics[3].value).toBe('55');
     expect(metrics[3].color).toBe('var(--severity-warning)');
   });
 
   it('keeps Top Stress healthy when the top score is at or below the 50 threshold', () => {
     const stressFiles = [makeFile({ stressScore: 45 })];
-    const metrics = commitTimingMetrics(makeReport({ stressFiles, files: stressFiles }));
+    const metrics = commitTimingMetrics(
+      makeReport({ stressFiles, files: stressFiles }),
+    );
     expect(metrics[3].value).toBe('45');
     expect(metrics[3].color).toBe('var(--severity-healthy)');
   });

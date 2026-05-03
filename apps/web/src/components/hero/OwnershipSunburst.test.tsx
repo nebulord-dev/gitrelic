@@ -16,14 +16,23 @@ function makeReport(
   ghostFiles: string[] = [],
 ): GitrelicReport {
   return {
-    busFactors: { files: busFactorsFiles, criticalFiles: [], overallBusFactor: 1, summary: '' },
+    busFactors: {
+      files: busFactorsFiles,
+      criticalFiles: [],
+      overallBusFactor: 1,
+      summary: '',
+    },
     ghostFiles: {
       files: ghostFiles.map((f) => ({ file: f })),
       totalGhostFiles: ghostFiles.length,
       summary: '',
     },
     loc: {
-      files: busFactorsFiles.map((b) => ({ file: b.file, lines: 100, language: 'TypeScript' })),
+      files: busFactorsFiles.map((b) => ({
+        file: b.file,
+        lines: 100,
+        language: 'TypeScript',
+      })),
       totalLines: 0,
       languages: [],
       summary: '',
@@ -43,16 +52,36 @@ function filesInTree(node: ReturnType<typeof prepareSunburstData>): string[] {
 
 describe('prepareSunburstData', () => {
   const fixture = [
-    { file: 'silo.ts', dominantAuthor: 'a@x.io', dominantAuthorPercent: 95, risk: 'critical' },
-    { file: 'shared.ts', dominantAuthor: 'b@x.io', dominantAuthorPercent: 60, risk: 'medium' },
-    { file: 'just-over.ts', dominantAuthor: 'a@x.io', dominantAuthorPercent: 81, risk: 'high' },
+    {
+      file: 'silo.ts',
+      dominantAuthor: 'a@x.io',
+      dominantAuthorPercent: 95,
+      risk: 'critical',
+    },
+    {
+      file: 'shared.ts',
+      dominantAuthor: 'b@x.io',
+      dominantAuthorPercent: 60,
+      risk: 'medium',
+    },
+    {
+      file: 'just-over.ts',
+      dominantAuthor: 'a@x.io',
+      dominantAuthorPercent: 81,
+      risk: 'high',
+    },
     {
       file: 'at-threshold.ts',
       dominantAuthor: 'b@x.io',
       dominantAuthorPercent: 80,
       risk: 'medium',
     },
-    { file: 'ghost.ts', dominantAuthor: 'c@x.io', dominantAuthorPercent: 100, risk: 'critical' },
+    {
+      file: 'ghost.ts',
+      dominantAuthor: 'c@x.io',
+      dominantAuthorPercent: 100,
+      risk: 'critical',
+    },
   ];
 
   it('mode="all" includes every busFactors file', () => {
@@ -67,7 +96,10 @@ describe('prepareSunburstData', () => {
   });
 
   it('mode="ghost" filters to ghostFiles only', () => {
-    const tree = prepareSunburstData(makeReport(fixture, ['ghost.ts']), 'ghost');
+    const tree = prepareSunburstData(
+      makeReport(fixture, ['ghost.ts']),
+      'ghost',
+    );
     expect(filesInTree(tree)).toEqual(['ghost.ts']);
   });
 
@@ -84,20 +116,41 @@ describe('prepareSunburstData', () => {
 
 describe('countSunburstFiles', () => {
   const fixture = [
-    { file: 'silo.ts', dominantAuthor: 'a@x.io', dominantAuthorPercent: 95, risk: 'critical' },
-    { file: 'shared.ts', dominantAuthor: 'b@x.io', dominantAuthorPercent: 60, risk: 'medium' },
-    { file: 'ghost.ts', dominantAuthor: 'c@x.io', dominantAuthorPercent: 100, risk: 'critical' },
+    {
+      file: 'silo.ts',
+      dominantAuthor: 'a@x.io',
+      dominantAuthorPercent: 95,
+      risk: 'critical',
+    },
+    {
+      file: 'shared.ts',
+      dominantAuthor: 'b@x.io',
+      dominantAuthorPercent: 60,
+      risk: 'medium',
+    },
+    {
+      file: 'ghost.ts',
+      dominantAuthor: 'c@x.io',
+      dominantAuthorPercent: 100,
+      risk: 'critical',
+    },
   ];
 
   it('counts all busFactors files in mode="all"', () => {
-    expect(countSunburstFiles(makeReport(fixture, ['ghost.ts']), 'all')).toBe(3);
+    expect(countSunburstFiles(makeReport(fixture, ['ghost.ts']), 'all')).toBe(
+      3,
+    );
   });
 
   it('counts only ghost files in mode="ghost"', () => {
-    expect(countSunburstFiles(makeReport(fixture, ['ghost.ts']), 'ghost')).toBe(1);
+    expect(countSunburstFiles(makeReport(fixture, ['ghost.ts']), 'ghost')).toBe(
+      1,
+    );
   });
 
   it('counts only single-author files in mode="single-author"', () => {
-    expect(countSunburstFiles(makeReport(fixture, []), 'single-author')).toBe(2);
+    expect(countSunburstFiles(makeReport(fixture, []), 'single-author')).toBe(
+      2,
+    );
   });
 });

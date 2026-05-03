@@ -19,7 +19,10 @@ export function analyzeHotspotClustering(
   commits: RawCommit[],
   trackedFiles: string[],
 ): HotspotClusterReport {
-  const top = hotspots.topHotspots.map((h) => ({ file: h.file, hotspotScore: h.hotspotScore }));
+  const top = hotspots.topHotspots.map((h) => ({
+    file: h.file,
+    hotspotScore: h.hotspotScore,
+  }));
 
   const allClusters: HotspotCluster[] = [
     ...clusterByStructure(top, trackedFiles),
@@ -39,7 +42,10 @@ function getDirectoryPrefix(filePath: string): string {
   return parts.slice(0, 2).join('/');
 }
 
-function clusterByStructure(hotspots: ClusterMember[], trackedFiles: string[]): HotspotCluster[] {
+function clusterByStructure(
+  hotspots: ClusterMember[],
+  trackedFiles: string[],
+): HotspotCluster[] {
   const prefixCounts = new Map<string, number>();
   for (const f of trackedFiles) {
     const prefix = getDirectoryPrefix(f);
@@ -59,7 +65,9 @@ function clusterByStructure(hotspots: ClusterMember[], trackedFiles: string[]): 
     if (members.length < 2) continue;
     if ((prefixCounts.get(prefix) ?? 0) > halfTotal) continue;
 
-    const avgScore = Math.round(members.reduce((s, m) => s + m.hotspotScore, 0) / members.length);
+    const avgScore = Math.round(
+      members.reduce((s, m) => s + m.hotspotScore, 0) / members.length,
+    );
     clusters.push({
       dimension: 'structural',
       label: prefix,
@@ -83,7 +91,10 @@ function clusterByOwnership(
   if (contributors.contributors.length <= 1) return [];
 
   const busFactorByFile = new Map(busFactor.files.map((f) => [f.file, f]));
-  const groups = new Map<string, { members: ClusterMember[]; percents: number[] }>();
+  const groups = new Map<
+    string,
+    { members: ClusterMember[]; percents: number[] }
+  >();
 
   for (const h of hotspots) {
     const bf = busFactorByFile.get(h.file);
@@ -99,8 +110,12 @@ function clusterByOwnership(
   for (const [author, { members, percents }] of groups) {
     if (members.length < 2) continue;
 
-    const avgScore = Math.round(members.reduce((s, m) => s + m.hotspotScore, 0) / members.length);
-    const avgPercent = Math.round(percents.reduce((s, p) => s + p, 0) / percents.length);
+    const avgScore = Math.round(
+      members.reduce((s, m) => s + m.hotspotScore, 0) / members.length,
+    );
+    const avgPercent = Math.round(
+      percents.reduce((s, p) => s + p, 0) / percents.length,
+    );
     clusters.push({
       dimension: 'ownership',
       label: `${author} (avg ${avgPercent}%)`,
@@ -134,7 +149,9 @@ function findInflectionMonth(timestamps: string[]): string | null {
   const avg = timestamps.length / monthlyCounts.size;
 
   // Find first month exceeding the average — that's the inflection
-  const sorted = [...monthlyCounts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  const sorted = [...monthlyCounts.entries()].sort((a, b) =>
+    a[0].localeCompare(b[0]),
+  );
   for (const [month, count] of sorted) {
     if (count > avg) return month;
   }
@@ -142,7 +159,10 @@ function findInflectionMonth(timestamps: string[]): string | null {
   return null;
 }
 
-function clusterByTemporal(hotspots: ClusterMember[], commits: RawCommit[]): HotspotCluster[] {
+function clusterByTemporal(
+  hotspots: ClusterMember[],
+  commits: RawCommit[],
+): HotspotCluster[] {
   const hotspotSet = new Set(hotspots.map((h) => h.file));
 
   // Collect per-file commit dates
@@ -169,17 +189,23 @@ function clusterByTemporal(hotspots: ClusterMember[], commits: RawCommit[]): Hot
     const month = findInflectionMonth(dates);
     if (!month) continue;
     if (!inflections.has(month)) inflections.set(month, []);
-    inflections.get(month)!.push({ file, hotspotScore: scoreByFile.get(file)! });
+    inflections
+      .get(month)!
+      .push({ file, hotspotScore: scoreByFile.get(file)! });
   }
 
   const clusters: HotspotCluster[] = [];
   for (const [month, members] of inflections) {
     if (members.length < 2) continue;
 
-    const avgScore = Math.round(members.reduce((s, m) => s + m.hotspotScore, 0) / members.length);
+    const avgScore = Math.round(
+      members.reduce((s, m) => s + m.hotspotScore, 0) / members.length,
+    );
     const [year, mo] = month.split('-');
     // Use UTC date to avoid timezone shifting the month
-    const monthName = new Date(Date.UTC(Number(year), Number(mo) - 1)).toLocaleString('en', {
+    const monthName = new Date(
+      Date.UTC(Number(year), Number(mo) - 1),
+    ).toLocaleString('en', {
       month: 'short',
       timeZone: 'UTC',
     });
@@ -216,11 +242,13 @@ function clusterByCouplingHub(
     const bIsHot = hotspotSet.has(pair.fileB);
 
     if (aIsHot && !bIsHot) {
-      if (!hubToHotspots.has(pair.fileB)) hubToHotspots.set(pair.fileB, new Set());
+      if (!hubToHotspots.has(pair.fileB))
+        hubToHotspots.set(pair.fileB, new Set());
       hubToHotspots.get(pair.fileB)!.add(pair.fileA);
     }
     if (bIsHot && !aIsHot) {
-      if (!hubToHotspots.has(pair.fileA)) hubToHotspots.set(pair.fileA, new Set());
+      if (!hubToHotspots.has(pair.fileA))
+        hubToHotspots.set(pair.fileA, new Set());
       hubToHotspots.get(pair.fileA)!.add(pair.fileB);
     }
   }
@@ -233,7 +261,9 @@ function clusterByCouplingHub(
       file: f,
       hotspotScore: scoreByFile.get(f)!,
     }));
-    const avgScore = Math.round(members.reduce((s, m) => s + m.hotspotScore, 0) / members.length);
+    const avgScore = Math.round(
+      members.reduce((s, m) => s + m.hotspotScore, 0) / members.length,
+    );
 
     clusters.push({
       dimension: 'coupling-hub',

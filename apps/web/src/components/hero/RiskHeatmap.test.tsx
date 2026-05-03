@@ -128,7 +128,9 @@ describe('prepareRiskRows', () => {
 
   it('marks ghost-listed files at 100', () => {
     const rows = prepareRiskRows(
-      makeReport([{ file: 'orphan', churn: 60, blast: 60, shame: 60, ghost: true }]),
+      makeReport([
+        { file: 'orphan', churn: 60, blast: 60, shame: 60, ghost: true },
+      ]),
     );
     expect(rows[0].ghost).toBe(100);
   });
@@ -137,9 +139,30 @@ describe('prepareRiskRows', () => {
     const rows = prepareRiskRows(
       makeReport([
         // Single-commit file with shame=100 would otherwise dominate the heatmap.
-        { file: 'one-shot', churn: 80, blast: 80, shame: 100, ghost: true, commits: 1 },
-        { file: 'two-shot', churn: 80, blast: 80, shame: 100, ghost: true, commits: 2 },
-        { file: 'real', churn: 80, blast: 80, shame: 100, ghost: true, commits: 3 },
+        {
+          file: 'one-shot',
+          churn: 80,
+          blast: 80,
+          shame: 100,
+          ghost: true,
+          commits: 1,
+        },
+        {
+          file: 'two-shot',
+          churn: 80,
+          blast: 80,
+          shame: 100,
+          ghost: true,
+          commits: 2,
+        },
+        {
+          file: 'real',
+          churn: 80,
+          blast: 80,
+          shame: 100,
+          ghost: true,
+          commits: 3,
+        },
       ]),
     );
     expect(rows.map((r) => r.file)).toEqual(['real']);

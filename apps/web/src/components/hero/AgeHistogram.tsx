@@ -29,14 +29,19 @@ const MAX_INRANGE_DAYS = 540; // 18 monthly bins
 const PADDING = { top: 28, right: 24, bottom: 44, left: 56 };
 const BAR_GAP = 4;
 
-export function ageTierFor(ageInDays: number, thresholds: AgeMapReport['thresholds']): AgeTier {
+export function ageTierFor(
+  ageInDays: number,
+  thresholds: AgeMapReport['thresholds'],
+): AgeTier {
   if (ageInDays <= thresholds.freshLimit) return 'fresh';
   if (ageInDays <= thresholds.agingLimit) return 'aging';
   if (ageInDays <= thresholds.staleLimit) return 'stale';
   return 'ancient';
 }
 
-export function prepareAgeHistogramData(report: GitrelicReport): AgeHistogramData {
+export function prepareAgeHistogramData(
+  report: GitrelicReport,
+): AgeHistogramData {
   const repoAgeDays = report.meta.ageInDays;
   const thresholds = report.ageMap.thresholds;
   const files = report.ageMap.files;
@@ -153,11 +158,13 @@ export function AgeHistogram({ report }: AgeHistogramProps) {
   // Files with ageInDays > staleLimit are "ancient", so the shaded zone starts
   // at the bucket whose rangeStart is the smallest multiple of BIN_WIDTH > staleLimit.
   const thresholdBinIdx = bins.findIndex((b) => b.tier === 'ancient');
-  const thresholdX = thresholdBinIdx >= 0 ? thresholdBinIdx * (barWidth + BAR_GAP) : plotW;
+  const thresholdX =
+    thresholdBinIdx >= 0 ? thresholdBinIdx * (barWidth + BAR_GAP) : plotW;
   const showThreshold = thresholdBinIdx >= 0 && thresholdBinIdx < bins.length;
 
   const yTicks = yScale.ticks(4);
-  const hover = hoverIdx == null ? null : { idx: hoverIdx, bin: bins[hoverIdx] };
+  const hover =
+    hoverIdx == null ? null : { idx: hoverIdx, bin: bins[hoverIdx] };
 
   return (
     <div ref={containerRef} className="w-full h-full flex flex-col">
@@ -204,7 +211,13 @@ export function AgeHistogram({ report }: AgeHistogramProps) {
             )}
 
             {/* Y axis */}
-            <line x1={0} y1={0} x2={0} y2={plotH} stroke="var(--border-primary)" />
+            <line
+              x1={0}
+              y1={0}
+              x2={0}
+              y2={plotH}
+              stroke="var(--border-primary)"
+            />
             <text
               transform={`translate(-40,${plotH / 2}) rotate(-90)`}
               textAnchor="middle"
@@ -216,7 +229,11 @@ export function AgeHistogram({ report }: AgeHistogramProps) {
             {yTicks.map((tick) => (
               <g key={`y-${tick}`} transform={`translate(0,${yScale(tick)})`}>
                 <line x2={-4} stroke="var(--border-primary)" />
-                <line x2={plotW} stroke="var(--border-primary)" strokeOpacity={0.15} />
+                <line
+                  x2={plotW}
+                  stroke="var(--border-primary)"
+                  strokeOpacity={0.15}
+                />
                 <text
                   x={-8}
                   textAnchor="end"
@@ -267,17 +284,30 @@ export function AgeHistogram({ report }: AgeHistogramProps) {
             })}
 
             {/* X axis */}
-            <line x1={0} y1={plotH} x2={plotW} y2={plotH} stroke="var(--border-primary)" />
+            <line
+              x1={0}
+              y1={plotH}
+              x2={plotW}
+              y2={plotH}
+              stroke="var(--border-primary)"
+            />
             {bins.map((b, i) => {
               const x = i * (barWidth + BAR_GAP) + barWidth / 2;
-              const label = b.isOverflow ? `${b.rangeStart}+` : `${b.rangeStart}`;
+              const label = b.isOverflow
+                ? `${b.rangeStart}+`
+                : `${b.rangeStart}`;
               return (
                 <g
                   key={`x-${b.rangeStart}-${b.isOverflow ? 'ovf' : 'in'}`}
                   transform={`translate(${x},${plotH})`}
                 >
                   <line y2={4} stroke="var(--border-primary)" />
-                  <text y={14} textAnchor="middle" fontSize={8} fill="var(--text-tertiary)">
+                  <text
+                    y={14}
+                    textAnchor="middle"
+                    fontSize={8}
+                    fill="var(--text-tertiary)"
+                  >
                     {label}
                   </text>
                 </g>
@@ -296,8 +326,17 @@ export function AgeHistogram({ report }: AgeHistogramProps) {
 
           {/* Tier legend */}
           {(['fresh', 'aging', 'stale', 'ancient'] as const).map((tier, i) => (
-            <g key={tier} transform={`translate(${PADDING.left + i * 70},${PADDING.top - 14})`}>
-              <rect width={10} height={8} y={-6} fill={TIER_COLORS[tier]} fillOpacity={0.75} />
+            <g
+              key={tier}
+              transform={`translate(${PADDING.left + i * 70},${PADDING.top - 14})`}
+            >
+              <rect
+                width={10}
+                height={8}
+                y={-6}
+                fill={TIER_COLORS[tier]}
+                fillOpacity={0.75}
+              />
               <text x={14} y={2} fontSize={9} fill="var(--text-tertiary)">
                 {tier}
               </text>
@@ -308,7 +347,8 @@ export function AgeHistogram({ report }: AgeHistogramProps) {
           <div
             className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 whitespace-nowrap"
             style={{
-              left: PADDING.left + hover.idx * (barWidth + BAR_GAP) + barWidth / 2,
+              left:
+                PADDING.left + hover.idx * (barWidth + BAR_GAP) + barWidth / 2,
               top: PADDING.top + yScale(hover.bin.count) - 8,
               transform: 'translate(-50%, -100%)',
             }}
@@ -320,9 +360,14 @@ export function AgeHistogram({ report }: AgeHistogramProps) {
             </div>
             <div className="text-text-secondary">
               {hover.bin.count} {hover.bin.count === 1 ? 'file' : 'files'}
-              {totalFiles > 0 && <> · {((hover.bin.count / totalFiles) * 100).toFixed(0)}%</>}
+              {totalFiles > 0 && (
+                <> · {((hover.bin.count / totalFiles) * 100).toFixed(0)}%</>
+              )}
             </div>
-            <div className="mt-0.5 capitalize" style={{ color: TIER_COLORS[hover.bin.tier] }}>
+            <div
+              className="mt-0.5 capitalize"
+              style={{ color: TIER_COLORS[hover.bin.tier] }}
+            >
               {hover.bin.tier}
             </div>
           </div>

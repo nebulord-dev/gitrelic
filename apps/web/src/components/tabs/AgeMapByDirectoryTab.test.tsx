@@ -5,7 +5,11 @@ import { AgeMapByDirectoryTab } from './AgeMapByDirectoryTab';
 
 import type { FileAge, GitrelicReport } from '@gitrelic/core';
 
-function f(file: string, ageInDays: number, status: FileAge['status']): FileAge {
+function f(
+  file: string,
+  ageInDays: number,
+  status: FileAge['status'],
+): FileAge {
   return { file, lastCommitDate: '2025-01-01', ageInDays, status };
 }
 
@@ -33,7 +37,12 @@ describe('AgeMapByDirectoryTab', () => {
       f('a/z.ts', 250, 'ancient'),
       f('b/x.ts', 50, 'aging'),
     ];
-    render(<AgeMapByDirectoryTab report={makeReport(files)} onSelectFile={vi.fn()} />);
+    render(
+      <AgeMapByDirectoryTab
+        report={makeReport(files)}
+        onSelectFile={vi.fn()}
+      />,
+    );
 
     expect(screen.getByText('a')).toBeTruthy();
     expect(screen.getByText('b')).toBeTruthy();
@@ -51,10 +60,15 @@ describe('AgeMapByDirectoryTab', () => {
       f('old/y.ts', 320, 'ancient'),
     ];
     const { container } = render(
-      <AgeMapByDirectoryTab report={makeReport(files)} onSelectFile={vi.fn()} />,
+      <AgeMapByDirectoryTab
+        report={makeReport(files)}
+        onSelectFile={vi.fn()}
+      />,
     );
     // First data row should be the "old" directory.
-    const dataRows = container.querySelectorAll('div.flex.items-center.py-1\\.5');
+    const dataRows = container.querySelectorAll(
+      'div.flex.items-center.py-1\\.5',
+    );
     expect(dataRows.length).toBeGreaterThan(0);
     expect(dataRows[0].textContent).toContain('old');
   });
@@ -62,13 +76,20 @@ describe('AgeMapByDirectoryTab', () => {
   it("clicking a row calls onSelectFile with the directory's oldest file", () => {
     const onSelectFile = vi.fn();
     const files = [f('a/young.ts', 10, 'fresh'), f('a/old.ts', 350, 'ancient')];
-    render(<AgeMapByDirectoryTab report={makeReport(files)} onSelectFile={onSelectFile} />);
+    render(
+      <AgeMapByDirectoryTab
+        report={makeReport(files)}
+        onSelectFile={onSelectFile}
+      />,
+    );
     fireEvent.click(screen.getByText('a'));
     expect(onSelectFile).toHaveBeenCalledWith('a/old.ts');
   });
 
   it('renders empty-state copy when no files are tracked', () => {
-    render(<AgeMapByDirectoryTab report={makeReport([])} onSelectFile={vi.fn()} />);
+    render(
+      <AgeMapByDirectoryTab report={makeReport([])} onSelectFile={vi.fn()} />,
+    );
     expect(screen.getByText(/No directories with age data\./)).toBeTruthy();
   });
 

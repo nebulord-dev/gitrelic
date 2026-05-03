@@ -59,7 +59,9 @@ describe('BlastRadiusTab', () => {
     // the finding would advertise sub-threshold files alongside a "0 / Low
     // Risk" headline (PR #53 review finding).
     expect(
-      screen.getByText('No files cross the high-blast threshold — coupling is well-distributed.'),
+      screen.getByText(
+        'No files cross the high-blast threshold — coupling is well-distributed.',
+      ),
     ).toBeTruthy();
     expect(screen.queryByText('Top blast files')).toBeNull();
     expect(screen.queryByText('b.ts')).toBeNull();
@@ -99,7 +101,9 @@ describe('BlastRadiusTab', () => {
         onApplyPreset={vi.fn()}
       />,
     );
-    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('1');
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe(
+      '1',
+    );
     expect(screen.getByText('Top blast files')).toBeTruthy();
     expect(screen.getByText('load-bearer.ts')).toBeTruthy();
     expect(screen.queryByText('sub-threshold-1.ts')).toBeNull();
@@ -131,7 +135,9 @@ describe('BlastRadiusTab', () => {
         onApplyPreset={vi.fn()}
       />,
     );
-    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('2');
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe(
+      '2',
+    );
     expect(screen.getByText('Moderate Risk')).toBeTruthy();
   });
 
@@ -145,11 +151,16 @@ describe('BlastRadiusTab', () => {
     }));
     render(
       <BlastRadiusTab
-        report={makeReport(files, '12 high blast-radius files (architectural load-bearers)')}
+        report={makeReport(
+          files,
+          '12 high blast-radius files (architectural load-bearers)',
+        )}
         onApplyPreset={vi.fn()}
       />,
     );
-    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('12');
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe(
+      '12',
+    );
     expect(screen.getByText('High Risk')).toBeTruthy();
     expect(screen.getByText('Top blast files')).toBeTruthy();
     expect(screen.getByText('file0.ts')).toBeTruthy();
@@ -226,7 +237,9 @@ describe('BlastRadiusTab', () => {
         totalCommits: 1,
       },
     ];
-    render(<BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />);
+    render(
+      <BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />,
+    );
     const subline = screen.getByText(/Tier mix:/).closest('div')!;
     expect(subline.textContent).toContain('2 low');
     expect(subline.textContent).toContain('3 medium');
@@ -287,7 +300,9 @@ describe('BlastRadiusTab', () => {
         totalCommits: 1,
       },
     ];
-    render(<BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />);
+    render(
+      <BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />,
+    );
     expect(screen.getByText('Where they live')).toBeTruthy();
 
     const dirRow = screen.getByText('tests').closest('div')!.parentElement!;
@@ -303,7 +318,8 @@ describe('BlastRadiusTab', () => {
     // Long fixture path that would visibly ellipsize at side-by-side widths in
     // the real dashboard. The Tooltip wrapper must surface the full value on
     // hover so users can read the truncated path.
-    const longDir = 'compiler/packages/babel-plugin-react-compiler/src/__tests__/fixtures';
+    const longDir =
+      'compiler/packages/babel-plugin-react-compiler/src/__tests__/fixtures';
     const files: BlastFixture[] = [
       {
         file: `${longDir}/a.ts`,
@@ -313,7 +329,9 @@ describe('BlastRadiusTab', () => {
         totalCommits: 1,
       },
     ];
-    render(<BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />);
+    render(
+      <BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />,
+    );
 
     // Pre-hover: only the cell renders the path.
     expect(screen.getAllByText(longDir)).toHaveLength(1);
@@ -333,7 +351,9 @@ describe('BlastRadiusTab', () => {
       maxCoChangedFiles: 20,
       totalCommits: 1,
     }));
-    render(<BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />);
+    render(
+      <BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />,
+    );
     expect(screen.getByText(/\+ 2 more directories/)).toBeTruthy();
   });
 
@@ -345,7 +365,9 @@ describe('BlastRadiusTab', () => {
       maxCoChangedFiles: 20,
       totalCommits: 1,
     }));
-    render(<BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />);
+    render(
+      <BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />,
+    );
     expect(screen.getByText(/\+ 1 more directory/)).toBeTruthy();
   });
 
@@ -357,7 +379,9 @@ describe('BlastRadiusTab', () => {
       maxCoChangedFiles: 20,
       totalCommits: 1,
     }));
-    render(<BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />);
+    render(
+      <BlastRadiusTab report={makeReport(files, '')} onApplyPreset={vi.fn()} />,
+    );
     expect(screen.queryByText(/more director/)).toBeNull();
   });
 
@@ -430,10 +454,17 @@ describe('BlastRadiusTab', () => {
 
   it('falls back to the analyzer summary when no files exist', () => {
     render(
-      <BlastRadiusTab report={makeReport([], 'No commits to analyze')} onApplyPreset={vi.fn()} />,
+      <BlastRadiusTab
+        report={makeReport([], 'No commits to analyze')}
+        onApplyPreset={vi.fn()}
+      />,
     );
-    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('0');
-    expect(screen.getByText('No co-change activity in the analyzed window.')).toBeTruthy();
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe(
+      '0',
+    );
+    expect(
+      screen.getByText('No co-change activity in the analyzed window.'),
+    ).toBeTruthy();
     expect(screen.getByText('No commits to analyze')).toBeTruthy();
   });
 });

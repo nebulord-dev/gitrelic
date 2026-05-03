@@ -15,7 +15,10 @@ function riskLevel(index: number): { variant: BadgeVariant; label: string } {
   return { variant: 'critical', label: 'High Risk' };
 }
 
-export function KnowledgeSilosTab({ report, onApplyPreset }: KnowledgeSilosTabProps) {
+export function KnowledgeSilosTab({
+  report,
+  onApplyPreset,
+}: KnowledgeSilosTabProps) {
   const kc = report.knowledgeConcentration;
   const risk = riskLevel(kc.concentrationIndex);
 
@@ -26,7 +29,9 @@ export function KnowledgeSilosTab({ report, onApplyPreset }: KnowledgeSilosTabPr
       metric="Concentration Index"
       finding={
         <>
-          <span className="font-mono text-text-primary font-semibold">{kc.singleAuthorFiles}</span>{' '}
+          <span className="font-mono text-text-primary font-semibold">
+            {kc.singleAuthorFiles}
+          </span>{' '}
           of {kc.totalFiles} files have a single dominant author (80%+ commits)
         </>
       }

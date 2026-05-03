@@ -5,7 +5,9 @@ import { ShameTab } from './ShameTab';
 
 import type { GitrelicReport } from '@gitrelic/core';
 
-const makeReport = (overrides: Partial<GitrelicReport['forensics']> = {}): GitrelicReport =>
+const makeReport = (
+  overrides: Partial<GitrelicReport['forensics']> = {},
+): GitrelicReport =>
   ({
     forensics: {
       files: [],
@@ -45,9 +47,14 @@ describe('ShameTab', () => {
       dominantKeywords: ['revert'],
     }));
     render(
-      <ShameTab report={makeReport({ files, totalShameCommits: 60 })} onApplyPreset={vi.fn()} />,
+      <ShameTab
+        report={makeReport({ files, totalShameCommits: 60 })}
+        onApplyPreset={vi.fn()}
+      />,
     );
-    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('12');
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe(
+      '12',
+    );
     expect(screen.getByText('High Shame')).toBeTruthy();
   });
 
@@ -71,7 +78,10 @@ describe('ShameTab', () => {
         shameFile('src/z.ts', 40),
       ];
       render(
-        <ShameTab report={makeReport({ files, totalShameCommits: 30 })} onApplyPreset={vi.fn()} />,
+        <ShameTab
+          report={makeReport({ files, totalShameCommits: 30 })}
+          onApplyPreset={vi.fn()}
+        />,
       );
       expect(screen.getByText('Where they live')).toBeTruthy();
 
@@ -85,25 +95,40 @@ describe('ShameTab', () => {
     });
 
     it('shows a "+ N more directories" footer when more than 5 distinct directories exist', () => {
-      const files = Array.from({ length: 7 }, (_, i) => shameFile(`dir${i}/file.ts`, 90 - i));
+      const files = Array.from({ length: 7 }, (_, i) =>
+        shameFile(`dir${i}/file.ts`, 90 - i),
+      );
       render(
-        <ShameTab report={makeReport({ files, totalShameCommits: 30 })} onApplyPreset={vi.fn()} />,
+        <ShameTab
+          report={makeReport({ files, totalShameCommits: 30 })}
+          onApplyPreset={vi.fn()}
+        />,
       );
       expect(screen.getByText(/\+ 2 more directories/)).toBeTruthy();
     });
 
     it('uses singular "directory" when exactly one directory is hidden', () => {
-      const files = Array.from({ length: 6 }, (_, i) => shameFile(`dir${i}/file.ts`, 90 - i));
+      const files = Array.from({ length: 6 }, (_, i) =>
+        shameFile(`dir${i}/file.ts`, 90 - i),
+      );
       render(
-        <ShameTab report={makeReport({ files, totalShameCommits: 30 })} onApplyPreset={vi.fn()} />,
+        <ShameTab
+          report={makeReport({ files, totalShameCommits: 30 })}
+          onApplyPreset={vi.fn()}
+        />,
       );
       expect(screen.getByText(/\+ 1 more directory/)).toBeTruthy();
     });
 
     it('omits the "+ more directories" footer when 5 or fewer distinct directories exist', () => {
-      const files = Array.from({ length: 5 }, (_, i) => shameFile(`dir${i}/file.ts`, 90 - i));
+      const files = Array.from({ length: 5 }, (_, i) =>
+        shameFile(`dir${i}/file.ts`, 90 - i),
+      );
       render(
-        <ShameTab report={makeReport({ files, totalShameCommits: 30 })} onApplyPreset={vi.fn()} />,
+        <ShameTab
+          report={makeReport({ files, totalShameCommits: 30 })}
+          onApplyPreset={vi.fn()}
+        />,
       );
       expect(screen.queryByText(/more director/)).toBeNull();
     });
@@ -111,7 +136,10 @@ describe('ShameTab', () => {
     it('omits the rollup when no high-shame files exist', () => {
       const files = [shameFile('a.ts', 30)];
       render(
-        <ShameTab report={makeReport({ files, totalShameCommits: 1 })} onApplyPreset={vi.fn()} />,
+        <ShameTab
+          report={makeReport({ files, totalShameCommits: 1 })}
+          onApplyPreset={vi.fn()}
+        />,
       );
       expect(screen.queryByText('Where they live')).toBeNull();
     });
@@ -121,7 +149,8 @@ describe('ShameTab', () => {
     // Long fixture path that would visibly ellipsize at side-by-side widths in
     // the real dashboard. The Tooltip wrapper must surface the full value on
     // hover so users can read the truncated path.
-    const longDir = 'compiler/packages/babel-plugin-react-compiler/src/__tests__/fixtures';
+    const longDir =
+      'compiler/packages/babel-plugin-react-compiler/src/__tests__/fixtures';
     const files = [
       {
         file: `${longDir}/a.ts`,
@@ -133,7 +162,10 @@ describe('ShameTab', () => {
       },
     ];
     render(
-      <ShameTab report={makeReport({ files, totalShameCommits: 5 })} onApplyPreset={vi.fn()} />,
+      <ShameTab
+        report={makeReport({ files, totalShameCommits: 5 })}
+        onApplyPreset={vi.fn()}
+      />,
     );
 
     // Pre-hover: only the cell renders the path.

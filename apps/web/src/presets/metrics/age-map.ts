@@ -12,17 +12,25 @@ export function ageMapMetrics(report: GitrelicReport): Metric[] {
       label: 'Median Age (days)',
       value: files.length > 0 ? fmt(medianAgeDays) : '—',
       color:
-        files.length > 0 && medianAgeDays > 365 ? 'var(--severity-warning)' : 'var(--text-primary)',
+        files.length > 0 && medianAgeDays > 365
+          ? 'var(--severity-warning)'
+          : 'var(--text-primary)',
     },
     {
       label: 'Ancient Files',
       value: fmt(ancientFiles.length),
-      color: ancientFiles.length > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+      color:
+        ancientFiles.length > 0
+          ? 'var(--severity-warning)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'Stale Files',
       value: fmt(staleFiles.length),
-      color: staleFiles.length > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+      color:
+        staleFiles.length > 0
+          ? 'var(--severity-warning)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'Fresh Files',

@@ -20,9 +20,13 @@ const DIRECTORY_ROLLUP_LIMIT = 5;
 // Shared with rewriteRatioMetrics so the panel badge and metrics-strip slot 2 color cannot drift.
 export const MODERATE_THRESHOLD = 5;
 
-function tierBadge(highRewriteCount: number): { variant: BadgeVariant; label: string } {
+function tierBadge(highRewriteCount: number): {
+  variant: BadgeVariant;
+  label: string;
+} {
   if (highRewriteCount === 0) return { variant: 'healthy', label: 'Healthy' };
-  if (highRewriteCount < MODERATE_THRESHOLD) return { variant: 'warning', label: 'Moderate' };
+  if (highRewriteCount < MODERATE_THRESHOLD)
+    return { variant: 'warning', label: 'Moderate' };
   return { variant: 'critical', label: 'High Rewrite' };
 }
 
@@ -32,22 +36,32 @@ function signed(n: number): string {
   return '0';
 }
 
-export function RewriteRatioTab({ report, onApplyPreset }: RewriteRatioTabProps) {
-  const { files, totalInsertions, totalDeletions, highRewrite } = report.rewriteRatio;
+export function RewriteRatioTab({
+  report,
+  onApplyPreset,
+}: RewriteRatioTabProps) {
+  const { files, totalInsertions, totalDeletions, highRewrite } =
+    report.rewriteRatio;
   // Slice top files from the threshold-filtered subset (per RELIC-315 lesson):
   // never include sub-threshold files in the "Top rewrite files" header.
-  const highRewriteFiles = files.filter((f) => f.rewriteScore >= HIGH_REWRITE_THRESHOLD);
+  const highRewriteFiles = files.filter(
+    (f) => f.rewriteScore >= HIGH_REWRITE_THRESHOLD,
+  );
   const tier = tierBadge(highRewrite);
   const topFiles = highRewriteFiles.slice(0, TOP_FILES_COUNT);
 
   // Subline shows raw edit balance, not the dampened display score — `ratio` is the
   // undampened min/max ratio (intent: "is this codebase shaped like growth or rewrite?").
   const balancedCount = files.filter((f) => f.ratio > 0.5).length;
-  const balancedPct = files.length > 0 ? Math.round((balancedCount / files.length) * 100) : 0;
+  const balancedPct =
+    files.length > 0 ? Math.round((balancedCount / files.length) * 100) : 0;
 
   const allDirectoryRows = aggregateRewriteByDirectory(highRewriteFiles);
   const directoryRows = allDirectoryRows.slice(0, DIRECTORY_ROLLUP_LIMIT);
-  const hiddenDirectoryCount = Math.max(0, allDirectoryRows.length - DIRECTORY_ROLLUP_LIMIT);
+  const hiddenDirectoryCount = Math.max(
+    0,
+    allDirectoryRows.length - DIRECTORY_ROLLUP_LIMIT,
+  );
   const maxDirCount = directoryRows[0]?.count ?? 1;
 
   return (
@@ -63,7 +77,9 @@ export function RewriteRatioTab({ report, onApplyPreset }: RewriteRatioTabProps)
             </div>
             {topFiles.map((f) => (
               <div key={f.file} className="leading-[1.5]">
-                <span className="font-mono text-text-primary">{fileName(f.file)}</span>{' '}
+                <span className="font-mono text-text-primary">
+                  {fileName(f.file)}
+                </span>{' '}
                 <span className="text-text-tertiary">
                   <span className="font-mono font-semibold text-severity-healthy">
                     +{fmt(f.totalInsertions)}
@@ -78,8 +94,8 @@ export function RewriteRatioTab({ report, onApplyPreset }: RewriteRatioTabProps)
           </div>
         ) : files.length > 0 ? (
           <>
-            No files cross the high-rewrite threshold — code edits skew toward growth or shrink, not
-            replace.
+            No files cross the high-rewrite threshold — code edits skew toward
+            growth or shrink, not replace.
           </>
         ) : (
           <>No rewrite signal in the analysis window.</>
@@ -88,9 +104,15 @@ export function RewriteRatioTab({ report, onApplyPreset }: RewriteRatioTabProps)
       subline={
         files.length > 0 ? (
           <>
-            Repo balance: <strong className="text-severity-healthy">+{fmt(totalInsertions)}</strong>{' '}
-            / <strong className="text-severity-critical">−{fmt(totalDeletions)}</strong> · net{' '}
-            <strong>{signed(totalInsertions - totalDeletions)}</strong> ·{' '}
+            Repo balance:{' '}
+            <strong className="text-severity-healthy">
+              +{fmt(totalInsertions)}
+            </strong>{' '}
+            /{' '}
+            <strong className="text-severity-critical">
+              −{fmt(totalDeletions)}
+            </strong>{' '}
+            · net <strong>{signed(totalInsertions - totalDeletions)}</strong> ·{' '}
             <strong>{balancedPct}%</strong> of files balanced (ratio &gt; 0.5).
           </>
         ) : null

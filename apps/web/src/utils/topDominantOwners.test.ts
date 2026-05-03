@@ -42,7 +42,11 @@ describe('topDominantOwners', () => {
       file('d.ts', 'mark@x.com'),
       file('e.ts', 'mark@x.com'),
     ]);
-    expect(rows.map((r) => r.author)).toEqual(['alice@x.com', 'mark@x.com', 'zoe@x.com']);
+    expect(rows.map((r) => r.author)).toEqual([
+      'alice@x.com',
+      'mark@x.com',
+      'zoe@x.com',
+    ]);
   });
 
   it('computes share against the input length, not a repo total', () => {

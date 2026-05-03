@@ -13,7 +13,9 @@ export function analyzeGhostFiles(
   contributorReport: ContributorReport,
   locReport: LocReport,
 ): GhostFilesReport {
-  const contributorMap = new Map(contributorReport.contributors.map((c) => [c.email, c]));
+  const contributorMap = new Map(
+    contributorReport.contributors.map((c) => [c.email, c]),
+  );
   const locMap = new Map(locReport.files.map((f) => [f.file, f.lines]));
 
   const files: GhostFile[] = [];

@@ -22,10 +22,19 @@ function makeCommit(overrides: Partial<RawCommit>): RawCommit {
 describe('binCommitsByWeek', () => {
   it('bins commits into weekly buckets per author', () => {
     const commits = [
-      makeCommit({ date: '2025-06-02T10:00:00Z', authorEmail: 'alice@dev.com' }),
-      makeCommit({ date: '2025-06-03T10:00:00Z', authorEmail: 'alice@dev.com' }),
+      makeCommit({
+        date: '2025-06-02T10:00:00Z',
+        authorEmail: 'alice@dev.com',
+      }),
+      makeCommit({
+        date: '2025-06-03T10:00:00Z',
+        authorEmail: 'alice@dev.com',
+      }),
       makeCommit({ date: '2025-06-03T10:00:00Z', authorEmail: 'bob@dev.com' }),
-      makeCommit({ date: '2025-06-09T10:00:00Z', authorEmail: 'alice@dev.com' }),
+      makeCommit({
+        date: '2025-06-09T10:00:00Z',
+        authorEmail: 'alice@dev.com',
+      }),
     ];
 
     const { weeks, authors } = binCommitsByWeek(commits);

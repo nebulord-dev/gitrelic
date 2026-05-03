@@ -86,12 +86,20 @@ function TabContent({
   switch (tab) {
     case 'hotspots':
       return (
-        <HotspotsTab report={report} selectedFile={selectedFile} onSelectFile={onSelectFile} />
+        <HotspotsTab
+          report={report}
+          selectedFile={selectedFile}
+          onSelectFile={onSelectFile}
+        />
       );
     case 'churn':
-      return <ChurnTab report={report} onApplyPreset={onApplyPreset} mode="source" />;
+      return (
+        <ChurnTab report={report} onApplyPreset={onApplyPreset} mode="source" />
+      );
     case 'churn-tests':
-      return <ChurnTab report={report} onApplyPreset={onApplyPreset} mode="tests" />;
+      return (
+        <ChurnTab report={report} onApplyPreset={onApplyPreset} mode="tests" />
+      );
     case 'cursed-files':
       return <CursedFilesTab report={report} onSelectFile={onSelectFile} />;
     case 'bus-factor':
@@ -107,7 +115,9 @@ function TabContent({
     case 'age-map':
       return <AgeMapTab report={report} onApplyPreset={onApplyPreset} />;
     case 'age-map-by-directory':
-      return <AgeMapByDirectoryTab report={report} onSelectFile={onSelectFile} />;
+      return (
+        <AgeMapByDirectoryTab report={report} onSelectFile={onSelectFile} />
+      );
     case 'dead-code':
       return <DeadCodeTab report={report} onSelectFile={onSelectFile} />;
     case 'complexity-trend':
@@ -121,7 +131,9 @@ function TabContent({
     case 'ghost-files':
       return <GhostFilesTab report={report} onSelectFile={onSelectFile} />;
     case 'knowledge-silos':
-      return <KnowledgeSilosTab report={report} onApplyPreset={onApplyPreset} />;
+      return (
+        <KnowledgeSilosTab report={report} onApplyPreset={onApplyPreset} />
+      );
     case 'co-authors':
       return <CoAuthorsTab report={report} />;
     case 'commit-timing':

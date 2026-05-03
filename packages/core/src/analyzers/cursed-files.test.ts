@@ -23,7 +23,9 @@ function makeChurnReport(
             ? ('warm' as const)
             : ('cold' as const),
     })),
-    topFiles: files.slice(0, 20).map((f) => ({ ...f, category: 'hot' as const })),
+    topFiles: files
+      .slice(0, 20)
+      .map((f) => ({ ...f, category: 'hot' as const })),
     hotspotCount: files.filter((f) => f.churnScore > 75).length,
     summary: '',
   };
@@ -45,17 +47,25 @@ function makeBusFactorReport(
     })),
     criticalFiles: files
       .filter((f) => f.risk === 'critical')
-      .map((f) => ({ ...f, authors: ['alice@example.com'], dominantAuthor: 'alice@example.com' })),
+      .map((f) => ({
+        ...f,
+        authors: ['alice@example.com'],
+        dominantAuthor: 'alice@example.com',
+      })),
     overallBusFactor: 1,
     summary: '',
   };
 }
 
-function makeAgeMapReport(files: { file: string; ageInDays: number }[]): AgeMapReport {
+function makeAgeMapReport(
+  files: { file: string; ageInDays: number }[],
+): AgeMapReport {
   return {
     files: files.map((f) => ({
       ...f,
-      lastCommitDate: new Date(Date.now() - f.ageInDays * 86_400_000).toISOString(),
+      lastCommitDate: new Date(
+        Date.now() - f.ageInDays * 86_400_000,
+      ).toISOString(),
       status: 'fresh' as const,
     })),
     staleFiles: [],
@@ -76,9 +86,16 @@ function makeEmptyParallelDev(): ParallelDevReport {
 describe('findCursedFiles', () => {
   it('requires score >= 50 to qualify', () => {
     // high churn (>75 → 35) + high bus factor (15) = 50 → qualifies
-    const churn = makeChurnReport([{ file: 'a.ts', commitCount: 10, churnScore: 80 }]);
+    const churn = makeChurnReport([
+      { file: 'a.ts', commitCount: 10, churnScore: 80 },
+    ]);
     const bus = makeBusFactorReport([
-      { file: 'a.ts', risk: 'high', dominantAuthorPercent: 80, uniqueAuthors: 2 },
+      {
+        file: 'a.ts',
+        risk: 'high',
+        dominantAuthorPercent: 80,
+        uniqueAuthors: 2,
+      },
     ]);
     const age = makeAgeMapReport([{ file: 'a.ts', ageInDays: 50 }]);
 
@@ -96,9 +113,16 @@ describe('findCursedFiles', () => {
 
   it('excludes files below threshold 50', () => {
     // warm churn (>40 → 15) + high bus factor (15) = 30 → excluded
-    const churn = makeChurnReport([{ file: 'a.ts', commitCount: 5, churnScore: 50 }]);
+    const churn = makeChurnReport([
+      { file: 'a.ts', commitCount: 5, churnScore: 50 },
+    ]);
     const bus = makeBusFactorReport([
-      { file: 'a.ts', risk: 'high', dominantAuthorPercent: 80, uniqueAuthors: 2 },
+      {
+        file: 'a.ts',
+        risk: 'high',
+        dominantAuthorPercent: 80,
+        uniqueAuthors: 2,
+      },
     ]);
     const age = makeAgeMapReport([{ file: 'a.ts', ageInDays: 50 }]);
 
@@ -115,9 +139,16 @@ describe('findCursedFiles', () => {
 
   it('requires multiple strong signals', () => {
     // Only critical bus factor (30), no churn signal (churnScore <= 40 → 0 from churn) → excluded
-    const churn = makeChurnReport([{ file: 'a.ts', commitCount: 2, churnScore: 30 }]);
+    const churn = makeChurnReport([
+      { file: 'a.ts', commitCount: 2, churnScore: 30 },
+    ]);
     const bus = makeBusFactorReport([
-      { file: 'a.ts', risk: 'critical', dominantAuthorPercent: 100, uniqueAuthors: 1 },
+      {
+        file: 'a.ts',
+        risk: 'critical',
+        dominantAuthorPercent: 100,
+        uniqueAuthors: 1,
+      },
     ]);
     const age = makeAgeMapReport([{ file: 'a.ts', ageInDays: 50 }]);
 
@@ -133,9 +164,16 @@ describe('findCursedFiles', () => {
   });
 
   it('combines hot churn (35) + critical bus factor (30) = 65', () => {
-    const churn = makeChurnReport([{ file: 'a.ts', commitCount: 10, churnScore: 80 }]);
+    const churn = makeChurnReport([
+      { file: 'a.ts', commitCount: 10, churnScore: 80 },
+    ]);
     const bus = makeBusFactorReport([
-      { file: 'a.ts', risk: 'critical', dominantAuthorPercent: 100, uniqueAuthors: 1 },
+      {
+        file: 'a.ts',
+        risk: 'critical',
+        dominantAuthorPercent: 100,
+        uniqueAuthors: 1,
+      },
     ]);
     const age = makeAgeMapReport([{ file: 'a.ts', ageInDays: 50 }]);
 
@@ -153,9 +191,16 @@ describe('findCursedFiles', () => {
   it('caps score at 100', () => {
     // hot churn (35) + critical bus (30) + age paradox (10) + many signals
     // We need churnScore > 60 and ageInDays < 30 for the age paradox bonus
-    const churn = makeChurnReport([{ file: 'a.ts', commitCount: 50, churnScore: 95 }]);
+    const churn = makeChurnReport([
+      { file: 'a.ts', commitCount: 50, churnScore: 95 },
+    ]);
     const bus = makeBusFactorReport([
-      { file: 'a.ts', risk: 'critical', dominantAuthorPercent: 100, uniqueAuthors: 1 },
+      {
+        file: 'a.ts',
+        risk: 'critical',
+        dominantAuthorPercent: 100,
+        uniqueAuthors: 1,
+      },
     ]);
     const age = makeAgeMapReport([{ file: 'a.ts', ageInDays: 5 }]);
 
@@ -177,8 +222,18 @@ describe('findCursedFiles', () => {
       { file: 'high.ts', commitCount: 20, churnScore: 90 },
     ]);
     const bus = makeBusFactorReport([
-      { file: 'low.ts', risk: 'high', dominantAuthorPercent: 80, uniqueAuthors: 2 },
-      { file: 'high.ts', risk: 'critical', dominantAuthorPercent: 100, uniqueAuthors: 1 },
+      {
+        file: 'low.ts',
+        risk: 'high',
+        dominantAuthorPercent: 80,
+        uniqueAuthors: 2,
+      },
+      {
+        file: 'high.ts',
+        risk: 'critical',
+        dominantAuthorPercent: 100,
+        uniqueAuthors: 1,
+      },
     ]);
     const age = makeAgeMapReport([
       { file: 'low.ts', ageInDays: 50 },
@@ -198,9 +253,16 @@ describe('findCursedFiles', () => {
   });
 
   it('includes reasons for each signal', () => {
-    const churn = makeChurnReport([{ file: 'a.ts', commitCount: 10, churnScore: 80 }]);
+    const churn = makeChurnReport([
+      { file: 'a.ts', commitCount: 10, churnScore: 80 },
+    ]);
     const bus = makeBusFactorReport([
-      { file: 'a.ts', risk: 'critical', dominantAuthorPercent: 100, uniqueAuthors: 1 },
+      {
+        file: 'a.ts',
+        risk: 'critical',
+        dominantAuthorPercent: 100,
+        uniqueAuthors: 1,
+      },
     ]);
     const age = makeAgeMapReport([{ file: 'a.ts', ageInDays: 50 }]);
 
@@ -213,20 +275,31 @@ describe('findCursedFiles', () => {
       20,
     );
     expect(result[0].reasons.length).toBeGreaterThanOrEqual(2);
-    expect(result[0].reasons.some((r) => r.toLowerCase().includes('commit'))).toBe(true);
-    expect(result[0].reasons.some((r) => r.toLowerCase().includes('author'))).toBe(true);
+    expect(
+      result[0].reasons.some((r) => r.toLowerCase().includes('commit')),
+    ).toBe(true);
+    expect(
+      result[0].reasons.some((r) => r.toLowerCase().includes('author')),
+    ).toBe(true);
   });
 
   it('only considers candidates from topFiles and criticalFiles', () => {
     // File exists in churn.files but NOT in topFiles or criticalFiles
     const churn: ChurnReport = {
-      files: [{ file: 'hidden.ts', commitCount: 10, churnScore: 80, category: 'hot' }],
+      files: [
+        { file: 'hidden.ts', commitCount: 10, churnScore: 80, category: 'hot' },
+      ],
       topFiles: [], // not in topFiles
       hotspotCount: 1,
       summary: '',
     };
     const bus = makeBusFactorReport([
-      { file: 'hidden.ts', risk: 'high', dominantAuthorPercent: 80, uniqueAuthors: 2 },
+      {
+        file: 'hidden.ts',
+        risk: 'high',
+        dominantAuthorPercent: 80,
+        uniqueAuthors: 2,
+      },
     ]);
     const age = makeAgeMapReport([{ file: 'hidden.ts', ageInDays: 50 }]);
 
@@ -337,7 +410,9 @@ describe('findCursedFiles', () => {
 
   it('adds parallel development bonus to curse score', () => {
     // churnScore > 75 → +35, parallelScore >= 70 → +20 = 55
-    const churn = makeChurnReport([{ file: 'a.ts', commitCount: 10, churnScore: 80 }]);
+    const churn = makeChurnReport([
+      { file: 'a.ts', commitCount: 10, churnScore: 80 },
+    ]);
     const bus = makeBusFactorReport([]);
     const age = makeAgeMapReport([]);
 
@@ -378,23 +453,44 @@ describe('findCursedFiles', () => {
       summary: '',
     };
 
-    const result = findCursedFiles(churn, bus, age, makeEmptyForensics(), parallelDev, 20);
+    const result = findCursedFiles(
+      churn,
+      bus,
+      age,
+      makeEmptyForensics(),
+      parallelDev,
+      20,
+    );
     expect(result.length).toBe(1);
     expect(result[0].curseScore).toBe(55); // 35 churn + 20 parallel
-    expect(result[0].reasons.some((r) => r.includes('parallel development'))).toBe(true);
+    expect(
+      result[0].reasons.some((r) => r.includes('parallel development')),
+    ).toBe(true);
   });
 
   it('includes parallel dev hot files in candidate set', () => {
     // File is NOT in churn.topFiles or busFactor.criticalFiles or forensics.shameLeaderboard
     // but IS in parallelDev.hotFiles — should still be evaluated
     const churn: ChurnReport = {
-      files: [{ file: 'parallel-only.ts', commitCount: 10, churnScore: 80, category: 'hot' }],
+      files: [
+        {
+          file: 'parallel-only.ts',
+          commitCount: 10,
+          churnScore: 80,
+          category: 'hot',
+        },
+      ],
       topFiles: [], // not in topFiles
       hotspotCount: 0,
       summary: '',
     };
     const bus = makeBusFactorReport([
-      { file: 'parallel-only.ts', risk: 'critical', dominantAuthorPercent: 100, uniqueAuthors: 1 },
+      {
+        file: 'parallel-only.ts',
+        risk: 'critical',
+        dominantAuthorPercent: 100,
+        uniqueAuthors: 1,
+      },
     ]);
     const age = makeAgeMapReport([]);
 
@@ -435,7 +531,14 @@ describe('findCursedFiles', () => {
       summary: '',
     };
 
-    const result = findCursedFiles(churn, bus, age, makeEmptyForensics(), parallelDev, 20);
+    const result = findCursedFiles(
+      churn,
+      bus,
+      age,
+      makeEmptyForensics(),
+      parallelDev,
+      20,
+    );
     // 35 (churn) + 30 (critical bus) + 20 (parallel) = 85
     expect(result.find((f) => f.file === 'parallel-only.ts')).toBeDefined();
   });

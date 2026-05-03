@@ -55,7 +55,10 @@ function countLines(content: string): number {
   return count;
 }
 
-export async function analyzeLoc(trackedFiles: string[], repoPath: string): Promise<LocReport> {
+export async function analyzeLoc(
+  trackedFiles: string[],
+  repoPath: string,
+): Promise<LocReport> {
   const files: FileLocEntry[] = await Promise.all(
     trackedFiles.map(async (file) => {
       let lines = 0;
@@ -83,7 +86,8 @@ export async function analyzeLoc(trackedFiles: string[], repoPath: string): Prom
       language,
       files: fileCount,
       lines,
-      percentage: totalLines > 0 ? Math.round((lines / totalLines) * 1000) / 10 : 0,
+      percentage:
+        totalLines > 0 ? Math.round((lines / totalLines) * 1000) / 10 : 0,
     }))
     .sort((a, b) => b.lines - a.lines);
 

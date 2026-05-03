@@ -10,7 +10,9 @@ export type BadgeVariant =
   | 'parallel'
   | 'stale';
 
-export function severityColor(category: string): 'critical' | 'warning' | 'moderate' | 'healthy' {
+export function severityColor(
+  category: string,
+): 'critical' | 'warning' | 'moderate' | 'healthy' {
   switch (category) {
     case 'critical':
       return 'critical';
@@ -23,7 +25,9 @@ export function severityColor(category: string): 'critical' | 'warning' | 'moder
   }
 }
 
-export function ageColor(status: string): 'healthy' | 'warning' | 'critical' | 'stale' {
+export function ageColor(
+  status: string,
+): 'healthy' | 'warning' | 'critical' | 'stale' {
   switch (status) {
     case 'fresh':
       return 'healthy';

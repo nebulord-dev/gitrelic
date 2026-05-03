@@ -4,9 +4,15 @@ import { analyzeHotspots } from './hotspot.js';
 
 import type { ChurnReport, LocReport } from '../types.js';
 
-function makeChurnReport(files: { file: string; churnScore: number }[]): ChurnReport {
+function makeChurnReport(
+  files: { file: string; churnScore: number }[],
+): ChurnReport {
   return {
-    files: files.map((f) => ({ ...f, commitCount: f.churnScore, category: 'hot' as const })),
+    files: files.map((f) => ({
+      ...f,
+      commitCount: f.churnScore,
+      category: 'hot' as const,
+    })),
     topFiles: [],
     hotspotCount: 0,
     summary: '',
@@ -58,7 +64,9 @@ describe('analyzeHotspots', () => {
 
     const result = analyzeHotspots(churn, loc);
 
-    expect(result.files.find((f) => f.file === 'a.ts')!.category).toBe('critical');
+    expect(result.files.find((f) => f.file === 'a.ts')!.category).toBe(
+      'critical',
+    );
     expect(result.files.find((f) => f.file === 'd.ts')!.category).toBe('low');
   });
 
@@ -91,7 +99,10 @@ describe('analyzeHotspots', () => {
   });
 
   it('limits topHotspots to 20', () => {
-    const files = Array.from({ length: 25 }, (_, i) => ({ file: `f${i}.ts`, churnScore: 50 }));
+    const files = Array.from({ length: 25 }, (_, i) => ({
+      file: `f${i}.ts`,
+      churnScore: 50,
+    }));
     const churn = makeChurnReport(files);
     const loc = makeLocReport(files.map((f) => ({ file: f.file, lines: 100 })));
 

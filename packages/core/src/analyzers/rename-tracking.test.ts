@@ -6,7 +6,10 @@ import type { FileRename } from '../types.js';
 
 describe('parseRenameLog', () => {
   it('correctly parses rename entries with R100', () => {
-    const raw = ['COMMIT|abc123|2025-06-01T00:00:00Z', 'R100\tsrc/old.ts\tsrc/new.ts'].join('\n');
+    const raw = [
+      'COMMIT|abc123|2025-06-01T00:00:00Z',
+      'R100\tsrc/old.ts\tsrc/new.ts',
+    ].join('\n');
 
     const result = parseRenameLog(raw);
     expect(result).toHaveLength(1);
@@ -71,8 +74,18 @@ describe('parseRenameLog', () => {
 describe('buildRenameChains', () => {
   it('builds a→b→c chain correctly for c', () => {
     const renames: FileRename[] = [
-      { oldPath: 'a.ts', newPath: 'b.ts', commitHash: 'aaa', date: '2025-01-01T00:00:00Z' },
-      { oldPath: 'b.ts', newPath: 'c.ts', commitHash: 'bbb', date: '2025-02-01T00:00:00Z' },
+      {
+        oldPath: 'a.ts',
+        newPath: 'b.ts',
+        commitHash: 'aaa',
+        date: '2025-01-01T00:00:00Z',
+      },
+      {
+        oldPath: 'b.ts',
+        newPath: 'c.ts',
+        commitHash: 'bbb',
+        date: '2025-02-01T00:00:00Z',
+      },
     ];
 
     const chains = buildRenameChains(renames, ['c.ts']);
@@ -86,8 +99,18 @@ describe('buildRenameChains', () => {
 
   it('only includes chains for current tracked files', () => {
     const renames: FileRename[] = [
-      { oldPath: 'a.ts', newPath: 'b.ts', commitHash: 'aaa', date: '2025-01-01T00:00:00Z' },
-      { oldPath: 'x.ts', newPath: 'y.ts', commitHash: 'bbb', date: '2025-01-01T00:00:00Z' },
+      {
+        oldPath: 'a.ts',
+        newPath: 'b.ts',
+        commitHash: 'aaa',
+        date: '2025-01-01T00:00:00Z',
+      },
+      {
+        oldPath: 'x.ts',
+        newPath: 'y.ts',
+        commitHash: 'bbb',
+        date: '2025-01-01T00:00:00Z',
+      },
     ];
 
     // Only b.ts is tracked, y.ts is not
@@ -99,7 +122,12 @@ describe('buildRenameChains', () => {
 
   it('returns empty chains for files with no rename history', () => {
     const renames: FileRename[] = [
-      { oldPath: 'a.ts', newPath: 'b.ts', commitHash: 'aaa', date: '2025-01-01T00:00:00Z' },
+      {
+        oldPath: 'a.ts',
+        newPath: 'b.ts',
+        commitHash: 'aaa',
+        date: '2025-01-01T00:00:00Z',
+      },
     ];
 
     const chains = buildRenameChains(renames, ['c.ts']);
@@ -108,7 +136,12 @@ describe('buildRenameChains', () => {
 
   it('handles single rename', () => {
     const renames: FileRename[] = [
-      { oldPath: 'old.ts', newPath: 'new.ts', commitHash: 'aaa', date: '2025-01-01T00:00:00Z' },
+      {
+        oldPath: 'old.ts',
+        newPath: 'new.ts',
+        commitHash: 'aaa',
+        date: '2025-01-01T00:00:00Z',
+      },
     ];
 
     const chains = buildRenameChains(renames, ['new.ts']);
@@ -122,8 +155,18 @@ describe('buildRenameChains', () => {
 
   it('handles multiple tracked files with independent rename histories', () => {
     const renames: FileRename[] = [
-      { oldPath: 'a.ts', newPath: 'b.ts', commitHash: 'aaa', date: '2025-01-01T00:00:00Z' },
-      { oldPath: 'x.ts', newPath: 'y.ts', commitHash: 'bbb', date: '2025-01-01T00:00:00Z' },
+      {
+        oldPath: 'a.ts',
+        newPath: 'b.ts',
+        commitHash: 'aaa',
+        date: '2025-01-01T00:00:00Z',
+      },
+      {
+        oldPath: 'x.ts',
+        newPath: 'y.ts',
+        commitHash: 'bbb',
+        date: '2025-01-01T00:00:00Z',
+      },
     ];
 
     const chains = buildRenameChains(renames, ['b.ts', 'y.ts']);
@@ -140,9 +183,24 @@ describe('summary generation', () => {
   it('generates correct summary with counts', () => {
     // We test this indirectly through the pure functions since analyzeRenameTracking is async
     const renames: FileRename[] = [
-      { oldPath: 'a.ts', newPath: 'b.ts', commitHash: 'aaa', date: '2025-01-01T00:00:00Z' },
-      { oldPath: 'b.ts', newPath: 'c.ts', commitHash: 'bbb', date: '2025-02-01T00:00:00Z' },
-      { oldPath: 'x.ts', newPath: 'y.ts', commitHash: 'ccc', date: '2025-03-01T00:00:00Z' },
+      {
+        oldPath: 'a.ts',
+        newPath: 'b.ts',
+        commitHash: 'aaa',
+        date: '2025-01-01T00:00:00Z',
+      },
+      {
+        oldPath: 'b.ts',
+        newPath: 'c.ts',
+        commitHash: 'bbb',
+        date: '2025-02-01T00:00:00Z',
+      },
+      {
+        oldPath: 'x.ts',
+        newPath: 'y.ts',
+        commitHash: 'ccc',
+        date: '2025-03-01T00:00:00Z',
+      },
     ];
 
     const chains = buildRenameChains(renames, ['c.ts', 'y.ts']);
@@ -155,7 +213,12 @@ describe('summary generation', () => {
 
   it('generates singular form for 1 file and 1 rename', () => {
     const renames: FileRename[] = [
-      { oldPath: 'a.ts', newPath: 'b.ts', commitHash: 'aaa', date: '2025-01-01T00:00:00Z' },
+      {
+        oldPath: 'a.ts',
+        newPath: 'b.ts',
+        commitHash: 'aaa',
+        date: '2025-01-01T00:00:00Z',
+      },
     ];
 
     const chains = buildRenameChains(renames, ['b.ts']);

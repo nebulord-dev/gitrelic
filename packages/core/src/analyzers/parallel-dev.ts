@@ -21,7 +21,11 @@
  * Files with fewer than 3 active weeks are excluded (insufficient history).
  */
 
-import type { ParallelDevReport, FileParallelDev, ParallelWindow } from '../types.js';
+import type {
+  ParallelDevReport,
+  FileParallelDev,
+  ParallelWindow,
+} from '../types.js';
 import type { RawCommit } from '../utils/git.js';
 
 /** Returns the Monday of the ISO week containing the given date, as an ISO string. */
@@ -42,7 +46,10 @@ interface WeekBucket {
 type WeekMatrix = Map<string, Map<string, WeekBucket>>;
 // file → weekKey → { authors, commitCount }
 
-function buildWeekMatrix(commits: RawCommit[], trackedSet: Set<string>): WeekMatrix {
+function buildWeekMatrix(
+  commits: RawCommit[],
+  trackedSet: Set<string>,
+): WeekMatrix {
   const matrix: WeekMatrix = new Map();
 
   for (const commit of commits) {
@@ -69,7 +76,10 @@ function buildWeekMatrix(commits: RawCommit[], trackedSet: Set<string>): WeekMat
 const MIN_ACTIVE_WEEKS = 3;
 const MIN_PARALLEL_SCORE = 20;
 
-function scoreFile(file: string, weeks: Map<string, WeekBucket>): FileParallelDev | null {
+function scoreFile(
+  file: string,
+  weeks: Map<string, WeekBucket>,
+): FileParallelDev | null {
   const totalActiveWeeks = weeks.size;
   if (totalActiveWeeks < MIN_ACTIVE_WEEKS) return null;
 
@@ -89,20 +99,28 @@ function scoreFile(file: string, weeks: Map<string, WeekBucket>): FileParallelDe
 
   // Severity: weight by average number of overlapping authors
   const avgAuthors =
-    parallelEntries.reduce((sum, e) => sum + e.bucket.authors.size, 0) / parallelWeeks;
+    parallelEntries.reduce((sum, e) => sum + e.bucket.authors.size, 0) /
+    parallelWeeks;
   const severityMultiplier = Math.max(1.0, Math.min(avgAuthors / 2, 2.0));
 
-  const parallelScore = Math.min(Math.round(baseScore * severityMultiplier), 100);
+  const parallelScore = Math.min(
+    Math.round(baseScore * severityMultiplier),
+    100,
+  );
 
   if (parallelScore < MIN_PARALLEL_SCORE) return null;
 
   // Sort parallel entries by author count desc, then commit count desc
   parallelEntries.sort(
     (a, b) =>
-      b.bucket.authors.size - a.bucket.authors.size || b.bucket.commitCount - a.bucket.commitCount,
+      b.bucket.authors.size - a.bucket.authors.size ||
+      b.bucket.commitCount - a.bucket.commitCount,
   );
 
-  const toWindow = (entry: { weekStart: string; bucket: WeekBucket }): ParallelWindow => ({
+  const toWindow = (entry: {
+    weekStart: string;
+    bucket: WeekBucket;
+  }): ParallelWindow => ({
     weekStart: entry.weekStart,
     authors: [...entry.bucket.authors],
     commitCount: entry.bucket.commitCount,

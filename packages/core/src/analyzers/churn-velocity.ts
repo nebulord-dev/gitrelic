@@ -1,4 +1,8 @@
-import type { ChurnVelocityReport, FileChurnVelocity, ChurnTrend } from '../types.js';
+import type {
+  ChurnVelocityReport,
+  FileChurnVelocity,
+  ChurnTrend,
+} from '../types.js';
 import type { RawCommit } from '../utils/git.js';
 
 function getTrend(score: number): ChurnTrend {
@@ -59,7 +63,9 @@ export function analyzeChurnVelocity(
   }
 
   files.sort((a, b) => b.velocityScore - a.velocityScore);
-  const acceleratingFiles = files.filter((f) => f.trend === 'accelerating').slice(0, 10);
+  const acceleratingFiles = files
+    .filter((f) => f.trend === 'accelerating')
+    .slice(0, 10);
   const accCount = files.filter((f) => f.trend === 'accelerating').length;
   const decCount = files.filter((f) => f.trend === 'decelerating').length;
   const summary = `${accCount} file${accCount !== 1 ? 's' : ''} accelerating, ${decCount} decelerating`;

@@ -40,9 +40,24 @@ describe('churnMetrics', () => {
     const metrics = churnMetrics(
       makeReport(
         [
-          makeFile({ file: 'a.ts', commitCount: 80, churnScore: 90, category: 'hot' }),
-          makeFile({ file: 'b.ts', commitCount: 75, churnScore: 85, category: 'hot' }),
-          makeFile({ file: 'c.ts', commitCount: 30, churnScore: 50, category: 'warm' }),
+          makeFile({
+            file: 'a.ts',
+            commitCount: 80,
+            churnScore: 90,
+            category: 'hot',
+          }),
+          makeFile({
+            file: 'b.ts',
+            commitCount: 75,
+            churnScore: 85,
+            category: 'hot',
+          }),
+          makeFile({
+            file: 'c.ts',
+            commitCount: 30,
+            churnScore: 50,
+            category: 'warm',
+          }),
         ],
         100,
       ),
@@ -55,8 +70,18 @@ describe('churnMetrics', () => {
     const metrics = churnMetrics(
       makeReport(
         [
-          makeFile({ file: 'a.ts', commitCount: 1847, churnScore: 90, category: 'hot' }),
-          makeFile({ file: 'b.ts', commitCount: 12, churnScore: 30, category: 'cold' }),
+          makeFile({
+            file: 'a.ts',
+            commitCount: 1847,
+            churnScore: 90,
+            category: 'hot',
+          }),
+          makeFile({
+            file: 'b.ts',
+            commitCount: 12,
+            churnScore: 30,
+            category: 'cold',
+          }),
         ],
         2000,
       ),
@@ -67,7 +92,14 @@ describe('churnMetrics', () => {
   it('reports top file % rounded to one decimal', () => {
     const metrics = churnMetrics(
       makeReport(
-        [makeFile({ file: 'a.ts', commitCount: 80, churnScore: 90, category: 'hot' })],
+        [
+          makeFile({
+            file: 'a.ts',
+            commitCount: 80,
+            churnScore: 90,
+            category: 'hot',
+          }),
+        ],
         2400,
       ),
     );
@@ -86,7 +118,14 @@ describe('churnMetrics', () => {
   it('colors Top File Commits warning when there is churn but no hot files', () => {
     const metrics = churnMetrics(
       makeReport(
-        [makeFile({ file: 'a.ts', commitCount: 30, churnScore: 50, category: 'warm' })],
+        [
+          makeFile({
+            file: 'a.ts',
+            commitCount: 30,
+            churnScore: 50,
+            category: 'warm',
+          }),
+        ],
         100,
       ),
     );

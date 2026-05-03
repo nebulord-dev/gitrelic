@@ -5,7 +5,11 @@ import { AgeMapTab } from './AgeMapTab';
 
 import type { FileAge, GitrelicReport } from '@gitrelic/core';
 
-function f(file: string, ageInDays: number, status: FileAge['status']): FileAge {
+function f(
+  file: string,
+  ageInDays: number,
+  status: FileAge['status'],
+): FileAge {
   return { file, lastCommitDate: '2025-01-01', ageInDays, status };
 }
 
@@ -29,24 +33,38 @@ describe('AgeMapTab', () => {
   it('renders the % cold big number with Healthy badge when no files are stale or ancient', () => {
     const files = [f('a/x.ts', 5, 'fresh'), f('a/y.ts', 30, 'aging')];
     render(<AgeMapTab report={makeReport(files)} onApplyPreset={vi.fn()} />);
-    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('0%');
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe(
+      '0%',
+    );
     expect(screen.getByText('Healthy')).toBeTruthy();
     expect(screen.getByText('% Cold')).toBeTruthy();
   });
 
   it('renders Moderate at 25–49% cold', () => {
-    const files = [f('a.ts', 5, 'fresh'), f('b.ts', 5, 'fresh'), f('c.ts', 200, 'stale')];
+    const files = [
+      f('a.ts', 5, 'fresh'),
+      f('b.ts', 5, 'fresh'),
+      f('c.ts', 200, 'stale'),
+    ];
     render(<AgeMapTab report={makeReport(files)} onApplyPreset={vi.fn()} />);
     // 1 of 3 = 33%
-    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('33%');
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe(
+      '33%',
+    );
     expect(screen.getByText('Moderate')).toBeTruthy();
   });
 
   it('renders High at 50–74% cold', () => {
-    const files = [f('a.ts', 5, 'fresh'), f('b.ts', 200, 'stale'), f('c.ts', 300, 'ancient')];
+    const files = [
+      f('a.ts', 5, 'fresh'),
+      f('b.ts', 200, 'stale'),
+      f('c.ts', 300, 'ancient'),
+    ];
     render(<AgeMapTab report={makeReport(files)} onApplyPreset={vi.fn()} />);
     // 2 of 3 = 67%
-    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('67%');
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe(
+      '67%',
+    );
     expect(screen.getByText('High')).toBeTruthy();
   });
 
@@ -59,7 +77,9 @@ describe('AgeMapTab', () => {
     ];
     render(<AgeMapTab report={makeReport(files)} onApplyPreset={vi.fn()} />);
     // 3 of 4 = 75%
-    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('75%');
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe(
+      '75%',
+    );
     expect(screen.getByText('Critical')).toBeTruthy();
   });
 
@@ -113,7 +133,10 @@ describe('AgeMapTab', () => {
   it('routes Stale Files click to onApplyPreset("dead-code")', () => {
     const onApplyPreset = vi.fn();
     render(
-      <AgeMapTab report={makeReport([f('a.ts', 300, 'ancient')])} onApplyPreset={onApplyPreset} />,
+      <AgeMapTab
+        report={makeReport([f('a.ts', 300, 'ancient')])}
+        onApplyPreset={onApplyPreset}
+      />,
     );
     screen.getByText('Stale Files').click();
     expect(onApplyPreset).toHaveBeenCalledWith('dead-code');
@@ -122,7 +145,10 @@ describe('AgeMapTab', () => {
   it('routes Cursed Files click to onApplyPreset("cursed-files")', () => {
     const onApplyPreset = vi.fn();
     render(
-      <AgeMapTab report={makeReport([f('a.ts', 300, 'ancient')])} onApplyPreset={onApplyPreset} />,
+      <AgeMapTab
+        report={makeReport([f('a.ts', 300, 'ancient')])}
+        onApplyPreset={onApplyPreset}
+      />,
     );
     screen.getByText('Cursed Files').click();
     expect(onApplyPreset).toHaveBeenCalledWith('cursed-files');
@@ -130,7 +156,11 @@ describe('AgeMapTab', () => {
 
   it('renders empty-state copy when no files are tracked', () => {
     render(<AgeMapTab report={makeReport([])} onApplyPreset={vi.fn()} />);
-    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe('0%');
-    expect(screen.getByText('No age signal in the analysis window.')).toBeTruthy();
+    expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe(
+      '0%',
+    );
+    expect(
+      screen.getByText('No age signal in the analysis window.'),
+    ).toBeTruthy();
   });
 });

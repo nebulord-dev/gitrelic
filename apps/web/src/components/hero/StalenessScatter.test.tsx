@@ -14,7 +14,12 @@ interface CandidateFixture {
 
 function makeReport(candidates: CandidateFixture[]): GitrelicReport {
   return {
-    deadCode: { candidates, totalDeadFiles: candidates.length, totalDeadLines: 0, summary: '' },
+    deadCode: {
+      candidates,
+      totalDeadFiles: candidates.length,
+      totalDeadLines: 0,
+      summary: '',
+    },
   } as unknown as GitrelicReport;
 }
 
@@ -44,8 +49,20 @@ describe('prepareStalenessData', () => {
   it('projects each candidate to a point with file/x/y/tier', () => {
     const { points } = prepareStalenessData(
       makeReport([
-        { file: 'a.ts', lastCommitDate: '', ageInDays: 10, language: 'TypeScript', loc: 100 },
-        { file: 'b.ts', lastCommitDate: '', ageInDays: 400, language: 'TypeScript', loc: 5000 },
+        {
+          file: 'a.ts',
+          lastCommitDate: '',
+          ageInDays: 10,
+          language: 'TypeScript',
+          loc: 100,
+        },
+        {
+          file: 'b.ts',
+          lastCommitDate: '',
+          ageInDays: 400,
+          language: 'TypeScript',
+          loc: 5000,
+        },
       ]),
     );
     expect(points).toEqual([
@@ -57,9 +74,27 @@ describe('prepareStalenessData', () => {
   it('returns xMax and yMax as the largest x and y across points', () => {
     const { xMax, yMax } = prepareStalenessData(
       makeReport([
-        { file: 'a', lastCommitDate: '', ageInDays: 10, language: 'TS', loc: 100 },
-        { file: 'b', lastCommitDate: '', ageInDays: 400, language: 'TS', loc: 5000 },
-        { file: 'c', lastCommitDate: '', ageInDays: 200, language: 'TS', loc: 1500 },
+        {
+          file: 'a',
+          lastCommitDate: '',
+          ageInDays: 10,
+          language: 'TS',
+          loc: 100,
+        },
+        {
+          file: 'b',
+          lastCommitDate: '',
+          ageInDays: 400,
+          language: 'TS',
+          loc: 5000,
+        },
+        {
+          file: 'c',
+          lastCommitDate: '',
+          ageInDays: 200,
+          language: 'TS',
+          loc: 1500,
+        },
       ]),
     );
     expect(xMax).toBe(400);
@@ -75,8 +110,20 @@ describe('prepareStalenessData', () => {
 
   it('does not mutate the input candidates array', () => {
     const original: CandidateFixture[] = [
-      { file: 'a', lastCommitDate: '', ageInDays: 10, language: 'TS', loc: 100 },
-      { file: 'b', lastCommitDate: '', ageInDays: 400, language: 'TS', loc: 5000 },
+      {
+        file: 'a',
+        lastCommitDate: '',
+        ageInDays: 10,
+        language: 'TS',
+        loc: 100,
+      },
+      {
+        file: 'b',
+        lastCommitDate: '',
+        ageInDays: 400,
+        language: 'TS',
+        loc: 5000,
+      },
     ];
     const before = original.map((c) => c.file);
     prepareStalenessData(makeReport(original));

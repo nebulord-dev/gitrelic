@@ -63,7 +63,10 @@ function buildTree(report: GitrelicReport): TreeNode {
   const root: TreeNode = { name: 'root', children: [] };
   const dirMap = new Map<string, TreeNode>();
 
-  const fileSet = new Map<string, { value: number; score: number; category: string }>();
+  const fileSet = new Map<
+    string,
+    { value: number; score: number; category: string }
+  >();
   for (const f of report.loc.files) {
     const hotspot = report.hotspots.files.find((h) => h.file === f.file);
     fileSet.set(f.file, {
@@ -151,7 +154,9 @@ export function ChurnTreemap({
           const isSelected = selectedFile === d.fullPath;
           const showLabel = w > 40 && h > 16;
           const fillColor =
-            colorBy === 'churn' ? churnFillFor(d.category) : testFillFor(testIndex.get(d.fullPath));
+            colorBy === 'churn'
+              ? churnFillFor(d.category)
+              : testFillFor(testIndex.get(d.fullPath));
 
           return (
             <g

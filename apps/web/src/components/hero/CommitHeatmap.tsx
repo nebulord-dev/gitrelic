@@ -24,28 +24,38 @@ export function binCommitsForHeatmap(commits: RawCommit[]): HeatmapData {
   for (const c of commits) {
     authorTotals.set(c.authorEmail, (authorTotals.get(c.authorEmail) ?? 0) + 1);
   }
-  const authors = [...authorTotals.entries()].sort((a, b) => b[1] - a[1]).map(([e]) => e);
+  const authors = [...authorTotals.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([e]) => e);
   const authorIdx = new Map(authors.map((a, i) => [a, i]));
 
   const dates = commits.map((c) => new Date(c.date).getTime());
   const minDate = new Date(dates.reduce((m, d) => (d < m ? d : m), dates[0]));
   const maxDate = new Date(dates.reduce((m, d) => (d > m ? d : m), dates[0]));
   const startMonday = new Date(minDate);
-  startMonday.setUTCDate(startMonday.getUTCDate() - ((startMonday.getUTCDay() + 6) % 7));
+  startMonday.setUTCDate(
+    startMonday.getUTCDate() - ((startMonday.getUTCDay() + 6) % 7),
+  );
   startMonday.setUTCHours(0, 0, 0, 0);
 
-  const totalWeeks = Math.ceil((maxDate.getTime() - startMonday.getTime()) / (7 * 86_400_000)) + 1;
+  const totalWeeks =
+    Math.ceil((maxDate.getTime() - startMonday.getTime()) / (7 * 86_400_000)) +
+    1;
   const weeks: Date[] = [];
   for (let i = 0; i < totalWeeks; i++) {
     weeks.push(new Date(startMonday.getTime() + i * 7 * 86_400_000));
   }
 
-  const grid = Array.from({ length: authors.length }, () => new Array(totalWeeks).fill(0));
+  const grid = Array.from({ length: authors.length }, () =>
+    new Array(totalWeeks).fill(0),
+  );
 
   for (const c of commits) {
     const ai = authorIdx.get(c.authorEmail);
     if (ai == null) continue;
-    const wi = Math.floor((new Date(c.date).getTime() - startMonday.getTime()) / (7 * 86_400_000));
+    const wi = Math.floor(
+      (new Date(c.date).getTime() - startMonday.getTime()) / (7 * 86_400_000),
+    );
     if (wi >= 0 && wi < totalWeeks) grid[ai][wi]++;
   }
 
@@ -76,8 +86,14 @@ export function CommitHeatmap({ commits }: CommitHeatmapProps) {
     return () => observer.disconnect();
   }, []);
 
-  const { grid, authors, weeks } = useMemo(() => binCommitsForHeatmap(commits), [commits]);
-  const maxCount = grid.reduce((max, row) => row.reduce((m, v) => (v > m ? v : m), max), 1);
+  const { grid, authors, weeks } = useMemo(
+    () => binCommitsForHeatmap(commits),
+    [commits],
+  );
+  const maxCount = grid.reduce(
+    (max, row) => row.reduce((m, v) => (v > m ? v : m), max),
+    1,
+  );
   const cellW = Math.max((width - LABEL_WIDTH) / (weeks.length || 1), 2);
 
   return (
@@ -98,12 +114,14 @@ export function CommitHeatmap({ commits }: CommitHeatmapProps) {
                   style={{
                     width: cellW,
                     background: color,
-                    opacity: count === 0 ? 0.04 : 0.15 + (count / maxCount) * 0.7,
+                    opacity:
+                      count === 0 ? 0.04 : 0.15 + (count / maxCount) * 0.7,
                   }}
                   onMouseEnter={
                     count > 0
                       ? (e) => {
-                          const rect = containerRef.current?.getBoundingClientRect();
+                          const rect =
+                            containerRef.current?.getBoundingClientRect();
                           if (!rect) return;
                           setTooltip({
                             x: e.clientX - rect.left,
@@ -129,7 +147,8 @@ export function CommitHeatmap({ commits }: CommitHeatmapProps) {
         >
           <div className="font-semibold mb-0.5">{tooltip.email}</div>
           <div className="text-text-secondary">
-            {tooltip.count} commits · week of {tooltip.week.toISOString().slice(0, 10)}
+            {tooltip.count} commits · week of{' '}
+            {tooltip.week.toISOString().slice(0, 10)}
           </div>
         </div>
       )}

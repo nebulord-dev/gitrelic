@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY } from 'd3-force';
+import {
+  forceCollide,
+  forceLink,
+  forceManyBody,
+  forceSimulation,
+  forceX,
+  forceY,
+} from 'd3-force';
 
 import { authorColor } from '../../utils/colors';
 import { type AuthorGraphNode, buildAuthorGraph } from './authorGraph';
@@ -19,7 +26,10 @@ interface AuthorForceGraphProps {
 }
 
 type SimNode = AuthorGraphNode & SimulationNodeDatum;
-type SimLink = SimulationLinkDatum<SimNode> & { coAuthoredCommits: number; sharedFiles: number };
+type SimLink = SimulationLinkDatum<SimNode> & {
+  coAuthoredCommits: number;
+  sharedFiles: number;
+};
 
 export function AuthorForceGraph({
   report,
@@ -27,13 +37,18 @@ export function AuthorForceGraph({
   onSelectContributor,
 }: AuthorForceGraphProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dims, setDims] = useState({ width: 800, height: 400 });
-  const [nodePositions, setNodePositions] = useState<Map<string, { x: number; y: number }>>(
-    new Map(),
-  );
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; node: AuthorGraphNode } | null>(
-    null,
-  );
+  const [dims, setDims] = useState({
+    width: 800,
+    height: 400,
+  });
+  const [nodePositions, setNodePositions] = useState<
+    Map<string, { x: number; y: number }>
+  >(new Map());
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    node: AuthorGraphNode;
+  } | null>(null);
   const simRef = useRef<D3Simulation<SimNode, SimLink> | null>(null);
   const dimsRef = useRef(dims);
   dimsRef.current = dims;
@@ -67,7 +82,9 @@ export function AuthorForceGraph({
       x: width / 2 + (Math.random() - 0.5) * width * 0.5,
       y: height / 2 + (Math.random() - 0.5) * height * 0.5,
     }));
-    const simLinks: SimLink[] = links.map((l) => ({ ...l }));
+    const simLinks: SimLink[] = links.map((l) => ({
+      ...l,
+    }));
 
     const padding = 30;
     const sim = forceSimulation(simNodes)
@@ -77,7 +94,9 @@ export function AuthorForceGraph({
           .id((d) => d.id)
           .distance(120)
           .strength((d) =>
-            maxLinkCommits > 0 ? Math.min(0.8, (d.coAuthoredCommits / maxLinkCommits) * 0.8) : 0.2,
+            maxLinkCommits > 0
+              ? Math.min(0.8, (d.coAuthoredCommits / maxLinkCommits) * 0.8)
+              : 0.2,
           ),
       )
       .force('charge', forceManyBody().strength(-240))
@@ -124,7 +143,11 @@ export function AuthorForceGraph({
   }, [nodes]);
 
   const getPos = useCallback(
-    (id: string) => nodePositions.get(id) ?? { x: dims.width / 2, y: dims.height / 2 },
+    (id: string) =>
+      nodePositions.get(id) ?? {
+        x: dims.width / 2,
+        y: dims.height / 2,
+      },
     [nodePositions, dims],
   );
 
@@ -134,7 +157,8 @@ export function AuthorForceGraph({
         {links.map((l, i) => {
           const s = getPos(l.source);
           const t = getPos(l.target);
-          const weight = maxLinkCommits > 0 ? l.coAuthoredCommits / maxLinkCommits : 0;
+          const weight =
+            maxLinkCommits > 0 ? l.coAuthoredCommits / maxLinkCommits : 0;
           return (
             <line
               key={i}
@@ -163,7 +187,11 @@ export function AuthorForceGraph({
               onMouseEnter={(e) => {
                 const rect = containerRef.current?.getBoundingClientRect();
                 if (!rect) return;
-                setTooltip({ x: e.clientX - rect.left, y: e.clientY - rect.top, node: n });
+                setTooltip({
+                  x: e.clientX - rect.left,
+                  y: e.clientY - rect.top,
+                  node: n,
+                });
               }}
               onMouseLeave={() => setTooltip(null)}
             >
@@ -195,12 +223,16 @@ export function AuthorForceGraph({
       {tooltip && (
         <div
           className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-[300px]"
-          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
+          style={{
+            left: tooltip.x + 12,
+            top: tooltip.y - 8,
+          }}
         >
           <div className="font-semibold mb-0.5">{tooltip.node.label}</div>
           <div className="text-text-secondary">
             {tooltip.node.coAuthoredCommits} co-commit
-            {tooltip.node.coAuthoredCommits !== 1 ? 's' : ''} · {tooltip.node.partnerCount} partner
+            {tooltip.node.coAuthoredCommits !== 1 ? 's' : ''} ·{' '}
+            {tooltip.node.partnerCount} partner
             {tooltip.node.partnerCount !== 1 ? 's' : ''}
           </div>
           {tooltip.node.primaryPartner && (

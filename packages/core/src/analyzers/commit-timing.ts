@@ -103,7 +103,9 @@ export function analyzeCommitTiming(
   for (const [file, data] of fileData) {
     if (data.totalCommits < 3) continue;
 
-    const lateNightPercent = Math.round((data.lateNight / data.totalCommits) * 100);
+    const lateNightPercent = Math.round(
+      (data.lateNight / data.totalCommits) * 100,
+    );
     const weekendPercent = Math.round((data.weekend / data.totalCommits) * 100);
     const peakHour = data.hours.indexOf(Math.max(...data.hours));
     const peakDay = data.dayCount.indexOf(Math.max(...data.dayCount));
@@ -132,8 +134,10 @@ export function analyzeCommitTiming(
 
   const stressFiles = files.slice(0, 10);
 
-  const repoLateNightPercent = repoTotal > 0 ? Math.round((repoLateNight / repoTotal) * 100) : 0;
-  const repoWeekendPercent = repoTotal > 0 ? Math.round((repoWeekend / repoTotal) * 100) : 0;
+  const repoLateNightPercent =
+    repoTotal > 0 ? Math.round((repoLateNight / repoTotal) * 100) : 0;
+  const repoWeekendPercent =
+    repoTotal > 0 ? Math.round((repoWeekend / repoTotal) * 100) : 0;
 
   const summary = `${repoLateNightPercent}% of commits happen after hours, ${repoWeekendPercent}% on weekends`;
 

@@ -17,7 +17,9 @@ export function GhostFilesTab({ report, onSelectFile }: GhostFilesTabProps) {
       render: (f) => (
         <span className="font-mono text-[11px]">
           {fileName(f.file)}
-          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(f.file)}</span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">
+            {filePath(f.file)}
+          </span>
         </span>
       ),
     },
@@ -26,7 +28,9 @@ export function GhostFilesTab({ report, onSelectFile }: GhostFilesTabProps) {
       label: 'Owner',
       width: '140px',
       render: (f) => (
-        <span className="text-[11px] text-text-secondary">{f.dominantAuthor.split(' <')[0]}</span>
+        <span className="text-[11px] text-text-secondary">
+          {f.dominantAuthor.split(' <')[0]}
+        </span>
       ),
     },
     {
@@ -65,7 +69,9 @@ export function GhostFilesTab({ report, onSelectFile }: GhostFilesTabProps) {
       align: 'right',
       sortValue: (f) => f.loc,
       render: (f) => (
-        <span className="font-mono text-[11px] text-text-secondary">{fmt(f.loc)}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {fmt(f.loc)}
+        </span>
       ),
     },
   ];

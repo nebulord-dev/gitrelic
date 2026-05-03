@@ -18,7 +18,10 @@ function formatHour(h: number): string {
   return `${h - 12}pm`;
 }
 
-export function CommitTimingTab({ report, onSelectFile }: CommitTimingTabProps) {
+export function CommitTimingTab({
+  report,
+  onSelectFile,
+}: CommitTimingTabProps) {
   const columns: Column<FileTimingProfile>[] = [
     {
       key: 'file',
@@ -26,7 +29,9 @@ export function CommitTimingTab({ report, onSelectFile }: CommitTimingTabProps) 
       render: (f) => (
         <span className="font-mono text-[11px]">
           {fileName(f.file)}
-          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(f.file)}</span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">
+            {filePath(f.file)}
+          </span>
         </span>
       ),
     },

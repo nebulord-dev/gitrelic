@@ -2,9 +2,15 @@ import { describe, expect, it } from 'vitest';
 
 import { deadCodeMetrics } from './dead-code';
 
-import type { DeadCodeCandidate, DeadCodeReport, GitrelicReport } from '@gitrelic/core';
+import type {
+  DeadCodeCandidate,
+  DeadCodeReport,
+  GitrelicReport,
+} from '@gitrelic/core';
 
-function makeCandidate(overrides: Partial<DeadCodeCandidate> = {}): DeadCodeCandidate {
+function makeCandidate(
+  overrides: Partial<DeadCodeCandidate> = {},
+): DeadCodeCandidate {
   return {
     file: 'a.ts',
     lastCommitDate: '2022-01-01',
@@ -60,7 +66,11 @@ describe('deadCodeMetrics', () => {
 
   it('warns on large dead LOC', () => {
     const metrics = deadCodeMetrics(
-      makeReport({ candidates: [makeCandidate()], totalDeadFiles: 1, totalDeadLines: 2000 }),
+      makeReport({
+        candidates: [makeCandidate()],
+        totalDeadFiles: 1,
+        totalDeadLines: 2000,
+      }),
     );
     expect(metrics[1].color).toBe('var(--severity-warning)');
   });

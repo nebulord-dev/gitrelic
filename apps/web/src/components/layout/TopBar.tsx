@@ -10,23 +10,33 @@ interface TopBarProps {
   onLayoutModeChange: (mode: LayoutMode) => void;
 }
 
-export function TopBar({ report, layoutMode, onLayoutModeChange }: TopBarProps) {
+export function TopBar({
+  report,
+  layoutMode,
+  onLayoutModeChange,
+}: TopBarProps) {
   const { meta, repoName } = report;
 
   return (
     <div className="flex items-center justify-between px-4 py-2 bg-surface-secondary border-b border-border-primary shrink-0">
       <div className="flex items-center gap-3">
-        <span className="font-bold text-sm tracking-[1px] text-text-primary">GITRELIC</span>
+        <span className="font-bold text-sm tracking-[1px] text-text-primary">
+          GITRELIC
+        </span>
         {meta.gitrelicVersion && (
-          <span className="text-text-tertiary text-sm">v{meta.gitrelicVersion}</span>
+          <span className="text-text-tertiary text-sm">
+            v{meta.gitrelicVersion}
+          </span>
         )}
         <span className="text-accent-primary text-sm">{repoName}</span>
         {meta.analyzedBranch && (
-          <span className="text-text-secondary text-sm">{meta.analyzedBranch}</span>
+          <span className="text-text-secondary text-sm">
+            {meta.analyzedBranch}
+          </span>
         )}
         <span className="text-text-tertiary text-sm">
-          • {fmt(meta.totalCommits)} commits • {fmt(meta.totalAuthors)} authors •{' '}
-          {new Date(meta.firstCommit).toLocaleDateString()} –{' '}
+          • {fmt(meta.totalCommits)} commits • {fmt(meta.totalAuthors)} authors
+          • {new Date(meta.firstCommit).toLocaleDateString()} –{' '}
           {new Date(meta.lastCommit).toLocaleDateString()}
         </span>
       </div>

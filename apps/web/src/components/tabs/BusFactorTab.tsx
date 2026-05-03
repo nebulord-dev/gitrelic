@@ -22,10 +22,15 @@ const DIRECTORY_ROLLUP_LIMIT = 5;
 export const RESILIENT_THRESHOLD = 4;
 export const HIGH_RISK_THRESHOLD = 2;
 
-function tierBadge(overallBusFactor: number): { variant: BadgeVariant; label: string } {
+function tierBadge(overallBusFactor: number): {
+  variant: BadgeVariant;
+  label: string;
+} {
   if (overallBusFactor === 0) return { variant: 'healthy', label: 'No Data' };
-  if (overallBusFactor < HIGH_RISK_THRESHOLD) return { variant: 'critical', label: 'Critical' };
-  if (overallBusFactor < RESILIENT_THRESHOLD) return { variant: 'warning', label: 'High Risk' };
+  if (overallBusFactor < HIGH_RISK_THRESHOLD)
+    return { variant: 'critical', label: 'Critical' };
+  if (overallBusFactor < RESILIENT_THRESHOLD)
+    return { variant: 'warning', label: 'High Risk' };
   return { variant: 'healthy', label: 'Resilient' };
 }
 
@@ -49,7 +54,10 @@ export function BusFactorTab({ report, onApplyPreset }: BusFactorTabProps) {
 
   const allDirectoryRows = aggregateBusFactorByDirectory(criticalFiles);
   const directoryRows = allDirectoryRows.slice(0, DIRECTORY_ROLLUP_LIMIT);
-  const hiddenDirectoryCount = Math.max(0, allDirectoryRows.length - DIRECTORY_ROLLUP_LIMIT);
+  const hiddenDirectoryCount = Math.max(
+    0,
+    allDirectoryRows.length - DIRECTORY_ROLLUP_LIMIT,
+  );
   const maxDirCount = directoryRows[0]?.count ?? 1;
 
   return (
@@ -65,16 +73,22 @@ export function BusFactorTab({ report, onApplyPreset }: BusFactorTabProps) {
             </div>
             {topOwners.map((o) => (
               <div key={o.author} className="leading-[1.5]">
-                <span className="font-mono font-semibold text-severity-critical">{o.author}</span>{' '}
+                <span className="font-mono font-semibold text-severity-critical">
+                  {o.author}
+                </span>{' '}
                 <span className="text-text-tertiary">
                   — <strong className="text-text-primary">{o.count}</strong>{' '}
-                  {o.count === 1 ? 'file' : 'files'} ({(o.share * 100).toFixed(0)}%)
+                  {o.count === 1 ? 'file' : 'files'} (
+                  {(o.share * 100).toFixed(0)}%)
                 </span>
               </div>
             ))}
           </div>
         ) : files.length > 0 ? (
-          <>No files have a single dominant author — ownership is well distributed.</>
+          <>
+            No files have a single dominant author — ownership is well
+            distributed.
+          </>
         ) : (
           <>No bus-factor signal in the analysis window.</>
         )
@@ -82,10 +96,16 @@ export function BusFactorTab({ report, onApplyPreset }: BusFactorTabProps) {
       subline={
         files.length > 0 ? (
           <>
-            Tier mix: <strong className="text-severity-critical">{tierMix.critical}</strong>{' '}
-            critical · <strong className="text-[#d27b22]">{tierMix.high}</strong> high ·{' '}
-            <strong className="text-severity-warning">{tierMix.medium}</strong> medium ·{' '}
-            <strong className="text-severity-healthy">{tierMix.low}</strong> low.
+            Tier mix:{' '}
+            <strong className="text-severity-critical">
+              {tierMix.critical}
+            </strong>{' '}
+            critical ·{' '}
+            <strong className="text-[#d27b22]">{tierMix.high}</strong> high ·{' '}
+            <strong className="text-severity-warning">{tierMix.medium}</strong>{' '}
+            medium ·{' '}
+            <strong className="text-severity-healthy">{tierMix.low}</strong>{' '}
+            low.
           </>
         ) : null
       }

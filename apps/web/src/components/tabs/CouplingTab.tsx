@@ -74,7 +74,9 @@ export function CouplingTab({ report, onSelectFile }: CouplingTabProps) {
       align: 'right',
       sortValue: (p) => p.coCommits,
       render: (p) => (
-        <span className="font-mono text-[11px] text-text-secondary">{p.coCommits}</span>
+        <span className="font-mono text-[11px] text-text-secondary">
+          {p.coCommits}
+        </span>
       ),
     },
   ];

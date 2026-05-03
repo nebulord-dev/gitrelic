@@ -12,7 +12,10 @@ export default function App() {
   useEffect(() => {
     fetch('/gitrelic-report.json')
       .then((r) => {
-        if (!r.ok) throw new Error('No report found. Run gitrelic --web to generate one.');
+        if (!r.ok)
+          throw new Error(
+            'No report found. Run gitrelic --web to generate one.',
+          );
         return r.json().catch(() => {
           throw new Error('Report file is malformed. Re-run gitrelic --web.');
         }) as Promise<Partial<GitrelicReport>>;

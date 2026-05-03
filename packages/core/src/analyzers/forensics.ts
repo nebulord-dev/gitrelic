@@ -30,7 +30,12 @@
  * the leaderboard — `shameLeaderboard` only contains files that meet it.
  */
 
-import type { FileForensics, ForensicsReport, ShameByMonth, ShamefulCommit } from '../types.js';
+import type {
+  FileForensics,
+  ForensicsReport,
+  ShameByMonth,
+  ShamefulCommit,
+} from '../types.js';
 import type { RawCommit } from '../utils/git.js';
 
 /**
@@ -40,7 +45,10 @@ import type { RawCommit } from '../utils/git.js';
  */
 export const CONFIDENCE_FLOOR = 5;
 
-const SHAME_KEYWORDS: Array<{ weight: number; entries: Array<{ word: string; re: RegExp }> }> = [
+const SHAME_KEYWORDS: Array<{
+  weight: number;
+  entries: Array<{ word: string; re: RegExp }>;
+}> = [
   {
     weight: 3,
     entries: ['revert', 'hotfix', 'oops', 'fixup', 'broke'].map((word) => ({
@@ -50,22 +58,35 @@ const SHAME_KEYWORDS: Array<{ weight: number; entries: Array<{ word: string; re:
   },
   {
     weight: 2,
-    entries: ['hack', 'workaround', 'temporary', 'temp', 'kludge', 'band-aid'].map((word) => ({
+    entries: [
+      'hack',
+      'workaround',
+      'temporary',
+      'temp',
+      'kludge',
+      'band-aid',
+    ].map((word) => ({
       word,
       re: new RegExp(`\\b${word}\\b`),
     })),
   },
   {
     weight: 1,
-    entries: ['fix', 'bug', 'wrong', 'mistake', 'typo', 'cleanup'].map((word) => ({
-      word,
-      re: new RegExp(`\\b${word}\\b`),
-    })),
+    entries: ['fix', 'bug', 'wrong', 'mistake', 'typo', 'cleanup'].map(
+      (word) => ({
+        word,
+        re: new RegExp(`\\b${word}\\b`),
+      }),
+    ),
   },
 ];
 
 type ShameTier = 'critical' | 'moderate' | 'mild';
-const TIER_BY_WEIGHT: Record<number, ShameTier> = { 3: 'critical', 2: 'moderate', 1: 'mild' };
+const TIER_BY_WEIGHT: Record<number, ShameTier> = {
+  3: 'critical',
+  2: 'moderate',
+  1: 'mild',
+};
 
 function tierForCommit(message: string): ShameTier | null {
   const lower = message.toLowerCase();
@@ -92,11 +113,16 @@ function scoreMessage(message: string): { points: number; keywords: string[] } {
   return { points, keywords };
 }
 
-export function analyzeForensics(commits: RawCommit[], trackedFiles: string[]): ForensicsReport {
+export function analyzeForensics(
+  commits: RawCommit[],
+  trackedFiles: string[],
+): ForensicsReport {
   const trackedSet = new Set(trackedFiles);
 
   // Map file → all commits that touched it
-  const fileCommits = new Map<string, RawCommit[]>(trackedFiles.map((f) => [f, []]));
+  const fileCommits = new Map<string, RawCommit[]>(
+    trackedFiles.map((f) => [f, []]),
+  );
 
   for (const commit of commits) {
     for (const file of commit.files) {
@@ -168,10 +194,14 @@ export function analyzeForensics(commits: RawCommit[], trackedFiles: string[]): 
     .slice(0, 10);
 
   const keywordTiers = { critical: 0, moderate: 0, mild: 0 };
-  const monthBuckets = new Map<string, { critical: number; moderate: number; mild: number }>();
+  const monthBuckets = new Map<
+    string,
+    { critical: number; moderate: number; mild: number }
+  >();
   const seenForAggregates = new Set<string>();
   for (const commit of commits) {
-    if (seenForAggregates.has(commit.hash) || !allShameHashes.has(commit.hash)) continue;
+    if (seenForAggregates.has(commit.hash) || !allShameHashes.has(commit.hash))
+      continue;
     seenForAggregates.add(commit.hash);
     // Defensive — `allShameHashes` is built from `scoreMessage`, which scans the same
     // keyword sets as `tierForCommit`, so `tier` should never be null here.
@@ -179,7 +209,11 @@ export function analyzeForensics(commits: RawCommit[], trackedFiles: string[]): 
     if (tier === null) continue;
     keywordTiers[tier]++;
     const month = commit.date.slice(0, 7);
-    const bucket = monthBuckets.get(month) ?? { critical: 0, moderate: 0, mild: 0 };
+    const bucket = monthBuckets.get(month) ?? {
+      critical: 0,
+      moderate: 0,
+      mild: 0,
+    };
     bucket[tier]++;
     monthBuckets.set(month, bucket);
   }
@@ -188,12 +222,18 @@ export function analyzeForensics(commits: RawCommit[], trackedFiles: string[]): 
   if (monthBuckets.size > 0) {
     const sortedKeys = [...monthBuckets.keys()].sort();
     const [firstYear, firstMonth] = sortedKeys[0].split('-').map(Number);
-    const [lastYear, lastMonth] = sortedKeys[sortedKeys.length - 1].split('-').map(Number);
+    const [lastYear, lastMonth] = sortedKeys[sortedKeys.length - 1]
+      .split('-')
+      .map(Number);
     let y = firstYear;
     let m = firstMonth;
     while (y < lastYear || (y === lastYear && m <= lastMonth)) {
       const key = `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}`;
-      const bucket = monthBuckets.get(key) ?? { critical: 0, moderate: 0, mild: 0 };
+      const bucket = monthBuckets.get(key) ?? {
+        critical: 0,
+        moderate: 0,
+        mild: 0,
+      };
       byMonth.push({ month: key, ...bucket });
       m++;
       if (m > 12) {

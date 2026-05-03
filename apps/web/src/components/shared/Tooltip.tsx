@@ -36,7 +36,10 @@ export function Tooltip({
   const handleMouseEnter = useCallback(() => {
     if (wrapRef.current) {
       const rect = wrapRef.current.getBoundingClientRect();
-      setCoords({ x: rect.left + rect.width / 2, y: position === 'top' ? rect.top : rect.bottom });
+      setCoords({
+        x: rect.left + rect.width / 2,
+        y: position === 'top' ? rect.top : rect.bottom,
+      });
     }
     setVisible(true);
   }, [position]);
@@ -56,7 +59,10 @@ export function Tooltip({
           style={{
             left: coords.x,
             top: position === 'top' ? coords.y - 8 : coords.y + 8,
-            transform: position === 'top' ? 'translate(-50%, -100%)' : 'translate(-50%, 0)',
+            transform:
+              position === 'top'
+                ? 'translate(-50%, -100%)'
+                : 'translate(-50%, 0)',
           }}
         >
           {content}

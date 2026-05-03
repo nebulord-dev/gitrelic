@@ -51,13 +51,25 @@ export function ShameTrend({ report }: ShameTrendProps) {
   }
 
   const padding = { top: 16, right: 24, bottom: 28, left: 32 };
-  const chartHeight = Math.max(160, dims.height - padding.top - padding.bottom - 56);
+  const chartHeight = Math.max(
+    160,
+    dims.height - padding.top - padding.bottom - 56,
+  );
   const chartWidth = Math.max(120, dims.width - padding.left - padding.right);
   const barGap = 6;
-  const barWidth = Math.max(8, (chartWidth - barGap * (months.length - 1)) / months.length);
+  const barWidth = Math.max(
+    8,
+    (chartWidth - barGap * (months.length - 1)) / months.length,
+  );
 
-  const maxTotal = Math.max(1, ...months.map((m) => m.critical + m.moderate + m.mild));
-  const totalAcrossMonths = months.reduce((s, m) => s + m.critical + m.moderate + m.mild, 0);
+  const maxTotal = Math.max(
+    1,
+    ...months.map((m) => m.critical + m.moderate + m.mild),
+  );
+  const totalAcrossMonths = months.reduce(
+    (s, m) => s + m.critical + m.moderate + m.mild,
+    0,
+  );
 
   const barFor = (m: ShameByMonth, i: number) => {
     const x = padding.left + i * (barWidth + barGap);
@@ -136,7 +148,11 @@ export function ShameTrend({ report }: ShameTrendProps) {
                 {months[0].month}
               </text>
               <text
-                x={padding.left + (months.length - 1) * (barWidth + barGap) + barWidth}
+                x={
+                  padding.left +
+                  (months.length - 1) * (barWidth + barGap) +
+                  barWidth
+                }
                 y={padding.top + chartHeight + 16}
                 fontSize={10}
                 fill="var(--text-tertiary)"
@@ -155,13 +171,19 @@ export function ShameTrend({ report }: ShameTrendProps) {
           >
             <div className="font-semibold mb-0.5">{tooltip.month.month}</div>
             <div className="text-text-secondary">
-              <span className="text-severity-critical">critical {tooltip.month.critical}</span>
+              <span className="text-severity-critical">
+                critical {tooltip.month.critical}
+              </span>
               {' · '}
-              <span className="text-severity-warning">moderate {tooltip.month.moderate}</span>
+              <span className="text-severity-warning">
+                moderate {tooltip.month.moderate}
+              </span>
               {' · '}
               <span className="text-[#9b8b3e]">mild {tooltip.month.mild}</span>
             </div>
-            <div className="text-text-tertiary mt-0.5">total {tooltip.total}</div>
+            <div className="text-text-tertiary mt-0.5">
+              total {tooltip.total}
+            </div>
           </div>
         )}
       </div>

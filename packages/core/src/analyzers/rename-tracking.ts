@@ -1,6 +1,10 @@
 import { getRenameLog } from '../utils/git.js';
 
-import type { RenameTrackingReport, FileRename, FileRenameChain } from '../types.js';
+import type {
+  RenameTrackingReport,
+  FileRename,
+  FileRenameChain,
+} from '../types.js';
 
 /**
  * Parses raw output from `git log --diff-filter=R --find-renames --name-status`
@@ -21,7 +25,12 @@ export function parseRenameLog(raw: string): FileRename[] {
       if (parts.length === 3) {
         const oldPath = parts[1];
         const newPath = parts[2];
-        renames.push({ oldPath, newPath, commitHash: currentHash, date: currentDate });
+        renames.push({
+          oldPath,
+          newPath,
+          commitHash: currentHash,
+          date: currentDate,
+        });
       }
     }
   }
@@ -44,12 +53,17 @@ export function buildRenameChains(
   // For each tracked file, walk backwards through renames to find all previous names
   // Build forward map: oldPath → newPath (chronological)
   // And reverse map: newPath → oldPath
-  const reverseMap = new Map<string, { oldPath: string; commitHash: string; date: string }[]>();
+  const reverseMap = new Map<
+    string,
+    { oldPath: string; commitHash: string; date: string }[]
+  >();
   for (const rename of sorted) {
     if (!reverseMap.has(rename.newPath)) reverseMap.set(rename.newPath, []);
-    reverseMap
-      .get(rename.newPath)!
-      .push({ oldPath: rename.oldPath, commitHash: rename.commitHash, date: rename.date });
+    reverseMap.get(rename.newPath)!.push({
+      oldPath: rename.oldPath,
+      commitHash: rename.commitHash,
+      date: rename.date,
+    });
   }
 
   const chains: FileRenameChain[] = [];

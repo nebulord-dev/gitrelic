@@ -13,7 +13,9 @@ export interface DominantOwnerRow {
  * the repo total — so callers should pass the slice they want the share
  * to be relative to (typically `criticalFiles`).
  */
-export function topDominantOwners(files: ReadonlyArray<FileBusFactor>): DominantOwnerRow[] {
+export function topDominantOwners(
+  files: ReadonlyArray<FileBusFactor>,
+): DominantOwnerRow[] {
   if (files.length === 0) return [];
 
   const counts = new Map<string, number>();

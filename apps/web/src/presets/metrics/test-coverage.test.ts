@@ -2,9 +2,15 @@ import { describe, expect, it } from 'vitest';
 
 import { testCoverageMetrics } from './test-coverage';
 
-import type { DirectoryCoverage, GitrelicReport, TestCoverageProxyReport } from '@gitrelic/core';
+import type {
+  DirectoryCoverage,
+  GitrelicReport,
+  TestCoverageProxyReport,
+} from '@gitrelic/core';
 
-function makeDir(overrides: Partial<DirectoryCoverage> = {}): DirectoryCoverage {
+function makeDir(
+  overrides: Partial<DirectoryCoverage> = {},
+): DirectoryCoverage {
   return {
     directory: 'src',
     sourceFiles: 10,
@@ -15,7 +21,9 @@ function makeDir(overrides: Partial<DirectoryCoverage> = {}): DirectoryCoverage 
   };
 }
 
-function makeReport(testCoverage: Partial<TestCoverageProxyReport>): GitrelicReport {
+function makeReport(
+  testCoverage: Partial<TestCoverageProxyReport>,
+): GitrelicReport {
   return {
     testCoverage: {
       directories: testCoverage.directories ?? [],
@@ -61,8 +69,14 @@ describe('testCoverageMetrics', () => {
   });
 
   it('derives covered dirs from directories minus uncoveredDirectories', () => {
-    const directories = [makeDir(), makeDir({ directory: 'lib' }), makeDir({ directory: 'app' })];
-    const uncoveredDirectories = [makeDir({ directory: 'lib', hasTests: false })];
+    const directories = [
+      makeDir(),
+      makeDir({ directory: 'lib' }),
+      makeDir({ directory: 'app' }),
+    ];
+    const uncoveredDirectories = [
+      makeDir({ directory: 'lib', hasTests: false }),
+    ];
     const metrics = testCoverageMetrics(
       makeReport({ directories, uncoveredDirectories, overallRatio: 0.7 }),
     );

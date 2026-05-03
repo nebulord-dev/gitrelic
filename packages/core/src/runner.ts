@@ -73,7 +73,11 @@ function safeRun<T>(name: string, fn: () => T, fallback: T): T {
   }
 }
 
-async function safeRunAsync<T>(name: string, fn: () => Promise<T>, fallback: T): Promise<T> {
+async function safeRunAsync<T>(
+  name: string,
+  fn: () => Promise<T>,
+  fallback: T,
+): Promise<T> {
   try {
     return await fn();
   } catch (err) {
@@ -142,7 +146,11 @@ const EMPTY_LOC: LocReport = {
   languages: [],
   summary: 'unavailable',
 };
-const EMPTY_HOTSPOTS: HotspotReport = { files: [], topHotspots: [], summary: 'unavailable' };
+const EMPTY_HOTSPOTS: HotspotReport = {
+  files: [],
+  topHotspots: [],
+  summary: 'unavailable',
+};
 const EMPTY_COUPLING: CouplingReport = {
   pairs: [],
   fileProfiles: [],
@@ -227,9 +235,13 @@ const EMPTY_CURSED_FILES: CursedFile[] = [];
  * @Returns a GitrelicReport containing churn, bus factor, age map, contributors, cursed files, and forensics data.
  */
 const __coreDir = path.dirname(fileURLToPath(import.meta.url));
-const corePkg = JSON.parse(readFileSync(path.resolve(__coreDir, '../package.json'), 'utf-8'));
+const corePkg = JSON.parse(
+  readFileSync(path.resolve(__coreDir, '../package.json'), 'utf-8'),
+);
 
-export async function runGitrelic(options: RunGitrelicOptions): Promise<GitrelicReport> {
+export async function runGitrelic(
+  options: RunGitrelicOptions,
+): Promise<GitrelicReport> {
   const { repoPath, branch, since, onProgress } = options;
   const repoName = path.basename(repoPath);
 
@@ -257,12 +269,19 @@ export async function runGitrelic(options: RunGitrelicOptions): Promise<Gitrelic
   // or same-day repos.
   const ageInDays = Math.max(
     1,
-    Math.floor((new Date(lastCommit).getTime() - new Date(firstCommit).getTime()) / 86_400_000),
+    Math.floor(
+      (new Date(lastCommit).getTime() - new Date(firstCommit).getTime()) /
+        86_400_000,
+    ),
   );
   const uniqueAuthors = new Set(commits.map((c) => c.authorEmail)).size;
 
   onProgress?.('Analyzing churn...');
-  const churn = safeRun('churn', () => analyzeChurn(commits, trackedFiles), EMPTY_CHURN);
+  const churn = safeRun(
+    'churn',
+    () => analyzeChurn(commits, trackedFiles),
+    EMPTY_CHURN,
+  );
 
   onProgress?.('Calculating bus factors...');
   const busFactors = safeRun(
@@ -307,10 +326,18 @@ export async function runGitrelic(options: RunGitrelicOptions): Promise<Gitrelic
   );
 
   onProgress?.('Counting lines of code...');
-  const loc = await safeRunAsync('loc', () => analyzeLoc(trackedFiles, repoPath), EMPTY_LOC);
+  const loc = await safeRunAsync(
+    'loc',
+    () => analyzeLoc(trackedFiles, repoPath),
+    EMPTY_LOC,
+  );
 
   onProgress?.('Computing hotspot scores...');
-  const hotspots = safeRun('hotspots', () => analyzeHotspots(churn, loc), EMPTY_HOTSPOTS);
+  const hotspots = safeRun(
+    'hotspots',
+    () => analyzeHotspots(churn, loc),
+    EMPTY_HOTSPOTS,
+  );
 
   onProgress?.('Mapping file coupling...');
   const coupling = safeRun(
@@ -369,13 +396,24 @@ export async function runGitrelic(options: RunGitrelicOptions): Promise<Gitrelic
   );
 
   onProgress?.('Analyzing co-authorship...');
-  const coAuthors = safeRun('coAuthors', () => analyzeCoAuthors(commits), EMPTY_CO_AUTHORS);
+  const coAuthors = safeRun(
+    'coAuthors',
+    () => analyzeCoAuthors(commits),
+    EMPTY_CO_AUTHORS,
+  );
 
   onProgress?.('Clustering hotspots...');
   const hotspotClusters = safeRun(
     'hotspotClusters',
     () =>
-      analyzeHotspotClustering(hotspots, busFactors, coupling, contributors, commits, trackedFiles),
+      analyzeHotspotClustering(
+        hotspots,
+        busFactors,
+        coupling,
+        contributors,
+        commits,
+        trackedFiles,
+      ),
     EMPTY_HOTSPOT_CLUSTERS,
   );
 
@@ -403,7 +441,15 @@ export async function runGitrelic(options: RunGitrelicOptions): Promise<Gitrelic
   onProgress?.('Finding cursed files...');
   const cursedFiles = safeRun(
     'cursedFiles',
-    () => findCursedFiles(churn, busFactors, ageMap, forensics, parallelDev, commits.length),
+    () =>
+      findCursedFiles(
+        churn,
+        busFactors,
+        ageMap,
+        forensics,
+        parallelDev,
+        commits.length,
+      ),
     EMPTY_CURSED_FILES,
   );
 

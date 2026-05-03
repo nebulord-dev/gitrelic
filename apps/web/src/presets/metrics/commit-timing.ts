@@ -6,10 +6,13 @@ import type { GitrelicReport } from '@gitrelic/core';
 const STRESS_THRESHOLD = 50;
 
 export function commitTimingMetrics(report: GitrelicReport): Metric[] {
-  const { stressFiles, repoLateNightPercent, repoWeekendPercent } = report.commitTiming;
+  const { stressFiles, repoLateNightPercent, repoWeekendPercent } =
+    report.commitTiming;
   const topStress = stressFiles[0];
   const topStressScore = topStress?.stressScore ?? 0;
-  const stressedCount = stressFiles.filter((f) => f.stressScore > STRESS_THRESHOLD).length;
+  const stressedCount = stressFiles.filter(
+    (f) => f.stressScore > STRESS_THRESHOLD,
+  ).length;
 
   return [
     {

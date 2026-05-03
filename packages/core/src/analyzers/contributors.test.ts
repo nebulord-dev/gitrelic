@@ -36,7 +36,9 @@ describe('analyzeContributors', () => {
 
   it('marks recent contributors as active (within 25% of repo age)', () => {
     // repoAgeDays=365, active window = 91 days
-    const commits = [makeCommit({ hash: '1', date: daysAgo(50), files: ['a.ts'] })];
+    const commits = [
+      makeCommit({ hash: '1', date: daysAgo(50), files: ['a.ts'] }),
+    ];
     const result = analyzeContributors(commits, 365);
     expect(result.activeContributors.length).toBe(1);
     expect(result.activeContributors[0].isActive).toBe(true);
@@ -44,7 +46,9 @@ describe('analyzeContributors', () => {
 
   it('marks old contributors as ghosts (beyond 50% of repo age)', () => {
     // repoAgeDays=365, ghost window = 183 days
-    const commits = [makeCommit({ hash: '1', date: daysAgo(200), files: ['a.ts'] })];
+    const commits = [
+      makeCommit({ hash: '1', date: daysAgo(200), files: ['a.ts'] }),
+    ];
     const result = analyzeContributors(commits, 365);
     expect(result.ghostContributors.length).toBe(1);
     expect(result.ghostContributors[0].email).toBe('alice@example.com');
@@ -70,7 +74,9 @@ describe('analyzeContributors', () => {
       }),
     ];
     const result = analyzeContributors(commits, 90);
-    expect(result.activeContributors.map((c) => c.email)).toContain('active@example.com');
+    expect(result.activeContributors.map((c) => c.email)).toContain(
+      'active@example.com',
+    );
     expect(result.ghostContributors).toHaveLength(0); // 60 days < 180-day floor
   });
 
@@ -92,7 +98,9 @@ describe('analyzeContributors', () => {
       }),
     ];
     const result = analyzeContributors(commits, 90);
-    expect(result.ghostContributors.map((c) => c.email)).toContain('ghost@example.com');
+    expect(result.ghostContributors.map((c) => c.email)).toContain(
+      'ghost@example.com',
+    );
   });
 
   it('extracts focus areas from file paths', () => {
@@ -100,21 +108,41 @@ describe('analyzeContributors', () => {
       makeCommit({
         hash: '1',
         date: daysAgo(5),
-        files: ['src/components/App.tsx', 'src/components/Nav.tsx', 'src/utils/helper.ts'],
+        files: [
+          'src/components/App.tsx',
+          'src/components/Nav.tsx',
+          'src/utils/helper.ts',
+        ],
       }),
     ];
     const result = analyzeContributors(commits, 365);
-    const alice = result.contributors.find((c) => c.email === 'alice@example.com')!;
+    const alice = result.contributors.find(
+      (c) => c.email === 'alice@example.com',
+    )!;
     expect(alice.focusAreas).toContain('src/components');
   });
 
   it('aggregates lines changed across commits', () => {
     const commits = [
-      makeCommit({ hash: '1', date: daysAgo(5), files: ['a.ts'], insertions: 50, deletions: 10 }),
-      makeCommit({ hash: '2', date: daysAgo(3), files: ['b.ts'], insertions: 30, deletions: 20 }),
+      makeCommit({
+        hash: '1',
+        date: daysAgo(5),
+        files: ['a.ts'],
+        insertions: 50,
+        deletions: 10,
+      }),
+      makeCommit({
+        hash: '2',
+        date: daysAgo(3),
+        files: ['b.ts'],
+        insertions: 30,
+        deletions: 20,
+      }),
     ];
     const result = analyzeContributors(commits, 365);
-    const alice = result.contributors.find((c) => c.email === 'alice@example.com')!;
+    const alice = result.contributors.find(
+      (c) => c.email === 'alice@example.com',
+    )!;
     expect(alice.linesChanged).toBe(110);
   });
 
@@ -139,7 +167,9 @@ describe('analyzeContributors', () => {
 
   it('includes dynamic day count in ghost summary', () => {
     // repoAgeDays=365, ghost window = 183 days
-    const commits = [makeCommit({ hash: '1', date: daysAgo(200), files: ['a.ts'] })];
+    const commits = [
+      makeCommit({ hash: '1', date: daysAgo(200), files: ['a.ts'] }),
+    ];
     const result = analyzeContributors(commits, 365);
     expect(result.summary).toContain('183');
   });

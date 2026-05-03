@@ -12,7 +12,10 @@ export function complexityTrendMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Growing Files',
       value: fmt(growingFiles.length),
-      color: growingFiles.length > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+      color:
+        growingFiles.length > 0
+          ? 'var(--severity-warning)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'Shrinking Files',
@@ -22,7 +25,8 @@ export function complexityTrendMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Top Growth (lines/mo)',
       value: growingFiles.length > 0 ? fmt(Math.round(topGrowthRate)) : '—',
-      color: topGrowthRate > 100 ? 'var(--severity-warning)' : 'var(--text-primary)',
+      color:
+        topGrowthRate > 100 ? 'var(--severity-warning)' : 'var(--text-primary)',
     },
     {
       label: 'Net Lines',

@@ -418,7 +418,11 @@ export interface CoAuthorReport {
 
 // ─── Hotspot clustering ────────────────────────────────────────────────────
 
-export type ClusterDimension = 'structural' | 'ownership' | 'temporal' | 'coupling-hub';
+export type ClusterDimension =
+  | 'structural'
+  | 'ownership'
+  | 'temporal'
+  | 'coupling-hub';
 
 export interface ClusterMember {
   file: string;
@@ -473,7 +477,12 @@ export interface ComplexityTrendReport {
 
 // ─── Commit timing forensics ─────────────────────────────────────────
 
-export type TimeOfDay = 'early-morning' | 'morning' | 'afternoon' | 'evening' | 'night';
+export type TimeOfDay =
+  | 'early-morning'
+  | 'morning'
+  | 'afternoon'
+  | 'evening'
+  | 'night';
 export type DayType = 'weekday' | 'weekend';
 
 export interface FileTimingProfile {

@@ -16,7 +16,9 @@ describe('isTestPath', () => {
   it('detects __tests__ as a directory segment anywhere in the path', () => {
     expect(isTestPath('__tests__/foo.ts')).toBe(true);
     expect(isTestPath('src/__tests__/foo.ts')).toBe(true);
-    expect(isTestPath('packages/a/src/__tests__/fixtures/compiler/x.expect.md')).toBe(true);
+    expect(
+      isTestPath('packages/a/src/__tests__/fixtures/compiler/x.expect.md'),
+    ).toBe(true);
   });
 
   it('detects __snapshots__ as a directory segment', () => {

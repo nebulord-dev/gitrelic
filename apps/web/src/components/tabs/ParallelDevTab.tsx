@@ -17,7 +17,9 @@ export function ParallelDevTab({ report, onSelectFile }: ParallelDevTabProps) {
       render: (f) => (
         <span className="font-mono text-[11px]">
           {fileName(f.file)}
-          <span className="text-text-tertiary ml-1.5 text-[10px]">{filePath(f.file)}</span>
+          <span className="text-text-tertiary ml-1.5 text-[10px]">
+            {filePath(f.file)}
+          </span>
         </span>
       ),
     },

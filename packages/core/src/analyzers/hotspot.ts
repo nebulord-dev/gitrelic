@@ -13,20 +13,33 @@ function getCategory(score: number): HotspotCategory {
   return 'low';
 }
 
-export function analyzeHotspots(churnReport: ChurnReport, locReport: LocReport): HotspotReport {
+export function analyzeHotspots(
+  churnReport: ChurnReport,
+  locReport: LocReport,
+): HotspotReport {
   const locMap = new Map<string, number>();
   for (const f of locReport.files) {
     locMap.set(f.file, f.lines);
   }
 
-  const rawEntries: { file: string; churnScore: number; loc: number; rawScore: number }[] = [];
+  const rawEntries: {
+    file: string;
+    churnScore: number;
+    loc: number;
+    rawScore: number;
+  }[] = [];
 
   for (const churnFile of churnReport.files) {
     const loc = locMap.get(churnFile.file);
     if (loc === undefined) continue;
     const clampedLoc = Math.max(1, loc);
     const rawScore = churnFile.churnScore * Math.log2(clampedLoc);
-    rawEntries.push({ file: churnFile.file, churnScore: churnFile.churnScore, loc, rawScore });
+    rawEntries.push({
+      file: churnFile.file,
+      churnScore: churnFile.churnScore,
+      loc,
+      rawScore,
+    });
   }
 
   const maxRaw = Math.max(...rawEntries.map((e) => e.rawScore), 1);

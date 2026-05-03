@@ -61,7 +61,10 @@ describe('prepareSankeyData', () => {
   });
 
   it('deduplicates a name that appears in multiple chains', () => {
-    const chains = [makeChain('shared', ['orig']), makeChain('final', ['shared'])];
+    const chains = [
+      makeChain('shared', ['orig']),
+      makeChain('final', ['shared']),
+    ];
     const { nodes, links } = prepareSankeyData(makeReport(chains));
     expect(nodes.map((n) => n.name)).toEqual(['orig', 'shared', 'final']);
     expect(links).toHaveLength(2);
@@ -101,14 +104,18 @@ describe('prepareSankeyData', () => {
   });
 
   it('honors topN option to cap the number of chains rendered', () => {
-    const chains = Array.from({ length: 10 }, (_, i) => makeChain(`c${i}`, [`prev${i}`]));
+    const chains = Array.from({ length: 10 }, (_, i) =>
+      makeChain(`c${i}`, [`prev${i}`]),
+    );
     const { nodes, links } = prepareSankeyData(makeReport(chains), { topN: 3 });
     expect(links).toHaveLength(3);
     expect(nodes).toHaveLength(6);
   });
 
   it('defaults topN to 20 when unspecified', () => {
-    const chains = Array.from({ length: 25 }, (_, i) => makeChain(`c${i}`, [`prev${i}`]));
+    const chains = Array.from({ length: 25 }, (_, i) =>
+      makeChain(`c${i}`, [`prev${i}`]),
+    );
     const { links } = prepareSankeyData(makeReport(chains));
     expect(links).toHaveLength(20);
   });
@@ -161,11 +168,15 @@ describe('computeDisplayName', () => {
   });
 
   it('walks up a directory when peers share the basename', () => {
-    expect(computeDisplayName('cli/Foo.ts', ['cli/Foo.ts', 'web/Foo.ts'])).toBe('cli/Foo.ts');
+    expect(computeDisplayName('cli/Foo.ts', ['cli/Foo.ts', 'web/Foo.ts'])).toBe(
+      'cli/Foo.ts',
+    );
   });
 
   it('falls back to the longest segment count needed when one path is a suffix of another', () => {
-    expect(computeDisplayName('nested/Foo.ts', ['nested/Foo.ts', 'Foo.ts'])).toBe('nested/Foo.ts');
+    expect(
+      computeDisplayName('nested/Foo.ts', ['nested/Foo.ts', 'Foo.ts']),
+    ).toBe('nested/Foo.ts');
   });
 
   it('handles a single-path chain by returning the basename', () => {

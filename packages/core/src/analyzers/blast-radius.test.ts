@@ -57,7 +57,9 @@ describe('analyzeBlastRadius', () => {
   });
 
   it('only includes tracked files', () => {
-    const commits = [makeCommit({ hash: '1', files: ['tracked.ts', 'gone.ts'] })];
+    const commits = [
+      makeCommit({ hash: '1', files: ['tracked.ts', 'gone.ts'] }),
+    ];
     const result = analyzeBlastRadius(commits, ['tracked.ts']);
     expect(result.files.map((f) => f.file)).toEqual(['tracked.ts']);
   });

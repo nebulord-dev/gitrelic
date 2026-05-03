@@ -20,7 +20,10 @@ export function analyzeRewriteRatio(
   }
 
   const trackedSet = new Set(trackedFiles);
-  const fileStats = new Map<string, { insertions: number; deletions: number }>();
+  const fileStats = new Map<
+    string,
+    { insertions: number; deletions: number }
+  >();
   let totalInsertions = 0;
   let totalDeletions = 0;
 
@@ -57,7 +60,9 @@ export function analyzeRewriteRatio(
 
   files.sort((a, b) => b.rewriteScore - a.rewriteScore);
   const topRewriters = files.slice(0, 10);
-  const highRewrite = files.filter((f) => f.rewriteScore >= HIGH_REWRITE_THRESHOLD).length;
+  const highRewrite = files.filter(
+    (f) => f.rewriteScore >= HIGH_REWRITE_THRESHOLD,
+  ).length;
   const summary = `${highRewrite} file${highRewrite !== 1 ? 's' : ''} with high rewrite ratio (code that doesn't stick)`;
 
   return {

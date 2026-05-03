@@ -4,7 +4,8 @@ import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export function knowledgeSilosMetrics(report: GitrelicReport): Metric[] {
-  const { singleAuthorFiles, totalFiles, concentrationIndex } = report.knowledgeConcentration;
+  const { singleAuthorFiles, totalFiles, concentrationIndex } =
+    report.knowledgeConcentration;
   const roundedIndex = Math.round(concentrationIndex * 10) / 10;
 
   return [
@@ -21,7 +22,10 @@ export function knowledgeSilosMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Single-Author Files',
       value: fmt(singleAuthorFiles),
-      color: singleAuthorFiles > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+      color:
+        singleAuthorFiles > 0
+          ? 'var(--severity-warning)'
+          : 'var(--severity-healthy)',
     },
     {
       label: 'Total Files',

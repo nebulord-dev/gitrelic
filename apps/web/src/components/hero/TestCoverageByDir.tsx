@@ -23,7 +23,10 @@ export function coverageTierFor(ratio: number): CoverageTier {
   return 'good';
 }
 
-export function prepareCoverageByDirData(report: GitrelicReport, topN = 30): CoverageByDirData {
+export function prepareCoverageByDirData(
+  report: GitrelicReport,
+  topN = 30,
+): CoverageByDirData {
   const rows: CoverageByDirRow[] = report.testCoverage.directories
     .filter((d) => d.sourceFiles > 0)
     .map((d) => ({
@@ -53,9 +56,11 @@ interface TestCoverageByDirProps {
 export function TestCoverageByDir({ report }: TestCoverageByDirProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; row: CoverageByDirRow } | null>(
-    null,
-  );
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    row: CoverageByDirRow;
+  } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -85,7 +90,10 @@ export function TestCoverageByDir({ report }: TestCoverageByDirProps) {
   const topPad = 16;
   const bottomPad = 16;
   const available = Math.max(120, dims.width - labelWidth - rightPad);
-  const rowHeight = Math.max(20, (dims.height - topPad - bottomPad) / Math.max(rows.length, 1));
+  const rowHeight = Math.max(
+    20,
+    (dims.height - topPad - bottomPad) / Math.max(rows.length, 1),
+  );
   const barHeight = Math.max(10, rowHeight - 6);
 
   return (
@@ -102,7 +110,11 @@ export function TestCoverageByDir({ report }: TestCoverageByDirProps) {
               onMouseEnter={(evt) => {
                 const rect = containerRef.current?.getBoundingClientRect();
                 if (!rect) return;
-                setTooltip({ x: evt.clientX - rect.left, y: evt.clientY - rect.top, row });
+                setTooltip({
+                  x: evt.clientX - rect.left,
+                  y: evt.clientY - rect.top,
+                  row,
+                });
               }}
               onMouseLeave={() => setTooltip(null)}
               className="cursor-default"
@@ -159,10 +171,14 @@ export function TestCoverageByDir({ report }: TestCoverageByDirProps) {
         >
           <div className="font-semibold mb-0.5">{tooltip.row.directory}</div>
           <div className="text-text-secondary">
-            {tooltip.row.testFiles} test{tooltip.row.testFiles === 1 ? '' : 's'} ·{' '}
-            {tooltip.row.sourceFiles} source file{tooltip.row.sourceFiles === 1 ? '' : 's'}
+            {tooltip.row.testFiles} test{tooltip.row.testFiles === 1 ? '' : 's'}{' '}
+            · {tooltip.row.sourceFiles} source file
+            {tooltip.row.sourceFiles === 1 ? '' : 's'}
           </div>
-          <div className="mt-0.5 capitalize" style={{ color: TIER_COLORS[tooltip.row.tier] }}>
+          <div
+            className="mt-0.5 capitalize"
+            style={{ color: TIER_COLORS[tooltip.row.tier] }}
+          >
             {Math.round(tooltip.row.coverageRatio * 100)}% · {tooltip.row.tier}
           </div>
         </div>

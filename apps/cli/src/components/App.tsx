@@ -26,7 +26,8 @@ export function App({ report, progress, error, version, webPort }: Props) {
     return (
       <Box flexDirection="column" padding={1}>
         <Text color="cyan">
-          <Spinner type="dots" /> <Text>{progress || 'Starting analysis...'}</Text>
+          <Spinner type="dots" />{' '}
+          <Text>{progress || 'Starting analysis...'}</Text>
         </Text>
       </Box>
     );
@@ -34,7 +35,11 @@ export function App({ report, progress, error, version, webPort }: Props) {
 
   return (
     <Box flexDirection="column" padding={1}>
-      <Banner repoName={report.repoName} branch={report.meta.analyzedBranch} version={version} />
+      <Banner
+        repoName={report.repoName}
+        branch={report.meta.analyzedBranch}
+        version={version}
+      />
       <MetaPanel report={report} />
       <Newline />
       {/* <ChurnPanel report={report} />
@@ -223,7 +228,8 @@ function ContributorPanel({ report }: { report: GitrelicReport }) {
   return (
     <Box flexDirection="column">
       <Text color="green" bold>
-        ── Contributors ({contributors.activeContributors.length} active) ──────────────────────────
+        ── Contributors ({contributors.activeContributors.length} active)
+        ──────────────────────────
       </Text>
       <Text color="gray" dimColor>
         {contributors.summary}
@@ -231,9 +237,13 @@ function ContributorPanel({ report }: { report: GitrelicReport }) {
       <Box flexDirection="column" marginTop={1}>
         {contributors.contributors.slice(0, 8).map((c) => (
           <Box key={c.email} gap={2}>
-            <Text color={c.isActive ? 'green' : 'gray'}>{c.isActive ? '●' : '○'}</Text>
+            <Text color={c.isActive ? 'green' : 'gray'}>
+              {c.isActive ? '●' : '○'}
+            </Text>
             <Text color="white">{c.name.slice(0, 20).padEnd(20)}</Text>
-            <Text color="gray">{String(c.commitCount).padStart(4)} commits</Text>
+            <Text color="gray">
+              {String(c.commitCount).padStart(4)} commits
+            </Text>
             <Text color="gray" dimColor>
               {c.focusAreas[0] ?? '-'}
             </Text>

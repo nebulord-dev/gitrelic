@@ -23,10 +23,12 @@ interface NavGroup {
 }
 
 function getNavGroups(report: GitrelicReport): NavGroup[] {
-  const dashboardPresets = (['overview', 'risk', 'tech-debt'] as const).map((id) => ({
-    id,
-    label: PRESETS[id].label,
-  })) satisfies NavEntry[];
+  const dashboardPresets = (['overview', 'risk', 'tech-debt'] as const).map(
+    (id) => ({
+      id,
+      label: PRESETS[id].label,
+    }),
+  ) satisfies NavEntry[];
 
   return [
     {
@@ -41,7 +43,9 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
         {
           id: 'hotspots',
           label: 'Hotspots',
-          badge: report.hotspots.topHotspots.filter((h) => h.category === 'critical').length,
+          badge: report.hotspots.topHotspots.filter(
+            (h) => h.category === 'critical',
+          ).length,
         },
         {
           id: 'churn',
@@ -80,7 +84,8 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
         {
           id: 'shame',
           label: 'Shame',
-          badge: report.forensics.files.filter((f) => f.shameScore >= 70).length,
+          badge: report.forensics.files.filter((f) => f.shameScore >= 70)
+            .length,
         },
         // NOTE: Stream 3 will add the other Code Health presets here.
       ],
@@ -123,7 +128,9 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
         {
           id: 'commit-timing',
           label: 'Commit Timing',
-          badge: report.commitTiming.stressFiles.filter((f) => f.stressScore > 50).length,
+          badge: report.commitTiming.stressFiles.filter(
+            (f) => f.stressScore > 50,
+          ).length,
         },
         {
           id: 'co-authors',
@@ -152,7 +159,11 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
   ];
 }
 
-export function Sidebar({ report, activePresetId, onApplyPreset }: SidebarProps) {
+export function Sidebar({
+  report,
+  activePresetId,
+  onApplyPreset,
+}: SidebarProps) {
   const groups = getNavGroups(report);
 
   return (

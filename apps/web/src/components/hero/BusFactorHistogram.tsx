@@ -25,6 +25,8 @@ export interface BusFactorHistogramData {
 // Aligns with the analyzer's `risk === 'critical'` band (dominantPercent ≥ 90)
 // and the last bucket boundary of the 10-bin histogram, so the shaded zone,
 // analyzer tier, and visual bar all agree without mid-bucket fudging.
+const MEDIUM_OWNERSHIP_THRESHOLD = 50;
+const HIGH_OWNERSHIP_TIER_THRESHOLD = 75;
 export const HIGH_OWNERSHIP_THRESHOLD = 90;
 const BUCKET_WIDTH = 10;
 const BUCKET_COUNT = 10;
@@ -34,23 +36,29 @@ const BUCKET_COUNT = 10;
 // land in the 100% bucket anyway, so the analyzer's "uniqueAuthors === 1"
 // critical case is naturally captured by the percent bins.
 export function busFactorTierFor(dominantPercent: number): BusFactorTier {
-  if (dominantPercent < 50) return 'low';
-  if (dominantPercent < 75) return 'medium';
+  if (dominantPercent < MEDIUM_OWNERSHIP_THRESHOLD) return 'low';
+  if (dominantPercent < HIGH_OWNERSHIP_TIER_THRESHOLD) return 'medium';
   if (dominantPercent < HIGH_OWNERSHIP_THRESHOLD) return 'high';
   return 'critical';
 }
 
-export function prepareBusFactorHistogramData(report: GitrelicReport): BusFactorHistogramData {
-  const buckets: BusFactorBucket[] = Array.from({ length: BUCKET_COUNT }, (_, i) => {
-    const rangeStart = i * BUCKET_WIDTH;
-    const rangeEnd = i === BUCKET_COUNT - 1 ? 100 : rangeStart + BUCKET_WIDTH - 1;
-    return {
-      rangeStart,
-      rangeEnd,
-      count: 0,
-      tier: busFactorTierFor(rangeStart + BUCKET_WIDTH / 2),
-    };
-  });
+export function prepareBusFactorHistogramData(
+  report: GitrelicReport,
+): BusFactorHistogramData {
+  const buckets: BusFactorBucket[] = Array.from(
+    { length: BUCKET_COUNT },
+    (_, i) => {
+      const rangeStart = i * BUCKET_WIDTH;
+      const rangeEnd =
+        i === BUCKET_COUNT - 1 ? 100 : rangeStart + BUCKET_WIDTH - 1;
+      return {
+        rangeStart,
+        rangeEnd,
+        count: 0,
+        tier: busFactorTierFor(rangeStart + BUCKET_WIDTH / 2),
+      };
+    },
+  );
 
   let highOwnershipCount = 0;
   for (const f of report.busFactors.files) {
@@ -59,7 +67,8 @@ export function prepareBusFactorHistogramData(report: GitrelicReport): BusFactor
       Math.max(0, Math.floor(f.dominantAuthorPercent / BUCKET_WIDTH)),
     );
     buckets[idx].count++;
-    if (f.dominantAuthorPercent >= HIGH_OWNERSHIP_THRESHOLD) highOwnershipCount++;
+    if (f.dominantAuthorPercent >= HIGH_OWNERSHIP_THRESHOLD)
+      highOwnershipCount++;
   }
 
   const maxCount = buckets.reduce((m, b) => (b.count > m ? b.count : m), 0);
@@ -121,7 +130,9 @@ export function BusFactorHistogram({ report }: BusFactorHistogramProps) {
   const barWidth = (plotW - BAR_GAP * (buckets.length - 1)) / buckets.length;
   // Snap the threshold marker to the bucket boundary so the shaded zone
   // begins exactly at the start of the 90-99 bucket.
-  const thresholdBucketIdx = Math.floor(HIGH_OWNERSHIP_THRESHOLD / BUCKET_WIDTH);
+  const thresholdBucketIdx = Math.floor(
+    HIGH_OWNERSHIP_THRESHOLD / BUCKET_WIDTH,
+  );
   const thresholdX = thresholdBucketIdx * (barWidth + BAR_GAP);
 
   if (totalFiles === 0) {
@@ -139,7 +150,8 @@ export function BusFactorHistogram({ report }: BusFactorHistogramProps) {
   }
 
   const yTicks = yScale.ticks(4);
-  const hover = hoverIdx == null ? null : { idx: hoverIdx, bucket: buckets[hoverIdx] };
+  const hover =
+    hoverIdx == null ? null : { idx: hoverIdx, bucket: buckets[hoverIdx] };
 
   return (
     <div ref={containerRef} className="w-full h-full flex flex-col">
@@ -185,7 +197,13 @@ export function BusFactorHistogram({ report }: BusFactorHistogramProps) {
             </text>
 
             {/* Y axis */}
-            <line x1={0} y1={0} x2={0} y2={plotH} stroke="var(--border-primary)" />
+            <line
+              x1={0}
+              y1={0}
+              x2={0}
+              y2={plotH}
+              stroke="var(--border-primary)"
+            />
             <text
               transform={`translate(-40,${plotH / 2}) rotate(-90)`}
               textAnchor="middle"
@@ -197,7 +215,11 @@ export function BusFactorHistogram({ report }: BusFactorHistogramProps) {
             {yTicks.map((tick) => (
               <g key={`y-${tick}`} transform={`translate(0,${yScale(tick)})`}>
                 <line x2={-4} stroke="var(--border-primary)" />
-                <line x2={plotW} stroke="var(--border-primary)" strokeOpacity={0.15} />
+                <line
+                  x2={plotW}
+                  stroke="var(--border-primary)"
+                  strokeOpacity={0.15}
+                />
                 <text
                   x={-8}
                   textAnchor="end"
@@ -248,13 +270,27 @@ export function BusFactorHistogram({ report }: BusFactorHistogramProps) {
             })}
 
             {/* X axis */}
-            <line x1={0} y1={plotH} x2={plotW} y2={plotH} stroke="var(--border-primary)" />
+            <line
+              x1={0}
+              y1={plotH}
+              x2={plotW}
+              y2={plotH}
+              stroke="var(--border-primary)"
+            />
             {buckets.map((b, i) => {
               const x = i * (barWidth + BAR_GAP) + barWidth / 2;
               return (
-                <g key={`x-${b.rangeStart}`} transform={`translate(${x},${plotH})`}>
+                <g
+                  key={`x-${b.rangeStart}`}
+                  transform={`translate(${x},${plotH})`}
+                >
                   <line y2={4} stroke="var(--border-primary)" />
-                  <text y={14} textAnchor="middle" fontSize={8} fill="var(--text-tertiary)">
+                  <text
+                    y={14}
+                    textAnchor="middle"
+                    fontSize={8}
+                    fill="var(--text-tertiary)"
+                  >
                     {b.rangeStart}
                   </text>
                 </g>
@@ -273,8 +309,17 @@ export function BusFactorHistogram({ report }: BusFactorHistogramProps) {
 
           {/* Tier legend */}
           {(['low', 'medium', 'high', 'critical'] as const).map((tier, i) => (
-            <g key={tier} transform={`translate(${PADDING.left + i * 80},${PADDING.top - 14})`}>
-              <rect width={10} height={8} y={-6} fill={TIER_COLORS[tier]} fillOpacity={0.75} />
+            <g
+              key={tier}
+              transform={`translate(${PADDING.left + i * 80},${PADDING.top - 14})`}
+            >
+              <rect
+                width={10}
+                height={8}
+                y={-6}
+                fill={TIER_COLORS[tier]}
+                fillOpacity={0.75}
+              />
               <text x={14} y={2} fontSize={9} fill="var(--text-tertiary)">
                 {tier}
               </text>
@@ -285,7 +330,8 @@ export function BusFactorHistogram({ report }: BusFactorHistogramProps) {
           <div
             className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 whitespace-nowrap"
             style={{
-              left: PADDING.left + hover.idx * (barWidth + BAR_GAP) + barWidth / 2,
+              left:
+                PADDING.left + hover.idx * (barWidth + BAR_GAP) + barWidth / 2,
               top: PADDING.top + yScale(hover.bucket.count) - 8,
               transform: 'translate(-50%, -100%)',
             }}
@@ -296,7 +342,10 @@ export function BusFactorHistogram({ report }: BusFactorHistogramProps) {
             <div className="text-text-secondary">
               {hover.bucket.count} {hover.bucket.count === 1 ? 'file' : 'files'}
             </div>
-            <div className="mt-0.5 capitalize" style={{ color: TIER_COLORS[hover.bucket.tier] }}>
+            <div
+              className="mt-0.5 capitalize"
+              style={{ color: TIER_COLORS[hover.bucket.tier] }}
+            >
               {hover.bucket.tier}
             </div>
           </div>

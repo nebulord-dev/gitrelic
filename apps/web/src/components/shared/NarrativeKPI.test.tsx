@@ -78,13 +78,17 @@ describe('NarrativeKPI', () => {
   // on a manual / Playwright smoke for the actual layout flip.
   describe('responsive layout wiring', () => {
     it('marks the body as a container-query root', () => {
-      const { container } = render(<NarrativeKPI {...baseProps} onApplyPreset={vi.fn()} />);
+      const { container } = render(
+        <NarrativeKPI {...baseProps} onApplyPreset={vi.fn()} />,
+      );
       const body = container.querySelector('.narrative-kpi-body');
       expect(body).toBeTruthy();
     });
 
     it('wraps kpi-row in a responsive stack', () => {
-      const { container } = render(<NarrativeKPI {...baseProps} onApplyPreset={vi.fn()} />);
+      const { container } = render(
+        <NarrativeKPI {...baseProps} onApplyPreset={vi.fn()} />,
+      );
       const stack = container.querySelector('.narrative-kpi-stack');
       expect(stack).toBeTruthy();
       expect(stack?.querySelector('.narrative-kpi-row')).toBeTruthy();

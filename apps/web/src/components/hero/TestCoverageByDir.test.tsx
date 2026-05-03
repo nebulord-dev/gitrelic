@@ -50,9 +50,27 @@ describe('prepareCoverageByDirData', () => {
   it('sorts rows ascending by coverageRatio (worst first)', () => {
     const { rows } = prepareCoverageByDirData(
       makeReport([
-        { directory: 'a', sourceFiles: 10, testFiles: 8, coverageRatio: 0.8, hasTests: true },
-        { directory: 'b', sourceFiles: 10, testFiles: 1, coverageRatio: 0.1, hasTests: true },
-        { directory: 'c', sourceFiles: 10, testFiles: 5, coverageRatio: 0.5, hasTests: true },
+        {
+          directory: 'a',
+          sourceFiles: 10,
+          testFiles: 8,
+          coverageRatio: 0.8,
+          hasTests: true,
+        },
+        {
+          directory: 'b',
+          sourceFiles: 10,
+          testFiles: 1,
+          coverageRatio: 0.1,
+          hasTests: true,
+        },
+        {
+          directory: 'c',
+          sourceFiles: 10,
+          testFiles: 5,
+          coverageRatio: 0.5,
+          hasTests: true,
+        },
       ]),
     );
     expect(rows.map((r) => r.directory)).toEqual(['b', 'c', 'a']);
@@ -61,9 +79,27 @@ describe('prepareCoverageByDirData', () => {
   it('excludes directories with sourceFiles === 0', () => {
     const { rows } = prepareCoverageByDirData(
       makeReport([
-        { directory: 'a', sourceFiles: 10, testFiles: 5, coverageRatio: 0.5, hasTests: true },
-        { directory: 'b', sourceFiles: 0, testFiles: 4, coverageRatio: 0, hasTests: true },
-        { directory: 'c', sourceFiles: 5, testFiles: 1, coverageRatio: 0.2, hasTests: true },
+        {
+          directory: 'a',
+          sourceFiles: 10,
+          testFiles: 5,
+          coverageRatio: 0.5,
+          hasTests: true,
+        },
+        {
+          directory: 'b',
+          sourceFiles: 0,
+          testFiles: 4,
+          coverageRatio: 0,
+          hasTests: true,
+        },
+        {
+          directory: 'c',
+          sourceFiles: 5,
+          testFiles: 1,
+          coverageRatio: 0.2,
+          hasTests: true,
+        },
       ]),
     );
     expect(rows.map((r) => r.directory)).toEqual(['c', 'a']);
@@ -80,9 +116,27 @@ describe('prepareCoverageByDirData', () => {
           coverageRatio: 0.1,
           hasTests: true,
         },
-        { directory: 'low', sourceFiles: 10, testFiles: 3, coverageRatio: 0.3, hasTests: true },
-        { directory: 'medium', sourceFiles: 10, testFiles: 6, coverageRatio: 0.6, hasTests: true },
-        { directory: 'good', sourceFiles: 10, testFiles: 9, coverageRatio: 0.9, hasTests: true },
+        {
+          directory: 'low',
+          sourceFiles: 10,
+          testFiles: 3,
+          coverageRatio: 0.3,
+          hasTests: true,
+        },
+        {
+          directory: 'medium',
+          sourceFiles: 10,
+          testFiles: 6,
+          coverageRatio: 0.6,
+          hasTests: true,
+        },
+        {
+          directory: 'good',
+          sourceFiles: 10,
+          testFiles: 9,
+          coverageRatio: 0.9,
+          hasTests: true,
+        },
       ]),
     );
     const byDir = Object.fromEntries(rows.map((r) => [r.directory, r.tier]));
@@ -115,8 +169,20 @@ describe('prepareCoverageByDirData', () => {
 
   it('does not mutate the input directories array', () => {
     const original: DirectoryFixture[] = [
-      { directory: 'a', sourceFiles: 10, testFiles: 8, coverageRatio: 0.8, hasTests: true },
-      { directory: 'b', sourceFiles: 10, testFiles: 1, coverageRatio: 0.1, hasTests: true },
+      {
+        directory: 'a',
+        sourceFiles: 10,
+        testFiles: 8,
+        coverageRatio: 0.8,
+        hasTests: true,
+      },
+      {
+        directory: 'b',
+        sourceFiles: 10,
+        testFiles: 1,
+        coverageRatio: 0.1,
+        hasTests: true,
+      },
     ];
     const before = original.map((d) => d.directory);
     prepareCoverageByDirData(makeReport(original));

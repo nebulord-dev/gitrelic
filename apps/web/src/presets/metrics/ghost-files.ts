@@ -33,7 +33,8 @@ export function ghostFilesMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'True Ghosts (>365d)',
       value: String(trueGhosts),
-      color: trueGhosts > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
+      color:
+        trueGhosts > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
     },
     {
       label: 'Fading (180–365d)',
@@ -43,7 +44,8 @@ export function ghostFilesMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Ghost LOC',
       value: fmt(ghostLoc),
-      color: ghostLoc > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+      color:
+        ghostLoc > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
     },
     {
       label: 'Max Inactive Days',

@@ -29,10 +29,15 @@ const MIN_RIGHT_PAD = 90;
 const MIN_BAR_LANE = 120;
 
 function truncateToFit(label: string, maxChars: number): string {
-  return label.length > maxChars ? `${label.slice(0, Math.max(1, maxChars - 1))}…` : label;
+  return label.length > maxChars
+    ? `${label.slice(0, Math.max(1, maxChars - 1))}…`
+    : label;
 }
 
-export function prepareChurnBarData(report: GitrelicReport, topN = 100): ChurnBarRow[] {
+export function prepareChurnBarData(
+  report: GitrelicReport,
+  topN = 100,
+): ChurnBarRow[] {
   const files = report.churn?.files ?? [];
   const sorted = [...files].sort((a, b) => {
     const diff = b.commitCount - a.commitCount;
@@ -60,11 +65,19 @@ interface ChurnBarProps {
   onSelectFile: (file: string) => void;
 }
 
-export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) {
+export function ChurnBar({
+  report,
+  selectedFile,
+  onSelectFile,
+}: ChurnBarProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(800);
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; row: ChurnBarRow } | null>(null);
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    row: ChurnBarRow;
+  } | null>(null);
 
   const rows = useMemo(() => prepareChurnBarData(report), [report]);
   const totalChurnedFiles = report.churn?.files.length ?? 0;
@@ -87,7 +100,10 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
     const viewTop = scrollRef.current.scrollTop;
     const viewBottom = viewTop + scrollRef.current.clientHeight;
     if (rowTop < viewTop || rowBottom > viewBottom) {
-      scrollRef.current.scrollTo({ top: Math.max(0, rowTop - 40), behavior: 'smooth' });
+      scrollRef.current.scrollTo({
+        top: Math.max(0, rowTop - 40),
+        behavior: 'smooth',
+      });
     }
   }, [selectedFile, rows]);
 
@@ -112,10 +128,19 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
     return len > max ? len : max;
   }, 0);
   const desiredRightPad = longestLabelChars * CHAR_PX + LABEL_PAD_PX;
-  const maxAllowedRightPad = Math.max(MIN_RIGHT_PAD, width - LABEL_WIDTH - MIN_BAR_LANE);
-  const rightPad = Math.max(MIN_RIGHT_PAD, Math.min(desiredRightPad, maxAllowedRightPad));
+  const maxAllowedRightPad = Math.max(
+    MIN_RIGHT_PAD,
+    width - LABEL_WIDTH - MIN_BAR_LANE,
+  );
+  const rightPad = Math.max(
+    MIN_RIGHT_PAD,
+    Math.min(desiredRightPad, maxAllowedRightPad),
+  );
   const available = Math.max(MIN_BAR_LANE, width - LABEL_WIDTH - rightPad);
-  const labelMaxChars = Math.max(8, Math.floor((rightPad - LABEL_PAD_PX) / CHAR_PX));
+  const labelMaxChars = Math.max(
+    8,
+    Math.floor((rightPad - LABEL_PAD_PX) / CHAR_PX),
+  );
   const basenameMaxChars = Math.max(8, Math.floor((LABEL_WIDTH - 8) / CHAR_PX));
   const chartHeight = TOP_PAD + rows.length * ROW_HEIGHT + BOTTOM_PAD;
   const truncated = totalChurnedFiles > rows.length;
@@ -130,7 +155,10 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
           {rows.map((row, i) => {
             const y = TOP_PAD + i * ROW_HEIGHT;
             const barTop = y + (ROW_HEIGHT - BAR_HEIGHT) / 2;
-            const barWidth = Math.max(2, (row.commitCount / maxCommits) * available);
+            const barWidth = Math.max(
+              2,
+              (row.commitCount / maxCommits) * available,
+            );
             const isSelected = selectedFile === row.file;
             const color = fillFor(row.category, isSelected ? 0.9 : 0.7);
             const trailingLabel = truncateToFit(
@@ -146,14 +174,22 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
                 onMouseEnter={(evt) => {
                   const rect = containerRef.current?.getBoundingClientRect();
                   if (!rect) return;
-                  setTooltip({ x: evt.clientX - rect.left, y: evt.clientY - rect.top, row });
+                  setTooltip({
+                    x: evt.clientX - rect.left,
+                    y: evt.clientY - rect.top,
+                    row,
+                  });
                 }}
                 onMouseMove={(evt) => {
                   const rect = containerRef.current?.getBoundingClientRect();
                   if (!rect) return;
                   setTooltip((prev) =>
                     prev
-                      ? { ...prev, x: evt.clientX - rect.left, y: evt.clientY - rect.top }
+                      ? {
+                          ...prev,
+                          x: evt.clientX - rect.left,
+                          y: evt.clientY - rect.top,
+                        }
                       : prev,
                   );
                 }}
@@ -166,7 +202,11 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
                   dominantBaseline="middle"
                   fontSize={10}
                   fontFamily="var(--font-mono)"
-                  fill={isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)'}
+                  fill={
+                    isSelected
+                      ? 'var(--accent-primary)'
+                      : 'var(--text-secondary)'
+                  }
                 >
                   {truncateToFit(row.name, basenameMaxChars)}
                 </text>
@@ -220,7 +260,10 @@ export function ChurnBar({ report, selectedFile, onSelectFile }: ChurnBarProps) 
             {tooltip.row.commitCount.toLocaleString()} commit
             {tooltip.row.commitCount === 1 ? '' : 's'}
           </div>
-          <div className="mt-0.5 capitalize" style={{ color: fillFor(tooltip.row.category, 1) }}>
+          <div
+            className="mt-0.5 capitalize"
+            style={{ color: fillFor(tooltip.row.category, 1) }}
+          >
             {tooltip.row.category}
           </div>
           <div className="text-text-tertiary text-[9px] mt-px">

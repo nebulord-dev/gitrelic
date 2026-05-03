@@ -15,14 +15,21 @@ import { App } from './components/App.js';
 import type { GitrelicReport } from '@gitrelic/core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const pkg = JSON.parse(readFileSync(path.resolve(__dirname, '../package.json'), 'utf-8'));
+const pkg = JSON.parse(
+  readFileSync(path.resolve(__dirname, '../package.json'), 'utf-8'),
+);
 
 program
   .name('gitrelic')
-  .description('Git archaeology — understand the history and health of your codebase')
+  .description(
+    'Git archaeology — understand the history and health of your codebase',
+  )
   .version(pkg.version, '-v, --version')
   .option('-p, --path <path>', 'Path to the git repository', process.cwd())
-  .option('-b, --branch <branch>', 'Branch to analyze (default: current branch)')
+  .option(
+    '-b, --branch <branch>',
+    'Branch to analyze (default: current branch)',
+  )
   .option(
     '-s, --since <date>',
     'Only analyze commits since this date (default: "12 months ago", use "all" for full history)',
@@ -184,7 +191,9 @@ async function serveWebDashboard(report: GitrelicReport): Promise<number> {
       .map((seg) => path.basename(seg));
     const safeRel = safeSegments.join('/');
     const candidate =
-      safeRel === '' ? path.join(webDist, 'index.html') : path.join(webDist, safeRel);
+      safeRel === ''
+        ? path.join(webDist, 'index.html')
+        : path.join(webDist, safeRel);
 
     // Belt-and-braces boundary check. With the explicit rejections above this
     // should be unreachable, but keeping it protects against any future change

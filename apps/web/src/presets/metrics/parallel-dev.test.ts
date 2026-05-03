@@ -60,7 +60,9 @@ describe('parallelDevMetrics', () => {
       makeFile({ file: 'b.ts', peakAuthors: 2 }),
     ];
     const hotFiles = [makeFile({ file: 'a.ts', parallelScore: 82 })];
-    const metrics = parallelDevMetrics(makeReport({ files, hotFiles, totalParallelFiles: 2 }));
+    const metrics = parallelDevMetrics(
+      makeReport({ files, hotFiles, totalParallelFiles: 2 }),
+    );
     expect(metrics[0].value).toBe('2');
     expect(metrics[1].value).toBe('1');
     expect(metrics[2].value).toBe('82');

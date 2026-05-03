@@ -68,13 +68,19 @@ export function findCursedFiles(
     // Bus factor risk
     if (b) {
       if (b.risk === 'critical') {
-        reasons.push(`Single author owns ${b.dominantAuthorPercent}% of changes`);
+        reasons.push(
+          `Single author owns ${b.dominantAuthorPercent}% of changes`,
+        );
         curseScore += 30;
       } else if (b.risk === 'high') {
-        reasons.push(`Heavily concentrated ownership (${b.dominantAuthorPercent}% one author)`);
+        reasons.push(
+          `Heavily concentrated ownership (${b.dominantAuthorPercent}% one author)`,
+        );
         curseScore += 15;
       } else if (b.uniqueAuthors > 5) {
-        reasons.push(`${b.uniqueAuthors} different authors — high coordination overhead`);
+        reasons.push(
+          `${b.uniqueAuthors} different authors — high coordination overhead`,
+        );
         curseScore += 10;
       }
     }
@@ -94,7 +100,9 @@ export function findCursedFiles(
         );
         curseScore += 20;
       } else if (f.shameScore >= 50) {
-        reasons.push(`High rate of fix/revert commits (shame score: ${f.shameScore}/100)`);
+        reasons.push(
+          `High rate of fix/revert commits (shame score: ${f.shameScore}/100)`,
+        );
         curseScore += 12;
       } else if (f.shameScore >= 25) {
         reasons.push('Notable pattern of shame commits');

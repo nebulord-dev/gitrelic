@@ -23,7 +23,15 @@ function makeReport(commits: RawCommit[]): GitrelicReport {
   return {
     commits,
     hotspots: {
-      files: [{ file: 'hot.ts', hotspotScore: 90, churnScore: 80, loc: 200, category: 'critical' }],
+      files: [
+        {
+          file: 'hot.ts',
+          hotspotScore: 90,
+          churnScore: 80,
+          loc: 200,
+          category: 'critical',
+        },
+      ],
       topHotspots: [],
       summary: '',
     },
@@ -67,8 +75,14 @@ function makeReport(commits: RawCommit[]): GitrelicReport {
 describe('prepareSwimlaneData', () => {
   it('returns one lane per contributor sorted by commit count', () => {
     const commits = [
-      makeCommit({ authorEmail: 'alice@dev.com', date: '2025-06-02T10:00:00Z' }),
-      makeCommit({ authorEmail: 'alice@dev.com', date: '2025-06-03T10:00:00Z' }),
+      makeCommit({
+        authorEmail: 'alice@dev.com',
+        date: '2025-06-02T10:00:00Z',
+      }),
+      makeCommit({
+        authorEmail: 'alice@dev.com',
+        date: '2025-06-03T10:00:00Z',
+      }),
       makeCommit({ authorEmail: 'bob@dev.com', date: '2025-06-02T10:00:00Z' }),
     ];
     const report = makeReport(commits);
@@ -107,7 +121,12 @@ describe('prepareSwimlaneData', () => {
   });
 
   it('identifies ghost contributors', () => {
-    const commits = [makeCommit({ authorEmail: 'ghost@dev.com', date: '2025-01-15T10:00:00Z' })];
+    const commits = [
+      makeCommit({
+        authorEmail: 'ghost@dev.com',
+        date: '2025-01-15T10:00:00Z',
+      }),
+    ];
     const report = makeReport(commits);
     report.contributors.contributors.push({
       email: 'ghost@dev.com',

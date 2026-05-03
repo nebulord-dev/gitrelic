@@ -44,7 +44,11 @@ interface BucketPoint {
   cumulative: number;
 }
 
-export function GrowthTimeline({ report, selectedFile, onSelectFile }: GrowthTimelineProps) {
+export function GrowthTimeline({
+  report,
+  selectedFile,
+  onSelectFile,
+}: GrowthTimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 800, height: 400 });
   const [hoveredSeries, setHoveredSeries] = useState<string | null>(null);
@@ -78,7 +82,10 @@ export function GrowthTimeline({ report, selectedFile, onSelectFile }: GrowthTim
 
     const sortedMonths = Array.from(monthSet).sort();
 
-    const yMax = Math.max(1, ...files.flatMap((f) => f.buckets.map((b) => Math.abs(b.cumulative))));
+    const yMax = Math.max(
+      1,
+      ...files.flatMap((f) => f.buckets.map((b) => Math.abs(b.cumulative))),
+    );
 
     return {
       months: sortedMonths,
@@ -198,7 +205,13 @@ export function GrowthTimeline({ report, selectedFile, onSelectFile }: GrowthTim
           })}
 
           {/* Y axis */}
-          <line x1={0} y1={0} x2={0} y2={plotH} stroke="var(--border-primary)" />
+          <line
+            x1={0}
+            y1={0}
+            x2={0}
+            y2={plotH}
+            stroke="var(--border-primary)"
+          />
           <text
             transform={`translate(-40,${plotH / 2}) rotate(-90)`}
             textAnchor="middle"
@@ -223,14 +236,25 @@ export function GrowthTimeline({ report, selectedFile, onSelectFile }: GrowthTim
           ))}
 
           {/* X axis */}
-          <line x1={0} y1={plotH} x2={plotW} y2={plotH} stroke="var(--border-primary)" />
+          <line
+            x1={0}
+            y1={plotH}
+            x2={plotW}
+            y2={plotH}
+            stroke="var(--border-primary)"
+          />
           {months.map((month, mi) => {
             if (mi % tickInterval !== 0) return null;
             const x = xScale(month) ?? 0;
             return (
               <g key={`xtick-${month}`} transform={`translate(${x},${plotH})`}>
                 <line y2={4} stroke="var(--border-primary)" />
-                <text y={14} textAnchor="middle" fontSize={8} fill="var(--text-tertiary)">
+                <text
+                  y={14}
+                  textAnchor="middle"
+                  fontSize={8}
+                  fill="var(--text-tertiary)"
+                >
                   {month}
                 </text>
               </g>
@@ -265,7 +289,9 @@ export function GrowthTimeline({ report, selectedFile, onSelectFile }: GrowthTim
                     x={16}
                     y={9}
                     fontSize={9}
-                    fill={isActive ? 'var(--text-primary)' : 'var(--text-secondary)'}
+                    fill={
+                      isActive ? 'var(--text-primary)' : 'var(--text-secondary)'
+                    }
                     fontFamily="monospace"
                   >
                     {truncateFilename(file.file)}
@@ -283,7 +309,9 @@ export function GrowthTimeline({ report, selectedFile, onSelectFile }: GrowthTim
           className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-80"
           style={{ left: tooltip.x + 14, top: tooltip.y - 8 }}
         >
-          <div className="font-semibold mb-0.5 break-all font-mono">{tooltip.file}</div>
+          <div className="font-semibold mb-0.5 break-all font-mono">
+            {tooltip.file}
+          </div>
           <div className="text-text-secondary">
             +{Math.round(tooltip.growthRate)} lines/mo (recent avg)
           </div>

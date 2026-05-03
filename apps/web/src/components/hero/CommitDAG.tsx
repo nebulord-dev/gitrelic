@@ -15,10 +15,18 @@ const NODE_RADIUS = 5;
 const ROW_HEIGHT = 20;
 const PADDING_LEFT = 40;
 
-export function CommitDAG({ commits, selectedFile, onSelectFile }: CommitDAGProps) {
+export function CommitDAG({
+  commits,
+  selectedFile,
+  onSelectFile,
+}: CommitDAGProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(800);
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; commit: RawCommit } | null>(null);
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    commit: RawCommit;
+  } | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -64,7 +72,11 @@ export function CommitDAG({ commits, selectedFile, onSelectFile }: CommitDAGProp
               onMouseEnter={(e) => {
                 const rect = containerRef.current?.getBoundingClientRect();
                 if (!rect) return;
-                setTooltip({ x: e.clientX - rect.left, y: e.clientY - rect.top, commit });
+                setTooltip({
+                  x: e.clientX - rect.left,
+                  y: e.clientY - rect.top,
+                  commit,
+                });
               }}
               onMouseLeave={() => setTooltip(null)}
             >
@@ -97,7 +109,9 @@ export function CommitDAG({ commits, selectedFile, onSelectFile }: CommitDAGProp
                 fontSize={10}
                 fill="var(--text-secondary)"
               >
-                {commit.message.length > 60 ? `${commit.message.slice(0, 57)}...` : commit.message}
+                {commit.message.length > 60
+                  ? `${commit.message.slice(0, 57)}...`
+                  : commit.message}
               </text>
 
               <text
@@ -122,8 +136,8 @@ export function CommitDAG({ commits, selectedFile, onSelectFile }: CommitDAGProp
           <div className="font-semibold mb-0.5">{tooltip.commit.message}</div>
           <div className="text-text-secondary">
             {tooltip.commit.authorName} · {tooltip.commit.date.slice(0, 10)} ·{' '}
-            {tooltip.commit.files.length} files · +{tooltip.commit.insertions}/ -
-            {tooltip.commit.deletions}
+            {tooltip.commit.files.length} files · +{tooltip.commit.insertions}/
+            -{tooltip.commit.deletions}
           </div>
         </div>
       )}

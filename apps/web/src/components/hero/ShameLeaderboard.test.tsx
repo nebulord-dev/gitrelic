@@ -25,7 +25,10 @@ const makeReport = (leaderboard: FileForensics[]): GitrelicReport =>
     forensics: {
       files: leaderboard,
       shameLeaderboard: leaderboard,
-      totalShameCommits: leaderboard.reduce((s, f) => s + f.shameCommitCount, 0),
+      totalShameCommits: leaderboard.reduce(
+        (s, f) => s + f.shameCommitCount,
+        0,
+      ),
       keywordTiers: { critical: 0, moderate: 0, mild: 0 },
       byMonth: [],
       summary: '',
@@ -48,7 +51,11 @@ describe('ShameLeaderboard', () => {
   it('renders an empty state when the leaderboard is empty', () => {
     const onSelect = vi.fn();
     render(
-      <ShameLeaderboard report={makeReport([])} selectedFile={null} onSelectFile={onSelect} />,
+      <ShameLeaderboard
+        report={makeReport([])}
+        selectedFile={null}
+        onSelectFile={onSelect}
+      />,
     );
     expect(screen.getByText(/No shame signals/i)).toBeTruthy();
   });
@@ -101,14 +108,18 @@ describe('prepareShameData', () => {
   });
 
   it('returns null topKeyword when dominantKeywords is empty (→ tier mild)', () => {
-    const report = makeReport([makeFile({ file: 'a.ts', dominantKeywords: [] })]);
+    const report = makeReport([
+      makeFile({ file: 'a.ts', dominantKeywords: [] }),
+    ]);
     const out = prepareShameData(report);
     expect(out[0].topKeyword).toBeNull();
     expect(out[0].tier).toBe('mild');
   });
 
   it('passes through file, score, and shameCommitCount verbatim', () => {
-    const report = makeReport([makeFile({ file: 'src/path/to/file.ts', shameScore: 42 })]);
+    const report = makeReport([
+      makeFile({ file: 'src/path/to/file.ts', shameScore: 42 }),
+    ]);
     // shameCommitCount default in makeFile is 8
     const out = prepareShameData(report);
     expect(out[0].file).toBe('src/path/to/file.ts');

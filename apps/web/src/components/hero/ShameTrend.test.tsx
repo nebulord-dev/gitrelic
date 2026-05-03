@@ -38,7 +38,9 @@ describe('ShameTrend', () => {
       forensics: { ...baseReport.forensics, byMonth: [] },
     } as GitrelicReport;
     render(<ShameTrend report={empty} />);
-    expect(screen.getByText(/No shame commits in the analysis window/)).toBeTruthy();
+    expect(
+      screen.getByText(/No shame commits in the analysis window/),
+    ).toBeTruthy();
   });
 
   it('shows a tooltip with month + tier breakdown on bar hover', () => {
