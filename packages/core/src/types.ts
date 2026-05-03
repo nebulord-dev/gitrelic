@@ -133,6 +133,8 @@ export interface ContributorReport {
   ghostContributors: Contributor[]; // committed but no activity in >6 months
   topContributor: Contributor;
   summary: string;
+  top3CommitShare: number; // % (0-100), top-3 commit-count concentration
+  newcomers90d: number; // count of contributors whose firstCommit is ≤ 90d ago
 }
 
 // ─── Cursed files ──────────────────────────────────────────────────────────────

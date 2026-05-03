@@ -1596,7 +1596,9 @@ exports[`fixture regression > contributors report is stable 1`] = `
     },
   ],
   "ghostContributors": [],
+  "newcomers90d": 0,
   "summary": "3 contributors — 3 actively committing",
+  "top3CommitShare": 100,
   "topContributor": {
     "activeDays": 13,
     "commitCount": 13,

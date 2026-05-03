@@ -117,11 +117,25 @@ export function analyzeContributors(
         ? `${contributors.length} contributors total — ${activeContributors.length} active, ${ghostContributors.length} ghosts who haven't committed in ${ghostWindowDays}+ days`
         : `${contributors.length} contributors — ${activeContributors.length} actively committing`;
 
+  const totalCommits = contributors.reduce((sum, c) => sum + c.commitCount, 0);
+  const top3Sum = contributors
+    .slice(0, 3)
+    .reduce((sum, c) => sum + c.commitCount, 0);
+  const top3CommitShare =
+    totalCommits === 0 ? 0 : (top3Sum / totalCommits) * 100;
+
+  const newcomerCutoff = now - 90 * 86_400_000;
+  const newcomers90d = contributors.filter(
+    (c) => new Date(c.firstCommit).getTime() >= newcomerCutoff,
+  ).length;
+
   return {
     contributors,
     activeContributors,
     ghostContributors,
     topContributor,
     summary,
+    top3CommitShare,
+    newcomers90d,
   };
 }
