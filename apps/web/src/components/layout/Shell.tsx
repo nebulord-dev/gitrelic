@@ -143,6 +143,7 @@ export function Shell({ report }: ShellProps) {
   const selection = useSelection();
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('default');
   const visibility = computeVisibility(layoutMode);
+  const activePreset = PRESETS[selection.activePresetId];
   const heroVizzes = selection.heroAltTabs.map((id) => ({
     id,
     label: HERO_LABELS[id],
@@ -223,8 +224,7 @@ export function Shell({ report }: ShellProps) {
               <div className="flex justify-between items-center mb-3 shrink-0">
                 {/* Style block 6: hero title — text-[13px], font-semibold, text-primary */}
                 <span className="text-[13px] font-semibold text-text-primary">
-                  {PRESETS[selection.activePresetId].heroLabel ??
-                    'Repository Map'}
+                  {activePreset.heroLabel ?? 'Repository Map'}
                 </span>
                 {/* Style block 7: alt-tab pill bar — flex, gap-0.5, surface-tertiary bg, rounded-md, p-0.5 */}
                 <div className="flex gap-0.5 bg-surface-tertiary rounded-md p-0.5">
@@ -452,6 +452,7 @@ export function Shell({ report }: ShellProps) {
               selectedFile={selection.selectedFile}
               onSelectFile={selection.selectFile}
               onApplyPreset={selection.applyPreset}
+              docsPath={activePreset.docsPath}
               fillAvailable={!visibility.hero}
             />
           )}

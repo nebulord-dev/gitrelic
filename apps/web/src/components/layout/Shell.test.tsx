@@ -170,3 +170,28 @@ describe('Shell sidebar → preset wiring', () => {
     expect(getByText('Ownership')).toBeDefined();
   });
 });
+
+describe('docs link in bottom panel', () => {
+  it('renders Docs ↗ link when active preset has docsPath', () => {
+    const { container, getAllByText } = render(
+      <Shell report={makeMinimalReport()} />,
+    );
+    // Click the Churn sidebar item to switch the active preset to one with docsPath.
+    // Use getAllByText[0] because "Churn" can appear in both the sidebar and bottom-panel tabs.
+    fireEvent.click(getAllByText('Churn')[0]);
+    const link = container.querySelector('a[href*="analyzers/churn"]');
+    expect(link).not.toBeNull();
+    expect(link?.getAttribute('target')).toBe('_blank');
+    expect(link?.getAttribute('rel')).toBe('noopener noreferrer');
+    expect(link?.textContent).toContain('Docs');
+  });
+
+  it('does not render Docs link for dashboard-tier presets', () => {
+    const { container } = render(<Shell report={makeMinimalReport()} />);
+    // Default preset is 'overview' (tier=dashboard, no docsPath).
+    const link = container.querySelector(
+      'a[href*="nebulord-dev.github.io/gitrelic"]',
+    );
+    expect(link).toBeNull();
+  });
+});
