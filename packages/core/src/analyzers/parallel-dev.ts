@@ -170,6 +170,12 @@ function buildNarrative(
   return `${file} had occasional parallel work — minor coordination overhead.`;
 }
 
+interface MonthAccumulator {
+  parallelEvents: number;
+  files: Set<string>;
+  totalAuthors: number;
+}
+
 export function analyzeParallelDev(
   commits: RawCommit[],
   trackedFiles: string[],
@@ -205,11 +211,6 @@ export function analyzeParallelDev(
   // Derive from the week matrix: for each (file, week) parallel event,
   // bucket by the calendar month of weekStart (YYYY-MM).
   // Only count weeks that actually had parallel activity (2+ authors).
-  interface MonthAccumulator {
-    parallelEvents: number;
-    files: Set<string>;
-    totalAuthors: number;
-  }
   const monthMap = new Map<string, MonthAccumulator>();
 
   for (const [file, weeks] of matrix) {

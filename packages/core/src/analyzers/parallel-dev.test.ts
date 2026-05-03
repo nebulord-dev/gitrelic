@@ -478,6 +478,10 @@ describe('tierMix aggregate', () => {
       result.tierMix.high +
       result.tierMix.critical;
     expect(total).toBe(result.files.length);
+    expect(result.tierMix.critical).toBe(1);
+    expect(result.tierMix.high).toBe(0);
+    expect(result.tierMix.medium).toBe(0);
+    expect(result.tierMix.low).toBe(0);
   });
 
   it('returns all-zero tierMix when no files are scored', () => {
@@ -605,6 +609,9 @@ describe('byMonth aggregate', () => {
     ];
     const result = analyzeParallelDev(commits, ['a.ts']);
     const months = result.byMonth.map((b) => b.month);
+    expect(result.byMonth).toHaveLength(2);
+    expect(months).toContain('2025-06');
+    expect(months).toContain('2025-07');
     const sorted = [...months].sort();
     expect(months).toEqual(sorted);
   });

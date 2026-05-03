@@ -212,7 +212,7 @@ export interface ParallelDevReport {
   files: FileParallelDev[];
   hotFiles: FileParallelDev[]; // top 10 by parallelScore
   totalParallelFiles: number; // files with any parallel activity
-  highParallel: number; // count of files with parallelScore >= 70
+  highParallel: number; // files at or above the 70 polish-pattern threshold (spans high tier 70–74 + critical tier 75+)
   tierMix: { low: number; medium: number; high: number; critical: number }; // 0-24 / 25-49 / 50-74 / 75-100
   byMonth: ParallelByMonth[]; // repo-aggregate monthly parallel activity
   summary: string;
