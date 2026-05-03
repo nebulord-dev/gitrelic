@@ -81,7 +81,7 @@ export function analyzeCommitTiming(
 
   const trackedSet = new Set(trackedFiles);
 
-  // Per-file accumulators (existing)
+  // Per-file accumulators
   const fileData = new Map<
     string,
     {
@@ -101,7 +101,7 @@ export function analyzeCommitTiming(
     new Array<number>(24).fill(0),
   );
 
-  // Per-author accumulators (NEW)
+  // Per-author accumulators
   const authorData = new Map<
     string,
     {
@@ -112,7 +112,7 @@ export function analyzeCommitTiming(
     }
   >();
 
-  // Per-month accumulators (NEW)
+  // Per-month accumulators
   const monthData = new Map<
     string,
     { weekendLateNight: number; singleCriterion: number; healthy: number }
@@ -157,7 +157,7 @@ export function analyzeCommitTiming(
     else if (late || wknd) mData.singleCriterion++;
     else mData.healthy++;
 
-    // Per-file (existing)
+    // Per-file
     for (const file of commit.files) {
       if (!trackedSet.has(file)) continue;
 
@@ -179,7 +179,7 @@ export function analyzeCommitTiming(
     }
   }
 
-  // Build per-file profiles, excluding files with < 3 commits (existing floor)
+  // Build per-file profiles, excluding files with < 3 commits
   const files: FileTimingProfile[] = [];
   for (const [file, data] of fileData) {
     if (data.totalCommits < 3) continue;

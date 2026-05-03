@@ -224,7 +224,7 @@ describe('byMonth', () => {
 });
 
 describe('authorStress', () => {
-  function lateNightAt(date: string, email: string, name: string): RawCommit {
+  function commitAt(date: string, email: string, name: string): RawCommit {
     return makeCommit({ authorEmail: email, authorName: name, date });
   }
 
@@ -233,14 +233,12 @@ describe('authorStress', () => {
     // Alice: 5 commits, all late-night → makes the floor
     for (let i = 0; i < 5; i++) {
       commits.push(
-        lateNightAt(`2026-03-${10 + i}T03:00:00Z`, 'alice@x.com', 'Alice'),
+        commitAt(`2026-03-${10 + i}T03:00:00Z`, 'alice@x.com', 'Alice'),
       );
     }
     // Bob: 4 commits, all late-night → below floor, dropped
     for (let i = 0; i < 4; i++) {
-      commits.push(
-        lateNightAt(`2026-03-${10 + i}T03:00:00Z`, 'bob@x.com', 'Bob'),
-      );
+      commits.push(commitAt(`2026-03-${10 + i}T03:00:00Z`, 'bob@x.com', 'Bob'));
     }
     const report = analyzeCommitTiming(commits, []);
     const emails = report.authorStress.map((a) => a.email);
@@ -263,7 +261,7 @@ describe('authorStress', () => {
       '2026-03-09', // Mon
     ];
     for (const d of lateNightDates) {
-      commits.push(lateNightAt(`${d}T03:00:00Z`, 'alice@x.com', 'Alice'));
+      commits.push(commitAt(`${d}T03:00:00Z`, 'alice@x.com', 'Alice'));
     }
     const healthyDates = [
       '2026-03-10', // Tue
@@ -272,7 +270,7 @@ describe('authorStress', () => {
       '2026-03-13', // Fri
     ];
     for (const d of healthyDates) {
-      commits.push(lateNightAt(`${d}T14:00:00Z`, 'alice@x.com', 'Alice'));
+      commits.push(commitAt(`${d}T14:00:00Z`, 'alice@x.com', 'Alice'));
     }
     const report = analyzeCommitTiming(commits, []);
     const alice = report.authorStress.find((a) => a.email === 'alice@x.com');
@@ -287,14 +285,12 @@ describe('authorStress', () => {
     // Alice — high stress
     for (let i = 0; i < 5; i++) {
       commits.push(
-        lateNightAt(`2026-03-${10 + i}T03:00:00Z`, 'alice@x.com', 'Alice'),
+        commitAt(`2026-03-${10 + i}T03:00:00Z`, 'alice@x.com', 'Alice'),
       );
     }
     // Bob — low stress (all healthy hours)
     for (let i = 0; i < 5; i++) {
-      commits.push(
-        lateNightAt(`2026-03-${10 + i}T14:00:00Z`, 'bob@x.com', 'Bob'),
-      );
+      commits.push(commitAt(`2026-03-${10 + i}T14:00:00Z`, 'bob@x.com', 'Bob'));
     }
     const report = analyzeCommitTiming(commits, []);
     expect(report.authorStress[0].email).toBe('alice@x.com');
