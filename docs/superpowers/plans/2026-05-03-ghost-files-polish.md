@@ -546,6 +546,8 @@ git commit -m "chore(core): regenerate fixture-regression snapshot for ghost-fil
 - Create: `apps/web/src/utils/ghostFilesByDirectory.ts`
 - Create: `apps/web/src/utils/ghostFilesByDirectory.test.ts`
 
+> Naming note: the exported aggregator function is `aggregateGhostFilesByDirectory` (mirrors `aggregateBlastByDirectory` from `apps/web/src/utils/blastByDirectory.ts`). The spec's pseudo-snippet referenced a bare `ghostFilesByDirectory()` — typo; this plan uses the consistent `aggregate*` prefix.
+
 - [ ] **Step 3.1: Write failing test for `ghostOwners.ts`**
 
 Create `apps/web/src/utils/ghostOwners.test.ts`:
@@ -1740,6 +1742,13 @@ export function GhostFilesTab({ report, onApplyPreset }: GhostFilesTabProps) {
 
 - [ ] **Step 6.5: Wire `onApplyPreset` through `BottomPanel.tsx`**
 
+First confirm the current `GhostFilesTab` mount shape:
+
+```bash
+cd /Users/tracericochet/Desktop/nebulord/gitrelic/.worktrees/relic-318-polish-ghost-files
+grep -n "GhostFilesTab" apps/web/src/components/layout/BottomPanel.tsx
+```
+
 Open `apps/web/src/components/layout/BottomPanel.tsx`. Find the case that mounts `GhostFilesTab` and update it to pass `onApplyPreset`. Mirror how `KnowledgeSilosTab` / `ChurnTab` / `BlastRadiusTab` receive it.
 
 If the existing `GhostFilesTab` invocation is `<GhostFilesTab report={report} onSelectFile={onSelectFile} />`, change to `<GhostFilesTab report={report} onApplyPreset={onApplyPreset} />`. The `onSelectFile` callback is no longer needed because the new tab doesn't render a clickable file list.
@@ -1968,7 +1977,7 @@ Find where the `'ownership-sunburst-ghosts'` viz id is wired to the `OwnershipSu
 />
 ```
 
-For other consumers (`'ownership-sunburst'` mode='all', `'ownership-sunburst-single-author'` for Knowledge Silos), supply a sensible default caption per consumer. Don't leave `caption` undefined for KS in this PR — give it a placeholder caption like `"inner ring = author · outer ring = silo'd files (size = LOC, color = risk tier) · click to drill in"`. Knowledge Silos can refine its caption text in its own polish ticket.
+For other consumers (`'ownership-sunburst'` mode='all', `'ownership-sunburst-silos'` for Knowledge Silos — confirm exact viz id with `grep -n "ownership-sunburst" apps/web/src/components/layout/Shell.tsx`), supply a sensible default caption per consumer. Don't leave `caption` undefined for KS in this PR — give it a placeholder caption like `"inner ring = author · outer ring = silo'd files (size = LOC, color = risk tier) · click to drill in"`. Knowledge Silos can refine its caption text in its own polish ticket.
 
 - [ ] **Step 8.3: Run registry test (DoD enforcement)**
 
