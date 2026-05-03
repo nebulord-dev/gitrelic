@@ -1,3 +1,10 @@
+# [0.40.0](https://github.com/nebulord-dev/gitrelic/compare/v0.39.0...v0.40.0) (2026-05-03)
+
+
+### Features
+
+* **web:** parallel-dev polish (RELIC-309) ([#67](https://github.com/nebulord-dev/gitrelic/issues/67)) ([76d12b8](https://github.com/nebulord-dev/gitrelic/commit/76d12b8b72ac59cee844ba041257194d910fe4f2)), closes [hi#parallel](https://github.com/hi/issues/parallel) [hi#parallel](https://github.com/hi/issues/parallel) [hi#parallel](https://github.com/hi/issues/parallel)
+
 # [0.39.0](https://github.com/nebulord-dev/gitrelic/compare/v0.38.0...v0.39.0) (2026-05-02)
 
 
