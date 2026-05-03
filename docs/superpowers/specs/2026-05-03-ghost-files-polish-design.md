@@ -123,7 +123,7 @@ The single-hero choice mirrors Knowledge Silos's shape (also single-hero) and fo
 Three improvements applied to the shared component:
 
 1. **Display-name labels.** Replace `email.split('@')[0]` (lines 80, 329) with a contributor-name lookup against `report.contributors.contributors`, using `contrib.name` verbatim and falling back to email when name is empty.
-2. **Hero caption.** Add an optional `caption?: string` prop. The component wraps its existing SVG in `<div className="w-full h-full flex flex-col">` with a `<HeroCaption primary={caption} />` sibling beneath when the prop is supplied. The Ghost Files preset wires:
+2. **Hero caption.** Add an optional `caption?: string` prop. The component wraps its existing SVG in `<div className="w-full h-full flex flex-col">` with a `<HeroCaption primary={caption} />` sibling beneath when the prop is supplied. (`HeroCaption` already exists at `apps/web/src/components/shared/HeroCaption.tsx` — same primitive used by `ChurnBar`, `OwnershipBar`, `ContributorSwimlanes`, `RewriteDivergingBar`, etc.) The Ghost Files preset wires:
    ```
    inner ring = ghost author · outer ring = orphaned files (size = LOC, color = inactivity tier) · click to drill in
    ```
@@ -244,7 +244,7 @@ The retune mirrors the precedent set by Rewrite Ratio (`Files ≥70`), Parallel 
 },
 ```
 
-The `docsPath` field is what causes the right-anchored `Docs ↗` link to render in the bottom-panel tab bar (per the per-analyzer docs-links feature shipped in #69 / RELIC-XXX). The link is conditional on `docsPath` being declared on the preset; `registry.test.ts` enforces that if `docsPath` is set, the docs file must exist on disk — so the implementation order below is gated.
+The `docsPath` field is what causes the right-anchored `Docs ↗` link to render in the bottom-panel tab bar (per the per-analyzer docs-links feature shipped in #69). The link is conditional on `docsPath` being declared on the preset; `registry.test.ts` enforces that if `docsPath` is set, the docs file must exist on disk — so the implementation order below is gated.
 
 **`apps/web/src/components/layout/BottomPanel.tsx`:** wire `onApplyPreset` through to `GhostFilesTab` (mirror how `ChurnTab` / `ShameTab` / `KnowledgeSilosTab` receive it).
 
@@ -320,7 +320,7 @@ Old report JSONs without the new `ghostOwners` / `ghostLoc` / `tierMix` fields l
 2. **Snapshot diff verification** — run `pnpm test:core`, regenerate `fixture-regression.test.ts.snap`, sanity-check the diff is pure-shrink + addition (ghost-files slice shrinks; cursed-files curse-scores shift downward where ghost contribution shrinks).
 3. **Frontend utils** — `ghostOwners.ts` + `ghostFilesByDirectory.ts` + their tests.
 4. **Metrics composer** — `presets/metrics/ghost-files.ts` rewrite + composer test.
-5. **Hero polish** — `OwnershipSunburst` (display-name lookup, new `caption?` prop with `<HeroCaption>` integration, legend cap 8 → 6). Verify against Knowledge Silos visually (no behavior regression on KS's hero — KS's hero gets the display-name win silently and a default caption string).
+5. **Hero polish** — `OwnershipSunburst` (display-name lookup, new `caption?` prop with `<HeroCaption>` integration, legend cap 8 → 6). Hard gate: re-run any existing `OwnershipSunburst` / `KnowledgeSilosTab` render or snapshot tests (`KnowledgeSilosTab.test.tsx`, `Shell.test.tsx`) — these must continue to pass since the component is shared. Visual eyeball against Knowledge Silos as a secondary check, not the gate.
 6. **Tab rewrite** — `GhostFilesTab.tsx` (NarrativeKPI + extras + see-also), `BottomPanel.tsx` wiring of `onApplyPreset`, tab test, `normalizeReport.ts` per-field defaults.
 7. **Docs page** — `apps/docs/analyzers/ghost-files.md` + sidebar entry + `ignoreDeadLinks` cleanup.
 8. **Registry update** — drop both alts from `ghost-files.altTabs`, supply Ghost Files's caption string to the sunburst wiring, **set `docsPath: 'analyzers/ghost-files'`** (this is what surfaces the right-anchored `Docs ↗` link in the bottom-panel tab bar; `registry.test.ts` fails CI if step 7 hasn't landed).
