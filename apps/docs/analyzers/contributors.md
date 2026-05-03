@@ -16,7 +16,7 @@ The analyzer answers three questions:
 The framing is deliberately social and team-visibility oriented rather than purely forensic. A manager reviewing sprint load, a tech lead assessing knowledge spread, and a developer onboarding to a new codebase all use these surfaces differently — but the underlying numbers serve all three.
 
 ::: tip Screenshot
-**TODO:** Capture the Contributors analyzer view (sidebar selection, `Swimlanes` hero default tab, `Bubble` alt tab, bottom-panel roster table, right-side Inspector populated with a contributor profile). Save to `apps/docs/public/images/analyzers/contributors-overview.png`, then replace this callout with `![Contributors analyzer view](/images/analyzers/contributors-overview.png)`.
+**TODO:** Capture the Contributors analyzer view (sidebar selection, `Swimlanes` hero default tab, `Ownership` alt tab, bottom-panel roster table, right-side Inspector populated with a contributor profile). Save to `apps/docs/public/images/analyzers/contributors-overview.png`, then replace this callout with `![Contributors analyzer view](/images/analyzers/contributors-overview.png)`.
 :::
 
 ## Quick read
@@ -24,7 +24,7 @@ The framing is deliberately social and team-visibility oriented rather than pure
 If you only have ten seconds:
 
 - **Top of the screen** (`Swimlanes` hero, default tab) — per-author commit timeline, one lane per contributor, with activity density rendered as colored bars. Gaps in a lane mean no commits that week; color intensity reflects commit volume.
-- **Top of the screen** (`Bubble` alt tab) — per-directory ownership bubble chart, sized by commit count and colored by author. Shows where in the codebase each author concentrates their work.
+- **Top of the screen** (`Ownership` alt tab) — per-directory ownership bubble chart, sized by commit count and colored by author. Shows where in the codebase each author concentrates their work.
 - **Bottom panel** (roster table) — the full contributor list sortable by commits, files owned, lines changed, and last active date. Ghost authors are tagged with a badge; focus areas appear as a compact directory list per row.
 - **Right-side Inspector** — click any contributor row to see their full profile (commit count, files owned, lines changed, first/last commit, focus areas).
 
@@ -63,11 +63,12 @@ Count of contributors whose last commit falls within the active window (see cuto
 
 | Value | Tier | Color |
 |---|---|---|
+| 0 | Critical | Red |
 | 1 | Critical | Red |
 | 2–5 | Warning | Amber |
 | 6+ | Healthy | Green |
 
-A single-author project is flagged critical because the entire commit bus has one driver. Five or fewer active contributors is a warning because the knowledge surface is narrow enough that two or three simultaneous departures could stall delivery.
+Zero active contributors means no one has committed within the active window — typically a stale repository or an analysis window that excluded the recent contributor base. A single-author project is also flagged critical because the entire commit bus has one driver. Five or fewer active contributors is a warning because the knowledge surface is narrow enough that two or three simultaneous departures could stall delivery.
 
 ### Top-3 Share
 
@@ -91,7 +92,7 @@ Count of contributors who are neither active nor in the intermediate zone — th
 | Ghost ratio < 30% | Warning | Amber |
 | Ghost ratio ≥ 30% | Critical | Red |
 
-The ratio is `ghostCount / totalContributors`. A small absolute ghost count on a large team is normal turnover; the same absolute count on a small team signals proportionally more dormant ownership and warrants cross-referencing with [Ghost Files](/analyzers/ghost-files).
+The ratio is `ghostCount / contributors.length` — ghost count divided by **total all-time contributors** (active + intermediate + ghost). A small absolute ghost count on a large team is normal turnover; the same absolute count on a small team signals proportionally more dormant ownership and warrants cross-referencing with [Ghost Files](/analyzers/ghost-files).
 
 ### Newcomers (90d)
 
@@ -116,7 +117,7 @@ The swimlanes answer **"who was active when, and are there collaboration windows
 - **Staggered, non-overlapping lanes** — contributors active in distinct time periods. Common in projects with high turnover or sequential handoffs. The ghost KPI typically flags several dormant authors in this shape.
 - **One dense lane + sparse others** — a single author drives most of the history with occasional contributions from others. Top-3 Share will be high; Bus Factor will be critical on most files.
 
-### The hero — `Bubble` (alt tab)
+### The hero — `Ownership` (alt tab)
 
 A bubble chart where each bubble represents a (contributor, directory) pairing. Bubble size encodes commit count in that directory; color encodes the contributor. Bubbles cluster by directory on the x-axis, allowing side-by-side comparison of how much each author invests in a given part of the codebase.
 
