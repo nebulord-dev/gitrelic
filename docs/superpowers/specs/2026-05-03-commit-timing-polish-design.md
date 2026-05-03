@@ -120,7 +120,7 @@ Bars sum cleanly to total commits in that month. Disjoint partition is the most 
 | **Big number** | `report.commitTiming.highStress` — count of files with `stressScore ≥ 70` |
 | **Tier badge** | `0 = Healthy` · `1–4 = Moderate` · `5+ = High Stress` (mirrors parallel-dev's `MODERATE_THRESHOLD = 5` tier band) |
 | **Metric label** | `FILES ≥70 STRESS` |
-| **Finding** | Top-3 **stressed contributors** (people-pivot, Bus Factor pattern). Each row: `<full git author name [+ disambiguator]> · Late: N% · Weekend: K% · M commits`. Sourced from new `authorStress` aggregate, sorted desc by per-author `stressScore`, with `MIN_AUTHOR_COMMITS = 5` floor. |
+| **Finding** | Top-3 **stressed contributors** (people-pivot, Bus Factor pattern). Each row: `<author display name> · Late: N% · Weekend: K% · M commits`. The display name carries any disambiguator suffix already (per `authorStress[].name` shape below) — the renderer just prints `name`. Sourced from new `authorStress` aggregate, sorted desc by per-author `stressScore`, with `MIN_AUTHOR_COMMITS = 5` floor. |
 | **Subline** | `<X>% late-night · <Y>% weekend across <N> commits` — repo aggregate. Lifts the existing `summary` text into the structured layout. |
 | **Extras** | "Where they live" — top-5 directory rollup of high-stress files. Aggregator at `apps/web/src/utils/commitTimingByDirectory.ts`. Hidden when empty. |
 | **See also** | `Shame` · `Hotspots`. Sticky footer. |
@@ -137,7 +137,7 @@ The Inspector still surfaces per-file timing detail on row click (or via punch-c
 
 Authors are rendered by **full git author name** (`%an`), not first-name-only — first-name-only is too ambiguous in active OSS repos (React has both `Sebastian Markbåge` and `Sebastian "Sebbie" Silbermann`).
 
-**Collision rule.** If two distinct authors (different lowercased emails) share an identical full-name string, append the email's local-part as a disambiguator: `Alex Lee (alex)` / `Alex Lee (alee)`. The disambiguation pass runs once after aggregation; common case stays clean.
+**Collision rule.** If **two or more** distinct authors (different lowercased emails) share an identical full-name string, append the email's local-part as a disambiguator to **every member of the colliding group**: `Alex Lee (alex)` / `Alex Lee (alee)` / `Alex Lee (a.lee)`. The disambiguation pass runs once after aggregation by grouping `authorStress[]` by `name`, identifying any group with `>1` distinct emails, and rewriting all entries in that group. Common case (no collisions) stays clean.
 
 This rule applies portfolio-wide per `feedback_author_display_names.md` and is a small follow-up candidate for Bus Factor's existing top-3 dominant-owners surface.
 
@@ -202,11 +202,12 @@ export interface CommitTimingReport {
 - One additional repo-wide accumulator: `repoHourDayMatrix: number[][]` (7×24, zero-initialized). Populate with `repoHourDayMatrix[day][hour]++` per commit, alongside the existing `repoLateNight` / `repoWeekend` counters.
 - Track per-author accumulators in the same loop: `Map<emailLower, { name, totalCommits, lateNightCommits, weekendCommits }>`. Email is the stable id (lowercased); name is the most recently-seen `%an` value for that email — last write wins is fine since names are usually stable per email.
 - Track per-month buckets in the same loop: `Map<isoMonth, { weekendLateNight, singleCriterion, healthy }>`. Compute disjoint bucket from `(late, wknd)` predicates: both → `weekendLateNight`; exactly one → `singleCriterion`; neither → `healthy`.
+  - **ISO month must be derived from local time, not the raw date string.** Reuse / extend the existing `parseLocalTime()` helper in `commit-timing.ts` to also yield year + month. A naive `commit.date.slice(0, 7)` would use the UTC date prefix and bucket commits at month-boundary timezone offsets (e.g. `2026-01-31T23:00:00-05:00` → local `2026-02-01 04:00`) into the wrong month. The same offset arithmetic that `parseLocalTime` does for hour-of-day must apply to month derivation.
 - After the main loop:
-  - Compute `tierMix` by bucketing `files[].stressScore` into 0–24 / 25–49 / 50–74 / 75+
+  - Compute `tierMix` by bucketing `files[].stressScore` into 0–24 / 25–49 / 50–74 / 75+. **Tier mix is computed from `files[]` (post per-file `< 3` floor) — it has no relationship to the per-author `MIN_AUTHOR_COMMITS` floor.**
   - Compute `highStress = files.filter(f => f.stressScore >= 70).length`
-  - Compute `authorStress[]`: derive percentages, compute per-author `stressScore` with the same formula as per-file, filter `totalCommits >= MIN_AUTHOR_COMMITS (5)`, sort desc by `stressScore` then alphabetical by name
-  - Run name-collision disambiguation: group by `name`, if any group has >1 distinct emails, append `(local-part)` to each member's name
+  - Compute `authorStress[]`: derive percentages, compute per-author `stressScore` with the same formula as per-file, then **filter `totalCommits >= MIN_AUTHOR_COMMITS (5)` — sub-floor authors are dropped from the report shape entirely, not retained for downstream filtering**. Sort desc by `stressScore` then alphabetical by name.
+  - Run name-collision disambiguation: group by `name`, if any group has `>= 2` distinct emails, append `(local-part)` to **every** member of that group's name (handles 2-author and N-author collisions identically).
   - Sort `byMonth` ascending by `month` ISO string
 
 ### `MIN_AUTHOR_COMMITS = 5`
@@ -219,7 +220,7 @@ Per-file `stressScore` formula and the `< 3` per-file commit floor stay as-is. P
 
 ### Snapshot regeneration
 
-`packages/core/src/__snapshots__/fixture-regression.test.ts.snap` regenerates with the new fields. Existing test fixture is small enough that the diff is reviewable.
+`packages/core/src/__snapshots__/fixture-regression.test.ts.snap` (full path verified) regenerates with the new fields on `CommitTimingReport`. Existing test fixture is small enough that the diff is reviewable in PR.
 
 ## Metrics strip retune (`apps/web/src/presets/metrics/commit-timing.ts`)
 
@@ -241,14 +242,19 @@ New assertions atop the existing test suite:
 - `repoHourDayMatrix` is 7×24 with non-negative integer counts; sum equals `commits.length`
 - Timezone offset in commit date string is respected — a commit at `2026-03-15T03:00:00+05:30` lands in the author's local hour, not UTC
 - `byMonth` layers are disjoint and sum to month total; months sorted ascending; ISO month format
+- **Month-boundary timezone handling:** a commit at `2026-01-31T23:00:00-05:00` (UTC `2026-02-01 04:00`) is bucketed by *local* month — i.e. into `2026-01`, not `2026-02`. Add a fixture that crosses a month boundary via offset.
 - `authorStress` aggregates per-author correctly across multi-author commits' authoring shape
-- `MIN_AUTHOR_COMMITS = 5` floor excludes sub-floor authors
+- `MIN_AUTHOR_COMMITS = 5` floor **drops sub-floor authors from the report shape entirely** — assert that an author with 4 commits does not appear in `authorStress`
 - Per-author `stressScore` matches the per-file formula
 - Sort order is desc by `stressScore`, alphabetical-by-name tiebreaker
-- Name-collision disambiguation appends `(local-part)` only when two distinct emails share an identical full-name string
+- Name-collision disambiguation:
+  - **2-author collision** — two distinct emails share an identical name → both get `(local-part)` suffix
+  - **3-author collision** — three distinct emails share an identical name → all three get `(local-part)` suffix; assert all three remain unique post-rewrite
+  - No-collision case — single email per name → no suffix appended
 - `highStress` matches `files.filter(f => f.stressScore >= 70).length`
-- `tierMix` band counts match expected bucketing
+- `tierMix` band counts match expected bucketing **and is independent of `MIN_AUTHOR_COMMITS`** (tier mix is from `files[]`, not authors)
 - Empty-repo edge case: all aggregates zero / empty / `[]`
+- **No-eligible-authors edge case:** repo where every author has `< 5` commits → `authorStress` is `[]`. Frontend must handle (verified in tab test below).
 
 ### Web
 
@@ -271,7 +277,8 @@ New assertions atop the existing test suite:
 - Tier badge label matches threshold band
 - Top-3 author rows render with full names, `Late: N% · Weekend: K% · M commits` format
 - Disambiguator suffix appears in finding when test fixture has a name collision
-- Empty-state: when `highStress === 0`, finding still renders top-3 contributors; extras hidden when directory rollup is empty
+- Empty-state — `highStress === 0` but `authorStress[]` non-empty: finding still renders top-3 contributors; extras hidden when directory rollup is empty
+- **No-eligible-authors empty-state** — `authorStress[]` is `[]` (every author below the 5-commit floor): finding shows a fallback message ("No contributors with sufficient commit history to score." or similar — final copy decided in implementation); subline still shows repo-aggregate facts
 - See-also footer wires `onApplyPreset` callback for `shame` and `hotspots`
 
 **Aggregator tests:**
@@ -312,7 +319,11 @@ Per `polish-tasks.md` and the analyzer-polish-session pattern, the docs page shi
 6. **Strip retune** — `presets/metrics/commit-timing.ts` slot 3/4 changes
 7. **Hero registry** — wire new heroes; strip `timeline`/`swimlanes` from this preset
 8. **Docs** — `apps/docs/analyzers/commit-timing.md` + sidebar config update
-9. **Pattern doc update** — move `commit-timing` from "spec — RELIC-323" to shipped status in `polish-pattern.md`; capture any deltas (heroes ended at 2 not 3; finding pivoted to authors not files; metrics slot 4 became `Stressed Authors` not `High Stress`)
+9. **Pattern doc update** — move `commit-timing` from "spec — RELIC-323" to shipped status in `polish-pattern.md`; capture all deltas from the original mapping:
+   - **Hero count:** ended at 2, not 3 (dropped the histogram during brainstorming)
+   - **Hero alt:** swapped from `StressHistogram` (10-bin distribution per pattern doc line 187) to **`StressTrend`** (3-layer disjoint stacked bar by month). Rationale to capture: the histogram on a healthy repo (top-stress=40 on React) collapses to a leftward spike that confirms the big number visually but adds no axis the punch card lacks. `StressTrend` adds the temporal axis the punch card cannot show.
+   - **Finding:** pivoted from per-file top-3 to per-author top-3 (Bus Factor pattern); rationale = analyzer is fundamentally about people, and React's empty-state hollows a file-pivot finding
+   - **Metrics slot 4:** became `Stressed Authors` (mirrors the people-pivot) instead of the originally proposed `High Stress` rename — slot 3 takes the `High Stress` name instead, slot 4 leans into the people axis
 
 ## Pre-1.0 versioning
 
