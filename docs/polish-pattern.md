@@ -155,6 +155,46 @@ The four analyzers in Batch 1 all share the "table is rotated hero" pathology. T
 - **Scope expansion:** Like blast-radius, the polish ticket exceeded its original bottom-panel-only spec — a forensic look at the rendered Rewrite Ratio tab against React data revealed every top-30 score tied at 100 (formula bug) and two of three alt-tabs duplicating other analyzers' heroes (hero audit). Same "*hero scope creep is OK when warranted*" precedent.
 - **Removes:** `RewriteRatioTab`'s per-file `SortableTable` (~107 lines). Inspector + diverging-bar already cover per-file detail.
 
+### `parallel-dev` *(spec — RELIC-309)*
+
+- **Decision context:** [RELIC-333](https://linear.app/nebulord/issue/RELIC-333) resolved — keep separate, differentiate. The shared `Swimlanes` and `Timeline` heroes are repo-wide commit-firehose visualizations that encode nothing about either analyzer's per-file score. Both heroes get **stripped from this preset entirely** (still alive in Contributors / Overview where they answer the right question).
+- **Bottom panel:** Narrative-KPI.
+- **Big number:** `highParallel` — count of files with `parallelScore ≥ 70`. New aggregate on `ParallelDevReport`.
+- **Tier thresholds:** 0 = Healthy · 1–4 = Moderate · 5+ = High Concurrency. Same shape as Rewrite Ratio's tier band — concurrent-work files are uncommon at any repo size.
+- **Sub-content:** Top **three** files (basename + `N parallel weeks · K peak authors`) as the finding; subline = tier mix `X high · Y moderate · Z low` derived from the new `tierMix` aggregate.
+- **Extras (`NarrativeKPI.extras` slot):** "Where they live" — top-5 directory rollup of high-parallel files. Aggregator at `apps/web/src/utils/parallelDevByDirectory.ts`. Same shape as Blast Radius / Shame / Rewrite Ratio / Bus Factor — five Batch 1+ panels share one layout.
+- **Hero (default):** `ParallelScoreHistogram` (NEW) — 10 bins of width 10, distribution of `parallelScore` across all parallel files, ≥70 zone shaded. Mirrors `BlastHistogram` / `BusFactorHistogram` / `RewriteHistogram` 1:1. Answers *"what's the shape of concurrency risk in this repo?"* — the question both shared firehose heroes failed to answer.
+- **Hero (alt):** `ParallelTimeline` (NEW) — repo-aggregate monthly bar chart: count of distinct `(file, week)` parallel events per month, color-tinted by avg author count. Answers *"is parallel-development pressure trending up or down over time?"* — the temporal angle the histogram alone can't show, but framed around parallel events specifically (not the firehose Timeline's per-author commit volume).
+- **Removed heroes:** `swimlanes`, `timeline` (both still alive in Contributors / Overview presets).
+- **Metrics-strip slot 2 fix:** replace `Hot Files` (capped at `hotFiles.length` ≤ 10, semantically meaningless ceiling) with `High Parallel` (sourced from new `highParallel` aggregate). Severity bands match the panel's tier badge (0 / 1–4 / 5+). Mirrors the Rewrite Ratio `Files ≥70` slot fix from RELIC-314.
+- **See also:** Co-Authors, Coupling. Sticky to the bottom of the panel. (Both are about *collaborative structure*; bus-factor is about ownership concentration which is sort of orthogonal.)
+- **Backend changes:**
+  - Add `highParallel: number` to `ParallelDevReport`.
+  - Add `tierMix: { low: number; medium: number; high: number; critical: number }` aggregate to `ParallelDevReport` (per-file score band counts using thresholds 0–24 / 25–49 / 50–74 / 75+ — match Bus Factor's tier-mix shape for consistency).
+  - Add `byMonth: Array<{ month: string; parallelEvents: number; uniqueFiles: number; avgAuthors: number }>` aggregate for the `ParallelTimeline` alt. Bucketed by ISO calendar month of `weekStart`.
+  - No score formula changes — current `parallelScore` already has confidence-style guarding via `MIN_ACTIVE_WEEKS = 3` and the `MIN_PARALLEL_SCORE = 20` floor.
+- **Removes:** `ParallelDevTab`'s per-file `SortableTable` (~75 lines). Inspector + new histogram + alt timeline + narrative-KPI top-3 already cover per-file detail at every granularity.
+
+### `commit-timing` *(spec — RELIC-323)*
+
+- **Decision context:** [RELIC-333](https://linear.app/nebulord/issue/RELIC-333) resolved — keep separate, differentiate. The current `Timeline` default (stacked-area-by-author commit chart) encodes nothing about hour-of-day or day-of-week — the only two dimensions commit-timing actually measures. Both shared firehose heroes get stripped from this preset.
+- **Bottom panel:** Narrative-KPI.
+- **Big number:** `highStress` — count of files with `stressScore ≥ 70`. New aggregate on `CommitTimingReport`.
+- **Tier thresholds:** 0 = Healthy · 1–4 = Moderate · 5+ = High Stress. Same shape as parallel-dev's tier band for consistency across the Team & Activity group.
+- **Sub-content:** Top **three** stress files (basename + `Late: N% · Weekend: K%`) as the finding; subline = repo-aggregate context `X% late-night · Y% weekend across N commits` (preserves the existing summary's headline but lifts it into the structured layout).
+- **Extras (`NarrativeKPI.extras` slot):** "Where they live" — top-5 directory rollup of high-stress files. Aggregator at `apps/web/src/utils/commitTimingByDirectory.ts`. Same shape as the rest of the Batch 1+ panels.
+- **Hero (default):** `CommitPunchCard` (NEW) — 7×24 heatmap, days of week (rows: Mon–Sun) × hours of day (columns: 0–23), cells colored by repo-wide commit count via the new `repoHourDayMatrix` aggregate. Late-night band (columns 23, 0–4) and weekend rows (Sat, Sun) shaded as the stress zone. The iconic git-timing visualization — GitHub's punch-card chart was this exact form. Answers *"when does this team actually work?"* — the only question commit-timing's data structure (`hourDistribution[24]` per file, `peakDay` per file, `repoLateNightPercent` / `repoWeekendPercent` aggregates) is built around.
+- **Hero (alt):** `StressHistogram` (NEW) — 10 bins of `stressScore`, ≥70 zone shaded. Mirrors the Polish pattern of pairing a domain-specific hero with a distribution-shape histogram (Bus Factor: BusBar + Histogram; Rewrite Ratio: DivergingBar + Histogram). Answers *"what's the shape of stress risk?"* — distribution complement to the punch card's repo-aggregate view.
+- **Removed heroes:** `timeline`, `swimlanes`.
+- **Metrics-strip slot 3 fix:** `Stress Files` currently filters by `stressScore > 50` — mismatched with the new tier-70 threshold. Re-thresh to `≥ 70` and rename to `High Stress` for consistency with parallel-dev's `High Parallel`. Severity bands match the panel's tier badge (0 / 1–4 / 5+).
+- **See also:** Shame, Hotspots. Sticky to the bottom of the panel. (Stress-adjacent: shame keywords correlate with crisis commits, and hotspots are typically the same files getting stressed.)
+- **Backend changes:**
+  - Add `repoHourDayMatrix: number[][]` (7 rows × 24 cols, day-of-week × hour) to `CommitTimingReport`. Required for the punch card; the existing per-file `hourDistribution` is hour-only and the `dayCount` array is computed but never exposed. One nested loop in `analyzeCommitTiming` to populate.
+  - Add `highStress: number` to `CommitTimingReport`.
+  - Add `tierMix: { low: number; medium: number; high: number; critical: number }` aggregate (band counts using 0–24 / 25–49 / 50–74 / 75+ — same shape as parallel-dev / bus-factor).
+  - No score formula changes — current `stressScore = lateNightPercent * 0.6 + weekendPercent * 0.4` is appropriately weighted and the `< 3` commit floor already filters noise.
+- **Removes:** `CommitTimingTab`'s per-file `SortableTable` (~85 lines). Inspector + punch card + stress histogram + narrative-KPI top-3 already cover per-file detail at every granularity.
+
 ### `bus-factor` *(shipped — RELIC-304)*
 
 - **Bottom panel:** Narrative-KPI replacing the SortableTable. Re-polish after the original Bus Factor pass was prematurely closed pre-pattern.
@@ -177,8 +217,6 @@ Not yet decided. Will be filled in as each batch is worked through. Listed here 
 
 | Analyzer | Batch | Notes from initial screenshot review |
 |---|---|---|
-| `parallel-dev` | 2 | Shares both views (Swimlanes + Timeline) with `commit-timing`. Merge-or-keep-separate decision tracked in [RELIC-333](https://linear.app/nebulord/issue/RELIC-333) — resolve before this analyzer's polish ticket. |
-| `commit-timing` | 2 | See above — [RELIC-333](https://linear.app/nebulord/issue/RELIC-333) blocks. |
 | `co-author` | 2 | Empty on react repo; needs empty-state pass. |
 | `knowledge-concentration` (Knowledge Silos) | — | Already shipped. Reference implementation. |
 | `ghost-files` | 3 | Same sunburst as Knowledge Silos. Likely narrative-KPI. |
