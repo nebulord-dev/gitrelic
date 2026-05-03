@@ -83,7 +83,12 @@ export function StressTrend({ report }: StressTrendProps) {
   return (
     <div ref={containerRef} className="flex flex-col h-full">
       <div className="flex-1 relative">
-        <svg width={dims.width} height={dims.height - 80}>
+        <svg
+          width={dims.width}
+          height={dims.height - 80}
+          role="img"
+          aria-label={`Monthly stress trend across ${months.length} ${months.length === 1 ? 'month' : 'months'}. Bars layered by stress severity: red = weekend + late-night, orange = single criterion, neutral = healthy hours.`}
+        >
           {months.map((bucket, i) => {
             const x = PADDING.left + i * (barWidth + BAR_GAP);
             const healthyH = yScale(bucket.healthy);

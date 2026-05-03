@@ -89,7 +89,12 @@ export function CommitPunchCard({ report }: CommitPunchCardProps) {
   return (
     <div ref={containerRef} className="flex flex-col h-full">
       <div className="flex-1 relative">
-        <svg width={dims.width} height={dims.height - 80}>
+        <svg
+          width={dims.width}
+          height={dims.height - 80}
+          role="img"
+          aria-label={`Commit punch card heatmap: 7 days × 24 hours. ${total} ${total === 1 ? 'commit' : 'commits'} total. Stress zones (weekend rows + late-night columns 11pm–4am) shaded.`}
+        >
           {/* Stress-zone shading: weekend rows (Sun=0, Sat=6) */}
           {Array.from(WEEKEND_DAYS).map((day) => (
             <rect
