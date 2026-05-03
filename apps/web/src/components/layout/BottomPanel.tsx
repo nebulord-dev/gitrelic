@@ -39,7 +39,14 @@ interface BottomPanelProps {
   // When true, fill the available vertical space instead of a fixed height.
   // Used in fullscreen-table layout mode where the hero is hidden.
   fillAvailable?: boolean;
+  /**
+   * When set, renders a "Docs ↗" link in the tab bar pointing at
+   * the analyzer's docs page on the deployed VitePress site.
+   */
+  docsPath?: string;
 }
+
+const DOCS_BASE_URL = 'https://nebulord-dev.github.io/gitrelic';
 
 const TAB_LABELS: Record<BottomTab, string> = {
   hotspots: 'Hotspots',
@@ -163,6 +170,7 @@ export function BottomPanel({
   onSelectFile,
   onApplyPreset,
   fillAvailable = false,
+  docsPath,
 }: BottomPanelProps) {
   const [height, setHeight] = useState(DEFAULT_HEIGHT);
   const dragRef = useRef<{ startY: number; startHeight: number } | null>(null);
@@ -215,21 +223,33 @@ export function BottomPanel({
       />
 
       {/* Tab bar */}
-      <div className="flex border-b border-border-primary px-4 shrink-0">
-        {altTabs.map((tabId) => (
-          <button
-            key={tabId}
-            onClick={() => onTabChange(tabId)}
-            className={cn(
-              'px-3.5 py-2 text-[10px] border-none bg-transparent cursor-pointer',
-              activeTab === tabId
-                ? 'text-text-primary border-b-2 border-b-accent-primary'
-                : 'text-text-tertiary border-b-2 border-b-transparent',
-            )}
+      <div className="flex items-center justify-between border-b border-border-primary px-4 shrink-0">
+        <div className="flex">
+          {altTabs.map((tabId) => (
+            <button
+              key={tabId}
+              onClick={() => onTabChange(tabId)}
+              className={cn(
+                'px-3.5 py-2 text-[10px] border-none bg-transparent cursor-pointer',
+                activeTab === tabId
+                  ? 'text-text-primary border-b-2 border-b-accent-primary'
+                  : 'text-text-tertiary border-b-2 border-b-transparent',
+              )}
+            >
+              {TAB_LABELS[tabId]}
+            </button>
+          ))}
+        </div>
+        {docsPath && (
+          <a
+            href={`${DOCS_BASE_URL}/${docsPath}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] text-text-tertiary hover:text-text-primary px-3.5 py-2 no-underline"
           >
-            {TAB_LABELS[tabId]}
-          </button>
-        ))}
+            Docs ↗
+          </a>
+        )}
       </div>
 
       {/* Tab content. Bottom padding is intentionally 0 so sticky "See also"

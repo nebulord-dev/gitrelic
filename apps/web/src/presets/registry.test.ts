@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { PRESETS } from './registry';
@@ -129,5 +131,52 @@ describe('PRESETS registry contract', () => {
     expect(tier1Ids).toEqual(
       expect.arrayContaining(['overview', 'risk', 'tech-debt']),
     );
+  });
+});
+
+describe('analyzer docsPath', () => {
+  const BACKFILLED: Array<{ id: PresetId; docsPath: string }> = [
+    { id: 'age-map', docsPath: 'analyzers/age-map' },
+    { id: 'blast-radius', docsPath: 'analyzers/blast-radius' },
+    { id: 'bus-factor', docsPath: 'analyzers/bus-factor' },
+    { id: 'churn', docsPath: 'analyzers/churn' },
+    { id: 'commit-timing', docsPath: 'analyzers/commit-timing' },
+    { id: 'parallel-dev', docsPath: 'analyzers/parallel-dev' },
+    { id: 'rewrite-ratio', docsPath: 'analyzers/rewrite-ratio' },
+    { id: 'shame', docsPath: 'analyzers/shame' },
+  ];
+
+  const DOCS_DIR = join(__dirname, '../../../docs/analyzers');
+
+  it.each(BACKFILLED)(
+    'preset $id has docsPath $docsPath',
+    ({ id, docsPath }) => {
+      expect(PRESETS[id].docsPath).toBe(docsPath);
+    },
+  );
+
+  it('every docsPath value resolves to a real docs file', () => {
+    for (const preset of Object.values(PRESETS)) {
+      if (preset.docsPath === undefined) continue;
+      const slug = preset.docsPath.replace(/^analyzers\//, '');
+      const filePath = join(DOCS_DIR, `${slug}.md`);
+      expect(
+        existsSync(filePath),
+        `missing docs file: ${filePath} (referenced by preset ${preset.id})`,
+      ).toBe(true);
+    }
+  });
+
+  it('every analyzer-tier preset whose <id>.md exists must set docsPath', () => {
+    for (const preset of Object.values(PRESETS)) {
+      if (preset.tier !== 'analyzer') continue;
+      const expectedDocPath = join(DOCS_DIR, `${preset.id}.md`);
+      if (existsSync(expectedDocPath)) {
+        expect(
+          preset.docsPath,
+          `preset ${preset.id} has a docs page on disk but no docsPath set — see polish-pattern.md`,
+        ).toBeDefined();
+      }
+    }
   });
 });

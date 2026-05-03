@@ -72,6 +72,7 @@ Anatomy:
 4. **Right side: one-sentence finding** — leads with a bolded number that supports the headline KPI. Comes from the analyzer's existing `summary` field where possible.
 5. **Sub-line** — analyzer's secondary `summary` text or a derived breakdown (tier counts, etc.).
 6. **Sticky "See also" footer** — links to 2 related analyzers via `onApplyPreset(...)`. Sticky to the bottom of the bottom-panel area, not buried below a scrolling list. (See "Footer pattern" below.)
+7. **Docs link in tab bar** — when the analyzer's preset declares `docsPath`, a right-anchored `Docs ↗` link appears in the bottom-panel tab bar pointing at the analyzer's docs page. See "Docs link" section below.
 
 A shared `<NarrativeKPI>` component should be lifted from `KnowledgeSilosTab.tsx` into `apps/web/src/components/shared/`. Filed as [RELIC-332](https://linear.app/nebulord/issue/RELIC-332) — blocks all four Batch 1 polish tickets.
 
@@ -80,6 +81,23 @@ A shared `<NarrativeKPI>` component should be lifted from `KnowledgeSilosTab.tsx
 Discovered while reviewing `ChurnTab.tsx`: the existing "See also" link footer is buried at the bottom of a long scrolling table — easy to miss entirely. **Make it sticky to the bottom of the panel** so it's discoverable without scrolling. Applies to every bottom panel (narrative-KPI or otherwise).
 
 Two related-analyzer links per footer. Per-analyzer choices are listed in the mapping below.
+
+## Docs link
+
+Each polished analyzer has a docs page at `apps/docs/analyzers/<slug>.md`. The dashboard surfaces a link to it from the bottom-panel tab bar — right-anchored, plain `Docs ↗` text link, conditional on the analyzer's preset declaring a `docsPath`.
+
+Wiring (two-step):
+
+1. **Author the docs page** at `apps/docs/analyzers/<slug>.md` following the established analyzer-page structure (see existing pages: `churn.md`, `bus-factor.md`, `parallel-dev.md`).
+2. **Set `docsPath` on the analyzer's preset** in `apps/web/src/presets/registry.ts`:
+
+   ```ts
+   docsPath: 'analyzers/<slug>',
+   ```
+
+The link renders automatically once both are in place. The `registry.test.ts` DoD-enforcement assertion fails on CI if a docs page exists on disk but `docsPath` isn't set — so forgetting to wire the link breaks the build.
+
+Dashboard-tier presets (`overview`, `risk`, `tech-debt`) intentionally do **not** set `docsPath` — they compose multiple analyzers and don't have a 1:1 docs page.
 
 ## Existing data, currently unused
 
@@ -242,6 +260,8 @@ Each Batch 1 polish ticket gets a sharper definition-of-done than the original g
 - Hero graph(s) — verify metric/granularity/legend
 - Bottom panel — replace SortableTable with narrative-KPI per spec above
 - Sticky "See also" footer with the two analyzers listed above
+- Docs page at `apps/docs/analyzers/<slug>.md` (per "Docs link" section above)
+- `docsPath` set on the analyzer's preset in `apps/web/src/presets/registry.ts`
 - Backend additions where noted
 - Empty / small-repo / huge-repo states
 - Copy pass

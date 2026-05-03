@@ -124,6 +124,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['bus-factor', 'knowledge-silos'],
     },
     metrics: busFactorMetrics,
+    docsPath: 'analyzers/bus-factor',
   },
   coupling: {
     id: 'coupling',
@@ -185,6 +186,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['churn', 'churn-tests'],
     },
     metrics: churnMetrics,
+    docsPath: 'analyzers/churn',
   },
   'dead-code': {
     id: 'dead-code',
@@ -215,6 +217,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['blast-radius'],
     },
     metrics: blastRadiusMetrics,
+    docsPath: 'analyzers/blast-radius',
   },
   'complexity-trend': {
     id: 'complexity-trend',
@@ -260,6 +263,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['parallel-dev'],
     },
     metrics: parallelDevMetrics,
+    docsPath: 'analyzers/parallel-dev',
   },
   'age-map': {
     id: 'age-map',
@@ -275,6 +279,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['age-map', 'age-map-by-directory'],
     },
     metrics: ageMapMetrics,
+    docsPath: 'analyzers/age-map',
   },
   languages: {
     id: 'languages',
@@ -320,6 +325,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['rewrite-ratio'],
     },
     metrics: rewriteRatioMetrics,
+    docsPath: 'analyzers/rewrite-ratio',
   },
   'commit-timing': {
     id: 'commit-timing',
@@ -335,6 +341,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['commit-timing'],
     },
     metrics: commitTimingMetrics,
+    docsPath: 'analyzers/commit-timing',
   },
   'ghost-files': {
     id: 'ghost-files',
@@ -381,6 +388,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['shame'],
     },
     metrics: shameMetrics,
+    docsPath: 'analyzers/shame',
   },
   renames: {
     id: 'renames',
