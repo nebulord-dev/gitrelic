@@ -36,6 +36,8 @@ export type HeroViz =
   | 'blast-histogram'
   | 'bus-factor-histogram'
   | 'rewrite-histogram'
+  | 'parallel-score-histogram'
+  | 'parallel-timeline'
   | 'languages-stacked'
   | 'test-coverage-by-dir';
 
