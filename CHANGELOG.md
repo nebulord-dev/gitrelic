@@ -1,3 +1,10 @@
+# [0.41.0](https://github.com/nebulord-dev/gitrelic/compare/v0.40.0...v0.41.0) (2026-05-03)
+
+
+### Features
+
+* **web:** commit-timing polish (RELIC-323) ([#68](https://github.com/nebulord-dev/gitrelic/issues/68)) ([555600f](https://github.com/nebulord-dev/gitrelic/commit/555600f240293d8d9b46c7260cd9bd14376f15b0)), closes [hi#stress](https://github.com/hi/issues/stress) [hi#stress](https://github.com/hi/issues/stress)
+
 # [0.40.0](https://github.com/nebulord-dev/gitrelic/compare/v0.39.0...v0.40.0) (2026-05-03)
 
 
