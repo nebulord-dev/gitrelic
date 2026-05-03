@@ -62,7 +62,7 @@ Slot 3's `>50` threshold doesn't match the proposed panel's `≥70` tier. Slot 4
 
 ### Default — `CommitPunchCard` (NEW)
 
-Visual design — 7×24 grid, rows = days (Mon–Sun), cols = hours (0–23). Each cell rendered as a square (or rounded rect), filled by **log-scaled** color ramp keyed to repo-wide commit count for that (day, hour) bucket. The log scale matches GitHub's punch-card precedent and surfaces rare-but-meaningful off-hours signal that a linear scale would wash out next to a busy weekday-afternoon peak.
+Visual design — 7×24 grid, rows = days (Sun–Sat), cols = hours (0–23). Each cell rendered as a square (or rounded rect), filled by **log-scaled** color ramp keyed to repo-wide commit count for that (day, hour) bucket. The log scale matches GitHub's punch-card precedent and surfaces rare-but-meaningful off-hours signal that a linear scale would wash out next to a busy weekday-afternoon peak.
 
 **Stress-zone shading.** Subtle background tint behind:
 - Weekend rows (Sat, Sun) — `var(--severity-warning)` at low opacity
