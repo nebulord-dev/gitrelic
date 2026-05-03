@@ -166,12 +166,24 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       shrinkingFiles: [],
       summary: 'Not available',
     },
-    commitTiming: raw.commitTiming ?? {
-      files: [],
-      stressFiles: [],
-      repoLateNightPercent: 0,
-      repoWeekendPercent: 0,
-      summary: 'Not available',
+    commitTiming: {
+      files: raw.commitTiming?.files ?? [],
+      stressFiles: raw.commitTiming?.stressFiles ?? [],
+      repoLateNightPercent: raw.commitTiming?.repoLateNightPercent ?? 0,
+      repoWeekendPercent: raw.commitTiming?.repoWeekendPercent ?? 0,
+      summary: raw.commitTiming?.summary ?? 'Not available',
+      repoHourDayMatrix:
+        raw.commitTiming?.repoHourDayMatrix ??
+        Array.from({ length: 7 }, () => new Array<number>(24).fill(0)),
+      highStress: raw.commitTiming?.highStress ?? 0,
+      tierMix: raw.commitTiming?.tierMix ?? {
+        low: 0,
+        medium: 0,
+        high: 0,
+        critical: 0,
+      },
+      byMonth: raw.commitTiming?.byMonth ?? [],
+      authorStress: raw.commitTiming?.authorStress ?? [],
     },
     renameTracking: raw.renameTracking ?? {
       renames: [],

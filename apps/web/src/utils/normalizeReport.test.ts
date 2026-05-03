@@ -83,4 +83,35 @@ describe('normalizeReport', () => {
       staleLimit: 66,
     });
   });
+
+  it('fills empty defaults for new commit-timing aggregates on a pre-0.40 commitTiming object', () => {
+    // Simulate a report from GitRelic ≤ 0.39: commitTiming exists but lacks the
+    // new aggregates added in 0.40 (repoHourDayMatrix, highStress, tierMix,
+    // byMonth, authorStress). The object-level ?? fallback would skip these,
+    // leaving them undefined. Field-level defaults must rescue them.
+    const result = normalizeReport({
+      commitTiming: {
+        files: [],
+        stressFiles: [],
+        repoLateNightPercent: 0,
+        repoWeekendPercent: 0,
+        summary: 'old report',
+      } as never,
+    });
+
+    expect(result.commitTiming.repoHourDayMatrix).toHaveLength(7);
+    for (const row of result.commitTiming.repoHourDayMatrix) {
+      expect(row).toHaveLength(24);
+      expect(row.every((cell) => cell === 0)).toBe(true);
+    }
+    expect(result.commitTiming.highStress).toBe(0);
+    expect(result.commitTiming.tierMix).toEqual({
+      low: 0,
+      medium: 0,
+      high: 0,
+      critical: 0,
+    });
+    expect(result.commitTiming.byMonth).toEqual([]);
+    expect(result.commitTiming.authorStress).toEqual([]);
+  });
 });
