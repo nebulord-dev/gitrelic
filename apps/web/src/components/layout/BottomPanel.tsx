@@ -108,7 +108,7 @@ function TabContent({
     case 'contributors':
       return <ContributorsTab report={report} />;
     case 'parallel-dev':
-      return <ParallelDevTab report={report} onSelectFile={onSelectFile} />;
+      return <ParallelDevTab report={report} onApplyPreset={onApplyPreset} />;
     case 'shame':
       return <ShameTab report={report} onApplyPreset={onApplyPreset} />;
     case 'age-map':
