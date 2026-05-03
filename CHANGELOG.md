@@ -1,3 +1,10 @@
+# [0.42.0](https://github.com/nebulord-dev/gitrelic/compare/v0.41.0...v0.42.0) (2026-05-03)
+
+
+### Features
+
+* **web:** per-analyzer docs links in bottom-panel tab bar ([#69](https://github.com/nebulord-dev/gitrelic/issues/69)) ([fbb3c1f](https://github.com/nebulord-dev/gitrelic/commit/fbb3c1f688062e1f4596bfcbd7cca2f1749ce99b))
+
 # [0.41.0](https://github.com/nebulord-dev/gitrelic/compare/v0.40.0...v0.41.0) (2026-05-03)
 
 
