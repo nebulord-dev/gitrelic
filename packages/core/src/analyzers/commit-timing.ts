@@ -214,7 +214,12 @@ export function analyzeCommitTiming(
 
   const stressFiles = files.slice(0, 10);
 
-  // tierMix from per-file stressScores (independent of MIN_AUTHOR_COMMITS)
+  // tierMix from per-file stressScores (independent of MIN_AUTHOR_COMMITS).
+  // tierMix is exposed on the report for future use (a "by score band" subline
+  // or a tier-distribution mini-chart) but not currently consumed by the web
+  // layer. The polished CommitTimingTab uses a repo-aggregate subline instead.
+  // Mirrors parallel-dev / bus-factor exposure even though the consumer is
+  // different.
   const tierMix = { low: 0, medium: 0, high: 0, critical: 0 };
   for (const f of files) {
     if (f.stressScore < 25) tierMix.low++;

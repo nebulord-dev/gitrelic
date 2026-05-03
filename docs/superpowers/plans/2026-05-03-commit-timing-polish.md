@@ -10,6 +10,8 @@
 
 **Worktree:** `/Users/tracericochet/Desktop/nebulord/gitrelic/.worktrees/relic-323-polish-commit-timing` on branch `relic-323-polish-commit-timing`. Spec lives at [`docs/superpowers/specs/2026-05-03-commit-timing-polish-design.md`](../specs/2026-05-03-commit-timing-polish-design.md) and ticket [RELIC-323](https://linear.app/nebulord/issue/RELIC-323). The spec is the source of truth — when in doubt, the spec wins over this plan, the polish-pattern doc, and the Linear ticket.
 
+> **Path note:** Every Bash command in this plan begins with `cd /Users/tracericochet/Desktop/nebulord/gitrelic/.worktrees/relic-323-polish-commit-timing` — that absolute path was correct on the original author's machine. If you're running this on a different machine, replace `/Users/tracericochet/Desktop/nebulord` with your local clone parent (or use `${WORKTREE}` shell-substitution). The relative structure (`.worktrees/relic-323-polish-commit-timing`) is the load-bearing part.
+
 **Test commands (one-shot, agent-friendly):**
 
 ```bash
