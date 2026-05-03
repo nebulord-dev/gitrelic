@@ -66,7 +66,7 @@ The polish-pattern doc's original Batch-3 entry for Contributors said "Bottom ta
 | 1 | **Active Contributors** | count | `1` critical · `2–5` warning · `6+` healthy | existing `activeContributors.length` |
 | 2 | **Top-3 Share** | `%` (rounded) | `<40%` healthy · `40–69%` warning · `70%+` critical | NEW aggregate `top3CommitShare` |
 | 3 | **Ghost Authors** | count | `0` healthy · `1+ but <30% ghost ratio` warning · `≥30% ghost ratio` critical | existing `ghostContributors.length`; ratio = `ghostContributors.length / contributors.length` |
-| 4 | **Newcomers (90d)** | count | `0` neutral · `1+` healthy (no warning band — newcomers are positive) | NEW aggregate `newcomers90d` |
+| 4 | **Newcomers (90d)** | count | `0` → `stale` variant (neutral grey — no team renewal in window) · `1+` → `healthy` | NEW aggregate `newcomers90d` |
 
 **Dropped from the strip:** `Total Commits` (meta-stat without team-health signal — replaced by the more meaningful slots above).
 
@@ -210,6 +210,6 @@ Ships as `feat:` (minor bump per `.releaserc.json` pre-1.0 rule). `OwnershipSunb
 3. **Hero polish** — `ContributorSwimlanes` + `OwnershipBubble` (display names + HeroCaption); registry default flip.
 4. **Tab rewrite** — `ContributorsTab.tsx` (columns + see-also footer); BottomPanel wiring; tab test.
 5. **Docs page** — `apps/docs/analyzers/contributors.md` + sidebar entry + `ignoreDeadLinks` cleanup; `docsPath` set on preset (this satisfies the registry-test DoD assertion).
-6. **Snapshot regeneration** — `pnpm test:core` once the analyzer changes land; commit the snapshot diff.
+6. **Snapshot diff verification** — the `fixture-regression.test.ts.snap` flip actually happens during step 1 when the analyzer ships the new aggregates; this step is "review the snapshot diff is a pure addition, then commit." Run `pnpm test:core` to regenerate locally if it wasn't committed in step 1.
 
 Each step is independently testable. Step 5 is the gate — don't set `docsPath` until the docs page exists, or `registry.test.ts` will fail.
