@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { hierarchy, pack } from 'd3-hierarchy';
 
 import { authorColor } from '../../utils/colors';
+import { HeroCaption } from '../shared/HeroCaption';
 import type { GitrelicReport } from '@gitrelic/core';
 import type { HierarchyCircularNode } from 'd3-hierarchy';
 
@@ -15,7 +16,8 @@ export interface DirBubble {
   name: string;
   dirPath: string;
   totalLoc: number;
-  dominantAuthor: string;
+  dominantAuthor: string; // email — kept for authorColor() and tooltip color
+  dominantAuthorName: string; // display name for label rendering
   dominantPercent: number;
   fileCount: number;
 }
@@ -76,6 +78,12 @@ export function buildDirectoryBubbles(report: GitrelicReport): DirBubble[] {
     busFactorMap.set(f.file, f.dominantAuthor);
   }
 
+  // Email → display name lookup. Falls back to email when name is empty.
+  const nameByEmail = new Map<string, string>();
+  for (const c of report.contributors.contributors) {
+    nameByEmail.set(c.email, c.name && c.name.length > 0 ? c.name : c.email);
+  }
+
   // Aggregate by top-level directory (2 levels deep for src/*)
   const dirStats = new Map<
     string,
@@ -127,6 +135,10 @@ export function buildDirectoryBubbles(report: GitrelicReport): DirBubble[] {
       dirPath,
       totalLoc: stats.loc,
       dominantAuthor,
+      dominantAuthorName:
+        dominantAuthor === UNKNOWN_AUTHOR
+          ? UNKNOWN_AUTHOR
+          : (nameByEmail.get(dominantAuthor) ?? dominantAuthor),
       dominantPercent,
       fileCount: stats.fileCount,
     });
@@ -265,7 +277,12 @@ export function OwnershipBubble({
               const fittedName = fitLabel(d.name, leaf.r, labelFontSize);
               const fittedSub = isUnknown
                 ? fitLabel('no commit data', leaf.r, subFontSize)
-                : fitSubLabel(author, d.dominantPercent, leaf.r, subFontSize);
+                : fitSubLabel(
+                    d.dominantAuthorName,
+                    d.dominantPercent,
+                    leaf.r,
+                    subFontSize,
+                  );
 
               return (
                 <g
@@ -348,13 +365,7 @@ export function OwnershipBubble({
         </div>
       </div>
 
-      {/* Sticky caption strip */}
-      <div className="shrink-0 px-4 py-2.5 border-t border-border-primary bg-surface-primary">
-        <div className="text-xs text-text-secondary">
-          One bubble per directory (2 levels deep) · size = total LOC · color =
-          dominant author · click to drill in
-        </div>
-      </div>
+      <HeroCaption primary="One bubble per directory (2 levels deep) · size = total LOC · color = dominant author · click to drill in" />
 
       {tooltip && (
         <div
@@ -369,7 +380,7 @@ export function OwnershipBubble({
           <div className="text-text-secondary mt-0.5">
             {tooltip.dir.dominantAuthor === UNKNOWN_AUTHOR
               ? 'No commit data for this directory'
-              : `Owner: ${tooltip.dir.dominantAuthor} (${tooltip.dir.dominantPercent}%)`}
+              : `Owner: ${tooltip.dir.dominantAuthorName} (${tooltip.dir.dominantPercent}%)`}
           </div>
         </div>
       )}

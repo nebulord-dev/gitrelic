@@ -42,6 +42,38 @@ function makeReport(overrides: Partial<GitrelicReport> = {}): GitrelicReport {
       overallBusFactor: 1,
       summary: '',
     },
+    contributors: {
+      contributors: [
+        {
+          email: 'alice@dev.com',
+          name: 'Alice',
+          commitCount: 10,
+          firstCommit: '',
+          lastCommit: '',
+          filesOwned: 1,
+          linesChanged: 150,
+          activeDays: 5,
+          focusAreas: [],
+          isActive: true,
+        },
+        {
+          email: 'bob@dev.com',
+          name: 'Bob',
+          commitCount: 5,
+          firstCommit: '',
+          lastCommit: '',
+          filesOwned: 1,
+          linesChanged: 50,
+          activeDays: 3,
+          focusAreas: [],
+          isActive: true,
+        },
+      ],
+      activeContributors: [],
+      ghostContributors: [],
+      topContributor: {} as any,
+      summary: '',
+    },
     ...overrides,
   } as GitrelicReport;
 }
@@ -65,6 +97,68 @@ describe('buildDirectoryBubbles', () => {
     const srcDir = dirs.find((d) => d.dirPath === 'src');
     expect(srcDir?.dominantAuthor).toBeDefined();
     expect(srcDir?.dominantPercent).toBeGreaterThan(0);
+  });
+
+  it('resolves dominantAuthorName from contributors display name', () => {
+    const report = makeReport();
+    const dirs = buildDirectoryBubbles(report);
+    const srcDir = dirs.find((d) => d.dirPath === 'src');
+    // Both alice and bob have display names in the fixture
+    expect(['Alice', 'Bob']).toContain(srcDir?.dominantAuthorName);
+  });
+
+  it('falls back to email for dominantAuthorName when contributor name is empty', () => {
+    const report = makeReport({
+      contributors: {
+        contributors: [
+          {
+            email: 'alice@dev.com',
+            name: '',
+            commitCount: 10,
+            firstCommit: '',
+            lastCommit: '',
+            filesOwned: 1,
+            linesChanged: 150,
+            activeDays: 5,
+            focusAreas: [],
+            isActive: true,
+          },
+        ],
+        activeContributors: [],
+        ghostContributors: [],
+        topContributor: {} as any,
+        summary: '',
+      },
+    });
+    const dirs = buildDirectoryBubbles(report);
+    const srcDir = dirs.find((d) => d.dirPath === 'src');
+    // alice is dominant in app.ts; her name is empty so falls back to email
+    if (srcDir?.dominantAuthor === 'alice@dev.com') {
+      expect(srcDir.dominantAuthorName).toBe('alice@dev.com');
+    }
+  });
+
+  it('sets dominantAuthorName to UNKNOWN_AUTHOR for dirs with no commit data', () => {
+    const report = makeReport({
+      loc: {
+        totalFiles: 1,
+        totalLines: 50,
+        files: [
+          { file: 'scripts/bench/index.js', lines: 50, language: 'JavaScript' },
+        ],
+        languages: [],
+        summary: '',
+      },
+      busFactors: {
+        files: [],
+        criticalFiles: [],
+        overallBusFactor: 0,
+        summary: '',
+      },
+    });
+    const dirs = buildDirectoryBubbles(report);
+    const benchDir = dirs.find((d) => d.dirPath === 'scripts/bench');
+    expect(benchDir?.dominantAuthorName).toBe('unknown');
   });
 
   it('uses totalLoc as bubble sizing value', () => {
