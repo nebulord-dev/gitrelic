@@ -102,6 +102,55 @@ describe('analyzeContributors', () => {
     );
   });
 
+  it('three-state classification: active / intermediate / ghost are mutually exclusive', () => {
+    // repoAgeDays=365 → active window 91d, ghost window 183d.
+    // The intermediate-zone author at 120d ago should be neither active nor ghost.
+    const commits = [
+      makeCommit({
+        hash: '1',
+        authorEmail: 'active@x',
+        authorName: 'Active',
+        date: daysAgo(10),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        authorEmail: 'middle@x',
+        authorName: 'Middle',
+        date: daysAgo(120),
+        files: ['b.ts'],
+      }),
+      makeCommit({
+        hash: '3',
+        authorEmail: 'ghost@x',
+        authorName: 'Ghost',
+        date: daysAgo(220),
+        files: ['c.ts'],
+      }),
+    ];
+    const result = analyzeContributors(commits, 365);
+    const active = result.contributors.find((c) => c.email === 'active@x')!;
+    const middle = result.contributors.find((c) => c.email === 'middle@x')!;
+    const ghost = result.contributors.find((c) => c.email === 'ghost@x')!;
+
+    expect(active.isActive).toBe(true);
+    expect(active.isGhost).toBe(false);
+
+    expect(middle.isActive).toBe(false);
+    expect(middle.isGhost).toBe(false);
+
+    expect(ghost.isActive).toBe(false);
+    expect(ghost.isGhost).toBe(true);
+
+    // Intermediate-zone author is excluded from both lists.
+    expect(result.activeContributors.map((c) => c.email)).not.toContain(
+      'middle@x',
+    );
+    expect(result.ghostContributors.map((c) => c.email)).not.toContain(
+      'middle@x',
+    );
+  });
+
   it('extracts focus areas from file paths', () => {
     const commits = [
       makeCommit({
@@ -171,5 +220,133 @@ describe('analyzeContributors', () => {
     ];
     const result = analyzeContributors(commits, 365);
     expect(result.summary).toContain('183');
+  });
+
+  describe('top3CommitShare', () => {
+    it('is 0 on empty commit list', () => {
+      const result = analyzeContributors([], 365);
+      expect(result.top3CommitShare).toBe(0);
+    });
+
+    it('is 100 with a single contributor', () => {
+      const commits = Array.from({ length: 5 }, (_, i) =>
+        makeCommit({ hash: String(i), date: daysAgo(10 + i), files: ['a.ts'] }),
+      );
+      const result = analyzeContributors(commits, 365);
+      expect(result.top3CommitShare).toBe(100);
+    });
+
+    it('is 100 with exactly 3 contributors', () => {
+      const commits = [
+        makeCommit({
+          hash: '1',
+          authorEmail: 'a@x',
+          authorName: 'A',
+          date: daysAgo(5),
+          files: ['a.ts'],
+        }),
+        makeCommit({
+          hash: '2',
+          authorEmail: 'b@x',
+          authorName: 'B',
+          date: daysAgo(4),
+          files: ['b.ts'],
+        }),
+        makeCommit({
+          hash: '3',
+          authorEmail: 'c@x',
+          authorName: 'C',
+          date: daysAgo(3),
+          files: ['c.ts'],
+        }),
+      ];
+      const result = analyzeContributors(commits, 365);
+      expect(result.top3CommitShare).toBe(100);
+    });
+
+    it('computes share as percent of total commits when 4+ contributors', () => {
+      // 4 contributors: A=5, B=3, C=2, D=2 → top3=10/12=83.33%
+      const commits = [
+        ...Array.from({ length: 5 }, (_, i) =>
+          makeCommit({
+            hash: `a${i}`,
+            authorEmail: 'a@x',
+            authorName: 'A',
+            date: daysAgo(20 - i),
+            files: ['a.ts'],
+          }),
+        ),
+        ...Array.from({ length: 3 }, (_, i) =>
+          makeCommit({
+            hash: `b${i}`,
+            authorEmail: 'b@x',
+            authorName: 'B',
+            date: daysAgo(15 - i),
+            files: ['b.ts'],
+          }),
+        ),
+        ...Array.from({ length: 2 }, (_, i) =>
+          makeCommit({
+            hash: `c${i}`,
+            authorEmail: 'c@x',
+            authorName: 'C',
+            date: daysAgo(10 - i),
+            files: ['c.ts'],
+          }),
+        ),
+        ...Array.from({ length: 2 }, (_, i) =>
+          makeCommit({
+            hash: `d${i}`,
+            authorEmail: 'd@x',
+            authorName: 'D',
+            date: daysAgo(5 - i),
+            files: ['d.ts'],
+          }),
+        ),
+      ];
+      const result = analyzeContributors(commits, 365);
+      expect(result.top3CommitShare).toBeCloseTo((10 / 12) * 100, 5);
+    });
+  });
+
+  describe('newcomers90d', () => {
+    it('is 0 on empty commit list', () => {
+      const result = analyzeContributors([], 365);
+      expect(result.newcomers90d).toBe(0);
+    });
+
+    it('counts a contributor whose first commit is 89 days ago', () => {
+      const commits = [
+        makeCommit({ hash: '1', date: daysAgo(89), files: ['a.ts'] }),
+      ];
+      const result = analyzeContributors(commits, 365);
+      expect(result.newcomers90d).toBe(1);
+    });
+
+    it('counts a contributor whose first commit is exactly 90 days ago', () => {
+      const commits = [
+        makeCommit({ hash: '1', date: daysAgo(90), files: ['a.ts'] }),
+      ];
+      const result = analyzeContributors(commits, 365);
+      expect(result.newcomers90d).toBe(1);
+    });
+
+    it('does not count a contributor whose first commit is 91 days ago', () => {
+      const commits = [
+        makeCommit({ hash: '1', date: daysAgo(91), files: ['a.ts'] }),
+      ];
+      const result = analyzeContributors(commits, 365);
+      expect(result.newcomers90d).toBe(0);
+    });
+
+    it('uses firstCommit, not lastCommit', () => {
+      // Author started 200 days ago, last commit 10 days ago → not a newcomer
+      const commits = [
+        makeCommit({ hash: '1', date: daysAgo(200), files: ['a.ts'] }),
+        makeCommit({ hash: '2', date: daysAgo(10), files: ['a.ts'] }),
+      ];
+      const result = analyzeContributors(commits, 365);
+      expect(result.newcomers90d).toBe(0);
+    });
   });
 });

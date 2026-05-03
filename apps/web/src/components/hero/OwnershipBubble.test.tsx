@@ -5,7 +5,21 @@ import {
   fitLabel,
   fitSubLabel,
 } from './OwnershipBubble';
-import type { GitrelicReport } from '@gitrelic/core';
+import type { Contributor, GitrelicReport } from '@gitrelic/core';
+
+const EMPTY_TOP_CONTRIBUTOR: Contributor = {
+  email: '',
+  name: '',
+  commitCount: 0,
+  firstCommit: '',
+  lastCommit: '',
+  filesOwned: 0,
+  linesChanged: 0,
+  activeDays: 0,
+  focusAreas: [],
+  isActive: false,
+  isGhost: false,
+};
 
 function makeReport(overrides: Partial<GitrelicReport> = {}): GitrelicReport {
   return {
@@ -42,6 +56,40 @@ function makeReport(overrides: Partial<GitrelicReport> = {}): GitrelicReport {
       overallBusFactor: 1,
       summary: '',
     },
+    contributors: {
+      contributors: [
+        {
+          email: 'alice@dev.com',
+          name: 'Alice',
+          commitCount: 10,
+          firstCommit: '',
+          lastCommit: '',
+          filesOwned: 1,
+          linesChanged: 150,
+          activeDays: 5,
+          focusAreas: [],
+          isActive: true,
+          isGhost: false,
+        },
+        {
+          email: 'bob@dev.com',
+          name: 'Bob',
+          commitCount: 5,
+          firstCommit: '',
+          lastCommit: '',
+          filesOwned: 1,
+          linesChanged: 50,
+          activeDays: 3,
+          focusAreas: [],
+          isActive: true,
+          isGhost: false,
+        },
+      ],
+      activeContributors: [],
+      ghostContributors: [],
+      topContributor: EMPTY_TOP_CONTRIBUTOR,
+      summary: '',
+    },
     ...overrides,
   } as GitrelicReport;
 }
@@ -65,6 +113,90 @@ describe('buildDirectoryBubbles', () => {
     const srcDir = dirs.find((d) => d.dirPath === 'src');
     expect(srcDir?.dominantAuthor).toBeDefined();
     expect(srcDir?.dominantPercent).toBeGreaterThan(0);
+  });
+
+  it('resolves dominantAuthorName from contributors display name', () => {
+    const report = makeReport();
+    const dirs = buildDirectoryBubbles(report);
+    const srcDir = dirs.find((d) => d.dirPath === 'src');
+    // Both alice and bob have display names in the fixture
+    expect(['Alice', 'Bob']).toContain(srcDir?.dominantAuthorName);
+  });
+
+  it('falls back to email for dominantAuthorName when contributor name is empty', () => {
+    // Both alice and bob have empty names. Whoever wins the dominant-author
+    // tiebreak (Map iteration order in buildDirectoryBubbles), their
+    // dominantAuthorName must equal their email — no display name to fall back
+    // on. Asserting on whichever author won keeps the test deterministic
+    // without depending on iteration order.
+    const report = makeReport({
+      contributors: {
+        contributors: [
+          {
+            email: 'alice@dev.com',
+            name: '',
+            commitCount: 10,
+            firstCommit: '',
+            lastCommit: '',
+            filesOwned: 1,
+            linesChanged: 150,
+            activeDays: 5,
+            focusAreas: [],
+            isActive: true,
+            isGhost: false,
+          },
+          {
+            email: 'bob@dev.com',
+            name: '',
+            commitCount: 5,
+            firstCommit: '',
+            lastCommit: '',
+            filesOwned: 1,
+            linesChanged: 80,
+            activeDays: 3,
+            focusAreas: [],
+            isActive: true,
+            isGhost: false,
+          },
+        ],
+        activeContributors: [],
+        ghostContributors: [],
+        topContributor: EMPTY_TOP_CONTRIBUTOR,
+        summary: '',
+      },
+    });
+    const dirs = buildDirectoryBubbles(report);
+    const srcDir = dirs.find((d) => d.dirPath === 'src');
+    expect(srcDir).toBeDefined();
+    // Whoever the dominant author is, the empty-name fallback must produce
+    // their email as the displayed name. Unconditional assertion.
+    expect(srcDir!.dominantAuthorName).toBe(srcDir!.dominantAuthor);
+    expect(['alice@dev.com', 'bob@dev.com']).toContain(
+      srcDir!.dominantAuthorName,
+    );
+  });
+
+  it('sets dominantAuthorName to UNKNOWN_AUTHOR for dirs with no commit data', () => {
+    const report = makeReport({
+      loc: {
+        totalFiles: 1,
+        totalLines: 50,
+        files: [
+          { file: 'scripts/bench/index.js', lines: 50, language: 'JavaScript' },
+        ],
+        languages: [],
+        summary: '',
+      },
+      busFactors: {
+        files: [],
+        criticalFiles: [],
+        overallBusFactor: 0,
+        summary: '',
+      },
+    });
+    const dirs = buildDirectoryBubbles(report);
+    const benchDir = dirs.find((d) => d.dirPath === 'scripts/bench');
+    expect(benchDir?.dominantAuthorName).toBe('unknown');
   });
 
   it('uses totalLoc as bubble sizing value', () => {

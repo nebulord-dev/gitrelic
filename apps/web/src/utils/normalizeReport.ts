@@ -53,11 +53,11 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       },
       summary: raw.ageMap?.summary ?? 'Not available',
     },
-    contributors: raw.contributors ?? {
-      contributors: [],
-      activeContributors: [],
-      ghostContributors: [],
-      topContributor: {
+    contributors: {
+      contributors: raw.contributors?.contributors ?? [],
+      activeContributors: raw.contributors?.activeContributors ?? [],
+      ghostContributors: raw.contributors?.ghostContributors ?? [],
+      topContributor: raw.contributors?.topContributor ?? {
         email: '',
         name: '',
         commitCount: 0,
@@ -68,8 +68,11 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
         activeDays: 0,
         focusAreas: [],
         isActive: false,
+        isGhost: false,
       },
-      summary: 'Not available',
+      summary: raw.contributors?.summary ?? 'Not available',
+      top3CommitShare: raw.contributors?.top3CommitShare ?? 0,
+      newcomers90d: raw.contributors?.newcomers90d ?? 0,
     },
     cursedFiles: raw.cursedFiles ?? [],
     forensics: raw.forensics ?? {

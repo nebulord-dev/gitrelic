@@ -8,6 +8,7 @@ dist/
 *.local
 coverage/
 .superpowers/
+.claude-pr/
 .serena
 .worktrees/
 .claude/worktrees/

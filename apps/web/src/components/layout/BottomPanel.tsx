@@ -113,7 +113,7 @@ function TabContent({
     case 'coupling':
       return <CouplingTab report={report} onSelectFile={onSelectFile} />;
     case 'contributors':
-      return <ContributorsTab report={report} />;
+      return <ContributorsTab report={report} onApplyPreset={onApplyPreset} />;
     case 'parallel-dev':
       return <ParallelDevTab report={report} onApplyPreset={onApplyPreset} />;
     case 'shame':

@@ -84,6 +84,65 @@ describe('normalizeReport', () => {
     });
   });
 
+  it('fills empty defaults for new contributors aggregates on a pre-RELIC-306 contributors object', () => {
+    // Simulate a report generated before top3CommitShare and newcomers90d landed:
+    // contributors exists but lacks the two new fields. The previous object-level
+    // ?? fallback would skip them, leaving them undefined. Field-level defaults
+    // must rescue them.
+    const result = normalizeReport({
+      contributors: {
+        contributors: [],
+        activeContributors: [],
+        ghostContributors: [],
+        topContributor: {
+          email: '',
+          name: '',
+          commitCount: 0,
+          firstCommit: '',
+          lastCommit: '',
+          filesOwned: 0,
+          linesChanged: 0,
+          activeDays: 0,
+          focusAreas: [],
+          isActive: false,
+          isGhost: false,
+        },
+        summary: 'old report',
+      } as never,
+    });
+
+    expect(result.contributors.top3CommitShare).toBe(0);
+    expect(result.contributors.newcomers90d).toBe(0);
+  });
+
+  it('preserves contributors aggregates from a fresh report and does not overwrite', () => {
+    const result = normalizeReport({
+      contributors: {
+        contributors: [],
+        activeContributors: [],
+        ghostContributors: [],
+        topContributor: {
+          email: '',
+          name: '',
+          commitCount: 0,
+          firstCommit: '',
+          lastCommit: '',
+          filesOwned: 0,
+          linesChanged: 0,
+          activeDays: 0,
+          focusAreas: [],
+          isActive: false,
+          isGhost: false,
+        },
+        summary: '',
+        top3CommitShare: 67.5,
+        newcomers90d: 4,
+      } as never,
+    });
+    expect(result.contributors.top3CommitShare).toBe(67.5);
+    expect(result.contributors.newcomers90d).toBe(4);
+  });
+
   it('fills empty defaults for new commit-timing aggregates on a pre-0.40 commitTiming object', () => {
     // Simulate a report from GitRelic ≤ 0.39: commitTiming exists but lacks the
     // new aggregates added in 0.40 (repoHourDayMatrix, highStress, tierMix,

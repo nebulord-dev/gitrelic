@@ -74,6 +74,8 @@ export function analyzeContributors(
         .slice(0, 3)
         .map(([dir]) => dir);
 
+      const lastCommitMs = new Date(lastCommit).getTime();
+      const isActive = lastCommitMs > activeCutoff;
       return {
         email,
         name: data.name,
@@ -84,15 +86,16 @@ export function analyzeContributors(
         linesChanged,
         activeDays,
         focusAreas,
-        isActive: new Date(lastCommit).getTime() > activeCutoff,
+        isActive,
+        // Three-state classification: active / intermediate / ghost.
+        // Intermediate (between cutoffs) is neither active nor ghost.
+        isGhost: !isActive && lastCommitMs < ghostCutoff,
       };
     })
     .sort((a, b) => b.commitCount - a.commitCount);
 
   const activeContributors = contributors.filter((c) => c.isActive);
-  const ghostContributors = contributors.filter(
-    (c) => !c.isActive && new Date(c.lastCommit).getTime() < ghostCutoff,
-  );
+  const ghostContributors = contributors.filter((c) => c.isGhost);
 
   // Guard against an empty commit list when called as a library — the runner
   // rejects zero-commit repos earlier, but analyzeContributors is exported
@@ -108,6 +111,7 @@ export function analyzeContributors(
     activeDays: 0,
     focusAreas: [],
     isActive: false,
+    isGhost: false,
   };
 
   const summary =
@@ -117,11 +121,25 @@ export function analyzeContributors(
         ? `${contributors.length} contributors total — ${activeContributors.length} active, ${ghostContributors.length} ghosts who haven't committed in ${ghostWindowDays}+ days`
         : `${contributors.length} contributors — ${activeContributors.length} actively committing`;
 
+  const totalCommits = contributors.reduce((sum, c) => sum + c.commitCount, 0);
+  const top3Sum = contributors
+    .slice(0, 3)
+    .reduce((sum, c) => sum + c.commitCount, 0);
+  const top3CommitShare =
+    totalCommits === 0 ? 0 : (top3Sum / totalCommits) * 100;
+
+  const newcomerCutoff = now - 90 * 86_400_000;
+  const newcomers90d = contributors.filter(
+    (c) => new Date(c.firstCommit).getTime() >= newcomerCutoff,
+  ).length;
+
   return {
     contributors,
     activeContributors,
     ghostContributors,
     topContributor,
     summary,
+    top3CommitShare,
+    newcomers90d,
   };
 }

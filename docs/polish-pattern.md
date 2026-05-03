@@ -231,6 +231,23 @@ The four analyzers in Batch 1 all share the "table is rotated hero" pathology. T
 - **Removes:** `BusFactorTab`'s per-file `SortableTable` (~110 lines). Inspector + leaderboard hero already cover per-file detail. `sortBusFactor.ts` retained because `OwnershipBar` (now the alt hero) still consumes it.
 - **Pre-1.0 versioning note:** ships as `feat:` (minor bump). `OwnershipBar` is technically still wired but defaults change — Sidebar deep-links that pinned the old `ownership-bar` default will silently fall through to the new histogram. No breaking change to the public CLI surface.
 
+### `contributors` *(shipped — RELIC-306)*
+
+- **Bottom panel:** Polished `SortableTable` (kept the table form). Six columns: Contributor (name + email + status dot + ghost badge inline) · Commits (default sort desc, pre-sorted by analyzer) · Files · Lines · Last Active · Focus Areas (top 3, was top 2). Removed the standalone Status column — consolidated into the Contributor cell. Display-name presentation throughout (`Sebastian Markbåge` not `sebastian@calyptus.eu`); email rendered smaller below the name as a disambiguation aid, suppressed when name is empty so a name-missing fallback doesn't render the email twice. The doc's original Batch-3 reasoning ("table earns space because hero is per-directory") was based on Bubble being default; once Swimlanes became default, both surfaces are per-author, but the table still earns space because it's a different *density* — full sortable list of N vs. ~10 visible swimlane rows.
+- **Hero (default):** `ContributorSwimlanes` (was alt; promoted). Per-author rows × time × commit-intensity. Answers "who is active when, and how intensely?" — the lead question for a contributors analyzer. Wrapped in `flex flex-col` so a `<HeroCaption>` strip sits beneath the scroll container.
+- **Hero (alt):** `OwnershipBubble` (was default; demoted, registry key `ownership` → tab label "Ownership"). Per-directory bubble pack sized by LOC, colored by dominant author. Answers "who works on which parts of the codebase?". Cleaned up: bubble labels and tooltip use display names (was email-prefix), `<HeroCaption>` replaced the inline footer div, legend intentionally still renders emails (deferred per RELIC-306 scope, comment in source documents the deferral).
+- **Hero captions:** added to both via shared `<HeroCaption>` component (parity with Churn / Bus Factor / Rewrite Ratio).
+- **Removed heroes:** `ownership-sunburst` from contributors preset altTabs (component itself stays — Knowledge Silos and Ghost Files still consume it). Same "redundant alts" pathology Bus Factor and Rewrite Ratio fixed: sunburst is the *lead* hero in those analyzers where the file-tree-by-risk framing fits; on Contributors it answered a worse version of those analyzers' questions.
+- **Decision: no Timeline rehoming.** Considered as a third hero alt (the homeless stacked-area-by-author from RELIC-323). Rejected because (a) Timeline still lives in Overview's altTabs — it isn't actually homeless, and (b) it partially overlaps Swimlanes (both temporal-by-author, just different aggregation density). Two-tab pattern is cleaner. Can revisit if there's pull later.
+- **Metrics strip retune:** Slot 1 `Active Contributors` (existing — now severity-banded `0/1 critical / 2–5 warning / 6+ healthy`). Slot 2 `Top-3 Share %` (NEW — velocity concentration, not on screen anywhere else: `<40% healthy / 40–69% warning / ≥70% critical`). Slot 3 `Ghost Authors` (existing — moved from slot 2, severity-banded by ghost ratio: `0 healthy / <30% warning / ≥30% critical`). Slot 4 `Newcomers (90d)` (NEW — team-renewal signal: `0 stale-grey / 1+ healthy`). Dropped: `Total Commits` (meta-stat without team-health signal). Mirrors Rewrite Ratio / Parallel Dev / Commit Timing precedent of replacing shape-of-data counts with health-tiered counts. Also fixed pre-existing semantic bugs: the old composer was reading `report.meta.totalAuthors` (total ≠ active) and `report.ghostFiles.totalGhostFiles` (files ≠ authors); rewrite reads `report.contributors.*` directly.
+- **See also:** Bus Factor, Ghost Files. Sticky to the bottom of the panel. Completes the ownership-risk triangle from the contributor vertex (per-file concentration + dormant-file ownership).
+- **Backend changes:**
+  - Add `top3CommitShare: number` (0-100, %) to `ContributorReport`. Sum of top-3 commitCount divided by total commits × 100. Empty-repo guard returns 0.
+  - Add `newcomers90d: number` to `ContributorReport`. Count of contributors with `firstCommit ≤ 90d ago` from `now`. Inclusive boundary.
+  - No score-formula changes (Contributors has no per-file score).
+  - `normalizeReport.ts` extended to per-field merge for the contributors slice (rather than object-level `??` fallback) so old report JSONs without the new fields default to 0 rather than `undefined`.
+- **Removes:** `ContributorsTab`'s standalone `Status` column (consolidated into Contributor cell). `'ownership-sunburst'` from contributors preset altTabs. `Total Commits` slot from metrics strip.
+
 ## Pending (Batches 2–N)
 
 Not yet decided. Will be filled in as each batch is worked through. Listed here so the doc is honest about what's done vs. open.
@@ -240,7 +257,6 @@ Not yet decided. Will be filled in as each batch is worked through. Listed here 
 | `co-author` | 2 | Empty on react repo; needs empty-state pass. |
 | `knowledge-concentration` (Knowledge Silos) | — | Already shipped. Reference implementation. |
 | `ghost-files` | 3 | Same sunburst as Knowledge Silos. Likely narrative-KPI. |
-| `contributors` | 3 | Sunburst is one of three views. Bottom table earns space (per-contributor vs hero per-directory). |
 | `cursed-files` | TBD | Bottom table earns space (REASONS chips). Probably keeps current form. |
 | `age-map` | TBD | Treemap hero. Generic table — likely narrative-KPI. |
 | `test-coverage` | TBD | Treemap. Bottom table earns space (different unit). |

@@ -124,7 +124,8 @@ export interface Contributor {
   linesChanged: number;
   activeDays: number;
   focusAreas: string[]; // top directories they work in
-  isActive: boolean; // committed in last 90 days
+  isActive: boolean; // last commit within the active window (≥ max(90, repoAge * 0.25) days)
+  isGhost: boolean; // last commit predates the ghost cutoff (max(180, repoAge * 0.5) days). Mutually exclusive with isActive; both false = intermediate zone.
 }
 
 export interface ContributorReport {
@@ -133,6 +134,8 @@ export interface ContributorReport {
   ghostContributors: Contributor[]; // committed but no activity in >6 months
   topContributor: Contributor;
   summary: string;
+  top3CommitShare: number; // % (0-100), top-3 commit-count concentration
+  newcomers90d: number; // count of contributors whose firstCommit is ≤ 90d ago
 }
 
 // ─── Cursed files ──────────────────────────────────────────────────────────────

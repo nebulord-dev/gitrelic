@@ -11,6 +11,27 @@ function makeReport(): GitrelicReport {
   return {
     meta: { totalAuthors: 5, ageInDays: 365 },
     churn: { files: [], topFiles: [], hotspotCount: 0, summary: '' },
+    contributors: {
+      contributors: [],
+      activeContributors: [],
+      ghostContributors: [],
+      topContributor: {
+        email: '',
+        name: '',
+        commitCount: 0,
+        firstCommit: '',
+        lastCommit: '',
+        filesOwned: 0,
+        linesChanged: 0,
+        activeDays: 0,
+        focusAreas: [],
+        isActive: false,
+        isGhost: false,
+      },
+      summary: '',
+      top3CommitShare: 0,
+      newcomers90d: 0,
+    },
     loc: {
       totalFiles: 10,
       totalLines: 1000,
