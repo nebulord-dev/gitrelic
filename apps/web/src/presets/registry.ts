@@ -327,8 +327,8 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     label: 'Commit Timing',
     group: 'team-activity',
     hero: {
-      defaultViz: 'timeline',
-      altTabs: ['timeline', 'swimlanes'],
+      defaultViz: 'punch-card',
+      altTabs: ['punch-card', 'stress-trend'],
     },
     bottomPanel: {
       defaultTab: 'commit-timing',
