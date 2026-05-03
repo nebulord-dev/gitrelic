@@ -44,9 +44,11 @@ export function ContributorsTab({
               <span className="truncate">{c.name || c.email}</span>
               {!c.isActive && <Badge variant="stale">ghost</Badge>}
             </div>
-            <div className="text-[9px] text-text-tertiary truncate">
-              {c.email}
-            </div>
+            {c.name && (
+              <div className="text-[9px] text-text-tertiary truncate">
+                {c.email}
+              </div>
+            )}
           </div>
         </div>
       ),
@@ -92,6 +94,9 @@ export function ContributorsTab({
       label: 'Last Active',
       width: '100px',
       align: 'right',
+      // Negate so most-recent sorts first; missing/invalid lastCommit
+      // → NaN || 0 → epoch zero → bottom of list (matches daysSince's
+      // `null → em-dash` rendering of the same case).
       sortValue: (c) => -1 * (new Date(c.lastCommit).getTime() || 0),
       render: (c) => (
         <span className="font-mono text-[10px] text-text-tertiary">
@@ -129,6 +134,7 @@ export function ContributorsTab({
       <div className="sticky bottom-0 mt-auto bg-surface-primary border-t border-border-primary py-1.5 px-1 text-[10px] text-text-tertiary flex gap-2 items-center">
         See also:{' '}
         <button
+          type="button"
           onClick={() => onApplyPreset('bus-factor')}
           className="bg-transparent border-none text-accent-primary text-[10px] cursor-pointer p-0 underline"
         >
@@ -136,6 +142,7 @@ export function ContributorsTab({
         </button>
         ·
         <button
+          type="button"
           onClick={() => onApplyPreset('ghost-files')}
           className="bg-transparent border-none text-accent-primary text-[10px] cursor-pointer p-0 underline"
         >
