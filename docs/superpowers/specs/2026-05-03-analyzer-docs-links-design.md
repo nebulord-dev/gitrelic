@@ -77,26 +77,38 @@ The bottom-panel tab bar (`apps/web/src/components/layout/BottomPanel.tsx`, line
 Visual notes:
 
 - **Type size matches tab buttons** (`text-[10px]`) — sits on the same baseline.
+- **Padding matches tab buttons** (`px-3.5 py-2`) but **no `border-b`** — the link is not a tab and shouldn't read as one. Tab buttons carry `border-b-2` (active or transparent); the link omits that entirely.
 - **Tertiary text color** at rest, **primary on hover** — quiet by default, responsive to intent.
 - **`target="_blank"` + `rel="noopener noreferrer"`** — docs site is a separate deploy; opening in-place would lose the user's dashboard state. `noopener noreferrer` is the standard hardening for cross-origin `_blank` links.
 - **Arrow glyph (`↗`)** matches the established external-link convention in the docs site's own nav.
 - **No icon library required** — plain unicode arrow keeps the change scope-tight.
+- **Screenshot pass during PR review.** The `Docs ↗` link sits in the same row as the tab buttons but is structurally different (no border-b, right-anchored). Verify visual rhythm against the existing tab buttons in a deployed render — particularly that vertical alignment is clean and the link doesn't read as a misaligned tab.
 
 ### Plumbing
 
-`docsPath` is per-preset, available in `apps/web/src/presets/registry.ts` via `PRESETS[selection.activePresetId]`. `Shell.tsx` already reads from this map at line 222 for `heroLabel`. Add `docsPath` to the `<BottomPanel>` prop spread at line 437:
+`docsPath` is per-preset, available in `apps/web/src/presets/registry.ts` via `PRESETS[selection.activePresetId]`. `Shell.tsx` currently reads from this map at line 222 for `heroLabel`. With this change, the same preset is read for two purposes (`heroLabel` + `docsPath`), so destructure once near the top of the render body (before the hero region around line 210) rather than indexing `PRESETS[...]` twice:
+
+```tsx
+const activePreset = PRESETS[selection.activePresetId];
+// ... later in the hero region:
+//   {activePreset.heroLabel ?? <fallback>}
+// ... and at the bottom panel:
+//   <BottomPanel docsPath={activePreset.docsPath} ... />
+```
+
+Then pass `docsPath` to `<BottomPanel>` at line 437:
 
 ```tsx
 <BottomPanel
   report={report}
   activeTab={selection.activeBottomTab}
   altTabs={selection.bottomAltTabs}
-  docsPath={PRESETS[selection.activePresetId].docsPath}
+  docsPath={activePreset.docsPath}
   ...
 />
 ```
 
-`BottomPanelProps` adds `docsPath?: string`. No other consumer changes.
+`BottomPanelProps` adds `docsPath?: string`. No other consumer changes. The destructure refactor at line 222 is a one-line cleanup that ships in the same diff — it's not a separate concern, just the natural shape of "two reads of the same preset → bind once."
 
 ### Dashboard-tier presets
 
@@ -155,7 +167,10 @@ The change is a small bit of conditional rendering with no data transformation. 
 
 1. **`apps/web/src/components/layout/Shell.test.tsx`** — extend (or add if missing) a case that renders Shell with an analyzer preset that has `docsPath` set and asserts a `<a href>` element with `Docs ↗` text exists in the bottom panel; and a case with a dashboard preset (no `docsPath`) that asserts no docs link renders.
 
-2. **`apps/web/src/presets/registry.test.ts`** — extend to verify the eight backfilled presets have `docsPath` set and that all `docsPath` values follow the `analyzers/<slug>` convention.
+2. **`apps/web/src/presets/registry.test.ts`** — extend with three assertions:
+   1. **Backfill assertion** — the eight backfilled presets have `docsPath` set and follow the `analyzers/<slug>` convention.
+   2. **Filesystem assertion** — every `docsPath` value resolves to a real file at `apps/docs/analyzers/<slug>.md` (Vitest runs in Node, can `fs.existsSync` directly).
+   3. **DoD-enforcement assertion** — for every `tier === 'analyzer'` preset, if `apps/docs/analyzers/<preset.id>.md` exists on disk, then that preset MUST have `docsPath` set. Catches the "shipped a docs page but forgot to wire the in-app link" failure mode automatically. Belt-and-suspenders to the polish-pattern.md DoD checklist — the test runs on every CI build, the checklist relies on humans.
 
 3. **No new hero/tab tests required** — none of those surfaces change.
 
