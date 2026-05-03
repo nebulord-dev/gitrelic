@@ -19,6 +19,7 @@ function makeContributor(overrides: Partial<Contributor> = {}): Contributor {
     activeDays: 1,
     focusAreas: [],
     isActive: true,
+    isGhost: false,
     ...overrides,
   };
 }

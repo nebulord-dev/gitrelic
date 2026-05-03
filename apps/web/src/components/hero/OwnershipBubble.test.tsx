@@ -5,7 +5,21 @@ import {
   fitLabel,
   fitSubLabel,
 } from './OwnershipBubble';
-import type { GitrelicReport } from '@gitrelic/core';
+import type { Contributor, GitrelicReport } from '@gitrelic/core';
+
+const EMPTY_TOP_CONTRIBUTOR: Contributor = {
+  email: '',
+  name: '',
+  commitCount: 0,
+  firstCommit: '',
+  lastCommit: '',
+  filesOwned: 0,
+  linesChanged: 0,
+  activeDays: 0,
+  focusAreas: [],
+  isActive: false,
+  isGhost: false,
+};
 
 function makeReport(overrides: Partial<GitrelicReport> = {}): GitrelicReport {
   return {
@@ -55,6 +69,7 @@ function makeReport(overrides: Partial<GitrelicReport> = {}): GitrelicReport {
           activeDays: 5,
           focusAreas: [],
           isActive: true,
+          isGhost: false,
         },
         {
           email: 'bob@dev.com',
@@ -67,11 +82,12 @@ function makeReport(overrides: Partial<GitrelicReport> = {}): GitrelicReport {
           activeDays: 3,
           focusAreas: [],
           isActive: true,
+          isGhost: false,
         },
       ],
       activeContributors: [],
       ghostContributors: [],
-      topContributor: {} as any,
+      topContributor: EMPTY_TOP_CONTRIBUTOR,
       summary: '',
     },
     ...overrides,
@@ -127,6 +143,7 @@ describe('buildDirectoryBubbles', () => {
             activeDays: 5,
             focusAreas: [],
             isActive: true,
+            isGhost: false,
           },
           {
             email: 'bob@dev.com',
@@ -139,11 +156,12 @@ describe('buildDirectoryBubbles', () => {
             activeDays: 3,
             focusAreas: [],
             isActive: true,
+            isGhost: false,
           },
         ],
         activeContributors: [],
         ghostContributors: [],
-        topContributor: {} as any,
+        topContributor: EMPTY_TOP_CONTRIBUTOR,
         summary: '',
       },
     });

@@ -74,6 +74,8 @@ export function analyzeContributors(
         .slice(0, 3)
         .map(([dir]) => dir);
 
+      const lastCommitMs = new Date(lastCommit).getTime();
+      const isActive = lastCommitMs > activeCutoff;
       return {
         email,
         name: data.name,
@@ -84,15 +86,16 @@ export function analyzeContributors(
         linesChanged,
         activeDays,
         focusAreas,
-        isActive: new Date(lastCommit).getTime() > activeCutoff,
+        isActive,
+        // Three-state classification: active / intermediate / ghost.
+        // Intermediate (between cutoffs) is neither active nor ghost.
+        isGhost: !isActive && lastCommitMs < ghostCutoff,
       };
     })
     .sort((a, b) => b.commitCount - a.commitCount);
 
   const activeContributors = contributors.filter((c) => c.isActive);
-  const ghostContributors = contributors.filter(
-    (c) => !c.isActive && new Date(c.lastCommit).getTime() < ghostCutoff,
-  );
+  const ghostContributors = contributors.filter((c) => c.isGhost);
 
   // Guard against an empty commit list when called as a library — the runner
   // rejects zero-commit repos earlier, but analyzeContributors is exported
@@ -108,6 +111,7 @@ export function analyzeContributors(
     activeDays: 0,
     focusAreas: [],
     isActive: false,
+    isGhost: false,
   };
 
   const summary =

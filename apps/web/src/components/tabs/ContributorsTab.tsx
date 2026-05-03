@@ -42,7 +42,7 @@ export function ContributorsTab({
                 }
               />
               <span className="truncate">{c.name || c.email}</span>
-              {!c.isActive && <Badge variant="stale">ghost</Badge>}
+              {c.isGhost && <Badge variant="stale">ghost</Badge>}
             </div>
             {c.name && (
               <div className="text-[9px] text-text-tertiary truncate">

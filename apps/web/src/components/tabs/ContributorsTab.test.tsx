@@ -20,6 +20,7 @@ function makeContributor(overrides: Partial<Contributor> = {}): Contributor {
       'packages/react-dom',
     ],
     isActive: true,
+    isGhost: false,
     ...overrides,
   };
 }
@@ -29,7 +30,7 @@ function makeReport(contributors: Contributor[] = []): GitrelicReport {
     contributors: {
       contributors,
       activeContributors: contributors.filter((c) => c.isActive),
-      ghostContributors: contributors.filter((c) => !c.isActive),
+      ghostContributors: contributors.filter((c) => c.isGhost),
       topContributor: contributors[0] ?? makeContributor(),
       summary: '',
       top3CommitShare: 0,
@@ -67,7 +68,7 @@ describe('ContributorsTab', () => {
     expect(screen.getByText('sebastian@calyptus.eu')).toBeTruthy();
   });
 
-  it('renders the ghost badge inline with the contributor cell when isActive=false', () => {
+  it('renders the ghost badge inline with the contributor cell when isGhost=true', () => {
     render(
       <ContributorsTab
         report={makeReport([
@@ -75,12 +76,30 @@ describe('ContributorsTab', () => {
             email: 'gone@x',
             name: 'Gone Author',
             isActive: false,
+            isGhost: true,
           }),
         ])}
         onApplyPreset={vi.fn()}
       />,
     );
     expect(screen.getByText('ghost')).toBeTruthy();
+  });
+
+  it('does NOT render the ghost badge for intermediate-zone contributors (isActive=false, isGhost=false)', () => {
+    render(
+      <ContributorsTab
+        report={makeReport([
+          makeContributor({
+            email: 'middle@x',
+            name: 'Middle Zone',
+            isActive: false,
+            isGhost: false,
+          }),
+        ])}
+        onApplyPreset={vi.fn()}
+      />,
+    );
+    expect(screen.queryByText('ghost')).toBeNull();
   });
 
   it('renders top-3 focus areas (not top-2)', () => {

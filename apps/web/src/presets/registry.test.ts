@@ -26,6 +26,7 @@ function makeReport(): GitrelicReport {
         activeDays: 0,
         focusAreas: [],
         isActive: false,
+        isGhost: false,
       },
       summary: '',
       top3CommitShare: 0,

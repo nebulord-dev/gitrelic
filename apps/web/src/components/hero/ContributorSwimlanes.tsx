@@ -91,7 +91,7 @@ export function prepareSwimlaneData(report: GitrelicReport): SwimLane[] {
       if (idx >= 0 && idx < totalWeeks) weekly[idx]++;
     }
 
-    const isGhost = ghostAuthors.has(contrib.email) || !contrib.isActive;
+    const isGhost = ghostAuthors.has(contrib.email) || contrib.isGhost;
     const lastActiveDate =
       authorCommits.length > 0
         ? new Date(

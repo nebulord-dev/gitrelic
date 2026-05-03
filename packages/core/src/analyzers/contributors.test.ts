@@ -102,6 +102,55 @@ describe('analyzeContributors', () => {
     );
   });
 
+  it('three-state classification: active / intermediate / ghost are mutually exclusive', () => {
+    // repoAgeDays=365 → active window 91d, ghost window 183d.
+    // The intermediate-zone author at 120d ago should be neither active nor ghost.
+    const commits = [
+      makeCommit({
+        hash: '1',
+        authorEmail: 'active@x',
+        authorName: 'Active',
+        date: daysAgo(10),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        authorEmail: 'middle@x',
+        authorName: 'Middle',
+        date: daysAgo(120),
+        files: ['b.ts'],
+      }),
+      makeCommit({
+        hash: '3',
+        authorEmail: 'ghost@x',
+        authorName: 'Ghost',
+        date: daysAgo(220),
+        files: ['c.ts'],
+      }),
+    ];
+    const result = analyzeContributors(commits, 365);
+    const active = result.contributors.find((c) => c.email === 'active@x')!;
+    const middle = result.contributors.find((c) => c.email === 'middle@x')!;
+    const ghost = result.contributors.find((c) => c.email === 'ghost@x')!;
+
+    expect(active.isActive).toBe(true);
+    expect(active.isGhost).toBe(false);
+
+    expect(middle.isActive).toBe(false);
+    expect(middle.isGhost).toBe(false);
+
+    expect(ghost.isActive).toBe(false);
+    expect(ghost.isGhost).toBe(true);
+
+    // Intermediate-zone author is excluded from both lists.
+    expect(result.activeContributors.map((c) => c.email)).not.toContain(
+      'middle@x',
+    );
+    expect(result.ghostContributors.map((c) => c.email)).not.toContain(
+      'middle@x',
+    );
+  });
+
   it('extracts focus areas from file paths', () => {
     const commits = [
       makeCommit({

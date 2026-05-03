@@ -68,6 +68,7 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
         activeDays: 0,
         focusAreas: [],
         isActive: false,
+        isGhost: false,
       },
       summary: raw.contributors?.summary ?? 'Not available',
       top3CommitShare: raw.contributors?.top3CommitShare ?? 0,
