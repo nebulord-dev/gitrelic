@@ -68,7 +68,7 @@ Count of contributors whose last commit falls within the active window (see cuto
 | 2–5 | Warning | Amber |
 | 6+ | Healthy | Green |
 
-Zero active contributors means no one has committed within the active window — typically a stale repository or an analysis window that excluded the recent contributor base. A single-author project is also flagged critical because the entire commit bus has one driver. Five or fewer active contributors is a warning because the knowledge surface is narrow enough that two or three simultaneous departures could stall delivery.
+Zero active contributors means no one has committed within the active window — typically a stale repository or an analysis window that excluded the recent contributor base. A single-author project is also flagged critical because the entire commit bus has one driver. The 2–5 range is a warning because the knowledge surface is narrow enough that two or three simultaneous departures could stall delivery.
 
 ### Top-3 Share
 
