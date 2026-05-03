@@ -39,7 +39,9 @@ export type HeroViz =
   | 'parallel-score-histogram'
   | 'parallel-timeline'
   | 'languages-stacked'
-  | 'test-coverage-by-dir';
+  | 'test-coverage-by-dir'
+  | 'punch-card'
+  | 'stress-trend';
 
 export type BottomTab =
   | 'hotspots'
