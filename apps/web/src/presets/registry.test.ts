@@ -58,6 +58,13 @@ function makeReport(): GitrelicReport {
       repoLateNightPercent: 0,
       repoWeekendPercent: 0,
       summary: '',
+      repoHourDayMatrix: Array.from({ length: 7 }, () =>
+        Array.from({ length: 24 }, () => 0),
+      ),
+      highStress: 0,
+      tierMix: { low: 0, medium: 0, high: 0, critical: 0 },
+      byMonth: [],
+      authorStress: [],
     },
     coAuthors: {
       pairs: [],

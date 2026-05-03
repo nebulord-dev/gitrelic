@@ -2,15 +2,15 @@ import { fmt } from '../../components/theme';
 import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 
-const STRESS_THRESHOLD = 50;
+const HIGH_STRESS_FILES_THRESHOLD = 5; // matches CommitTimingTab.MODERATE_THRESHOLD
+const STRESSED_AUTHOR_SCORE_THRESHOLD = 50; // per-author warning band
 
 export function commitTimingMetrics(report: GitrelicReport): Metric[] {
-  const { stressFiles, repoLateNightPercent, repoWeekendPercent } =
+  const { highStress, authorStress, repoLateNightPercent, repoWeekendPercent } =
     report.commitTiming;
-  const topStress = stressFiles[0];
-  const topStressScore = topStress?.stressScore ?? 0;
-  const stressedCount = stressFiles.filter(
-    (f) => f.stressScore > STRESS_THRESHOLD,
+
+  const stressedAuthors = authorStress.filter(
+    (a) => a.stressScore >= STRESSED_AUTHOR_SCORE_THRESHOLD,
   ).length;
 
   return [
@@ -35,25 +35,24 @@ export function commitTimingMetrics(report: GitrelicReport): Metric[] {
             : 'var(--severity-healthy)',
     },
     {
-      label: 'Stress Files',
-      value: fmt(stressedCount),
+      label: 'High Stress',
+      value: fmt(highStress),
       color:
-        stressedCount >= 5
-          ? 'var(--severity-critical)'
-          : stressedCount > 0
+        highStress === 0
+          ? 'var(--severity-healthy)'
+          : highStress < HIGH_STRESS_FILES_THRESHOLD
             ? 'var(--severity-warning)'
-            : 'var(--severity-healthy)',
+            : 'var(--severity-critical)',
     },
     {
-      label: 'Top Stress',
-      value: topStress ? String(Math.round(topStressScore)) : '—',
-      color: !topStress
-        ? 'var(--severity-healthy)'
-        : topStressScore >= 70
-          ? 'var(--severity-critical)'
-          : topStressScore > STRESS_THRESHOLD
+      label: 'Stressed Authors',
+      value: fmt(stressedAuthors),
+      color:
+        stressedAuthors === 0
+          ? 'var(--severity-healthy)'
+          : stressedAuthors <= 2
             ? 'var(--severity-warning)'
-            : 'var(--severity-healthy)',
+            : 'var(--severity-critical)',
     },
   ];
 }

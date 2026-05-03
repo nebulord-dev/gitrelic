@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { commitTimingMetrics } from './commit-timing';
 import type {
+  AuthorStressProfile,
   CommitTimingReport,
   FileTimingProfile,
   GitrelicReport,
@@ -23,6 +24,22 @@ function makeFile(
   };
 }
 
+function makeAuthor(
+  overrides: Partial<AuthorStressProfile> = {},
+): AuthorStressProfile {
+  return {
+    email: 'alex@example.com',
+    name: 'Alex Lee',
+    totalCommits: 50,
+    lateNightCommits: 0,
+    weekendCommits: 0,
+    lateNightPercent: 0,
+    weekendPercent: 0,
+    stressScore: 30,
+    ...overrides,
+  };
+}
+
 function makeReport(commitTiming: Partial<CommitTimingReport>): GitrelicReport {
   return {
     commitTiming: {
@@ -31,6 +48,18 @@ function makeReport(commitTiming: Partial<CommitTimingReport>): GitrelicReport {
       repoLateNightPercent: commitTiming.repoLateNightPercent ?? 0,
       repoWeekendPercent: commitTiming.repoWeekendPercent ?? 0,
       summary: '',
+      repoHourDayMatrix:
+        commitTiming.repoHourDayMatrix ??
+        Array.from({ length: 7 }, () => Array.from({ length: 24 }, () => 0)),
+      highStress: commitTiming.highStress ?? 0,
+      tierMix: commitTiming.tierMix ?? {
+        low: 0,
+        medium: 0,
+        high: 0,
+        critical: 0,
+      },
+      byMonth: commitTiming.byMonth ?? [],
+      authorStress: commitTiming.authorStress ?? [],
     },
   } as unknown as GitrelicReport;
 }
@@ -39,13 +68,17 @@ describe('commitTimingMetrics', () => {
   it('returns healthy zeros when repo has no stress patterns', () => {
     const metrics = commitTimingMetrics(makeReport({}));
     expect(metrics).toHaveLength(4);
+    expect(metrics[0].label).toBe('Late Night %');
     expect(metrics[0].value).toBe('0%');
     expect(metrics[0].color).toBe('var(--severity-healthy)');
+    expect(metrics[1].label).toBe('Weekend %');
     expect(metrics[1].value).toBe('0%');
     expect(metrics[1].color).toBe('var(--severity-healthy)');
+    expect(metrics[2].label).toBe('High Stress');
     expect(metrics[2].value).toBe('0');
     expect(metrics[2].color).toBe('var(--severity-healthy)');
-    expect(metrics[3].value).toBe('—');
+    expect(metrics[3].label).toBe('Stressed Authors');
+    expect(metrics[3].value).toBe('0');
     expect(metrics[3].color).toBe('var(--severity-healthy)');
   });
 
@@ -77,66 +110,68 @@ describe('commitTimingMetrics', () => {
     expect(metrics[1].color).toBe('var(--severity-critical)');
   });
 
-  it('counts only files with stressScore above the 50 threshold', () => {
-    const stressFiles = [
-      makeFile({ file: 'a.ts', stressScore: 82 }),
-      makeFile({ file: 'b.ts', stressScore: 30 }),
-      makeFile({ file: 'c.ts', stressScore: 51 }),
-    ];
-    const metrics = commitTimingMetrics(
-      makeReport({ stressFiles, files: stressFiles }),
-    );
-    expect(metrics[2].value).toBe('2');
+  it('marks High Stress as warning when between 1 and 4 high-stress files', () => {
+    const metrics = commitTimingMetrics(makeReport({ highStress: 3 }));
+    expect(metrics[2].value).toBe('3');
     expect(metrics[2].color).toBe('var(--severity-warning)');
   });
 
-  it('keeps Stress Files healthy when no file exceeds the threshold even if the list is non-empty', () => {
-    const stressFiles = [
-      makeFile({ stressScore: 40 }),
-      makeFile({ stressScore: 50 }), // boundary — must be strictly greater than 50
-    ];
-    const metrics = commitTimingMetrics(
-      makeReport({ stressFiles, files: stressFiles }),
-    );
+  it('marks High Stress as critical at 5 or more high-stress files', () => {
+    const metrics = commitTimingMetrics(makeReport({ highStress: 7 }));
+    expect(metrics[2].value).toBe('7');
+    expect(metrics[2].color).toBe('var(--severity-critical)');
+  });
+
+  it('keeps High Stress healthy at zero', () => {
+    const metrics = commitTimingMetrics(makeReport({ highStress: 0 }));
     expect(metrics[2].value).toBe('0');
     expect(metrics[2].color).toBe('var(--severity-healthy)');
   });
 
-  it('marks Stress Files as critical with 5 or more stressed files', () => {
-    const stressFiles = Array.from({ length: 6 }, (_, i) =>
-      makeFile({ file: `f${i}.ts`, stressScore: 60 + i }),
-    );
-    const metrics = commitTimingMetrics(
-      makeReport({ stressFiles, files: stressFiles }),
-    );
-    expect(metrics[2].value).toBe('6');
-    expect(metrics[2].color).toBe('var(--severity-critical)');
-  });
-
-  it('marks Top Stress as critical at or above 70', () => {
-    const stressFiles = [makeFile({ stressScore: 82 })];
-    const metrics = commitTimingMetrics(
-      makeReport({ stressFiles, files: stressFiles }),
-    );
-    expect(metrics[3].value).toBe('82');
-    expect(metrics[3].color).toBe('var(--severity-critical)');
-  });
-
-  it('marks Top Stress as warning above the 50 threshold but below 70', () => {
-    const stressFiles = [makeFile({ stressScore: 55 })];
-    const metrics = commitTimingMetrics(
-      makeReport({ stressFiles, files: stressFiles }),
-    );
-    expect(metrics[3].value).toBe('55');
+  it('counts only authors with stressScore >= 50 toward Stressed Authors', () => {
+    const authorStress = [
+      makeAuthor({ email: 'a@x', stressScore: 80 }),
+      makeAuthor({ email: 'b@x', stressScore: 50 }), // boundary — included
+      makeAuthor({ email: 'c@x', stressScore: 49 }), // excluded
+      makeAuthor({ email: 'd@x', stressScore: 10 }),
+    ];
+    const metrics = commitTimingMetrics(makeReport({ authorStress }));
+    expect(metrics[3].value).toBe('2');
     expect(metrics[3].color).toBe('var(--severity-warning)');
   });
 
-  it('keeps Top Stress healthy when the top score is at or below the 50 threshold', () => {
-    const stressFiles = [makeFile({ stressScore: 45 })];
-    const metrics = commitTimingMetrics(
-      makeReport({ stressFiles, files: stressFiles }),
-    );
-    expect(metrics[3].value).toBe('45');
+  it('marks Stressed Authors as critical with more than 2 stressed authors', () => {
+    const authorStress = [
+      makeAuthor({ email: 'a@x', stressScore: 90 }),
+      makeAuthor({ email: 'b@x', stressScore: 70 }),
+      makeAuthor({ email: 'c@x', stressScore: 60 }),
+    ];
+    const metrics = commitTimingMetrics(makeReport({ authorStress }));
+    expect(metrics[3].value).toBe('3');
+    expect(metrics[3].color).toBe('var(--severity-critical)');
+  });
+
+  it('keeps Stressed Authors healthy when none meet the threshold', () => {
+    const authorStress = [
+      makeAuthor({ email: 'a@x', stressScore: 49 }),
+      makeAuthor({ email: 'b@x', stressScore: 30 }),
+    ];
+    const metrics = commitTimingMetrics(makeReport({ authorStress }));
+    expect(metrics[3].value).toBe('0');
     expect(metrics[3].color).toBe('var(--severity-healthy)');
+  });
+
+  it('still references file inputs only via highStress (does not look at stressFiles)', () => {
+    // Even with a populated stressFiles list, the High Stress slot is now
+    // driven exclusively by report.commitTiming.highStress.
+    const stressFiles = [
+      makeFile({ stressScore: 90 }),
+      makeFile({ stressScore: 80 }),
+    ];
+    const metrics = commitTimingMetrics(
+      makeReport({ stressFiles, files: stressFiles, highStress: 0 }),
+    );
+    expect(metrics[2].value).toBe('0');
+    expect(metrics[2].color).toBe('var(--severity-healthy)');
   });
 });
