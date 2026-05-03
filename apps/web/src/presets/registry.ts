@@ -252,8 +252,8 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     label: 'Parallel Dev',
     group: 'team-activity',
     hero: {
-      defaultViz: 'swimlanes',
-      altTabs: ['swimlanes', 'timeline'],
+      defaultViz: 'parallel-score-histogram',
+      altTabs: ['parallel-score-histogram', 'parallel-timeline'],
     },
     bottomPanel: {
       defaultTab: 'parallel-dev',

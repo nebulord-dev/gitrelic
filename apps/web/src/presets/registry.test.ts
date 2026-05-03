@@ -27,7 +27,15 @@ function makeReport(): GitrelicReport {
       totalFiles: 0,
       concentrationIndex: 0,
     },
-    parallelDev: { files: [], hotFiles: [], totalParallelFiles: 0 },
+    parallelDev: {
+      files: [],
+      hotFiles: [],
+      totalParallelFiles: 0,
+      highParallel: 0,
+      tierMix: { low: 0, medium: 0, high: 0, critical: 0 },
+      byMonth: [],
+      summary: '',
+    },
     ageMap: { files: [], staleFiles: [], ancientFiles: [], medianAgeDays: 0 },
     testCoverage: {
       directories: [],
