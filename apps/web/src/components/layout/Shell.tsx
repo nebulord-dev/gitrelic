@@ -19,6 +19,8 @@ import { LanguagesStackedBar } from '../hero/LanguagesStackedBar';
 import { OwnershipBar } from '../hero/OwnershipBar';
 import { OwnershipBubble } from '../hero/OwnershipBubble';
 import { OwnershipSunburst } from '../hero/OwnershipSunburst';
+import { ParallelScoreHistogram } from '../hero/ParallelScoreHistogram';
+import { ParallelTimeline } from '../hero/ParallelTimeline';
 import { RenameSankey } from '../hero/RenameSankey';
 import { RewriteDivergingBar } from '../hero/RewriteDivergingBar';
 import { RewriteHistogram } from '../hero/RewriteHistogram';
@@ -120,6 +122,8 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'debt-scatter': 'Debt',
   'rewrite-diverging-bar': 'Rewrites',
   'rewrite-histogram': 'Distribution',
+  'parallel-score-histogram': 'Distribution',
+  'parallel-timeline': 'Trend',
   'staleness-scatter': 'Staleness',
   'blast-histogram': 'Distribution',
   'bus-factor-histogram': 'Distribution',
@@ -395,6 +399,12 @@ export function Shell({ report }: ShellProps) {
                 )}
                 {selection.activeHeroViz === 'rewrite-histogram' && (
                   <RewriteHistogram report={report} />
+                )}
+                {selection.activeHeroViz === 'parallel-score-histogram' && (
+                  <ParallelScoreHistogram report={report} />
+                )}
+                {selection.activeHeroViz === 'parallel-timeline' && (
+                  <ParallelTimeline report={report} />
                 )}
                 {selection.activeHeroViz === 'staleness-scatter' && (
                   <StalenessScatter

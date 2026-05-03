@@ -397,3 +397,256 @@ describe('analyzeParallelDev', () => {
     );
   });
 });
+
+describe('highParallel aggregate', () => {
+  it('counts files with parallelScore >= 70', () => {
+    // 4 weeks, 4 authors per week → score 100 (high)
+    const high = Array.from({ length: 4 }, (_, week) =>
+      ['alice', 'bob', 'charlie', 'dave'].map((name, i) =>
+        makeCommit({
+          hash: `h${week}${i}`,
+          authorEmail: `${name}@x.com`,
+          date: weekDate(week),
+          files: ['hot.ts'],
+        }),
+      ),
+    ).flat();
+    // 4 weeks, 1 parallel week with 2 authors → low score
+    const low = [
+      ...Array.from({ length: 4 }, (_, week) =>
+        makeCommit({
+          hash: `l${week}`,
+          authorEmail: 'alice@x.com',
+          date: weekDate(week),
+          files: ['cool.ts'],
+        }),
+      ),
+      makeCommit({
+        hash: 'lb0',
+        authorEmail: 'bob@x.com',
+        date: weekDate(0),
+        files: ['cool.ts'],
+      }),
+    ];
+    const result = analyzeParallelDev([...high, ...low], ['hot.ts', 'cool.ts']);
+    expect(result.highParallel).toBe(1);
+  });
+
+  it('returns 0 highParallel when no files cross the threshold', () => {
+    const commits = [
+      makeCommit({
+        hash: '1',
+        authorEmail: 'alice@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        authorEmail: 'alice@x.com',
+        date: weekDate(1),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '3',
+        authorEmail: 'alice@x.com',
+        date: weekDate(2),
+        files: ['a.ts'],
+      }),
+    ];
+    const result = analyzeParallelDev(commits, ['a.ts']);
+    expect(result.highParallel).toBe(0);
+  });
+});
+
+describe('tierMix aggregate', () => {
+  it('places each scored file into exactly one tier band', () => {
+    // 4 weeks 4 authors → score 100 (critical)
+    const critical = Array.from({ length: 4 }, (_, week) =>
+      ['alice', 'bob', 'charlie', 'dave'].map((name, i) =>
+        makeCommit({
+          hash: `c${week}${i}`,
+          authorEmail: `${name}@x.com`,
+          date: weekDate(week),
+          files: ['c.ts'],
+        }),
+      ),
+    ).flat();
+    const result = analyzeParallelDev(critical, ['c.ts']);
+    const total =
+      result.tierMix.low +
+      result.tierMix.medium +
+      result.tierMix.high +
+      result.tierMix.critical;
+    expect(total).toBe(result.files.length);
+    expect(result.tierMix.critical).toBe(1);
+    expect(result.tierMix.high).toBe(0);
+    expect(result.tierMix.medium).toBe(0);
+    expect(result.tierMix.low).toBe(0);
+  });
+
+  it('returns all-zero tierMix when no files are scored', () => {
+    const result = analyzeParallelDev([], []);
+    expect(result.tierMix).toEqual({
+      low: 0,
+      medium: 0,
+      high: 0,
+      critical: 0,
+    });
+  });
+});
+
+describe('byMonth aggregate', () => {
+  it('counts parallel events bucketed by ISO month of weekStart', () => {
+    // Two parallel weeks in 2025-06 (one with 2 authors, one with 3)
+    const commits = [
+      // Week 0 (2025-06-02 Monday): 2 authors
+      makeCommit({
+        hash: '1',
+        authorEmail: 'alice@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        authorEmail: 'bob@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      // Week 1 (2025-06-09): 3 authors
+      makeCommit({
+        hash: '3',
+        authorEmail: 'alice@x.com',
+        date: weekDate(1),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '4',
+        authorEmail: 'bob@x.com',
+        date: weekDate(1),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '5',
+        authorEmail: 'charlie@x.com',
+        date: weekDate(1),
+        files: ['a.ts'],
+      }),
+      // Week 2 (2025-06-16): single-author, not a parallel event
+      makeCommit({
+        hash: '6',
+        authorEmail: 'alice@x.com',
+        date: weekDate(2),
+        files: ['a.ts'],
+      }),
+    ];
+    const result = analyzeParallelDev(commits, ['a.ts']);
+    expect(result.byMonth).toHaveLength(1);
+    expect(result.byMonth[0].month).toBe('2025-06');
+    expect(result.byMonth[0].parallelEvents).toBe(2);
+    expect(result.byMonth[0].uniqueFiles).toBe(1);
+    // avg authors across the two parallel events: (2 + 3) / 2 = 2.5
+    expect(result.byMonth[0].avgAuthors).toBeCloseTo(2.5);
+  });
+
+  it('returns empty byMonth array when there are no parallel events', () => {
+    const commits = [
+      makeCommit({
+        hash: '1',
+        authorEmail: 'alice@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        authorEmail: 'alice@x.com',
+        date: weekDate(1),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '3',
+        authorEmail: 'alice@x.com',
+        date: weekDate(2),
+        files: ['a.ts'],
+      }),
+    ];
+    const result = analyzeParallelDev(commits, ['a.ts']);
+    expect(result.byMonth).toEqual([]);
+  });
+
+  it('sorts byMonth ascending by ISO month string', () => {
+    // Months: 2025-06 (1 event) and 2025-07 (1 event)
+    const commits = [
+      makeCommit({
+        hash: '1',
+        authorEmail: 'alice@x.com',
+        date: weekDate(0), // 2025-06-02
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        authorEmail: 'bob@x.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '3',
+        authorEmail: 'alice@x.com',
+        date: weekDate(4), // 2025-06-30 still
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '4',
+        authorEmail: 'bob@x.com',
+        date: weekDate(5), // crosses into 2025-07-07
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '5',
+        authorEmail: 'alice@x.com',
+        date: weekDate(5),
+        files: ['a.ts'],
+      }),
+    ];
+    const result = analyzeParallelDev(commits, ['a.ts']);
+    const months = result.byMonth.map((b) => b.month);
+    expect(result.byMonth).toHaveLength(2);
+    expect(months).toContain('2025-06');
+    expect(months).toContain('2025-07');
+    const sorted = [...months].sort();
+    expect(months).toEqual(sorted);
+  });
+
+  it('counts uniqueFiles distinctly per month', () => {
+    // Week 0: parallel on a.ts AND b.ts → 2 unique files, 2 events
+    const commits = [
+      makeCommit({
+        hash: '1',
+        authorEmail: 'alice@x.com',
+        date: weekDate(0),
+        files: ['a.ts', 'b.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        authorEmail: 'bob@x.com',
+        date: weekDate(0),
+        files: ['a.ts', 'b.ts'],
+      }),
+      // Pad each file to 3 active weeks so they survive MIN_ACTIVE_WEEKS
+      makeCommit({
+        hash: '3',
+        authorEmail: 'alice@x.com',
+        date: weekDate(1),
+        files: ['a.ts', 'b.ts'],
+      }),
+      makeCommit({
+        hash: '4',
+        authorEmail: 'alice@x.com',
+        date: weekDate(2),
+        files: ['a.ts', 'b.ts'],
+      }),
+    ];
+    const result = analyzeParallelDev(commits, ['a.ts', 'b.ts']);
+    expect(result.byMonth[0].parallelEvents).toBe(2);
+    expect(result.byMonth[0].uniqueFiles).toBe(2);
+  });
+});

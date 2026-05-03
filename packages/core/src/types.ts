@@ -201,10 +201,20 @@ export interface FileParallelDev {
   narrative: string; // human-readable summary
 }
 
+export interface ParallelByMonth {
+  month: string; // ISO YYYY-MM (e.g. "2026-04")
+  parallelEvents: number; // distinct (file, week) parallel-development events that started in this month
+  uniqueFiles: number; // distinct files with at least one parallel event in this month
+  avgAuthors: number; // average author count across parallel events in this month
+}
+
 export interface ParallelDevReport {
   files: FileParallelDev[];
   hotFiles: FileParallelDev[]; // top 10 by parallelScore
   totalParallelFiles: number; // files with any parallel activity
+  highParallel: number; // files at or above the 70 polish-pattern threshold (spans high tier 70–74 + critical tier 75+)
+  tierMix: { low: number; medium: number; high: number; critical: number }; // 0-24 / 25-49 / 50-74 / 75-100
+  byMonth: ParallelByMonth[]; // repo-aggregate monthly parallel activity
   summary: string;
 }
 

@@ -25,6 +25,7 @@ export type {
   ParallelDevReport,
   FileParallelDev,
   ParallelWindow,
+  ParallelByMonth,
   LocReport,
   FileLocEntry,
   LanguageBreakdown,

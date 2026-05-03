@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { MODERATE_THRESHOLD } from '../../components/tabs/ParallelDevTab';
 import { parallelDevMetrics } from './parallel-dev';
 import type {
   FileParallelDev,
@@ -37,6 +38,14 @@ function makeReport(parallelDev: Partial<ParallelDevReport>): GitrelicReport {
       files: parallelDev.files ?? [],
       hotFiles: parallelDev.hotFiles ?? [],
       totalParallelFiles: parallelDev.totalParallelFiles ?? 0,
+      highParallel: parallelDev.highParallel ?? 0,
+      tierMix: parallelDev.tierMix ?? {
+        low: 0,
+        medium: 0,
+        high: 0,
+        critical: 0,
+      },
+      byMonth: parallelDev.byMonth ?? [],
       summary: '',
     },
   } as unknown as GitrelicReport;
@@ -60,7 +69,7 @@ describe('parallelDevMetrics', () => {
     ];
     const hotFiles = [makeFile({ file: 'a.ts', parallelScore: 82 })];
     const metrics = parallelDevMetrics(
-      makeReport({ files, hotFiles, totalParallelFiles: 2 }),
+      makeReport({ files, hotFiles, totalParallelFiles: 2, highParallel: 1 }),
     );
     expect(metrics[0].value).toBe('2');
     expect(metrics[1].value).toBe('1');
@@ -76,5 +85,39 @@ describe('parallelDevMetrics', () => {
       makeReport({ files: [makeFile()], hotFiles, totalParallelFiles: 1 }),
     );
     expect(metrics[2].color).toBe('var(--severity-warning)');
+  });
+});
+
+describe('parallelDevMetrics — High Parallel slot', () => {
+  it('renders 0 with healthy color when no files cross the threshold', () => {
+    const metrics = parallelDevMetrics(makeReport({}));
+    const slot = metrics.find((m) => m.label === 'High Parallel');
+    expect(slot?.value).toBe('0');
+    expect(slot?.color).toBe('var(--severity-healthy)');
+  });
+
+  it('uses warning color when 1..MODERATE_THRESHOLD-1 files cross', () => {
+    const metrics = parallelDevMetrics(
+      makeReport({ files: [makeFile(), makeFile()], highParallel: 2 }),
+    );
+    const slot = metrics.find((m) => m.label === 'High Parallel');
+    expect(slot?.value).toBe('2');
+    expect(slot?.color).toBe('var(--severity-warning)');
+  });
+
+  it('uses critical color at MODERATE_THRESHOLD or above', () => {
+    const files = Array.from({ length: MODERATE_THRESHOLD }, () =>
+      makeFile({ parallelScore: 80 }),
+    );
+    const metrics = parallelDevMetrics(
+      makeReport({ files, highParallel: MODERATE_THRESHOLD }),
+    );
+    const slot = metrics.find((m) => m.label === 'High Parallel');
+    expect(slot?.color).toBe('var(--severity-critical)');
+  });
+
+  it('does not render the deprecated "Hot Files" label', () => {
+    const metrics = parallelDevMetrics(makeReport({}));
+    expect(metrics.find((m) => m.label === 'Hot Files')).toBeUndefined();
   });
 });

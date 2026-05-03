@@ -84,6 +84,9 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       files: [],
       hotFiles: [],
       totalParallelFiles: 0,
+      highParallel: 0,
+      tierMix: { low: 0, medium: 0, high: 0, critical: 0 },
+      byMonth: [],
       summary: 'Not available',
     },
     loc: raw.loc ?? {

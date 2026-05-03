@@ -1,9 +1,11 @@
+import { MODERATE_THRESHOLD } from '../../components/tabs/ParallelDevTab';
 import { fmt } from '../../components/theme';
 import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export function parallelDevMetrics(report: GitrelicReport): Metric[] {
-  const { hotFiles, totalParallelFiles, files } = report.parallelDev;
+  const { hotFiles, totalParallelFiles, highParallel, files } =
+    report.parallelDev;
   const topFile = hotFiles[0];
   const topScore = topFile?.parallelScore ?? 0;
   const peakAuthors = files.reduce(
@@ -21,12 +23,14 @@ export function parallelDevMetrics(report: GitrelicReport): Metric[] {
           : 'var(--severity-healthy)',
     },
     {
-      label: 'Hot Files',
-      value: fmt(hotFiles.length),
+      label: 'High Parallel',
+      value: fmt(highParallel),
       color:
-        hotFiles.length > 0
-          ? 'var(--severity-warning)'
-          : 'var(--severity-healthy)',
+        highParallel === 0
+          ? 'var(--severity-healthy)'
+          : highParallel < MODERATE_THRESHOLD
+            ? 'var(--severity-warning)'
+            : 'var(--severity-critical)',
     },
     {
       label: 'Top Score',
