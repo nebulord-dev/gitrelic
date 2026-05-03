@@ -205,6 +205,11 @@ export function OwnershipBubble({
   // Sorted by total file count desc so the most-impactful authors lead the
   // legend — same impact-weighted spirit as the bus-bar tiebreaker.
   // Defends against d3.hierarchy returning a synthetic root when dirs is empty.
+  //
+  // NOTE: legend rows currently render emails (dominantAuthor), not display
+  // names. The display-name lookup lives in buildDirectoryBubbles (a pure
+  // function not accessible here). RELIC-306 deferred legend display-name
+  // resolution as a nice-to-have; bubble labels and the tooltip do use names.
   const legendAuthors = useMemo(() => {
     const fileCountByAuthor = new Map<string, number>();
     for (const leaf of packData) {

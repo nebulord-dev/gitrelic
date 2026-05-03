@@ -108,6 +108,11 @@ describe('buildDirectoryBubbles', () => {
   });
 
   it('falls back to email for dominantAuthorName when contributor name is empty', () => {
+    // Both alice and bob have empty names. Whoever wins the dominant-author
+    // tiebreak (Map iteration order in buildDirectoryBubbles), their
+    // dominantAuthorName must equal their email — no display name to fall back
+    // on. Asserting on whichever author won keeps the test deterministic
+    // without depending on iteration order.
     const report = makeReport({
       contributors: {
         contributors: [
@@ -123,6 +128,18 @@ describe('buildDirectoryBubbles', () => {
             focusAreas: [],
             isActive: true,
           },
+          {
+            email: 'bob@dev.com',
+            name: '',
+            commitCount: 5,
+            firstCommit: '',
+            lastCommit: '',
+            filesOwned: 1,
+            linesChanged: 80,
+            activeDays: 3,
+            focusAreas: [],
+            isActive: true,
+          },
         ],
         activeContributors: [],
         ghostContributors: [],
@@ -132,10 +149,13 @@ describe('buildDirectoryBubbles', () => {
     });
     const dirs = buildDirectoryBubbles(report);
     const srcDir = dirs.find((d) => d.dirPath === 'src');
-    // alice is dominant in app.ts; her name is empty so falls back to email
-    if (srcDir?.dominantAuthor === 'alice@dev.com') {
-      expect(srcDir.dominantAuthorName).toBe('alice@dev.com');
-    }
+    expect(srcDir).toBeDefined();
+    // Whoever the dominant author is, the empty-name fallback must produce
+    // their email as the displayed name. Unconditional assertion.
+    expect(srcDir!.dominantAuthorName).toBe(srcDir!.dominantAuthor);
+    expect(['alice@dev.com', 'bob@dev.com']).toContain(
+      srcDir!.dominantAuthorName,
+    );
   });
 
   it('sets dominantAuthorName to UNKNOWN_AUTHOR for dirs with no commit data', () => {
