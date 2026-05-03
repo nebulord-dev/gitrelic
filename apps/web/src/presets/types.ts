@@ -117,4 +117,10 @@ export interface PresetDefinition {
     altTabs: BottomTab[];
   };
   metrics: (report: GitrelicReport) => Metric[];
+  /**
+   * Path segment under the docs site (e.g. 'analyzers/churn'). When set,
+   * BottomPanel renders a "Docs ↗" link in the tab bar. Resolved against
+   * https://nebulord-dev.github.io/gitrelic/.
+   */
+  docsPath?: string;
 }
