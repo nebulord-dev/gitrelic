@@ -161,8 +161,8 @@ export function Sidebar({ report, activePresetId, onApplyPreset }: SidebarProps)
       className="w-[200px] min-w-[200px] bg-surface-primary border-r border-border-primary py-3 overflow-y-auto shrink-0"
     >
       {groups.map((group) => (
-        <div key={group.label} className="mb-4 px-3">
-          <div className="text-[9px] uppercase tracking-[1.5px] text-text-tertiary mb-2 px-2">
+        <div key={group.label} className="mb-4 px-3 py-1">
+          <div className="text-[9px] uppercase tracking-[1.5px] text-text-tertiary py-2 px-2">
             {group.label}
           </div>
           {group.items.map((item) => {
