@@ -27,7 +27,7 @@ const BUCKET_COUNT = 10;
 export function parallelTierFor(parallelScore: number): ParallelTier {
   if (parallelScore < 25) return 'low';
   if (parallelScore < 50) return 'medium';
-  if (parallelScore <= 75) return 'high';
+  if (parallelScore < 75) return 'high';
   return 'critical';
 }
 

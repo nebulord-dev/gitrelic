@@ -54,12 +54,13 @@ describe('parallelTierFor', () => {
     expect(parallelTierFor(49)).toBe('medium');
   });
 
-  it('returns "high" from 50 up to and including 75', () => {
+  it('returns "high" from 50 up to (but not including) 75', () => {
     expect(parallelTierFor(50)).toBe('high');
-    expect(parallelTierFor(75)).toBe('high');
+    expect(parallelTierFor(74)).toBe('high');
   });
 
-  it('returns "critical" above 75', () => {
+  it('returns "critical" at 75 and above (matches core tierMix.critical at >= 75)', () => {
+    expect(parallelTierFor(75)).toBe('critical');
     expect(parallelTierFor(76)).toBe('critical');
     expect(parallelTierFor(100)).toBe('critical');
   });
