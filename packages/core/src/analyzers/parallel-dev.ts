@@ -25,6 +25,7 @@ import type {
   ParallelDevReport,
   FileParallelDev,
   ParallelWindow,
+  ParallelByMonth,
 } from '../types.js';
 import type { RawCommit } from '../utils/git.js';
 
@@ -187,10 +188,70 @@ export function analyzeParallelDev(
   const hotFiles = files.slice(0, 10);
   const totalParallelFiles = files.length;
 
+  // ── highParallel ────────────────────────────────────────────────────────
+  const highParallel = files.filter((f) => f.parallelScore >= 70).length;
+
+  // ── tierMix ─────────────────────────────────────────────────────────────
+  // 0-24 = low, 25-49 = medium, 50-74 = high, 75-100 = critical
+  const tierMix = { low: 0, medium: 0, high: 0, critical: 0 };
+  for (const f of files) {
+    if (f.parallelScore >= 75) tierMix.critical++;
+    else if (f.parallelScore >= 50) tierMix.high++;
+    else if (f.parallelScore >= 25) tierMix.medium++;
+    else tierMix.low++;
+  }
+
+  // ── byMonth ─────────────────────────────────────────────────────────────
+  // Derive from the week matrix: for each (file, week) parallel event,
+  // bucket by the calendar month of weekStart (YYYY-MM).
+  // Only count weeks that actually had parallel activity (2+ authors).
+  interface MonthAccumulator {
+    parallelEvents: number;
+    files: Set<string>;
+    totalAuthors: number;
+  }
+  const monthMap = new Map<string, MonthAccumulator>();
+
+  for (const [file, weeks] of matrix) {
+    for (const [weekKey, bucket] of weeks) {
+      if (bucket.authors.size < 2) continue;
+      // weekKey is a full ISO date string; extract YYYY-MM
+      const month = weekKey.slice(0, 7);
+      if (!monthMap.has(month)) {
+        monthMap.set(month, {
+          parallelEvents: 0,
+          files: new Set(),
+          totalAuthors: 0,
+        });
+      }
+      const acc = monthMap.get(month)!;
+      acc.parallelEvents++;
+      acc.files.add(file);
+      acc.totalAuthors += bucket.authors.size;
+    }
+  }
+
+  const byMonth: ParallelByMonth[] = [...monthMap.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, acc]) => ({
+      month,
+      parallelEvents: acc.parallelEvents,
+      uniqueFiles: acc.files.size,
+      avgAuthors: Math.round((acc.totalAuthors / acc.parallelEvents) * 10) / 10,
+    }));
+
   const summary =
     hotFiles.length === 0
       ? 'No significant parallel development detected.'
       : `${totalParallelFiles} file${totalParallelFiles === 1 ? '' : 's'} show${totalParallelFiles === 1 ? 's' : ''} signs of parallel development. ${hotFiles[0].file} is the most contested.`;
 
-  return { files, hotFiles, totalParallelFiles, summary };
+  return {
+    files,
+    hotFiles,
+    totalParallelFiles,
+    highParallel,
+    tierMix,
+    byMonth,
+    summary,
+  };
 }
