@@ -93,6 +93,10 @@ export function ParallelTimeline({ report }: ParallelTimelineProps) {
   }
 
   const yTicks = yScale.ticks(4);
+  // Show every Nth x-axis label when there are too many months — keeps
+  // labels from colliding past ~24 months. Computed once per render rather
+  // than re-derived inside the bar-label .map() callback.
+  const labelEvery = months.length > 24 ? Math.ceil(months.length / 12) : 1;
   const hover =
     hoverIdx == null ? null : { idx: hoverIdx, bucket: months[hoverIdx] };
 
@@ -174,11 +178,8 @@ export function ParallelTimeline({ report }: ParallelTimelineProps) {
               stroke="var(--border-primary)"
             />
             {months.map((b, i) => {
-              const x = i * (barWidth + BAR_GAP) + barWidth / 2;
-              // Show every Nth label when there are too many months
-              const labelEvery =
-                months.length > 24 ? Math.ceil(months.length / 12) : 1;
               if (i % labelEvery !== 0) return null;
+              const x = i * (barWidth + BAR_GAP) + barWidth / 2;
               return (
                 <g key={`x-${b.month}`} transform={`translate(${x},${plotH})`}>
                   <line y2={4} stroke="var(--border-primary)" />
