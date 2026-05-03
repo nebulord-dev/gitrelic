@@ -146,6 +146,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     tier: 'analyzer',
     label: 'Contributors',
     group: 'team-activity',
+    docsPath: 'analyzers/contributors',
     hero: {
       defaultViz: 'swimlanes',
       altTabs: ['swimlanes', 'ownership'],
