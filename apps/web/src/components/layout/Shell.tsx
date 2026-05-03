@@ -10,6 +10,7 @@ import { BusFactorHistogram } from '../hero/BusFactorHistogram';
 import { ChurnBar } from '../hero/ChurnBar';
 import { ChurnTreemap } from '../hero/ChurnTreemap';
 import { CommitGraph } from '../hero/CommitGraph';
+import { CommitPunchCard } from '../hero/CommitPunchCard';
 import { ContributorSwimlanes } from '../hero/ContributorSwimlanes';
 import { CouplingHeatmap } from '../hero/CouplingHeatmap';
 import { DebtScatter } from '../hero/DebtScatter';
@@ -28,6 +29,7 @@ import { RiskHeatmap } from '../hero/RiskHeatmap';
 import { ShameLeaderboard } from '../hero/ShameLeaderboard';
 import { ShameTrend } from '../hero/ShameTrend';
 import { StalenessScatter } from '../hero/StalenessScatter';
+import { StressTrend } from '../hero/StressTrend';
 import { TestCoverageByDir } from '../hero/TestCoverageByDir';
 import { Timeline } from '../hero/Timeline';
 import { BottomPanel } from './BottomPanel';
@@ -129,6 +131,8 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'bus-factor-histogram': 'Distribution',
   'languages-stacked': 'Stacked',
   'test-coverage-by-dir': 'By Dir',
+  'punch-card': 'Punch Card',
+  'stress-trend': 'Trend',
 };
 
 interface ShellProps {
@@ -405,6 +409,12 @@ export function Shell({ report }: ShellProps) {
                 )}
                 {selection.activeHeroViz === 'parallel-timeline' && (
                   <ParallelTimeline report={report} />
+                )}
+                {selection.activeHeroViz === 'punch-card' && (
+                  <CommitPunchCard report={report} />
+                )}
+                {selection.activeHeroViz === 'stress-trend' && (
+                  <StressTrend report={report} />
                 )}
                 {selection.activeHeroViz === 'staleness-scatter' && (
                   <StalenessScatter
