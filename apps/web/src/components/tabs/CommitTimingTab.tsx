@@ -10,7 +10,7 @@ interface CommitTimingTabProps {
   onApplyPreset: (id: PresetId) => void;
 }
 
-const TOP_FILES_COUNT = 3;
+const TOP_AUTHORS_COUNT = 3;
 const DIRECTORY_ROLLUP_LIMIT = 5;
 export const HIGH_STRESS_THRESHOLD = 70;
 
@@ -40,9 +40,8 @@ export function CommitTimingTab({
     repoWeekendPercent,
   } = report.commitTiming;
 
-  const totalCommits = files.reduce((sum, f) => sum + f.totalCommits, 0);
   const tier = tierBadge(highStress);
-  const topAuthors = authorStress.slice(0, TOP_FILES_COUNT);
+  const topAuthors = authorStress.slice(0, TOP_AUTHORS_COUNT);
 
   const highStressFiles = files.filter(
     (f) => f.stressScore >= HIGH_STRESS_THRESHOLD,
@@ -95,7 +94,7 @@ export function CommitTimingTab({
         )
       }
       subline={
-        totalCommits > 0 || authorStress.length > 0 ? (
+        files.length > 0 || authorStress.length > 0 ? (
           <>
             <strong>{repoLateNightPercent}%</strong> late-night ·{' '}
             <strong>{repoWeekendPercent}%</strong> weekend across the analyzed

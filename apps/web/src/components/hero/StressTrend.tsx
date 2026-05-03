@@ -133,32 +133,36 @@ export function StressTrend({ report }: StressTrendProps) {
             );
           })}
           {/* Month tick labels */}
-          {months
-            .filter((_, i) => i % tickStep === 0)
-            .map((bucket) => {
-              const idx = months.indexOf(bucket);
-              const x =
-                PADDING.left + idx * (barWidth + BAR_GAP) + barWidth / 2;
-              return (
-                <text
-                  key={bucket.month}
-                  x={x}
-                  y={PADDING.top + innerHeight + 16}
-                  textAnchor="middle"
-                  className="text-[10px] fill-text-tertiary"
-                >
-                  {formatMonth(bucket.month)}
-                </text>
-              );
-            })}
+          {months.map((bucket, i) => {
+            if (i % tickStep !== 0) return null;
+            const x = PADDING.left + i * (barWidth + BAR_GAP) + barWidth / 2;
+            return (
+              <text
+                key={bucket.month}
+                x={x}
+                y={PADDING.top + innerHeight + 16}
+                textAnchor="middle"
+                className="text-[10px] fill-text-tertiary"
+              >
+                {formatMonth(bucket.month)}
+              </text>
+            );
+          })}
         </svg>
         {hoverData && hoverIdx !== null && (
           <div
             className="absolute pointer-events-none bg-tooltip-bg text-tooltip-text text-[11px] px-2 py-1 rounded shadow-lg"
             style={{
               left:
-                PADDING.left + hoverIdx * (barWidth + BAR_GAP) + barWidth + 6,
+                hoverIdx >= months.length - 2
+                  ? PADDING.left + hoverIdx * (barWidth + BAR_GAP) - 6
+                  : PADDING.left +
+                    hoverIdx * (barWidth + BAR_GAP) +
+                    barWidth +
+                    6,
               top: PADDING.top + 8,
+              transform:
+                hoverIdx >= months.length - 2 ? 'translateX(-100%)' : undefined,
             }}
           >
             <div className="font-mono">{formatMonth(hoverData.month)}</div>

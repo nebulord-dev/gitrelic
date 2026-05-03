@@ -8,7 +8,8 @@ interface CommitPunchCardProps {
 }
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const LATE_NIGHT_HOURS = new Set([23, 0, 1, 2, 3, 4]); // matches isLateNight in core
+// Mirrors core's isLateNight() — kept literal here because web only `import type` from @gitrelic/core.
+const LATE_NIGHT_HOURS = new Set([23, 0, 1, 2, 3, 4]);
 const WEEKEND_DAYS = new Set([0, 6]); // Sun, Sat
 
 const PADDING = { top: 12, right: 16, bottom: 32, left: 48 };
@@ -178,8 +179,12 @@ export function CommitPunchCard({ report }: CommitPunchCardProps) {
           <div
             className="absolute pointer-events-none bg-tooltip-bg text-tooltip-text text-[11px] px-2 py-1 rounded shadow-lg"
             style={{
-              left: PADDING.left + hover.hour * cellWidth + cellWidth + 4,
+              left:
+                hover.hour >= 20
+                  ? PADDING.left + hover.hour * cellWidth - 4
+                  : PADDING.left + hover.hour * cellWidth + cellWidth + 4,
               top: PADDING.top + hover.day * cellHeight,
+              transform: hover.hour >= 20 ? 'translateX(-100%)' : undefined,
             }}
           >
             <div className="font-mono">

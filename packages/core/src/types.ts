@@ -538,7 +538,6 @@ export interface CommitTimingReport {
   repoLateNightPercent: number; // repo-wide late night commit percentage
   repoWeekendPercent: number; // repo-wide weekend commit percentage
   summary: string;
-  // NEW
   repoHourDayMatrix: number[][]; // 7 rows × 24 cols, [dayOfWeek][hour]; Sun=0
   highStress: number; // count of files with stressScore ≥ 70
   tierMix: CommitTimingTierMix; // file-score band counts
