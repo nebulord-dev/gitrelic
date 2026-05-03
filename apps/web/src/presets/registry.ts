@@ -147,8 +147,8 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     label: 'Contributors',
     group: 'team-activity',
     hero: {
-      defaultViz: 'ownership',
-      altTabs: ['ownership', 'swimlanes', 'ownership-sunburst'],
+      defaultViz: 'swimlanes',
+      altTabs: ['swimlanes', 'ownership'],
     },
     bottomPanel: {
       defaultTab: 'contributors',
