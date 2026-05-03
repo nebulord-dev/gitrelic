@@ -506,12 +506,44 @@ export interface FileTimingProfile {
   stressScore: number; // 0–100, weighted from late-night + weekend frequency
 }
 
+export interface AuthorStressProfile {
+  email: string; // stable id, lowercased
+  name: string; // display, full git author name (with collision suffix if needed)
+  totalCommits: number;
+  lateNightCommits: number;
+  weekendCommits: number;
+  lateNightPercent: number; // 0–100, rounded
+  weekendPercent: number; // 0–100, rounded
+  stressScore: number; // round(lateNightPercent × 0.6 + weekendPercent × 0.4), 0–100
+}
+
+export interface CommitTimingMonthlyBucket {
+  month: string; // ISO YYYY-MM (local time)
+  weekendLateNight: number; // commits matching BOTH criteria
+  singleCriterion: number; // commits matching exactly one criterion (XOR)
+  healthy: number; // commits matching neither
+  total: number; // sum of the three above
+}
+
+export interface CommitTimingTierMix {
+  low: number; // stressScore 0–24
+  medium: number; // 25–49
+  high: number; // 50–74
+  critical: number; // 75+
+}
+
 export interface CommitTimingReport {
   files: FileTimingProfile[];
   stressFiles: FileTimingProfile[]; // top 10 by stressScore
   repoLateNightPercent: number; // repo-wide late night commit percentage
   repoWeekendPercent: number; // repo-wide weekend commit percentage
   summary: string;
+  // NEW
+  repoHourDayMatrix: number[][]; // 7 rows × 24 cols, [dayOfWeek][hour]; Sun=0
+  highStress: number; // count of files with stressScore ≥ 70
+  tierMix: CommitTimingTierMix; // file-score band counts
+  byMonth: CommitTimingMonthlyBucket[]; // disjoint, sorted ascending by month
+  authorStress: AuthorStressProfile[]; // sorted desc by stressScore, post-floor and post-disambiguation
 }
 
 // ─── Rename tracking ─────────────────────────────────────────────────────────
