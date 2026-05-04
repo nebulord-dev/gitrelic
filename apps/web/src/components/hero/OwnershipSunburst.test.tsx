@@ -36,6 +36,11 @@ function makeReport(
       languages: [],
       summary: '',
     },
+    contributors: {
+      contributors: [],
+      total: 0,
+      summary: '',
+    },
   } as unknown as GitrelicReport;
 }
 
