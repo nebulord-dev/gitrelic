@@ -351,13 +351,14 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     group: 'ownership-risk',
     hero: {
       defaultViz: 'ownership-sunburst-ghosts',
-      altTabs: ['ownership-sunburst-ghosts', 'ownership-sunburst', 'ownership'],
+      altTabs: ['ownership-sunburst-ghosts'],
     },
     bottomPanel: {
       defaultTab: 'ghost-files',
       altTabs: ['ghost-files'],
     },
     metrics: ghostFilesMetrics,
+    docsPath: 'analyzers/ghost-files',
   },
   'co-authors': {
     id: 'co-authors',
