@@ -141,10 +141,13 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       overallRatio: raw.testCoverage?.overallRatio ?? 0,
       summary: raw.testCoverage?.summary ?? 'Not available',
     },
-    ghostFiles: raw.ghostFiles ?? {
-      files: [],
-      totalGhostFiles: 0,
-      summary: 'Not available',
+    ghostFiles: {
+      files: raw.ghostFiles?.files ?? [],
+      totalGhostFiles: raw.ghostFiles?.totalGhostFiles ?? 0,
+      ghostOwners: raw.ghostFiles?.ghostOwners ?? 0,
+      ghostLoc: raw.ghostFiles?.ghostLoc ?? 0,
+      tierMix: raw.ghostFiles?.tierMix ?? { trueGhost: 0, fading: 0 },
+      summary: raw.ghostFiles?.summary ?? 'Not available',
     },
     knowledgeConcentration: raw.knowledgeConcentration ?? {
       singleAuthorFiles: 0,
