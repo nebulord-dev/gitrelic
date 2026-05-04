@@ -6,7 +6,7 @@ import type {
   GhostFile,
 } from '../types.js';
 
-const GHOST_OWNERSHIP_THRESHOLD = 70;
+const GHOST_OWNERSHIP_THRESHOLD = 80;
 
 export function analyzeGhostFiles(
   busFactorReport: BusFactorReport,
@@ -24,7 +24,7 @@ export function analyzeGhostFiles(
     if (fileBus.dominantAuthorPercent < GHOST_OWNERSHIP_THRESHOLD) continue;
 
     const author = contributorMap.get(fileBus.dominantAuthor);
-    if (!author || author.isActive) continue;
+    if (!author || !author.isGhost) continue;
 
     files.push({
       file: fileBus.file,
@@ -41,10 +41,31 @@ export function analyzeGhostFiles(
   files.sort((a, b) => b.dominantAuthorPercent - a.dominantAuthorPercent);
 
   const totalGhostFiles = files.length;
+  const ghostOwners = new Set(files.map((f) => f.dominantAuthor)).size;
+  const ghostLoc = files.reduce((sum, f) => sum + f.loc, 0);
+  // Buckets are exhaustive over `files`: the `isGhost` gate above guarantees
+  // every flagged file has `authorInactiveDays >= 180`, so trueGhost + fading
+  // === totalGhostFiles. The `'tier mix sums to totalGhostFiles'` test locks
+  // this in. If a future change loosens the gate, the subline counts would
+  // silently undercount.
+  const tierMix = {
+    trueGhost: files.filter((f) => f.authorInactiveDays >= 365).length,
+    fading: files.filter(
+      (f) => f.authorInactiveDays >= 180 && f.authorInactiveDays < 365,
+    ).length,
+  };
+
   const summary =
     totalGhostFiles > 0
       ? `${totalGhostFiles} file${totalGhostFiles !== 1 ? 's' : ''} owned by inactive contributors — knowledge may be lost`
       : 'No ghost files detected';
 
-  return { files, totalGhostFiles, summary };
+  return {
+    files,
+    totalGhostFiles,
+    ghostOwners,
+    ghostLoc,
+    tierMix,
+    summary,
+  };
 }

@@ -135,7 +135,7 @@ function TabContent({
     case 'blast-radius':
       return <BlastRadiusTab report={report} onApplyPreset={onApplyPreset} />;
     case 'ghost-files':
-      return <GhostFilesTab report={report} onSelectFile={onSelectFile} />;
+      return <GhostFilesTab report={report} onApplyPreset={onApplyPreset} />;
     case 'knowledge-silos':
       return (
         <KnowledgeSilosTab report={report} onApplyPreset={onApplyPreset} />

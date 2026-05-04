@@ -3,6 +3,7 @@ import { hierarchy, partition } from 'd3-hierarchy';
 import { arc } from 'd3-shape';
 
 import { authorColor } from '../../utils/colors';
+import { HeroCaption } from '../shared/HeroCaption';
 import type { GitrelicReport } from '@gitrelic/core';
 import type { HierarchyRectangularNode } from 'd3-hierarchy';
 
@@ -17,6 +18,12 @@ interface OwnershipSunburstProps {
   onSelectFile: (file: string) => void;
   onSelectContributor: (email: string) => void;
   mode?: SunburstMode;
+  caption?: string;
+}
+
+function displayName(email: string, nameByEmail: Map<string, string>): string {
+  const candidate = nameByEmail.get(email);
+  return candidate && candidate.length > 0 ? candidate : email;
 }
 
 interface SunburstNode {
@@ -47,11 +54,19 @@ function filterSetForMode(
 export function prepareSunburstData(
   report: GitrelicReport,
   mode: SunburstMode,
+  nameByEmail?: Map<string, string>,
 ): SunburstNode {
   const locMap = new Map<string, number>();
   for (const f of report.loc.files) {
     locMap.set(f.file, f.lines);
   }
+
+  // Optional caller-supplied map lets the component pass in its memoized
+  // copy so we don't rebuild on every render. Defaults to an internal build
+  // for direct callers (e.g. tests) that don't pre-compute it.
+  const namesMap =
+    nameByEmail ??
+    new Map(report.contributors.contributors.map((c) => [c.email, c.name]));
 
   const filterSet = filterSetForMode(report, mode);
 
@@ -76,7 +91,7 @@ export function prepareSunburstData(
   const authorNodes: SunburstNode[] = [];
   for (const [email, data] of authorMap) {
     authorNodes.push({
-      name: email.split('@')[0],
+      name: displayName(email, namesMap),
       email,
       children: data.files.map((f) => ({
         name: f.file.split('/').pop() ?? f.file,
@@ -140,6 +155,7 @@ export function OwnershipSunburst({
   onSelectFile,
   onSelectContributor,
   mode = 'all',
+  caption,
 }: OwnershipSunburstProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ width: 600, height: 400 });
@@ -157,9 +173,15 @@ export function OwnershipSunburst({
 
   const radius = Math.min(dims.width, dims.height) / 2;
 
+  const nameByEmail = useMemo(
+    () =>
+      new Map(report.contributors.contributors.map((c) => [c.email, c.name])),
+    [report.contributors.contributors],
+  );
+
   const treeData = useMemo(
-    () => prepareSunburstData(report, mode),
-    [report, mode],
+    () => prepareSunburstData(report, mode, nameByEmail),
+    [report, mode, nameByEmail],
   );
   const totalFiles = useMemo(
     () => countSunburstFiles(report, mode),
@@ -205,162 +227,170 @@ export function OwnershipSunburst({
   const cy = dims.height / 2;
 
   return (
-    <div ref={containerRef} className="w-full h-full relative">
-      <svg width={dims.width} height={dims.height}>
-        <g transform={`translate(${cx}, ${cy})`}>
-          {nodes.map((node, i) => {
-            const d = node.data;
-            const isAuthor = node.depth === 1;
-            const isFile = node.depth === 2;
+    <div className="w-full h-full flex flex-col">
+      <div ref={containerRef} className="flex-1 w-full relative">
+        <svg width={dims.width} height={dims.height}>
+          <g transform={`translate(${cx}, ${cy})`}>
+            {nodes.map((node, i) => {
+              const d = node.data;
+              const isAuthor = node.depth === 1;
+              const isFile = node.depth === 2;
 
-            const fill = isAuthor
-              ? authorColor(d.email ?? d.name)
-              : riskColor(d.risk ?? 'low', 0.75);
+              const fill = isAuthor
+                ? authorColor(d.email ?? d.name)
+                : riskColor(d.risk ?? 'low', 0.75);
 
-            const isSelectedAuthor =
-              isAuthor && d.email === selectedContributor;
-            const isSelectedFile = isFile && d.file === selectedFile;
-            const isSelected = isSelectedAuthor || isSelectedFile;
+              const isSelectedAuthor =
+                isAuthor && d.email === selectedContributor;
+              const isSelectedFile = isFile && d.file === selectedFile;
+              const isSelected = isSelectedAuthor || isSelectedFile;
 
-            const pathD = arcGen(node) ?? undefined;
+              const pathD = arcGen(node) ?? undefined;
 
-            return (
-              <path
-                key={i}
-                d={pathD}
-                fill={fill}
-                fillOpacity={isAuthor ? 0.85 : 0.75}
-                stroke={
-                  isSelected
-                    ? 'var(--accent-primary)'
-                    : 'var(--surface-primary)'
-                }
-                strokeWidth={isSelected ? 2 : 0.5}
-                className="cursor-pointer"
-                onClick={() => {
-                  if (isAuthor && d.email) {
-                    onSelectContributor(d.email);
-                  } else if (isFile && d.file) {
-                    onSelectFile(d.file);
+              return (
+                <path
+                  key={i}
+                  d={pathD}
+                  fill={fill}
+                  fillOpacity={isAuthor ? 0.85 : 0.75}
+                  stroke={
+                    isSelected
+                      ? 'var(--accent-primary)'
+                      : 'var(--surface-primary)'
                   }
-                }}
-                onMouseEnter={(e) => {
-                  const rect = containerRef.current?.getBoundingClientRect();
-                  if (!rect) return;
-                  const x = e.clientX - rect.left;
-                  const y = e.clientY - rect.top;
-                  if (isAuthor && d.email) {
-                    setTooltip({
-                      kind: 'author',
-                      x,
-                      y,
-                      name: d.name,
-                      email: d.email,
-                      fileCount: node.children?.length ?? 0,
-                    });
-                  } else if (isFile && d.file) {
-                    setTooltip({
-                      kind: 'file',
-                      x,
-                      y,
-                      file: d.file,
-                      risk: d.risk ?? 'low',
-                    });
-                  }
-                }}
-                onMouseLeave={() => setTooltip(null)}
+                  strokeWidth={isSelected ? 2 : 0.5}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    if (isAuthor && d.email) {
+                      onSelectContributor(d.email);
+                    } else if (isFile && d.file) {
+                      onSelectFile(d.file);
+                    }
+                  }}
+                  onMouseEnter={(e) => {
+                    const rect = containerRef.current?.getBoundingClientRect();
+                    if (!rect) return;
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    if (isAuthor && d.email) {
+                      setTooltip({
+                        kind: 'author',
+                        x,
+                        y,
+                        name: d.name,
+                        email: d.email,
+                        fileCount: node.children?.length ?? 0,
+                      });
+                    } else if (isFile && d.file) {
+                      setTooltip({
+                        kind: 'file',
+                        x,
+                        y,
+                        file: d.file,
+                        risk: d.risk ?? 'low',
+                      });
+                    }
+                  }}
+                  onMouseLeave={() => setTooltip(null)}
+                />
+              );
+            })}
+          </g>
+
+          {/* Center label */}
+          <text
+            x={cx}
+            y={cy - 8}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={11}
+            fontWeight={600}
+            fill="var(--text-primary)"
+            className="pointer-events-none"
+          >
+            {modeHeading(mode)}
+          </text>
+          <text
+            x={cx}
+            y={cy + 8}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={9}
+            fill="var(--text-secondary)"
+            className="pointer-events-none"
+          >
+            {totalFiles} files
+          </text>
+
+          {/* Risk legend */}
+          {(['critical', 'high', 'medium', 'low'] as const).map((risk, i) => (
+            <g
+              key={risk}
+              transform={`translate(10, ${dims.height - 80 + i * 17})`}
+            >
+              <rect
+                width={10}
+                height={10}
+                rx={2}
+                fill={riskColor(risk, 0.75)}
               />
-            );
-          })}
-        </g>
+              <text x={16} y={9} fontSize={9} fill="var(--text-secondary)">
+                {risk.charAt(0).toUpperCase() + risk.slice(1)} risk
+              </text>
+            </g>
+          ))}
 
-        {/* Center label */}
-        <text
-          x={cx}
-          y={cy - 8}
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize={11}
-          fontWeight={600}
-          fill="var(--text-primary)"
-          className="pointer-events-none"
-        >
-          {modeHeading(mode)}
-        </text>
-        <text
-          x={cx}
-          y={cy + 8}
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize={9}
-          fill="var(--text-secondary)"
-          className="pointer-events-none"
-        >
-          {totalFiles} files
-        </text>
+          {/* Author legend */}
+          {authorNames.slice(0, 6).map((email, i) => (
+            <g
+              key={email}
+              transform={`translate(${dims.width - 110}, ${dims.height - Math.min(authorNames.length, 6) * 16 + i * 16})`}
+            >
+              <circle
+                cx={5}
+                cy={4}
+                r={5}
+                fill={authorColor(email)}
+                fillOpacity={0.85}
+              />
+              <text x={14} y={8} fontSize={9} fill="var(--text-secondary)">
+                {displayName(email, nameByEmail)}
+              </text>
+            </g>
+          ))}
+        </svg>
 
-        {/* Risk legend */}
-        {(['critical', 'high', 'medium', 'low'] as const).map((risk, i) => (
-          <g
-            key={risk}
-            transform={`translate(10, ${dims.height - 80 + i * 17})`}
+        {tooltip && (
+          <div
+            className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-80 break-all"
+            style={{ left: tooltip.x + 14, top: tooltip.y - 8 }}
           >
-            <rect width={10} height={10} rx={2} fill={riskColor(risk, 0.75)} />
-            <text x={16} y={9} fontSize={9} fill="var(--text-secondary)">
-              {risk.charAt(0).toUpperCase() + risk.slice(1)} risk
-            </text>
-          </g>
-        ))}
-
-        {/* Author legend */}
-        {authorNames.slice(0, 8).map((email, i) => (
-          <g
-            key={email}
-            transform={`translate(${dims.width - 110}, ${dims.height - Math.min(authorNames.length, 8) * 16 + i * 16})`}
-          >
-            <circle
-              cx={5}
-              cy={4}
-              r={5}
-              fill={authorColor(email)}
-              fillOpacity={0.85}
-            />
-            <text x={14} y={8} fontSize={9} fill="var(--text-secondary)">
-              {email.split('@')[0]}
-            </text>
-          </g>
-        ))}
-      </svg>
-
-      {tooltip && (
-        <div
-          className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-80 break-all"
-          style={{ left: tooltip.x + 14, top: tooltip.y - 8 }}
-        >
-          {tooltip.kind === 'author' ? (
-            <>
-              <div className="font-semibold mb-0.5">{tooltip.name}</div>
-              <div className="text-text-secondary">{tooltip.email}</div>
-              <div className="text-text-secondary mt-0.5">
-                {tooltip.fileCount} file{tooltip.fileCount !== 1 ? 's' : ''}{' '}
-                owned
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="font-semibold mb-0.5 break-all">
-                {tooltip.file}
-              </div>
-              <div
-                className="mt-0.5 capitalize"
-                style={{ color: riskColor(tooltip.risk, 1) }}
-              >
-                {tooltip.risk} risk
-              </div>
-            </>
-          )}
-        </div>
-      )}
+            {tooltip.kind === 'author' ? (
+              <>
+                <div className="font-semibold mb-0.5">{tooltip.name}</div>
+                <div className="text-text-secondary">{tooltip.email}</div>
+                <div className="text-text-secondary mt-0.5">
+                  {tooltip.fileCount} file{tooltip.fileCount !== 1 ? 's' : ''}{' '}
+                  owned
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="font-semibold mb-0.5 break-all">
+                  {tooltip.file}
+                </div>
+                <div
+                  className="mt-0.5 capitalize"
+                  style={{ color: riskColor(tooltip.risk, 1) }}
+                >
+                  {tooltip.risk} risk
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+      {caption != null && <HeroCaption primary={caption} />}
     </div>
   );
 }

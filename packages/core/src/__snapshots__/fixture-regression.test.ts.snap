@@ -1937,7 +1937,13 @@ exports[`fixture regression > forensics report is stable 1`] = `
 exports[`fixture regression > ghost files report is stable 1`] = `
 {
   "files": [],
+  "ghostLoc": 0,
+  "ghostOwners": 0,
   "summary": "No ghost files detected",
+  "tierMix": {
+    "fading": 0,
+    "trueGhost": 0,
+  },
   "totalGhostFiles": 0,
 }
 `;

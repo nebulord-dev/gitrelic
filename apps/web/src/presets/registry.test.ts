@@ -44,7 +44,13 @@ function makeReport(): GitrelicReport {
     busFactors: { criticalFiles: [] },
     coupling: { pairs: [], topPairs: [], fileProfiles: [], summary: '' },
     deadCode: { totalDeadFiles: 0, totalDeadLines: 0, candidates: [] },
-    ghostFiles: { files: [], totalGhostFiles: 0 },
+    ghostFiles: {
+      files: [],
+      totalGhostFiles: 0,
+      ghostOwners: 0,
+      ghostLoc: 0,
+      tierMix: { trueGhost: 0, fading: 0 },
+    },
     knowledgeConcentration: {
       singleAuthorFiles: 0,
       totalFiles: 0,

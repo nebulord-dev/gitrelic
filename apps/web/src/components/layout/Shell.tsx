@@ -334,6 +334,7 @@ export function Shell({ report }: ShellProps) {
                     selectedContributor={selection.selectedContributor}
                     onSelectFile={selection.selectFile}
                     onSelectContributor={selection.selectContributor}
+                    caption="inner ring = author · outer ring = all owned files (size = LOC, color = risk tier) · click to drill in"
                   />
                 )}
                 {selection.activeHeroViz === 'ownership-sunburst-ghosts' && (
@@ -344,6 +345,7 @@ export function Shell({ report }: ShellProps) {
                     onSelectFile={selection.selectFile}
                     onSelectContributor={selection.selectContributor}
                     mode="ghost"
+                    caption="inner ring = ghost author · outer ring = orphaned files (size = LOC, color = inactivity tier) · click to drill in"
                   />
                 )}
                 {selection.activeHeroViz === 'ownership-sunburst-silos' && (
@@ -354,6 +356,7 @@ export function Shell({ report }: ShellProps) {
                     onSelectFile={selection.selectFile}
                     onSelectContributor={selection.selectContributor}
                     mode="single-author"
+                    caption="inner ring = author · outer ring = silo'd files (size = LOC, color = risk tier) · click to drill in"
                   />
                 )}
                 {selection.activeHeroViz === 'author-force-graph' && (
