@@ -30,13 +30,19 @@ function makeBusReport(
 }
 
 function makeContributors(
-  authors: { email: string; name: string; isActive: boolean }[],
+  authors: {
+    email: string;
+    name: string;
+    isActive: boolean;
+    isGhost?: boolean;
+  }[],
 ): ContributorReport {
   return {
     contributors: authors.map((a) => ({
       email: a.email,
       name: a.name,
       isActive: a.isActive,
+      isGhost: a.isGhost ?? !a.isActive,
       commitCount: 10,
       firstCommit: '2024-01-01',
       lastCommit: '2024-06-01',
@@ -51,6 +57,7 @@ function makeContributors(
         email: a.email,
         name: a.name,
         isActive: a.isActive,
+        isGhost: a.isGhost ?? !a.isActive,
         commitCount: 10,
         firstCommit: '2024-01-01',
         lastCommit: '2024-06-01',
@@ -64,6 +71,7 @@ function makeContributors(
       email: '',
       name: '',
       isActive: true,
+      isGhost: false,
       commitCount: 0,
       firstCommit: '',
       lastCommit: '',
@@ -91,7 +99,7 @@ function makeLocReport(files: { file: string; lines: number }[]): LocReport {
 }
 
 describe('analyzeGhostFiles', () => {
-  it('flags files owned >70% by inactive authors', () => {
+  it('flags files owned >=80% by ghost authors', () => {
     const bus = makeBusReport([
       {
         file: 'auth.ts',
@@ -130,7 +138,7 @@ describe('analyzeGhostFiles', () => {
     expect(result.files).toHaveLength(0);
   });
 
-  it('excludes files where ownership is below 70%', () => {
+  it('excludes files where ownership is below 80%', () => {
     const bus = makeBusReport([
       {
         file: 'shared.ts',
@@ -153,7 +161,7 @@ describe('analyzeGhostFiles', () => {
       {
         file: 'a.ts',
         dominantAuthor: 'ghost@co.com',
-        dominantAuthorPercent: 75,
+        dominantAuthorPercent: 82,
       },
       {
         file: 'b.ts',
@@ -199,5 +207,221 @@ describe('analyzeGhostFiles', () => {
 
     const result = analyzeGhostFiles(bus, contribs, loc);
     expect(result.summary).toBeTruthy();
+  });
+
+  describe('ghostOwners', () => {
+    it('is 0 on empty input', () => {
+      const result = analyzeGhostFiles(
+        makeBusReport([]),
+        makeContributors([]),
+        makeLocReport([]),
+      );
+      expect(result.ghostOwners).toBe(0);
+    });
+
+    it('counts distinct dominant authors', () => {
+      const bus = makeBusReport([
+        {
+          file: 'a.ts',
+          dominantAuthor: 'g1@co.com',
+          dominantAuthorPercent: 90,
+        },
+        {
+          file: 'b.ts',
+          dominantAuthor: 'g1@co.com',
+          dominantAuthorPercent: 85,
+        },
+        {
+          file: 'c.ts',
+          dominantAuthor: 'g2@co.com',
+          dominantAuthorPercent: 92,
+        },
+      ]);
+      const contribs = makeContributors([
+        { email: 'g1@co.com', name: 'G1', isActive: false, isGhost: true },
+        { email: 'g2@co.com', name: 'G2', isActive: false, isGhost: true },
+      ]);
+      const loc = makeLocReport([
+        { file: 'a.ts', lines: 100 },
+        { file: 'b.ts', lines: 200 },
+        { file: 'c.ts', lines: 50 },
+      ]);
+      const result = analyzeGhostFiles(bus, contribs, loc);
+      expect(result.files).toHaveLength(3);
+      expect(result.ghostOwners).toBe(2);
+    });
+  });
+
+  describe('tierMix', () => {
+    it('classifies authorInactiveDays >= 365 as trueGhost', () => {
+      const bus = makeBusReport([
+        { file: 'a.ts', dominantAuthor: 'g@co.com', dominantAuthorPercent: 90 },
+      ]);
+      const contribs = makeContributors([
+        { email: 'g@co.com', name: 'G', isActive: false, isGhost: true },
+      ]);
+      contribs.contributors[0].lastCommit = new Date(
+        Date.now() - 400 * 86_400_000,
+      ).toISOString();
+      const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
+      const result = analyzeGhostFiles(bus, contribs, loc);
+      expect(result.tierMix.trueGhost).toBe(1);
+      expect(result.tierMix.fading).toBe(0);
+    });
+
+    it('classifies 180 <= authorInactiveDays < 365 as fading', () => {
+      const bus = makeBusReport([
+        { file: 'a.ts', dominantAuthor: 'g@co.com', dominantAuthorPercent: 90 },
+      ]);
+      const contribs = makeContributors([
+        { email: 'g@co.com', name: 'G', isActive: false, isGhost: true },
+      ]);
+      contribs.contributors[0].lastCommit = new Date(
+        Date.now() - 200 * 86_400_000,
+      ).toISOString();
+      const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
+      const result = analyzeGhostFiles(bus, contribs, loc);
+      expect(result.tierMix.trueGhost).toBe(0);
+      expect(result.tierMix.fading).toBe(1);
+    });
+
+    it('365 days exactly is trueGhost (boundary inclusive)', () => {
+      const bus = makeBusReport([
+        { file: 'a.ts', dominantAuthor: 'g@co.com', dominantAuthorPercent: 90 },
+      ]);
+      const contribs = makeContributors([
+        { email: 'g@co.com', name: 'G', isActive: false, isGhost: true },
+      ]);
+      contribs.contributors[0].lastCommit = new Date(
+        Date.now() - 365 * 86_400_000,
+      ).toISOString();
+      const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
+      const result = analyzeGhostFiles(bus, contribs, loc);
+      expect(result.tierMix.trueGhost).toBe(1);
+      expect(result.tierMix.fading).toBe(0);
+    });
+
+    it('tier mix sums to totalGhostFiles (invariant)', () => {
+      const bus = makeBusReport([
+        {
+          file: 'a.ts',
+          dominantAuthor: 'g1@co.com',
+          dominantAuthorPercent: 90,
+        },
+        {
+          file: 'b.ts',
+          dominantAuthor: 'g2@co.com',
+          dominantAuthorPercent: 85,
+        },
+      ]);
+      const contribs = makeContributors([
+        { email: 'g1@co.com', name: 'G1', isActive: false, isGhost: true },
+        { email: 'g2@co.com', name: 'G2', isActive: false, isGhost: true },
+      ]);
+      contribs.contributors[0].lastCommit = new Date(
+        Date.now() - 400 * 86_400_000,
+      ).toISOString();
+      contribs.contributors[1].lastCommit = new Date(
+        Date.now() - 200 * 86_400_000,
+      ).toISOString();
+      const loc = makeLocReport([
+        { file: 'a.ts', lines: 100 },
+        { file: 'b.ts', lines: 50 },
+      ]);
+      const result = analyzeGhostFiles(bus, contribs, loc);
+      expect(result.tierMix.trueGhost + result.tierMix.fading).toBe(
+        result.totalGhostFiles,
+      );
+    });
+  });
+
+  describe('ghostLoc', () => {
+    it('is 0 on empty input', () => {
+      const result = analyzeGhostFiles(
+        makeBusReport([]),
+        makeContributors([]),
+        makeLocReport([]),
+      );
+      expect(result.ghostLoc).toBe(0);
+    });
+
+    it('sums LOC across all ghost files', () => {
+      const bus = makeBusReport([
+        { file: 'a.ts', dominantAuthor: 'g@co.com', dominantAuthorPercent: 90 },
+        { file: 'b.ts', dominantAuthor: 'g@co.com', dominantAuthorPercent: 85 },
+      ]);
+      const contribs = makeContributors([
+        { email: 'g@co.com', name: 'G', isActive: false, isGhost: true },
+      ]);
+      const loc = makeLocReport([
+        { file: 'a.ts', lines: 100 },
+        { file: 'b.ts', lines: 250 },
+      ]);
+      const result = analyzeGhostFiles(bus, contribs, loc);
+      expect(result.ghostLoc).toBe(350);
+    });
+
+    it('treats missing LOC entries as 0', () => {
+      const bus = makeBusReport([
+        { file: 'a.ts', dominantAuthor: 'g@co.com', dominantAuthorPercent: 90 },
+      ]);
+      const contribs = makeContributors([
+        { email: 'g@co.com', name: 'G', isActive: false, isGhost: true },
+      ]);
+      const loc = makeLocReport([]); // no LOC data
+      const result = analyzeGhostFiles(bus, contribs, loc);
+      expect(result.ghostLoc).toBe(0);
+    });
+  });
+
+  describe('isGhost gate (formula fix)', () => {
+    it('excludes intermediate-zone authors (isActive=false but isGhost=false)', () => {
+      const bus = makeBusReport([
+        {
+          file: 'a.ts',
+          dominantAuthor: 'mid@co.com',
+          dominantAuthorPercent: 90,
+        },
+      ]);
+      const contribs = makeContributors([
+        // intermediate: not active, not ghost (between cutoffs)
+        { email: 'mid@co.com', name: 'M', isActive: false, isGhost: false },
+      ]);
+      const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
+      const result = analyzeGhostFiles(bus, contribs, loc);
+      expect(result.files).toHaveLength(0);
+    });
+
+    it('excludes files where the dominant author owns 79% (below 80% threshold)', () => {
+      const bus = makeBusReport([
+        {
+          file: 'a.ts',
+          dominantAuthor: 'g@co.com',
+          dominantAuthorPercent: 79,
+        },
+      ]);
+      const contribs = makeContributors([
+        { email: 'g@co.com', name: 'G', isActive: false, isGhost: true },
+      ]);
+      const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
+      const result = analyzeGhostFiles(bus, contribs, loc);
+      expect(result.files).toHaveLength(0);
+    });
+
+    it('includes files where the dominant author owns exactly 80%', () => {
+      const bus = makeBusReport([
+        {
+          file: 'a.ts',
+          dominantAuthor: 'g@co.com',
+          dominantAuthorPercent: 80,
+        },
+      ]);
+      const contribs = makeContributors([
+        { email: 'g@co.com', name: 'G', isActive: false, isGhost: true },
+      ]);
+      const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
+      const result = analyzeGhostFiles(bus, contribs, loc);
+      expect(result.files).toHaveLength(1);
+    });
   });
 });

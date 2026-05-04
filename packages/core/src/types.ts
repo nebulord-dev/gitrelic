@@ -395,6 +395,12 @@ export interface GhostFile {
 export interface GhostFilesReport {
   files: GhostFile[];
   totalGhostFiles: number;
+  ghostOwners: number; // distinct dominant-author count
+  ghostLoc: number; // total LOC across ghost files
+  tierMix: {
+    trueGhost: number; // authorInactiveDays >= 365
+    fading: number; // 180 <= authorInactiveDays < 365
+  };
   summary: string;
 }
 
