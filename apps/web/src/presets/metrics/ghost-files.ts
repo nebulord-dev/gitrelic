@@ -3,58 +3,58 @@ import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export function ghostFilesMetrics(report: GitrelicReport): Metric[] {
-  const ghosts = report.ghostFiles.files;
-  const total = ghosts.length;
-
-  let trueGhosts = 0;
-  let fading = 0;
-  let ghostLoc = 0;
-  let maxInactive = 0;
-
-  for (const f of ghosts) {
-    if (f.authorInactiveDays > 365) {
-      trueGhosts += 1;
-    } else if (f.authorInactiveDays >= 180) {
-      fading += 1;
-    }
-    ghostLoc += f.loc;
-    if (f.authorInactiveDays > maxInactive) {
-      maxInactive = f.authorInactiveDays;
-    }
-  }
+  const gf = report.ghostFiles;
+  const totalLines = report.loc.totalLines;
+  const ghostLocPercent = totalLines > 0 ? (gf.ghostLoc / totalLines) * 100 : 0;
 
   return [
     {
       label: 'Ghost Files',
-      value: String(total),
-      color: total > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
-    },
-    {
-      label: 'True Ghosts (>365d)',
-      value: String(trueGhosts),
+      value: String(gf.totalGhostFiles),
       color:
-        trueGhosts > 0 ? 'var(--severity-critical)' : 'var(--severity-healthy)',
+        gf.totalGhostFiles === 0
+          ? 'var(--severity-healthy)'
+          : gf.totalGhostFiles < 10
+            ? 'var(--severity-warning)'
+            : 'var(--severity-critical)',
     },
     {
-      label: 'Fading (180–365d)',
-      value: String(fading),
-      color: fading > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
+      label: 'Ghost Owners',
+      value: String(gf.ghostOwners),
+      color:
+        gf.ghostOwners === 0
+          ? 'var(--severity-healthy)'
+          : gf.ghostOwners < 3
+            ? 'var(--severity-warning)'
+            : 'var(--severity-critical)',
+    },
+    {
+      label: 'True Ghosts (≥365d)',
+      value: String(gf.tierMix.trueGhost),
+      color:
+        gf.tierMix.trueGhost === 0
+          ? 'var(--severity-healthy)'
+          : 'var(--severity-critical)',
+    },
+    {
+      label: 'Fading (180–364d)',
+      value: String(gf.tierMix.fading),
+      color:
+        gf.tierMix.fading === 0
+          ? 'var(--severity-healthy)'
+          : gf.tierMix.fading < 10
+            ? 'var(--severity-warning)'
+            : 'var(--severity-critical)',
     },
     {
       label: 'Ghost LOC',
-      value: fmt(ghostLoc),
+      value: fmt(gf.ghostLoc),
       color:
-        ghostLoc > 0 ? 'var(--severity-warning)' : 'var(--severity-healthy)',
-    },
-    {
-      label: 'Max Inactive Days',
-      value: total > 0 ? String(maxInactive) : '—',
-      color:
-        total === 0
+        ghostLocPercent < 2
           ? 'var(--severity-healthy)'
-          : maxInactive > 365
-            ? 'var(--severity-critical)'
-            : 'var(--severity-warning)',
+          : ghostLocPercent < 10
+            ? 'var(--severity-warning)'
+            : 'var(--severity-critical)',
     },
   ];
 }

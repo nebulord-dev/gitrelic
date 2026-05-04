@@ -1,114 +1,155 @@
 import { describe, expect, it } from 'vitest';
 
 import { ghostFilesMetrics } from './ghost-files';
-import type { GhostFile, GitrelicReport } from '@gitrelic/core';
+import type {
+  GhostFile,
+  GhostFilesReport,
+  GitrelicReport,
+} from '@gitrelic/core';
 
-function makeFile(overrides: Partial<GhostFile> = {}): GhostFile {
+function makeGhostFile(authorInactiveDays: number, loc = 100): GhostFile {
   return {
-    file: 'a.ts',
-    dominantAuthor: 'dev@example.com',
+    file: `f${authorInactiveDays}.ts`,
+    dominantAuthor: `g${authorInactiveDays}@x.com`,
     dominantAuthorPercent: 90,
     lastAuthorCommitDate: '2024-01-01',
-    authorInactiveDays: 200,
-    loc: 100,
-    ...overrides,
+    authorInactiveDays,
+    loc,
   };
 }
 
-function makeReport(files: GhostFile[]): GitrelicReport {
+function makeReport(
+  ghost: Partial<GhostFilesReport> = {},
+  totalLines = 100_000,
+): GitrelicReport {
   return {
-    ghostFiles: { files, totalGhostFiles: files.length },
+    ghostFiles: {
+      files: ghost.files ?? [],
+      totalGhostFiles: ghost.totalGhostFiles ?? 0,
+      ghostOwners: ghost.ghostOwners ?? 0,
+      ghostLoc: ghost.ghostLoc ?? 0,
+      tierMix: ghost.tierMix ?? { trueGhost: 0, fading: 0 },
+      summary: '',
+    },
+    loc: { totalLines } as GitrelicReport['loc'],
   } as unknown as GitrelicReport;
 }
 
 describe('ghostFilesMetrics', () => {
-  it('returns healthy/em-dash values when list is empty', () => {
-    const metrics = ghostFilesMetrics(makeReport([]));
-    expect(metrics).toHaveLength(5);
-    expect(metrics[0]).toMatchObject({ label: 'Ghost Files', value: '0' });
-    expect(metrics[0].color).toBe('var(--severity-healthy)');
-    expect(metrics[1]).toMatchObject({
-      label: 'True Ghosts (>365d)',
-      value: '0',
+  it('returns exactly 5 slots in canonical order', () => {
+    const m = ghostFilesMetrics(makeReport());
+    expect(m).toHaveLength(5);
+    expect(m.map((s) => s.label)).toEqual([
+      'Ghost Files',
+      'Ghost Owners',
+      'True Ghosts (≥365d)',
+      'Fading (180–364d)',
+      'Ghost LOC',
+    ]);
+  });
+
+  describe('slot 1 — Ghost Files', () => {
+    it('healthy at 0', () => {
+      expect(
+        ghostFilesMetrics(makeReport({ totalGhostFiles: 0 }))[0].color,
+      ).toBe('var(--severity-healthy)');
     });
-    expect(metrics[1].color).toBe('var(--severity-healthy)');
-    expect(metrics[2]).toMatchObject({
-      label: 'Fading (180–365d)',
-      value: '0',
+    it('warning at 1..9', () => {
+      expect(
+        ghostFilesMetrics(makeReport({ totalGhostFiles: 5 }))[0].color,
+      ).toBe('var(--severity-warning)');
     });
-    expect(metrics[2].color).toBe('var(--severity-healthy)');
-    expect(metrics[3]).toMatchObject({ label: 'Ghost LOC', value: '0' });
-    expect(metrics[3].color).toBe('var(--severity-healthy)');
-    expect(metrics[4]).toMatchObject({
-      label: 'Max Inactive Days',
-      value: '—',
+    it('critical at 10+', () => {
+      expect(
+        ghostFilesMetrics(makeReport({ totalGhostFiles: 10 }))[0].color,
+      ).toBe('var(--severity-critical)');
     });
-    expect(metrics[4].color).toBe('var(--severity-healthy)');
   });
 
-  it('returns correct aggregates for a non-empty list', () => {
-    const files = [
-      makeFile({ file: 'a.ts', authorInactiveDays: 400, loc: 500 }),
-      makeFile({ file: 'b.ts', authorInactiveDays: 250, loc: 200 }),
-      makeFile({ file: 'c.ts', authorInactiveDays: 190, loc: 100 }),
-    ];
-    const metrics = ghostFilesMetrics(makeReport(files));
-    expect(metrics[0].value).toBe('3');
-    expect(metrics[0].color).toBe('var(--severity-critical)');
-    expect(metrics[1].value).toBe('1');
-    expect(metrics[1].color).toBe('var(--severity-critical)');
-    expect(metrics[2].value).toBe('2');
-    expect(metrics[2].color).toBe('var(--severity-warning)');
-    expect(metrics[3].value).toBe('800');
-    expect(metrics[3].color).toBe('var(--severity-warning)');
-    expect(metrics[4].value).toBe('400');
-    expect(metrics[4].color).toBe('var(--severity-critical)');
+  describe('slot 2 — Ghost Owners', () => {
+    it('healthy at 0', () => {
+      expect(ghostFilesMetrics(makeReport({ ghostOwners: 0 }))[1].color).toBe(
+        'var(--severity-healthy)',
+      );
+    });
+    it('warning at 1..2', () => {
+      expect(ghostFilesMetrics(makeReport({ ghostOwners: 2 }))[1].color).toBe(
+        'var(--severity-warning)',
+      );
+    });
+    it('critical at 3+', () => {
+      expect(ghostFilesMetrics(makeReport({ ghostOwners: 3 }))[1].color).toBe(
+        'var(--severity-critical)',
+      );
+    });
   });
 
-  it('counts 365 as Fading (inclusive upper bound), not True Ghost', () => {
-    const metrics = ghostFilesMetrics(
-      makeReport([makeFile({ authorInactiveDays: 365 })]),
-    );
-    expect(metrics[1].value).toBe('0');
-    expect(metrics[2].value).toBe('1');
+  describe('slot 3 — True Ghosts', () => {
+    it('healthy at 0', () => {
+      expect(
+        ghostFilesMetrics(
+          makeReport({ tierMix: { trueGhost: 0, fading: 0 } }),
+        )[2].color,
+      ).toBe('var(--severity-healthy)');
+    });
+    it('critical at 1+', () => {
+      expect(
+        ghostFilesMetrics(
+          makeReport({ tierMix: { trueGhost: 1, fading: 0 } }),
+        )[2].color,
+      ).toBe('var(--severity-critical)');
+    });
   });
 
-  it('counts 366 as True Ghost (>365 strict)', () => {
-    const metrics = ghostFilesMetrics(
-      makeReport([makeFile({ authorInactiveDays: 366 })]),
-    );
-    expect(metrics[1].value).toBe('1');
-    expect(metrics[2].value).toBe('0');
+  describe('slot 4 — Fading', () => {
+    it('healthy at 0', () => {
+      expect(
+        ghostFilesMetrics(
+          makeReport({ tierMix: { trueGhost: 0, fading: 0 } }),
+        )[3].color,
+      ).toBe('var(--severity-healthy)');
+    });
+    it('warning at 1..9', () => {
+      expect(
+        ghostFilesMetrics(
+          makeReport({ tierMix: { trueGhost: 0, fading: 5 } }),
+        )[3].color,
+      ).toBe('var(--severity-warning)');
+    });
+    it('critical at 10+', () => {
+      expect(
+        ghostFilesMetrics(
+          makeReport({ tierMix: { trueGhost: 0, fading: 10 } }),
+        )[3].color,
+      ).toBe('var(--severity-critical)');
+    });
   });
 
-  it('counts 180 as Fading (inclusive lower bound)', () => {
-    const metrics = ghostFilesMetrics(
-      makeReport([makeFile({ authorInactiveDays: 180 })]),
-    );
-    expect(metrics[2].value).toBe('1');
-  });
-
-  it('excludes files with inactiveDays < 180 from Fading range', () => {
-    const metrics = ghostFilesMetrics(
-      makeReport([makeFile({ authorInactiveDays: 179 })]),
-    );
-    expect(metrics[1].value).toBe('0');
-    expect(metrics[2].value).toBe('0');
-  });
-
-  it('formats Ghost LOC with thousands separator via fmt()', () => {
-    const files = [
-      makeFile({ file: 'a.ts', loc: 1500 }),
-      makeFile({ file: 'b.ts', loc: 2500 }),
-    ];
-    const metrics = ghostFilesMetrics(makeReport(files));
-    expect(metrics[3].value).toBe('4,000');
-  });
-
-  it('guarded max handles single file without spread', () => {
-    const metrics = ghostFilesMetrics(
-      makeReport([makeFile({ authorInactiveDays: 500 })]),
-    );
-    expect(metrics[4].value).toBe('500');
+  describe('slot 5 — Ghost LOC', () => {
+    it('value renders absolute LOC formatted', () => {
+      expect(
+        ghostFilesMetrics(makeReport({ ghostLoc: 12_345 }, 100_000))[4].value,
+      ).toBe('12,345');
+    });
+    it('healthy when ghostLoc < 2% of totalLines', () => {
+      expect(
+        ghostFilesMetrics(makeReport({ ghostLoc: 1_900 }, 100_000))[4].color,
+      ).toBe('var(--severity-healthy)');
+    });
+    it('warning when ghostLoc is 2..9% of totalLines', () => {
+      expect(
+        ghostFilesMetrics(makeReport({ ghostLoc: 5_000 }, 100_000))[4].color,
+      ).toBe('var(--severity-warning)');
+    });
+    it('critical when ghostLoc >= 10% of totalLines', () => {
+      expect(
+        ghostFilesMetrics(makeReport({ ghostLoc: 10_000 }, 100_000))[4].color,
+      ).toBe('var(--severity-critical)');
+    });
+    it('healthy when totalLines is 0 (empty repo)', () => {
+      expect(ghostFilesMetrics(makeReport({ ghostLoc: 0 }, 0))[4].color).toBe(
+        'var(--severity-healthy)',
+      );
+    });
   });
 });
