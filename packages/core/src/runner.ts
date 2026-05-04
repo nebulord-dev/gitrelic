@@ -187,6 +187,9 @@ const EMPTY_TEST_COVERAGE: TestCoverageProxyReport = {
 const EMPTY_GHOST_FILES: GhostFilesReport = {
   files: [],
   totalGhostFiles: 0,
+  ghostOwners: 0,
+  ghostLoc: 0,
+  tierMix: { trueGhost: 0, fading: 0 },
   summary: 'unavailable',
 };
 const EMPTY_KNOWLEDGE: KnowledgeConcentrationReport = {

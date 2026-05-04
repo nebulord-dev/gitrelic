@@ -116,6 +116,37 @@ describe('prepareSunburstData', () => {
     const tree = prepareSunburstData(makeReport(fixture, []), 'single-author');
     expect(filesInTree(tree)).not.toContain('at-threshold.ts');
   });
+
+  it('uses contributor display names for inner-ring author nodes', () => {
+    const reportWithNames = {
+      ...makeReport(fixture, []),
+      contributors: {
+        contributors: [
+          { email: 'a@x.io', name: 'Alice Anderson' },
+          { email: 'b@x.io', name: 'Bob Builder' },
+        ],
+        total: 2,
+        summary: '',
+      },
+    } as unknown as GitrelicReport;
+    const tree = prepareSunburstData(reportWithNames, 'all');
+    const authorNames = (tree.children ?? []).map((n) => n.name);
+    expect(authorNames).toContain('Alice Anderson');
+    expect(authorNames).toContain('Bob Builder');
+    // Email-prefix should NOT appear when a display name is available.
+    expect(authorNames).not.toContain('a');
+    expect(authorNames).not.toContain('b');
+  });
+
+  it('falls back to email when contributor name is missing', () => {
+    // Default makeReport has contributors: [], so all author nodes fall through
+    // to the email-as-name path via displayName().
+    const tree = prepareSunburstData(makeReport(fixture, []), 'all');
+    const authorNames = (tree.children ?? []).map((n) => n.name);
+    expect(authorNames).toContain('a@x.io');
+    expect(authorNames).toContain('b@x.io');
+    expect(authorNames).toContain('c@x.io');
+  });
 });
 
 describe('countSunburstFiles', () => {

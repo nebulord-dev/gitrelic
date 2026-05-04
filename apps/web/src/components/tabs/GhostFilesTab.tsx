@@ -15,6 +15,8 @@ interface GhostFilesTabProps {
   onApplyPreset: (id: PresetId) => void;
 }
 
+// Bounded by NarrativeKPI's finding-list visual budget; keep in sync with
+// the BlastRadiusTab / KnowledgeSilosTab top-N convention (3 rows max).
 const TOP_OWNERS_COUNT = 3;
 const DIRECTORY_ROLLUP_LIMIT = 5;
 

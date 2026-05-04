@@ -54,15 +54,19 @@ function filterSetForMode(
 export function prepareSunburstData(
   report: GitrelicReport,
   mode: SunburstMode,
+  nameByEmail?: Map<string, string>,
 ): SunburstNode {
   const locMap = new Map<string, number>();
   for (const f of report.loc.files) {
     locMap.set(f.file, f.lines);
   }
 
-  const nameByEmail = new Map(
-    report.contributors.contributors.map((c) => [c.email, c.name]),
-  );
+  // Optional caller-supplied map lets the component pass in its memoized
+  // copy so we don't rebuild on every render. Defaults to an internal build
+  // for direct callers (e.g. tests) that don't pre-compute it.
+  const namesMap =
+    nameByEmail ??
+    new Map(report.contributors.contributors.map((c) => [c.email, c.name]));
 
   const filterSet = filterSetForMode(report, mode);
 
@@ -87,7 +91,7 @@ export function prepareSunburstData(
   const authorNodes: SunburstNode[] = [];
   for (const [email, data] of authorMap) {
     authorNodes.push({
-      name: displayName(email, nameByEmail),
+      name: displayName(email, namesMap),
       email,
       children: data.files.map((f) => ({
         name: f.file.split('/').pop() ?? f.file,
@@ -176,8 +180,8 @@ export function OwnershipSunburst({
   );
 
   const treeData = useMemo(
-    () => prepareSunburstData(report, mode),
-    [report, mode],
+    () => prepareSunburstData(report, mode, nameByEmail),
+    [report, mode, nameByEmail],
   );
   const totalFiles = useMemo(
     () => countSunburstFiles(report, mode),

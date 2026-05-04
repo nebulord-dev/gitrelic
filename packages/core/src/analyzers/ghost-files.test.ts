@@ -35,6 +35,7 @@ function makeContributors(
     name: string;
     isActive: boolean;
     isGhost?: boolean;
+    lastCommit?: string;
   }[],
 ): ContributorReport {
   return {
@@ -45,7 +46,7 @@ function makeContributors(
       isGhost: a.isGhost ?? !a.isActive,
       commitCount: 10,
       firstCommit: '2024-01-01',
-      lastCommit: '2024-06-01',
+      lastCommit: a.lastCommit ?? '2024-06-01',
       filesOwned: 5,
       linesChanged: 100,
       activeDays: 10,
@@ -60,7 +61,7 @@ function makeContributors(
         isGhost: a.isGhost ?? !a.isActive,
         commitCount: 10,
         firstCommit: '2024-01-01',
-        lastCommit: '2024-06-01',
+        lastCommit: a.lastCommit ?? '2024-06-01',
         filesOwned: 5,
         linesChanged: 100,
         activeDays: 10,
@@ -81,6 +82,8 @@ function makeContributors(
       focusAreas: [],
     },
     summary: '',
+    top3CommitShare: 0,
+    newcomers90d: 0,
   };
 }
 
@@ -253,16 +256,23 @@ describe('analyzeGhostFiles', () => {
   });
 
   describe('tierMix', () => {
+    function daysAgo(days: number): string {
+      return new Date(Date.now() - days * 86_400_000).toISOString();
+    }
+
     it('classifies authorInactiveDays >= 365 as trueGhost', () => {
       const bus = makeBusReport([
         { file: 'a.ts', dominantAuthor: 'g@co.com', dominantAuthorPercent: 90 },
       ]);
       const contribs = makeContributors([
-        { email: 'g@co.com', name: 'G', isActive: false, isGhost: true },
+        {
+          email: 'g@co.com',
+          name: 'G',
+          isActive: false,
+          isGhost: true,
+          lastCommit: daysAgo(400),
+        },
       ]);
-      contribs.contributors[0].lastCommit = new Date(
-        Date.now() - 400 * 86_400_000,
-      ).toISOString();
       const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
       const result = analyzeGhostFiles(bus, contribs, loc);
       expect(result.tierMix.trueGhost).toBe(1);
@@ -274,11 +284,14 @@ describe('analyzeGhostFiles', () => {
         { file: 'a.ts', dominantAuthor: 'g@co.com', dominantAuthorPercent: 90 },
       ]);
       const contribs = makeContributors([
-        { email: 'g@co.com', name: 'G', isActive: false, isGhost: true },
+        {
+          email: 'g@co.com',
+          name: 'G',
+          isActive: false,
+          isGhost: true,
+          lastCommit: daysAgo(200),
+        },
       ]);
-      contribs.contributors[0].lastCommit = new Date(
-        Date.now() - 200 * 86_400_000,
-      ).toISOString();
       const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
       const result = analyzeGhostFiles(bus, contribs, loc);
       expect(result.tierMix.trueGhost).toBe(0);
@@ -290,11 +303,14 @@ describe('analyzeGhostFiles', () => {
         { file: 'a.ts', dominantAuthor: 'g@co.com', dominantAuthorPercent: 90 },
       ]);
       const contribs = makeContributors([
-        { email: 'g@co.com', name: 'G', isActive: false, isGhost: true },
+        {
+          email: 'g@co.com',
+          name: 'G',
+          isActive: false,
+          isGhost: true,
+          lastCommit: daysAgo(365),
+        },
       ]);
-      contribs.contributors[0].lastCommit = new Date(
-        Date.now() - 365 * 86_400_000,
-      ).toISOString();
       const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
       const result = analyzeGhostFiles(bus, contribs, loc);
       expect(result.tierMix.trueGhost).toBe(1);
@@ -315,15 +331,21 @@ describe('analyzeGhostFiles', () => {
         },
       ]);
       const contribs = makeContributors([
-        { email: 'g1@co.com', name: 'G1', isActive: false, isGhost: true },
-        { email: 'g2@co.com', name: 'G2', isActive: false, isGhost: true },
+        {
+          email: 'g1@co.com',
+          name: 'G1',
+          isActive: false,
+          isGhost: true,
+          lastCommit: daysAgo(400),
+        },
+        {
+          email: 'g2@co.com',
+          name: 'G2',
+          isActive: false,
+          isGhost: true,
+          lastCommit: daysAgo(200),
+        },
       ]);
-      contribs.contributors[0].lastCommit = new Date(
-        Date.now() - 400 * 86_400_000,
-      ).toISOString();
-      contribs.contributors[1].lastCommit = new Date(
-        Date.now() - 200 * 86_400_000,
-      ).toISOString();
       const loc = makeLocReport([
         { file: 'a.ts', lines: 100 },
         { file: 'b.ts', lines: 50 },
