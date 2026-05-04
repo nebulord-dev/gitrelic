@@ -1,22 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ghostFilesMetrics } from './ghost-files';
-import type {
-  GhostFile,
-  GhostFilesReport,
-  GitrelicReport,
-} from '@gitrelic/core';
-
-function makeGhostFile(authorInactiveDays: number, loc = 100): GhostFile {
-  return {
-    file: `f${authorInactiveDays}.ts`,
-    dominantAuthor: `g${authorInactiveDays}@x.com`,
-    dominantAuthorPercent: 90,
-    lastAuthorCommitDate: '2024-01-01',
-    authorInactiveDays,
-    loc,
-  };
-}
+import type { GhostFilesReport, GitrelicReport } from '@gitrelic/core';
 
 function makeReport(
   ghost: Partial<GhostFilesReport> = {},
