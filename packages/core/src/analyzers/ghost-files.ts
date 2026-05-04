@@ -43,6 +43,11 @@ export function analyzeGhostFiles(
   const totalGhostFiles = files.length;
   const ghostOwners = new Set(files.map((f) => f.dominantAuthor)).size;
   const ghostLoc = files.reduce((sum, f) => sum + f.loc, 0);
+  // Buckets are exhaustive over `files`: the `isGhost` gate above guarantees
+  // every flagged file has `authorInactiveDays >= 180`, so trueGhost + fading
+  // === totalGhostFiles. The `'tier mix sums to totalGhostFiles'` test locks
+  // this in. If a future change loosens the gate, the subline counts would
+  // silently undercount.
   const tierMix = {
     trueGhost: files.filter((f) => f.authorInactiveDays >= 365).length,
     fading: files.filter(

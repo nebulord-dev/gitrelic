@@ -363,9 +363,7 @@ export function OwnershipSunburst({
           >
             {tooltip.kind === 'author' ? (
               <>
-                <div className="font-semibold mb-0.5">
-                  {displayName(tooltip.email, nameByEmail)}
-                </div>
+                <div className="font-semibold mb-0.5">{tooltip.name}</div>
                 <div className="text-text-secondary">{tooltip.email}</div>
                 <div className="text-text-secondary mt-0.5">
                   {tooltip.fileCount} file{tooltip.fileCount !== 1 ? 's' : ''}{' '}
