@@ -53,7 +53,13 @@ function TopGhostOwnersList({ owners }: { owners: TopGhostOwner[] }) {
   );
 }
 
-function GhostDirectoryRollup({ rows }: { rows: GhostDirectoryRow[] }) {
+function GhostDirectoryRollup({
+  rows,
+  hiddenCount,
+}: {
+  rows: GhostDirectoryRow[];
+  hiddenCount: number;
+}) {
   if (rows.length === 0) return null;
   const maxCount = rows[0].count;
   return (
@@ -88,6 +94,11 @@ function GhostDirectoryRollup({ rows }: { rows: GhostDirectoryRow[] }) {
           </div>
         ))}
       </div>
+      {hiddenCount > 0 && (
+        <div className="mt-1.5 text-[10px] text-text-tertiary">
+          + {hiddenCount} more {hiddenCount === 1 ? 'directory' : 'directories'}
+        </div>
+      )}
     </div>
   );
 }
@@ -100,9 +111,11 @@ export function GhostFilesTab({ report, onApplyPreset }: GhostFilesTabProps) {
     report.contributors.contributors,
     TOP_OWNERS_COUNT,
   );
-  const dirRollup = aggregateGhostFilesByDirectory(gf.files).slice(
+  const allDirRollup = aggregateGhostFilesByDirectory(gf.files);
+  const dirRollup = allDirRollup.slice(0, DIRECTORY_ROLLUP_LIMIT);
+  const hiddenDirectoryCount = Math.max(
     0,
-    DIRECTORY_ROLLUP_LIMIT,
+    allDirRollup.length - DIRECTORY_ROLLUP_LIMIT,
   );
 
   return (
@@ -128,7 +141,10 @@ export function GhostFilesTab({ report, onApplyPreset }: GhostFilesTabProps) {
       }
       extras={
         dirRollup.length > 0 ? (
-          <GhostDirectoryRollup rows={dirRollup} />
+          <GhostDirectoryRollup
+            rows={dirRollup}
+            hiddenCount={hiddenDirectoryCount}
+          />
         ) : undefined
       }
       seeAlso={[

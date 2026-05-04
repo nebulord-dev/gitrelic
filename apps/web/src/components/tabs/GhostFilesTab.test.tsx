@@ -200,4 +200,43 @@ describe('GhostFilesTab', () => {
     expect(screen.getByText('src/auth')).toBeTruthy();
     expect(screen.getByText('docs')).toBeTruthy();
   });
+
+  it('renders +N more directories footer when rollup exceeds 5', () => {
+    // 7 distinct directories — 2 should be hidden
+    const files = [
+      'a/x.ts',
+      'b/x.ts',
+      'c/x.ts',
+      'd/x.ts',
+      'e/x.ts',
+      'f/x.ts',
+      'g/x.ts',
+    ].map((path) => makeFile(path, 'g@x', 200));
+    render(
+      <GhostFilesTab
+        report={makeReport({
+          files,
+          contributors: [makeContrib('g@x', 'Ghost')],
+        })}
+        onApplyPreset={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/\+ 2 more directories/i)).toBeTruthy();
+  });
+
+  it('does not render the +N footer when rollup fits in 5', () => {
+    const files = ['a/x.ts', 'b/x.ts', 'c/x.ts'].map((path) =>
+      makeFile(path, 'g@x', 200),
+    );
+    render(
+      <GhostFilesTab
+        report={makeReport({
+          files,
+          contributors: [makeContrib('g@x', 'Ghost')],
+        })}
+        onApplyPreset={vi.fn()}
+      />,
+    );
+    expect(screen.queryByText(/more director/i)).toBeNull();
+  });
 });
