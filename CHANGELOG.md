@@ -1,3 +1,10 @@
+# [0.44.0](https://github.com/nebulord-dev/gitrelic/compare/v0.43.0...v0.44.0) (2026-05-04)
+
+
+### Features
+
+* **web:** ghost files analyzer polish (RELIC-318) ([#71](https://github.com/nebulord-dev/gitrelic/issues/71)) ([552a91c](https://github.com/nebulord-dev/gitrelic/commit/552a91cf43730dd5bd8fc0e63332e8c9fe6c3b15)), closes [#69](https://github.com/nebulord-dev/gitrelic/issues/69)
+
 # [0.43.0](https://github.com/nebulord-dev/gitrelic/compare/v0.42.0...v0.43.0) (2026-05-03)
 
 
