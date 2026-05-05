@@ -2,56 +2,41 @@ import { fmt } from '../../components/theme';
 import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 
+const STALE = 'var(--text-tertiary)';
+const COUPLING = 'var(--accent-coupling)';
+
+function color(nonZero: boolean): string {
+  return nonZero ? COUPLING : STALE;
+}
+
 export function coAuthorsMetrics(report: GitrelicReport): Metric[] {
-  const { pairs, totalCoAuthoredCommits } = report.coAuthors;
-  const pairCount = pairs.length;
-
-  const collaborators = new Set<string>();
-  let topPair = 0;
-  let pairSum = 0;
-  for (const p of pairs) {
-    collaborators.add(p.authorA);
-    collaborators.add(p.authorB);
-    pairSum += p.coAuthoredCommits;
-    if (p.coAuthoredCommits > topPair) topPair = p.coAuthoredCommits;
-  }
-
-  const avgPerPair = pairCount > 0 ? Math.round(pairSum / pairCount) : 0;
+  const ca = report.coAuthors;
 
   return [
     {
-      label: 'Pairs',
-      value: String(pairCount),
-      color:
-        pairCount > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
+      label: 'AI Adoption',
+      value: `${ca.aiAdoptionPercent}%`,
+      color: color(ca.aiAdoptionPercent > 0),
     },
     {
-      label: 'Co-commits',
-      value: fmt(totalCoAuthoredCommits),
-      color:
-        totalCoAuthoredCommits > 0
-          ? 'var(--accent-primary)'
-          : 'var(--severity-healthy)',
+      label: 'AI Commits',
+      value: fmt(ca.aiAssistedCommits),
+      color: color(ca.aiAssistedCommits > 0),
     },
     {
-      label: 'Collaborators',
-      value: String(collaborators.size),
-      color:
-        collaborators.size > 0
-          ? 'var(--accent-primary)'
-          : 'var(--severity-healthy)',
+      label: 'AI Authors',
+      value: fmt(ca.aiAuthors.length),
+      color: color(ca.aiAuthors.length > 0),
     },
     {
-      label: 'Avg Commits/Pair',
-      value: pairCount > 0 ? String(avgPerPair) : '—',
-      color:
-        pairCount > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
+      label: 'Human Pairs',
+      value: fmt(ca.humanPairs.length),
+      color: color(ca.humanPairs.length > 0),
     },
     {
-      label: 'Top Pair Commits',
-      value: pairCount > 0 ? String(topPair) : '—',
-      color:
-        pairCount > 0 ? 'var(--accent-primary)' : 'var(--severity-healthy)',
+      label: 'Co-Author Commits',
+      value: fmt(ca.totalCoAuthoredCommits),
+      color: color(ca.totalCoAuthoredCommits > 0),
     },
   ];
 }

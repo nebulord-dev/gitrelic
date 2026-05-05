@@ -363,15 +363,15 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
   'co-authors': {
     id: 'co-authors',
     tier: 'analyzer',
-    label: 'Co-Authors',
+    label: 'Co-Authors / AI',
     group: 'team-activity',
     hero: {
-      defaultViz: 'author-force-graph',
-      altTabs: ['author-force-graph'],
+      defaultViz: 'ai-adoption',
+      altTabs: ['ai-adoption', 'per-author-ai-mix', 'author-force-graph'],
     },
     bottomPanel: {
-      defaultTab: 'co-authors',
-      altTabs: ['co-authors'],
+      defaultTab: 'co-authors-ai-adoption',
+      altTabs: ['co-authors-ai-adoption', 'co-authors-pairs'],
     },
     metrics: coAuthorsMetrics,
   },

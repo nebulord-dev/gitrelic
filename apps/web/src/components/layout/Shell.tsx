@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 
 import { useSelection } from '../../hooks/useSelection';
 import { PRESETS } from '../../presets/registry';
+import { aiAdoptionByMonth } from '../../utils/aiAdoptionByMonth';
 import { cn } from '../../utils/cn';
+import { perAuthorAiMix } from '../../utils/perAuthorAiMix';
 import { AgeHistogram } from '../hero/AgeHistogram';
+import { AiAdoptionTrend } from '../hero/AiAdoptionTrend';
 import { AuthorForceGraph } from '../hero/AuthorForceGraph';
 import { BlastHistogram } from '../hero/BlastHistogram';
 import { BusFactorHistogram } from '../hero/BusFactorHistogram';
@@ -22,6 +25,7 @@ import { OwnershipBubble } from '../hero/OwnershipBubble';
 import { OwnershipSunburst } from '../hero/OwnershipSunburst';
 import { ParallelScoreHistogram } from '../hero/ParallelScoreHistogram';
 import { ParallelTimeline } from '../hero/ParallelTimeline';
+import { PerAuthorAiMix } from '../hero/PerAuthorAiMix';
 import { RenameSankey } from '../hero/RenameSankey';
 import { RewriteDivergingBar } from '../hero/RewriteDivergingBar';
 import { RewriteHistogram } from '../hero/RewriteHistogram';
@@ -116,7 +120,9 @@ export const HERO_LABELS: Record<HeroViz, string> = {
   'ownership-sunburst': 'Sunburst',
   'ownership-sunburst-ghosts': 'Ghosts',
   'ownership-sunburst-silos': 'Silos',
-  'author-force-graph': 'Pairs',
+  'author-force-graph': 'Co-Author Graph',
+  'ai-adoption': 'AI Adoption',
+  'per-author-ai-mix': 'Per-Author AI Mix',
   'shame-leaderboard': 'Leaderboard',
   'shame-trend': 'Trend',
   'rename-sankey': 'Sankey',
@@ -364,6 +370,16 @@ export function Shell({ report }: ShellProps) {
                     report={report}
                     selectedContributor={selection.selectedContributor}
                     onSelectContributor={selection.selectContributor}
+                  />
+                )}
+                {selection.activeHeroViz === 'ai-adoption' && (
+                  <AiAdoptionTrend
+                    byMonth={aiAdoptionByMonth(report.coAuthors.byMonth)}
+                  />
+                )}
+                {selection.activeHeroViz === 'per-author-ai-mix' && (
+                  <PerAuthorAiMix
+                    rows={perAuthorAiMix(report.coAuthors.perAuthorMix)}
                   />
                 )}
                 {selection.activeHeroViz === 'shame-leaderboard' && (
