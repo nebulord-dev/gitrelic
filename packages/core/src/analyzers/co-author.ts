@@ -1,44 +1,149 @@
-import type { CoAuthorReport, CoAuthorPair, CoAuthorStats } from '../types.js';
+import { isAiEmail, isBotEmail } from '../utils/authorClassification.js';
+import type {
+  AdoptionTier,
+  AiAuthorStat,
+  CoAuthorMonthEntry,
+  CoAuthorPair,
+  CoAuthorReport,
+  CoAuthorStats,
+  PerAuthorMixEntry,
+} from '../types.js';
 import type { RawCommit } from '../utils/git.js';
 
 function pairKey(a: string, b: string): string {
   return a < b ? `${a}\0${b}` : `${b}\0${a}`;
 }
 
+function adoptionTier(percent: number): AdoptionTier {
+  if (percent === 0) return 'none';
+  if (percent < 20) return 'low';
+  if (percent < 50) return 'moderate';
+  return 'high';
+}
+
+interface PairAccum {
+  authorA: string;
+  authorB: string;
+  commits: number;
+  files: Set<string>;
+  classification: 'human-pair' | 'human-ai';
+}
+
+interface AuthorAccum {
+  author: string;
+  displayName: string;
+  aiCommits: number;
+  soloCommits: number;
+  totalCommits: number;
+}
+
 export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
-  const pairMap = new Map<
-    string,
-    { authorA: string; authorB: string; commits: number; files: Set<string> }
-  >();
+  const pairMap = new Map<string, PairAccum>();
   const authorCoAuthorCount = new Map<string, number>();
+  const authorAccum = new Map<string, AuthorAccum>();
+  const monthMap = new Map<string, CoAuthorMonthEntry>();
+
   let totalCoAuthoredCommits = 0;
+  let aiAssistedCommits = 0;
+  let humanAuthoredCommits = 0;
+  let filteredBotCommits = 0;
 
   for (const commit of commits) {
-    const coAuthors = commit.coAuthors.map((c) => c.email.toLowerCase());
+    const primaryEmailLower = commit.authorEmail.toLowerCase();
 
-    if (coAuthors.length === 0) continue;
+    // Bot-authored commits are stripped from analysis entirely; only the count is reported.
+    if (isBotEmail(primaryEmailLower)) {
+      filteredBotCommits++;
+      continue;
+    }
+
+    // AI-as-primary-author (rare — Devin etc.) is excluded from the human denominator.
+    // It still counts toward totalCoAuthoredCommits if it has co-authors, but doesn't anchor
+    // a "human used AI" relationship.
+    const primaryIsAi = isAiEmail(primaryEmailLower);
+
+    if (!primaryIsAi) {
+      humanAuthoredCommits++;
+    }
+
+    const coAuthorEmails = commit.coAuthors.map((c) => c.email.toLowerCase());
+    const hasAiCoAuthor = coAuthorEmails.some(isAiEmail);
+
+    // Author-mix accumulation (humans only).
+    if (!primaryIsAi) {
+      const accum = authorAccum.get(primaryEmailLower) ?? {
+        author: primaryEmailLower,
+        displayName: commit.authorName || primaryEmailLower,
+        aiCommits: 0,
+        soloCommits: 0,
+        totalCommits: 0,
+      };
+      accum.totalCommits++;
+      if (hasAiCoAuthor) accum.aiCommits++;
+      else accum.soloCommits++;
+      // Prefer the first non-empty name we see; never overwrite with empty.
+      if (!accum.displayName && commit.authorName) {
+        accum.displayName = commit.authorName;
+      }
+      authorAccum.set(primaryEmailLower, accum);
+    }
+
+    if (!primaryIsAi && hasAiCoAuthor) {
+      aiAssistedCommits++;
+    }
+
+    // Monthly bucket — every human-authored commit lands here. `aiAssisted` counts
+    // commits with an AI co-author; `pureHuman` everything else (solo or human-pair).
+    if (!primaryIsAi) {
+      const month = commit.date.slice(0, 7); // ISO `YYYY-MM`
+      const monthEntry = monthMap.get(month) ?? {
+        month,
+        aiAssisted: 0,
+        pureHuman: 0,
+        total: 0,
+      };
+      if (hasAiCoAuthor) {
+        monthEntry.aiAssisted++;
+      } else {
+        monthEntry.pureHuman++;
+      }
+      monthEntry.total = monthEntry.aiAssisted + monthEntry.pureHuman;
+      monthMap.set(month, monthEntry);
+    }
+
+    // Trailer-bearing commits — the rest of the analysis only fires when there are co-authors.
+    if (commit.coAuthors.length === 0) continue;
+
+    // Drop bot co-authors from the participant set (they're noise).
+    const filteredCoAuthors = coAuthorEmails.filter((e) => !isBotEmail(e));
+    if (filteredCoAuthors.length === 0) continue;
+
     totalCoAuthoredCommits++;
 
-    // All participants: commit author + co-authors
-    const allAuthors = [commit.authorEmail.toLowerCase(), ...coAuthors];
-    const uniqueAuthors = [...new Set(allAuthors)];
+    // Pair-graph accumulation.
+    const allParticipants = primaryIsAi
+      ? filteredCoAuthors
+      : [primaryEmailLower, ...filteredCoAuthors];
+    const uniqueParticipants = [...new Set(allParticipants)];
 
-    // Record pairs between all participants
-    for (let i = 0; i < uniqueAuthors.length; i++) {
-      for (let j = i + 1; j < uniqueAuthors.length; j++) {
-        const key = pairKey(uniqueAuthors[i], uniqueAuthors[j]);
+    for (let i = 0; i < uniqueParticipants.length; i++) {
+      for (let j = i + 1; j < uniqueParticipants.length; j++) {
+        const a = uniqueParticipants[i];
+        const b = uniqueParticipants[j];
+        const key = pairKey(a, b);
+
+        // Pair classification: human-ai if either endpoint is AI; else human-pair.
+        // Bot-involved is impossible here — bots already filtered.
+        const classification: 'human-pair' | 'human-ai' =
+          isAiEmail(a) || isAiEmail(b) ? 'human-ai' : 'human-pair';
+
         if (!pairMap.has(key)) {
           pairMap.set(key, {
-            authorA:
-              uniqueAuthors[i] < uniqueAuthors[j]
-                ? uniqueAuthors[i]
-                : uniqueAuthors[j],
-            authorB:
-              uniqueAuthors[i] < uniqueAuthors[j]
-                ? uniqueAuthors[j]
-                : uniqueAuthors[i],
+            authorA: a < b ? a : b,
+            authorB: a < b ? b : a,
             commits: 0,
             files: new Set(),
+            classification,
           });
         }
         const pair = pairMap.get(key)!;
@@ -47,8 +152,8 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
       }
     }
 
-    // Count co-author appearances
-    for (const coAuthor of coAuthors) {
+    // Co-author-appearance count (legacy `authorStats` field).
+    for (const coAuthor of filteredCoAuthors) {
       authorCoAuthorCount.set(
         coAuthor,
         (authorCoAuthorCount.get(coAuthor) ?? 0) + 1,
@@ -62,25 +167,30 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
       authorB: p.authorB,
       coAuthoredCommits: p.commits,
       files: [...p.files],
+      classification: p.classification,
     }))
     .sort((a, b) => b.coAuthoredCommits - a.coAuthoredCommits);
 
-  // Build per-author stats
+  const humanPairs = pairs.filter((p) => p.classification === 'human-pair');
+
+  // Per-author primary-partner stats (legacy authorStats).
   const authorPairCounts = new Map<
     string,
     { total: number; partners: Map<string, number> }
   >();
   for (const pair of pairs) {
     for (const author of [pair.authorA, pair.authorB]) {
-      if (!authorPairCounts.has(author))
-        authorPairCounts.set(author, { total: 0, partners: new Map() });
-      const entry = authorPairCounts.get(author)!;
+      const entry = authorPairCounts.get(author) ?? {
+        total: 0,
+        partners: new Map(),
+      };
       entry.total += pair.coAuthoredCommits;
       const partner = author === pair.authorA ? pair.authorB : pair.authorA;
       entry.partners.set(
         partner,
         (entry.partners.get(partner) ?? 0) + pair.coAuthoredCommits,
       );
+      authorPairCounts.set(author, entry);
     }
   }
 
@@ -101,10 +211,74 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
     })
     .sort((a, b) => b.coAuthoredCommits - a.coAuthoredCommits);
 
-  const summary =
-    totalCoAuthoredCommits > 0
-      ? `${totalCoAuthoredCommits} co-authored commit${totalCoAuthoredCommits !== 1 ? 's' : ''} across ${pairs.length} pair${pairs.length !== 1 ? 's' : ''}`
-      : 'No co-authored commits found';
+  // Per-author mix (all human authors, sorted desc by personalRatio).
+  const perAuthorMix: PerAuthorMixEntry[] = [...authorAccum.values()]
+    .map((a) => ({
+      author: a.author,
+      displayName: a.displayName,
+      aiCommits: a.aiCommits,
+      soloCommits: a.soloCommits,
+      totalCommits: a.totalCommits,
+      personalRatio:
+        a.totalCommits > 0
+          ? Math.round((a.aiCommits / a.totalCommits) * 100)
+          : 0,
+    }))
+    .sort((a, b) => {
+      if (b.personalRatio !== a.personalRatio)
+        return b.personalRatio - a.personalRatio;
+      if (b.totalCommits !== a.totalCommits)
+        return b.totalCommits - a.totalCommits;
+      return a.author.localeCompare(b.author);
+    });
 
-  return { pairs, authorStats, totalCoAuthoredCommits, summary };
+  // aiAuthors: humans with personalRatio > 0, sorted desc by aiCommits.
+  const aiAuthors: AiAuthorStat[] = perAuthorMix
+    .filter((m) => m.personalRatio > 0)
+    .map((m) => ({
+      author: m.author,
+      displayName: m.displayName,
+      aiCommits: m.aiCommits,
+      totalCommits: m.totalCommits,
+      personalRatio: m.personalRatio,
+    }))
+    .sort((a, b) => {
+      if (b.aiCommits !== a.aiCommits) return b.aiCommits - a.aiCommits;
+      if (b.personalRatio !== a.personalRatio)
+        return b.personalRatio - a.personalRatio;
+      return a.author.localeCompare(b.author);
+    });
+
+  const aiAdoptionPercent =
+    humanAuthoredCommits > 0
+      ? Math.round((aiAssistedCommits / humanAuthoredCommits) * 100)
+      : 0;
+  const aiAdoptionTierValue = adoptionTier(aiAdoptionPercent);
+
+  const byMonth: CoAuthorMonthEntry[] = [...monthMap.values()].sort((a, b) =>
+    a.month.localeCompare(b.month),
+  );
+
+  const summary =
+    aiAssistedCommits > 0
+      ? `${aiAdoptionPercent}% of human work used AI assistance (${aiAssistedCommits} of ${humanAuthoredCommits} commits)`
+      : totalCoAuthoredCommits > 0
+        ? `${totalCoAuthoredCommits} co-authored commit${totalCoAuthoredCommits !== 1 ? 's' : ''} across ${humanPairs.length} human pair${humanPairs.length !== 1 ? 's' : ''} — no AI assistance`
+        : 'No co-authored commits found';
+
+  return {
+    pairs,
+    authorStats,
+    totalCoAuthoredCommits,
+    summary,
+    aiAssistedCommits,
+    humanAuthoredCommits,
+    aiAdoptionPercent,
+    aiAdoptionTier: aiAdoptionTierValue,
+    aiAuthors,
+    humanPairs,
+    filteredBotCommits,
+    byMonth,
+    perAuthorMix,
+  };
 }

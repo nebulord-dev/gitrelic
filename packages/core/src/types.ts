@@ -415,11 +415,14 @@ export interface KnowledgeConcentrationReport {
 
 // ─── Co-author analysis ─────────────────────────────────────────────────────
 
+export type AdoptionTier = 'none' | 'low' | 'moderate' | 'high';
+
 export interface CoAuthorPair {
   authorA: string;
   authorB: string;
   coAuthoredCommits: number;
-  files: string[]; // files they co-authored together
+  files: string[];
+  classification: 'human-pair' | 'human-ai';
 }
 
 export interface CoAuthorStats {
@@ -428,11 +431,45 @@ export interface CoAuthorStats {
   primaryPartner: string | null;
 }
 
+export interface AiAuthorStat {
+  author: string; // email (lowercased)
+  displayName: string;
+  aiCommits: number; // commits authored by this human with AI co-author
+  totalCommits: number; // all commits authored by this human in window
+  personalRatio: number; // 0–100, aiCommits / totalCommits
+}
+
+export interface PerAuthorMixEntry {
+  author: string;
+  displayName: string;
+  aiCommits: number;
+  soloCommits: number;
+  totalCommits: number;
+  personalRatio: number; // 0–100
+}
+
+export interface CoAuthorMonthEntry {
+  month: string; // ISO `YYYY-MM`
+  aiAssisted: number;
+  pureHuman: number;
+  total: number;
+}
+
 export interface CoAuthorReport {
-  pairs: CoAuthorPair[];
+  pairs: CoAuthorPair[]; // human-pair + human-ai (no bot-involved)
   authorStats: CoAuthorStats[];
   totalCoAuthoredCommits: number;
   summary: string;
+
+  aiAssistedCommits: number;
+  humanAuthoredCommits: number; // denominator for B%
+  aiAdoptionPercent: number; // 0–100 (B-formula)
+  aiAdoptionTier: AdoptionTier;
+  aiAuthors: AiAuthorStat[]; // sorted desc by aiCommits, includes humans with personalRatio > 0 only
+  humanPairs: CoAuthorPair[]; // strict subset of pairs filtered to human-pair only
+  filteredBotCommits: number; // for the panel footnote
+  byMonth: CoAuthorMonthEntry[];
+  perAuthorMix: PerAuthorMixEntry[];
 }
 
 // ─── Hotspot clustering ────────────────────────────────────────────────────
