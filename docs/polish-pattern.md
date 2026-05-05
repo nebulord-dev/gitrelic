@@ -60,6 +60,12 @@ This shifts the bottom-panel question from *"how do we show file detail?"* to *"
 
 Default to **narrative-KPI** when in doubt. The hero shows the ranked list; the Inspector shows per-file detail; narrative-KPI shows the *aggregate truth* — which is the one slot the other two surfaces don't fill.
 
+## Hero tab count is not fixed
+
+Most polished analyzers have 1–2 hero tabs. Some warrant 3 — Co-Authors / AI (RELIC-320) is the first to ship that shape, with `AI Adoption` (default) + `Per-Author AI Mix` (alt) + `Co-Author Graph` (alt-alt) each answering a distinct question for a distinct audience (manager / engineer / advanced).
+
+The bar for adding a third tab: **does it answer a question the first two don't, for a real audience?** Don't pad to 3 if 2 are enough. Co-Authors / AI passed because the topology lens (force graph) genuinely complements the temporal lens (trend) and the per-person lens (mix bars), AND the docs site explains how to read the topology — so the third tab carries its own weight.
+
 ## The narrative-KPI pattern
 
 Reference implementation: `apps/web/src/components/shared/NarrativeKPI.tsx` (the shared layout). Reference consumer: `apps/web/src/components/tabs/KnowledgeSilosTab.tsx`.
@@ -248,13 +254,30 @@ The four analyzers in Batch 1 all share the "table is rotated hero" pathology. T
   - `normalizeReport.ts` extended to per-field merge for the contributors slice (rather than object-level `??` fallback) so old report JSONs without the new fields default to 0 rather than `undefined`.
 - **Removes:** `ContributorsTab`'s standalone `Status` column (consolidated into Contributor cell). `'ownership-sunburst'` from contributors preset altTabs. `Total Commits` slot from metrics strip.
 
+### `co-authors` *(shipped — RELIC-320)*
+
+- **Reframe:** Lead question shifted from *"who collaborates with whom?"* to *"how is AI assistance and human collaboration showing up in this codebase?"* Sidebar label: `Co-Authors` → `Co-Authors / AI`. Registry key `'co-authors'` unchanged so existing deep-links still work.
+- **Data-layer fix shipped in same PR:** `getAllCommits` was using `--format=%s` (subject only). `Co-Authored-By:` trailers live in commit bodies, so the analyzer was empty on every repo. Switched to git's native trailer parser (`%(trailers:key=Co-authored-by,valueonly,separator=%x1F)`) on a new `TRAILERS|...` line; `RawCommit` gains a typed `coAuthors: CoAuthor[]` field. Future analyzers wanting body-derived signals can use the same delimiter pattern.
+- **Hero:** **3 tabs** — `AI Adoption` (default, 2-stack monthly trend) · `Per-Author AI Mix` (alt, horizontal AI/solo bars per human) · `Co-Author Graph` (alt-alt, polished force graph; renamed from "Repository Map"). First analyzer in the polish initiative with 3 hero tabs — justified by 3 distinct audiences (manager / engineer / advanced) and validated against the data on GitRelic and React.
+- **Bottom panel:** **2 tabs** — `AI Adoption` (default, narrative-KPI form) + `Co-Author Pairs` (alt, classified table with `[AI]` / `[Human]` badges). Splits along audience axis (adoption story vs collaboration topology). Same precedent as Churn's `Churn / Test Files` split (RELIC-303), but along audience instead of source-vs-test.
+- **Big number:** `aiAdoptionPercent` (B-formula: `aiAssistedCommits / humanAuthoredCommits`).
+- **Tier thresholds:** `0% = No Adoption Yet · 1–19% = Low · 20–49% = Moderate · 50%+ = High Adoption`. **Accent (informational) coloring** (`stale` for none, `coupling` for any non-zero), *not* severity. Adoption is a workflow-shape signal, not a risk axis — the dashboard shouldn't moralize the team's tooling choice.
+- **Sub-content:** Top 3 humans by AI commit count (display names + `aiCommits` + `personalRatio` tooltip). Subline carries B + A ratios side-by-side: `"234 AI-assisted commits · 47% of human work · 42% of all repo activity"`. Three scenario states (`no-trailers` / `no-ai` / `standard`) with distinct copy and big-number rendering — see "three repo modes" in `apps/docs/analyzers/co-authors.md`.
+- **Bot/AI classification utility:** New shared util `packages/core/src/utils/authorClassification.ts` — recognizes Claude (`noreply@anthropic.com`), GitHub Copilot Workspace, Aider, Devin, Cursor as AI; semantic-release / dependabot / renovate / GitHub Actions / `[bot]@users.noreply.github.com` catch-all as bots; everything else human. Bots stripped from analysis with a transparent footnote (`"N bot-authored commits filtered"`). Util location chosen so Contributors can adopt it later (separate ticket — Contributors has the same `semantic-release-bot` pollution problem).
+- **Web-side classification mirror:** because `apps/web` may only `import type` from `@gitrelic/core` (per CLAUDE.md — value imports leak Node into the browser bundle), the AI/bot pattern logic is mirrored in `apps/web/src/components/hero/authorGraph.ts` for force-graph node classification. Documented as a follow-up — proper fix is a browser-safe subpath export from core.
+- **Metrics strip:** Slot 1 `AI Adoption %` (matches panel tier) · Slot 2 `AI Commits` · Slot 3 `AI Authors` · Slot 4 `Human Pairs` · Slot 5 `Co-Author Commits`. **Two-state coloring** (`stale` for zero, `coupling` for non-zero) — adoption is informational, no severity-red anywhere. Replaces five generic count slots from the previous design (Pairs / Co-commits / Collaborators / Avg Commits-Pair / Top Pair Commits — none of which carried any health/adoption signal).
+- **See also:** Contributors, Parallel Dev. Footer present on both bottom-panel tabs (consistency across the panel; one-tab visibility doesn't bury the link). Completes the Team & Activity collaboration triangle: totals (Contributors) / observed-concurrent (Parallel Dev) / explicitly-attributed (Co-Authors / AI).
+- **Backend additions to `CoAuthorReport`:** `aiAssistedCommits`, `humanAuthoredCommits`, `aiAdoptionPercent`, `aiAdoptionTier`, `aiAuthors`, `humanPairs`, `filteredBotCommits`, `byMonth`, `perAuthorMix`. `CoAuthorPair` gains `classification: 'human-pair' | 'human-ai'`. Bot-involved pairs filtered before they ever reach `pairs[]` or `humanPairs[]`. AI-as-primary-author commits (Devin etc.) excluded from the human denominator.
+- **Force-graph polish:** classification colors (AI nodes accent-coupling, humans by per-author hash), single-commit edges hidden by default with filtered-count surfaced in caption, display-name labels (Claude / GitHub Copilot for AI, full names from contributors map for humans, email fallback), improved tooltips replace the cryptic "1 partner" wording, `<HeroCaption>` strip wired through.
+- **Removes:** `Pairs` / `Co-commits` / `Collaborators` / `Avg Commits-Pair` / `Top Pair Commits` metrics-strip slots; old `CoAuthorsTab.tsx` (replaced by 2 new tabs); `Repository Map` viz label string.
+- **Pre-1.0 versioning:** ships as `feat:` (minor bump). Sidebar registry key unchanged. No `feat!:` trigger.
+
 ## Pending (Batches 2–N)
 
 Not yet decided. Will be filled in as each batch is worked through. Listed here so the doc is honest about what's done vs. open.
 
 | Analyzer | Batch | Notes from initial screenshot review |
 |---|---|---|
-| `co-author` | 2 | Empty on react repo; needs empty-state pass. |
 | `knowledge-concentration` (Knowledge Silos) | — | Already shipped. Reference implementation. |
 | `ghost-files` | 3 | Same sunburst as Knowledge Silos. Likely narrative-KPI. |
 | `cursed-files` | TBD | Bottom table earns space (REASONS chips). Probably keeps current form. |
