@@ -286,6 +286,7 @@ function makeCommits(
         authorName: 'Dev',
         date,
         message: 'change',
+        coAuthors: [],
         files: [fc.file],
         fileStats: [],
         insertions: 1,

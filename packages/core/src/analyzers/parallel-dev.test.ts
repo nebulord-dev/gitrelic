@@ -10,6 +10,7 @@ function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
     authorName: 'Alice',
     date: '2025-06-02T00:00:00Z', // a Monday
     message: 'feat: something',
+    coAuthors: [],
     files: [],
     fileStats: [],
     insertions: 0,

@@ -1,8 +1,6 @@
 import type { CoAuthorReport, CoAuthorPair, CoAuthorStats } from '../types.js';
 import type { RawCommit } from '../utils/git.js';
 
-const CO_AUTHOR_REGEX = /Co-authored-by:\s*(.+?)\s*<([^>]+)>/gi;
-
 function pairKey(a: string, b: string): string {
   return a < b ? `${a}\0${b}` : `${b}\0${a}`;
 }
@@ -16,12 +14,7 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
   let totalCoAuthoredCommits = 0;
 
   for (const commit of commits) {
-    const coAuthors: string[] = [];
-    let match;
-    CO_AUTHOR_REGEX.lastIndex = 0;
-    while ((match = CO_AUTHOR_REGEX.exec(commit.message)) !== null) {
-      coAuthors.push(match[2].toLowerCase());
-    }
+    const coAuthors = commit.coAuthors.map((c) => c.email.toLowerCase());
 
     if (coAuthors.length === 0) continue;
     totalCoAuthoredCommits++;

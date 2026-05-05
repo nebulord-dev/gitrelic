@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { analyzeCoAuthors } from './co-author.js';
-import type { RawCommit } from '../utils/git.js';
+import type { CoAuthor, RawCommit } from '../utils/git.js';
 
 function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
   return {
@@ -10,6 +10,7 @@ function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
     authorName: 'Alice',
     date: '2025-06-01T00:00:00Z',
     message: '',
+    coAuthors: [],
     files: [],
     fileStats: [],
     insertions: 0,
@@ -18,13 +19,17 @@ function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
   };
 }
 
+function coAuthor(name: string, email: string): CoAuthor {
+  return { name, email };
+}
+
 describe('analyzeCoAuthors', () => {
-  it('detects co-authored-by trailers in commit messages', () => {
+  it('detects co-authored-by trailers parsed by git', () => {
     const commits = [
       makeCommit({
         hash: '1',
         authorEmail: 'alice@co.com',
-        message: 'feat: add auth\n\nCo-authored-by: Bob <bob@co.com>',
+        coAuthors: [coAuthor('Bob', 'bob@co.com')],
         files: ['auth.ts'],
       }),
     ];
@@ -40,8 +45,10 @@ describe('analyzeCoAuthors', () => {
       makeCommit({
         hash: '1',
         authorEmail: 'alice@co.com',
-        message:
-          'feat: collab\n\nCo-authored-by: Bob <bob@co.com>\nCo-authored-by: Carol <carol@co.com>',
+        coAuthors: [
+          coAuthor('Bob', 'bob@co.com'),
+          coAuthor('Carol', 'carol@co.com'),
+        ],
         files: ['shared.ts'],
       }),
     ];
@@ -54,7 +61,7 @@ describe('analyzeCoAuthors', () => {
       makeCommit({
         hash: '1',
         authorEmail: 'alice@co.com',
-        message: 'fix: auth\n\nCo-authored-by: Bob <bob@co.com>',
+        coAuthors: [coAuthor('Bob', 'bob@co.com')],
         files: ['auth.ts', 'session.ts'],
       }),
     ];
@@ -68,13 +75,13 @@ describe('analyzeCoAuthors', () => {
       makeCommit({
         hash: '1',
         authorEmail: 'alice@co.com',
-        message: 'feat: a\n\nCo-authored-by: Bob <bob@co.com>',
+        coAuthors: [coAuthor('Bob', 'bob@co.com')],
         files: ['a.ts'],
       }),
       makeCommit({
         hash: '2',
         authorEmail: 'alice@co.com',
-        message: 'feat: b\n\nCo-authored-by: Bob <bob@co.com>',
+        coAuthors: [coAuthor('Bob', 'bob@co.com')],
         files: ['b.ts'],
       }),
     ];
@@ -101,7 +108,7 @@ describe('analyzeCoAuthors', () => {
       makeCommit({
         hash: '1',
         authorEmail: 'alice@co.com',
-        message: 'feat\n\nCo-authored-by: Bob <bob@co.com>',
+        coAuthors: [coAuthor('Bob', 'bob@co.com')],
         files: ['a.ts'],
       }),
     ];
@@ -111,17 +118,24 @@ describe('analyzeCoAuthors', () => {
     expect(bobStats!.coAuthoredCommits).toBe(1);
   });
 
-  it('is case-insensitive for the trailer keyword', () => {
+  it('lowercases co-author emails for matching', () => {
     const commits = [
       makeCommit({
         hash: '1',
-        authorEmail: 'alice@co.com',
-        message: 'feat\n\nco-authored-by: Bob <bob@co.com>',
+        authorEmail: 'Alice@CO.com',
+        coAuthors: [coAuthor('Bob', 'BOB@co.com')],
         files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: '2',
+        authorEmail: 'alice@co.com',
+        coAuthors: [coAuthor('Bob', 'bob@co.com')],
+        files: ['b.ts'],
       }),
     ];
     const result = analyzeCoAuthors(commits);
-    expect(result.totalCoAuthoredCommits).toBe(1);
+    expect(result.pairs).toHaveLength(1);
+    expect(result.pairs[0].coAuthoredCommits).toBe(2);
   });
 
   it('produces a summary', () => {

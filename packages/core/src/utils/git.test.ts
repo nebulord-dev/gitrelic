@@ -66,6 +66,47 @@ describe('parseGitLog', () => {
     const commits = parseGitLog(raw);
     expect(commits[0].message).toBe('fix: handle a|b edge case');
   });
+
+  it('parses Co-authored-by trailers from the TRAILERS line', () => {
+    const raw = [
+      'COMMIT|abc|alice@co.com|Alice|2025-01-15T10:00:00Z',
+      'MSG|feat: collab',
+      'TRAILERS|Bob <bob@co.com>\u001FCarol <carol@co.com>',
+      '1\t0\tshared.ts',
+    ].join('\n');
+
+    const commits = parseGitLog(raw);
+    expect(commits[0].coAuthors).toEqual([
+      { name: 'Bob', email: 'bob@co.com' },
+      { name: 'Carol', email: 'carol@co.com' },
+    ]);
+  });
+
+  it('returns an empty coAuthors array when the TRAILERS line has no values', () => {
+    const raw = [
+      'COMMIT|abc|alice@co.com|Alice|2025-01-15T10:00:00Z',
+      'MSG|feat: solo',
+      'TRAILERS|',
+      '1\t0\ta.ts',
+    ].join('\n');
+
+    const commits = parseGitLog(raw);
+    expect(commits[0].coAuthors).toEqual([]);
+  });
+
+  it('skips malformed trailer values', () => {
+    const raw = [
+      'COMMIT|abc|alice@co.com|Alice|2025-01-15T10:00:00Z',
+      'MSG|feat: weird',
+      'TRAILERS|just some text\u001FBob <bob@co.com>',
+      '1\t0\ta.ts',
+    ].join('\n');
+
+    const commits = parseGitLog(raw);
+    expect(commits[0].coAuthors).toEqual([
+      { name: 'Bob', email: 'bob@co.com' },
+    ]);
+  });
 });
 
 describe('isIgnored', () => {
