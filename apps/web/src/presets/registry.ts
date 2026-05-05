@@ -374,6 +374,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['co-authors-ai-adoption', 'co-authors-pairs'],
     },
     metrics: coAuthorsMetrics,
+    docsPath: 'analyzers/co-authors',
   },
   shame: {
     id: 'shame',
