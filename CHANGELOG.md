@@ -1,3 +1,10 @@
+# [0.45.0](https://github.com/nebulord-dev/gitrelic/compare/v0.44.0...v0.45.0) (2026-05-05)
+
+
+### Features
+
+* **web:** Co-Authors / AI polish (RELIC-320) ([#72](https://github.com/nebulord-dev/gitrelic/issues/72)) ([56c8c50](https://github.com/nebulord-dev/gitrelic/commit/56c8c5029d036cc81ee7327335b47b7980a1b3a1))
+
 # [0.44.0](https://github.com/nebulord-dev/gitrelic/compare/v0.43.0...v0.44.0) (2026-05-04)
 
 
