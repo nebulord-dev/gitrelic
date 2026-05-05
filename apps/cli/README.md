@@ -39,7 +39,7 @@ gitrelic --path ~/projects/my-app --json > report.json
 Churn analysis, churn velocity, hotspot scoring and clustering, complexity trends, and rewrite ratios.
 
 ### Ownership & Risk
-Bus factor, knowledge concentration, ghost files (owned by inactive authors), contributor profiles, and co-authorship analysis.
+Bus factor, knowledge concentration, ghost files (owned by inactive authors), contributor profiles, and AI-adoption + human pair-programming attribution from `Co-authored-by:` trailers.
 
 ### History & Patterns
 Age maps, dead code candidates, blast radius, coupling maps, parallel development detection, rename tracking, and commit timing stress patterns.

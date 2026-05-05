@@ -24,7 +24,8 @@ Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `gitrelic` (N
 
 - `src/runner.ts` — orchestrates all analyzers, entry point is `runGitrelic()`
 - `src/types.ts` — all TypeScript interfaces (`GitrelicReport`, `ChurnReport`, etc.)
-- `src/utils/git.ts` — raw git primitives (parsing `git log`, `git ls-files`)
+- `src/utils/git.ts` — raw git primitives (parsing `git log`, `git ls-files`, `Co-authored-by` trailers via git's native trailer parser into `RawCommit.coAuthors`)
+- `src/utils/authorClassification.ts` — pure-function AI/bot/human classifier (Claude / Copilot / Aider / Devin / Cursor + dependabot / renovate / semantic-release / github-actions). Shared infrastructure; co-author consumes today, Contributors will adopt for bot filtering later.
 - `src/analyzers/` — 22 analyzers, each with a corresponding `.test.ts`:
   - `churn.ts` — file churn frequency analysis
   - `bus-factor.ts` — ownership concentration per file
@@ -43,7 +44,7 @@ Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `gitrelic` (N
   - `test-coverage.ts` — test file proximity proxy
   - `ghost-files.ts` — files owned by inactive authors
   - `knowledge-concentration.ts` — single-author file ratio
-  - `co-author.ts` — co-authorship pair analysis
+  - `co-author.ts` — AI adoption + human pair-programming attribution from `Co-authored-by:` trailers
   - `hotspot-clustering.ts` — multi-dimensional hotspot grouping
   - `complexity-trend.ts` — monthly file growth curves
   - `commit-timing.ts` — late-night/weekend stress patterns

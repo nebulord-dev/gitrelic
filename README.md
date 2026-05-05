@@ -25,7 +25,7 @@ Run `gitrelic` in any git repository and get a narrative health report on the co
 - **Knowledge concentration** — single-author file ratio across the repo
 - **Ghost files** — files owned by authors who've gone inactive
 - **Contributor profiles** — who built what, who's still active, who's a ghost
-- **Co-authorship** — collaboration pair analysis from Co-authored-by trailers
+- **AI adoption + co-authorship** — what fraction of work is AI-assisted (Claude / Copilot / Aider / Devin / Cursor) and which humans pair-program with each other, parsed from `Co-authored-by:` trailers
 
 ### History & Patterns
 
