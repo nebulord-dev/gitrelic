@@ -20,12 +20,14 @@ const AI_PATTERNS: Pattern[] = [
 ];
 
 const BOT_PATTERNS: Pattern[] = [
-  { match: /^dependabot/i },
-  { match: /^renovate/i },
-  { match: /^semantic-release/i },
+  // Anchored on `@` so a real human (e.g. dependabot.intern@example.com)
+  // doesn't silently classify as a bot. Same for renovate / semantic-release.
+  { match: /^dependabot(\[bot\])?@/i },
+  { match: /^renovate(\[bot\])?@/i },
+  { match: /^semantic-release(-bot)?@/i },
   // Catch-all: any [bot] account on GitHub's noreply domain that survived AI patterns
   { match: /\[bot\]@.*\.noreply\.github\.com$/i },
-  // Catch-all: standalone bot accounts (github-actions, etc.)
+  // github-actions on a non-noreply domain (rare but possible)
   { match: /^github-actions\[bot\]@/i },
 ];
 

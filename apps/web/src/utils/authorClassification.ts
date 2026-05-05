@@ -28,9 +28,11 @@ const AI_PATTERNS: AiPattern[] = [
 ];
 
 const BOT_PATTERNS: RegExp[] = [
-  /^dependabot/i,
-  /^renovate/i,
-  /^semantic-release/i,
+  // Anchored on `@` so a real human (e.g. dependabot.intern@example.com)
+  // doesn't silently classify as a bot. Same for renovate / semantic-release.
+  /^dependabot(\[bot\])?@/i,
+  /^renovate(\[bot\])?@/i,
+  /^semantic-release(-bot)?@/i,
   /\[bot\]@.*\.noreply\.github\.com$/i,
   /^github-actions\[bot\]@/i,
 ];
@@ -56,21 +58,13 @@ export function aiProductName(email: string): string | null {
   return null;
 }
 
-/**
- * Resolves a human-readable label for an author email:
- *   1. Known AI tools → product name (Claude, GitHub Copilot, etc.)
- *   2. Contributors map by email → contributor.name when present
- *   3. Fallback to the email itself
- *
- * Used everywhere that renders co-author identity in the web UI:
- * the force graph, the per-author hero, the pairs table, the narrative-KPI
- * top-3 finding. Centralized so a future "display preference" change lands
- * in one place instead of three.
- */
+// Resolution order: AI product name → contributors map → email fallback.
+// Empty email returns `(unknown)` so blank labels never reach the UI.
 export function resolveAuthorDisplayName(
   email: string,
   contributors: Contributor[],
 ): string {
+  if (!email) return '(unknown)';
   const product = aiProductName(email);
   if (product) return product;
 

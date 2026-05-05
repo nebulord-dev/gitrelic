@@ -2,13 +2,18 @@ import {
   classifyAuthor,
   resolveAuthorDisplayName,
 } from '../../utils/authorClassification';
-import type { AuthorClass, GitrelicReport } from '@gitrelic/core';
+import type { GitrelicReport } from '@gitrelic/core';
+
+// Bots are stripped from pairs[] upstream by the analyzer, so the graph
+// only ever renders human or AI nodes. Narrowing the type makes the
+// invariant explicit and lets render branches elide a dead 'bot' case.
+export type GraphAuthorClass = 'human' | 'ai';
 
 export interface AuthorGraphNode {
   id: string;
   label: string;
   displayName: string;
-  classification: AuthorClass;
+  classification: GraphAuthorClass;
   coAuthoredCommits: number;
   partnerCount: number;
   primaryPartner: string | null;
@@ -85,13 +90,13 @@ export function buildAuthorGraph(report: GitrelicReport): AuthorGraphResult {
       if (displayName === lookupKey && name) {
         displayName = name;
       }
+      // Bots can't appear here (analyzer-filtered), so coerce to the narrow type.
+      const cls = classifyAuthor(email || id);
       return {
         id,
-        // `label` mirrors `displayName` — bare-email ids would otherwise leak
-        // through any code path that reads `label` instead of `displayName`.
         label: displayName,
         displayName,
-        classification: classifyAuthor(email || id),
+        classification: cls === 'bot' ? 'human' : cls,
         coAuthoredCommits:
           stats?.coAuthoredCommits ?? derivedCommits.get(id) ?? 0,
         partnerCount: partnerCounts.get(id) ?? 0,

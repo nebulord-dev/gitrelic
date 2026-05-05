@@ -61,6 +61,17 @@ describe('authorClassification', () => {
       expect(isBotEmail(email)).toBe(false);
       expect(aiProductName(email)).toBeNull();
     });
+
+    it.each([
+      'dependabot.intern@example.com',
+      'renovate.team@example.com',
+      'semantic-release.dev@example.com',
+    ])(
+      'does NOT classify %s as bot (real humans whose local-parts share a bot prefix)',
+      (email) => {
+        expect(classifyAuthor(email)).toBe('human');
+      },
+    );
   });
 
   describe('case insensitivity', () => {

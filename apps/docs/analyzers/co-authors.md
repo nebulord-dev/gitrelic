@@ -16,10 +16,6 @@ Why both stories live in one analyzer: they share a single signal (`Co-Authored-
 
 A note on what this analyzer is *not*: it measures **explicit credit attribution**, not coordination. Two engineers can pair-program every day and never appear here if they don't add `Co-Authored-By:` trailers; conversely, an AI assistant gets a trailer-credit pair on every commit it helps with. For *observed* coordination — multiple authors editing the same file in the same week without explicit attribution — see the [Parallel Dev](/analyzers/parallel-dev) analyzer.
 
-::: tip Screenshot
-**TODO:** Capture the Co-Authors analyzer view (sidebar selection, `AI Adoption Trend` hero default tab, `Per-Author AI Mix` alt tab, `Co-Author Graph` alt-alt tab, bottom-panel `AI Adoption` narrative-KPI tab and `Co-Author Pairs` table tab). Save to `apps/docs/public/images/analyzers/co-authors-overview.png`, then replace this callout with `![Co-Authors analyzer view](/images/analyzers/co-authors-overview.png)`.
-:::
-
 ## Quick read
 
 If you only have ten seconds:
@@ -77,7 +73,7 @@ If your team uses an AI coding assistant that isn't on this list, please file an
 
 ## What counts as a bot
 
-`semantic-release-*`, `dependabot*`, `renovate*`, `github-actions[bot]@*`, plus a catch-all for `*[bot]@users.noreply.github.com` accounts that don't match an AI pattern.
+`semantic-release-*`, `dependabot*`, `renovate*`, `github-actions[bot]@*`, plus a catch-all for `*[bot]@*.noreply.github.com` accounts that don't match an AI pattern.
 
 Bots are stripped from the analysis entirely. They aren't ignored silently — the bottom-panel tabs surface a `"N bot-authored commits filtered"` footnote when bots were present in the raw data, so the filter is auditable rather than invisible.
 
@@ -93,9 +89,9 @@ Five KPI slots appear at the top of the Co-Authors pane.
 |---|---|---|
 | No co-author trailers anywhere | `No Co-Author Data` (neutral grey) | Most repos in the wild. The signal isn't applicable. |
 | 0% (trailers present, none AI) | `No Adoption Yet` (neutral, not red) | Human-only attribution. *Absence of AI is not a risk.* |
-| 1–24% | `Low Adoption` | AI is being tried, not embedded. |
-| 25–59% | `Moderate Adoption` | AI is meaningfully part of the workflow. |
-| ≥ 60% | `High Adoption` | AI is the default for most commits. |
+| 1–19% | `Low Adoption` | AI is being tried, not embedded. |
+| 20–49% | `Moderate Adoption` | AI is meaningfully part of the workflow. |
+| ≥ 50% | `High Adoption` | AI is the default for most commits. |
 
 **The tier ladder is intentionally neutral.** Other analyzers map to `healthy / warning / critical` because their underlying metric encodes risk. AI adoption is not a risk axis — it's a workflow-shape signal — so the tiers describe the *shape*, not the *quality*. A repo with `0%` adoption is not red; a repo with `80%` adoption is not green. The team decides which shape it wants.
 

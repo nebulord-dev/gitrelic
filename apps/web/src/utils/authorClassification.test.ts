@@ -113,4 +113,19 @@ describe('resolveAuthorDisplayName', () => {
       'bob@co.com',
     );
   });
+
+  it('returns "(unknown)" when email is empty (never blank labels in the UI)', () => {
+    expect(resolveAuthorDisplayName('', [])).toBe('(unknown)');
+  });
+});
+
+describe('bot pattern anchoring (regression)', () => {
+  // Real humans whose local-parts share a bot prefix must not be misclassified.
+  it.each([
+    'dependabot.intern@example.com',
+    'renovate.team@example.com',
+    'semantic-release.dev@example.com',
+  ])('does NOT classify %s as bot', (email) => {
+    expect(classifyAuthor(email)).toBe('human');
+  });
 });

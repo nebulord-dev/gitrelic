@@ -111,6 +111,80 @@ describe('analyzeCoAuthors', () => {
       expect(result.humanAuthoredCommits).toBe(1);
       expect(result.aiAssistedCommits).toBe(0);
     });
+
+    it('still records the AI↔human pair from an AI-primary commit', () => {
+      // Regression for the case where primaryIsAi previously dropped the AI
+      // primary out of the participant set entirely, making AI↔human pairs
+      // from Devin-style commits invisible in the graph.
+      const result = analyzeCoAuthors([
+        makeCommit({
+          authorEmail: 'devin-ai-integration[bot]@users.noreply.github.com',
+          coAuthors: [ca('Alice', 'alice@co.com')],
+          files: ['a.ts'],
+        }),
+      ]);
+      expect(result.pairs).toHaveLength(1);
+      expect(result.pairs[0].classification).toBe('human-ai');
+      const emails = [result.pairs[0].authorA, result.pairs[0].authorB];
+      expect(emails).toContain('alice@co.com');
+      expect(emails).toContain(
+        'devin-ai-integration[bot]@users.noreply.github.com',
+      );
+    });
+  });
+
+  describe('humanPairs invariant', () => {
+    it('contains only human-pair classifications when pairs is mixed', () => {
+      const result = analyzeCoAuthors([
+        makeCommit({
+          hash: '1',
+          authorEmail: 'alice@co.com',
+          coAuthors: [ca('Bob', 'bob@co.com')],
+          files: ['a.ts'],
+        }),
+        makeCommit({
+          hash: '2',
+          authorEmail: 'alice@co.com',
+          coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+          files: ['b.ts'],
+        }),
+      ]);
+      expect(result.pairs).toHaveLength(2);
+      expect(result.humanPairs).toHaveLength(1);
+      expect(result.humanPairs[0].classification).toBe('human-pair');
+    });
+  });
+
+  describe('aiAuthors tiebreak ordering', () => {
+    it('breaks aiCommits ties by personalRatio desc, then alphabetical', () => {
+      // Both authors will have aiCommits=1 — tiebreak by personalRatio (Bob 100%, Alice 50%).
+      const result = analyzeCoAuthors([
+        makeCommit({
+          hash: '1',
+          authorEmail: 'alice@co.com',
+          authorName: 'Alice',
+          coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+          files: ['a.ts'],
+        }),
+        makeCommit({
+          hash: '2',
+          authorEmail: 'alice@co.com',
+          authorName: 'Alice',
+          files: ['a.ts'],
+        }),
+        makeCommit({
+          hash: '3',
+          authorEmail: 'bob@co.com',
+          authorName: 'Bob',
+          coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+          files: ['b.ts'],
+        }),
+      ]);
+      expect(result.aiAuthors.map((a) => a.author)).toEqual([
+        'bob@co.com',
+        'alice@co.com',
+      ]);
+    });
   });
 
   describe('aiAdoptionTier thresholds', () => {

@@ -417,12 +417,16 @@ export interface KnowledgeConcentrationReport {
 
 export type AdoptionTier = 'none' | 'low' | 'moderate' | 'high';
 
+// Bots are filtered out of pairs[] before they reach consumers, so a
+// 'bot-involved' classification is structurally impossible here.
+export type CoAuthorPairClassification = 'human-pair' | 'human-ai';
+
 export interface CoAuthorPair {
   authorA: string;
   authorB: string;
   coAuthoredCommits: number;
   files: string[];
-  classification: 'human-pair' | 'human-ai';
+  classification: CoAuthorPairClassification;
 }
 
 export interface CoAuthorStats {
@@ -456,7 +460,13 @@ export interface CoAuthorMonthEntry {
 }
 
 export interface CoAuthorReport {
-  pairs: CoAuthorPair[]; // human-pair + human-ai (no bot-involved)
+  // Strict invariant: pairs[] never contains a bot endpoint (filtered at the
+  // analyzer). humanPairs is a strict subset where classification is
+  // 'human-pair' (no AI either) — maintained by the analyzer, not derived at
+  // consumer time, so tabs don't have to re-filter on every render.
+  pairs: CoAuthorPair[];
+  humanPairs: CoAuthorPair[];
+
   authorStats: CoAuthorStats[];
   totalCoAuthoredCommits: number;
   summary: string;
@@ -465,8 +475,7 @@ export interface CoAuthorReport {
   humanAuthoredCommits: number; // denominator for B%
   aiAdoptionPercent: number; // 0–100 (B-formula)
   aiAdoptionTier: AdoptionTier;
-  aiAuthors: AiAuthorStat[]; // sorted desc by aiCommits, includes humans with personalRatio > 0 only
-  humanPairs: CoAuthorPair[]; // strict subset of pairs filtered to human-pair only
+  aiAuthors: AiAuthorStat[]; // humans with personalRatio > 0, sorted desc by aiCommits
   filteredBotCommits: number; // for the panel footnote
   byMonth: CoAuthorMonthEntry[];
   perAuthorMix: PerAuthorMixEntry[];

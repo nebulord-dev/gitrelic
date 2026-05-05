@@ -58,6 +58,7 @@ export type {
   KnowledgeConcentrationReport,
   CoAuthorReport,
   CoAuthorPair,
+  CoAuthorPairClassification,
   CoAuthorStats,
   AdoptionTier,
   AiAuthorStat,

@@ -3,14 +3,9 @@ import type { PerAuthorMixEntry } from '@gitrelic/core';
 const TOP_BY_TOTAL = 20;
 const HARD_CAP = 30;
 
-/**
- * Selection rule: top-20 humans by totalCommits ∪ all humans with personalRatio > 0,
- * hard-capped at 30. Preserves the input's personalRatio-desc sort order.
- *
- * The union ensures AI users always appear in the chart even when they're not in
- * the most-active 20 — without a low-volume AI experimenter being silently dropped
- * on a large repo.
- */
+// Top-N by totalCommits ∪ AI users, dedup, then cap at HARD_CAP — keeps
+// low-volume AI experimenters visible on large repos where they'd otherwise
+// fall outside the most-active 20.
 export function perAuthorAiMix(
   entries: PerAuthorMixEntry[],
 ): PerAuthorMixEntry[] {

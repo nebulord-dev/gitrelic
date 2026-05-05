@@ -1,9 +1,10 @@
-import { isAiEmail, isBotEmail } from '../utils/authorClassification.js';
+import { classifyAuthor, isAiEmail } from '../utils/authorClassification.js';
 import type {
   AdoptionTier,
   AiAuthorStat,
   CoAuthorMonthEntry,
   CoAuthorPair,
+  CoAuthorPairClassification,
   CoAuthorReport,
   CoAuthorStats,
   PerAuthorMixEntry,
@@ -26,7 +27,7 @@ interface PairAccum {
   authorB: string;
   commits: number;
   files: Set<string>;
-  classification: 'human-pair' | 'human-ai';
+  classification: CoAuthorPairClassification;
 }
 
 interface AuthorAccum {
@@ -52,7 +53,10 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
     const primaryEmailLower = commit.authorEmail.toLowerCase();
 
     // Bot-authored commits are stripped from analysis entirely; only the count is reported.
-    if (isBotEmail(primaryEmailLower)) {
+    // Use classifyAuthor (not isBotEmail directly) so AI-takes-precedence — emails like
+    // devin-ai-integration[bot]@users.noreply.github.com match BOTH AI and bot patterns
+    // and must be classified as AI.
+    if (classifyAuthor(primaryEmailLower) === 'bot') {
       filteredBotCommits++;
       continue;
     }
@@ -114,17 +118,21 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
     // Trailer-bearing commits — the rest of the analysis only fires when there are co-authors.
     if (commit.coAuthors.length === 0) continue;
 
-    // Drop bot co-authors from the participant set (they're noise).
-    const filteredCoAuthors = coAuthorEmails.filter((e) => !isBotEmail(e));
+    // Drop bot co-authors from the participant set (they're noise). Same
+    // classifyAuthor() use as the primary-author check so AI wins over bot.
+    const filteredCoAuthors = coAuthorEmails.filter(
+      (e) => classifyAuthor(e) !== 'bot',
+    );
     if (filteredCoAuthors.length === 0) continue;
 
     totalCoAuthoredCommits++;
 
-    // Pair-graph accumulation.
-    const allParticipants = primaryIsAi
-      ? filteredCoAuthors
-      : [primaryEmailLower, ...filteredCoAuthors];
-    const uniqueParticipants = [...new Set(allParticipants)];
+    // Pair-graph accumulation. Primary author always counted as a participant
+    // (including AI primaries like Devin) so AI↔human pairs from AI-primary
+    // commits don't silently drop out of the graph.
+    const uniqueParticipants = [
+      ...new Set([primaryEmailLower, ...filteredCoAuthors]),
+    ];
 
     for (let i = 0; i < uniqueParticipants.length; i++) {
       for (let j = i + 1; j < uniqueParticipants.length; j++) {
@@ -132,9 +140,8 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
         const b = uniqueParticipants[j];
         const key = pairKey(a, b);
 
-        // Pair classification: human-ai if either endpoint is AI; else human-pair.
-        // Bot-involved is impossible here — bots already filtered.
-        const classification: 'human-pair' | 'human-ai' =
+        // Bots already filtered, so classification is binary.
+        const classification: CoAuthorPairClassification =
           isAiEmail(a) || isAiEmail(b) ? 'human-ai' : 'human-pair';
 
         if (!pairMap.has(key)) {
@@ -152,7 +159,7 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
       }
     }
 
-    // Co-author-appearance count (legacy `authorStats` field).
+    // authorStats: per-co-author appearance count (used by Inspector).
     for (const coAuthor of filteredCoAuthors) {
       authorCoAuthorCount.set(
         coAuthor,
@@ -173,7 +180,7 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
 
   const humanPairs = pairs.filter((p) => p.classification === 'human-pair');
 
-  // Per-author primary-partner stats (legacy authorStats).
+  // Per-author primary-partner derivation for authorStats.
   const authorPairCounts = new Map<
     string,
     { total: number; partners: Map<string, number> }

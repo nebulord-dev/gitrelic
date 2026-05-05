@@ -54,9 +54,7 @@ function nodeFill(node: AuthorGraphNode): string {
 }
 
 function classificationLabel(c: AuthorGraphNode['classification']): string {
-  if (c === 'ai') return 'AI';
-  if (c === 'bot') return 'Bot';
-  return 'Human';
+  return c === 'ai' ? 'AI' : 'Human';
 }
 
 export function AuthorForceGraph({
@@ -221,7 +219,8 @@ export function AuthorForceGraph({
                 onMouseLeave={() => setTooltip(null)}
                 className="cursor-default"
                 style={{
-                  // Wider invisible hit area for thin edges, achieved via a transparent stroke.
+                  // pointerEvents: 'stroke' so hover hit-tests the line itself,
+                  // not the implicit fill bbox of the enclosing path.
                   pointerEvents: 'stroke',
                 }}
               />
