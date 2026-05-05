@@ -1,7 +1,14 @@
 export { runGitrelic } from './runner.js';
 export { analyzeParallelDev } from './analyzers/parallel-dev.js';
 export { analyzeHotspotClustering } from './analyzers/hotspot-clustering.js';
-export type { FileStats, RawCommit } from './utils/git.js';
+export type { CoAuthor, FileStats, RawCommit } from './utils/git.js';
+export {
+  classifyAuthor,
+  isAiEmail,
+  isBotEmail,
+  aiProductName,
+} from './utils/authorClassification.js';
+export type { AuthorClass } from './utils/authorClassification.js';
 export type {
   GitrelicReport,
   RunGitrelicOptions,
@@ -51,7 +58,12 @@ export type {
   KnowledgeConcentrationReport,
   CoAuthorReport,
   CoAuthorPair,
+  CoAuthorPairClassification,
   CoAuthorStats,
+  AdoptionTier,
+  AiAuthorStat,
+  PerAuthorMixEntry,
+  CoAuthorMonthEntry,
   HotspotClusterReport,
   HotspotCluster,
   ClusterMember,

@@ -9,7 +9,12 @@ import {
 } from 'd3-force';
 
 import { authorColor } from '../../utils/colors';
-import { type AuthorGraphNode, buildAuthorGraph } from './authorGraph';
+import { HeroCaption } from '../shared/HeroCaption';
+import {
+  type AuthorGraphLink,
+  type AuthorGraphNode,
+  buildAuthorGraph,
+} from './authorGraph';
 import type { GitrelicReport } from '@gitrelic/core';
 import type {
   Simulation as D3Simulation,
@@ -29,6 +34,29 @@ type SimLink = SimulationLinkDatum<SimNode> & {
   sharedFiles: number;
 };
 
+type NodeTooltip = {
+  kind: 'node';
+  x: number;
+  y: number;
+  node: AuthorGraphNode;
+};
+type EdgeTooltip = {
+  kind: 'edge';
+  x: number;
+  y: number;
+  link: AuthorGraphLink;
+};
+type Tooltip = NodeTooltip | EdgeTooltip;
+
+function nodeFill(node: AuthorGraphNode): string {
+  if (node.classification === 'ai') return 'var(--accent-coupling)';
+  return authorColor(node.id);
+}
+
+function classificationLabel(c: AuthorGraphNode['classification']): string {
+  return c === 'ai' ? 'AI' : 'Human';
+}
+
 export function AuthorForceGraph({
   report,
   selectedContributor,
@@ -42,11 +70,7 @@ export function AuthorForceGraph({
   const [nodePositions, setNodePositions] = useState<
     Map<string, { x: number; y: number }>
   >(new Map());
-  const [tooltip, setTooltip] = useState<{
-    x: number;
-    y: number;
-    node: AuthorGraphNode;
-  } | null>(null);
+  const [tooltip, setTooltip] = useState<Tooltip | null>(null);
   const simRef = useRef<D3Simulation<SimNode, SimLink> | null>(null);
   const dimsRef = useRef(dims);
   dimsRef.current = dims;
@@ -61,7 +85,16 @@ export function AuthorForceGraph({
     return () => observer.disconnect();
   }, []);
 
-  const { nodes, links } = useMemo(() => buildAuthorGraph(report), [report]);
+  const { nodes, links, filteredSingleCommitEdges } = useMemo(
+    () => buildAuthorGraph(report),
+    [report],
+  );
+
+  const nodesById = useMemo(() => {
+    const map = new Map<string, AuthorGraphNode>();
+    for (const n of nodes) map.set(n.id, n);
+    return map;
+  }, [nodes]);
 
   const maxLinkCommits = useMemo(() => {
     let max = 0;
@@ -149,97 +182,148 @@ export function AuthorForceGraph({
     [nodePositions, dims],
   );
 
+  const captionPrimary =
+    filteredSingleCommitEdges > 0
+      ? `Force-directed network · circles = co-authors (size = commit volume) · edges = shared commits · single-commit pairs hidden (${filteredSingleCommitEdges} filtered)`
+      : 'Force-directed network · circles = co-authors (size = commit volume) · edges = shared commits';
+
   return (
-    <div ref={containerRef} className="w-full h-full relative">
-      <svg width={dims.width} height={dims.height}>
-        {links.map((l, i) => {
-          const s = getPos(l.source);
-          const t = getPos(l.target);
-          const weight =
-            maxLinkCommits > 0 ? l.coAuthoredCommits / maxLinkCommits : 0;
-          return (
-            <line
-              key={i}
-              x1={s.x}
-              y1={s.y}
-              x2={t.x}
-              y2={t.y}
-              stroke="rgba(88,166,255,0.3)"
-              strokeWidth={1 + weight * 3}
-            />
-          );
-        })}
-
-        {nodes.map((n) => {
-          const pos = getPos(n.id);
-          const r = rScale(n.coAuthoredCommits);
-          const isSelected = selectedContributor === n.id;
-          const showLabel = r > 10;
-          const color = authorColor(n.id);
-
-          return (
-            <g
-              key={n.id}
-              onClick={() => onSelectContributor(n.id)}
-              className="cursor-pointer"
-              onMouseEnter={(e) => {
-                const rect = containerRef.current?.getBoundingClientRect();
-                if (!rect) return;
-                setTooltip({
-                  x: e.clientX - rect.left,
-                  y: e.clientY - rect.top,
-                  node: n,
-                });
-              }}
-              onMouseLeave={() => setTooltip(null)}
-            >
-              <circle
-                cx={pos.x}
-                cy={pos.y}
-                r={r}
-                fill={color}
-                fillOpacity={0.6}
-                stroke={isSelected ? 'var(--accent-primary)' : color}
-                strokeWidth={isSelected ? 2 : 1}
+    <div className="flex h-full w-full flex-col">
+      <div ref={containerRef} className="relative w-full flex-1">
+        <svg width={dims.width} height={dims.height}>
+          {links.map((l, i) => {
+            const s = getPos(l.source);
+            const t = getPos(l.target);
+            const weight =
+              maxLinkCommits > 0 ? l.coAuthoredCommits / maxLinkCommits : 0;
+            return (
+              <line
+                key={i}
+                x1={s.x}
+                y1={s.y}
+                x2={t.x}
+                y2={t.y}
+                stroke="rgba(88,166,255,0.3)"
+                strokeWidth={1 + weight * 3}
+                strokeLinecap="round"
+                onMouseEnter={(e) => {
+                  const rect = containerRef.current?.getBoundingClientRect();
+                  if (!rect) return;
+                  setTooltip({
+                    kind: 'edge',
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top,
+                    link: l,
+                  });
+                }}
+                onMouseLeave={() => setTooltip(null)}
+                className="cursor-default"
+                style={{
+                  // pointerEvents: 'stroke' so hover hit-tests the line itself,
+                  // not the implicit fill bbox of the enclosing path.
+                  pointerEvents: 'stroke',
+                }}
               />
-              {showLabel && (
-                <text
-                  x={pos.x}
-                  y={pos.y + r + 10}
-                  textAnchor="middle"
-                  fontSize={9}
-                  fill="rgba(255,255,255,0.7)"
-                  className="pointer-events-none"
-                >
-                  {n.label}
-                </text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
-      {tooltip && (
-        <div
-          className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-[300px]"
-          style={{
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-          }}
-        >
-          <div className="font-semibold mb-0.5">{tooltip.node.label}</div>
-          <div className="text-text-secondary">
-            {tooltip.node.coAuthoredCommits} co-commit
-            {tooltip.node.coAuthoredCommits !== 1 ? 's' : ''} ·{' '}
-            {tooltip.node.partnerCount} partner
-            {tooltip.node.partnerCount !== 1 ? 's' : ''}
-          </div>
-          {tooltip.node.primaryPartner && (
-            <div className="text-text-tertiary mt-0.5">
-              Top: {tooltip.node.primaryPartner.split(' <')[0]}
+            );
+          })}
+
+          {nodes.map((n) => {
+            const pos = getPos(n.id);
+            const r = rScale(n.coAuthoredCommits);
+            const isSelected = selectedContributor === n.id;
+            const showLabel = r > 10;
+            const color = nodeFill(n);
+
+            return (
+              <g
+                key={n.id}
+                onClick={() => onSelectContributor(n.id)}
+                className="cursor-pointer"
+                onMouseEnter={(e) => {
+                  const rect = containerRef.current?.getBoundingClientRect();
+                  if (!rect) return;
+                  setTooltip({
+                    kind: 'node',
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top,
+                    node: n,
+                  });
+                }}
+                onMouseLeave={() => setTooltip(null)}
+              >
+                <circle
+                  cx={pos.x}
+                  cy={pos.y}
+                  r={r}
+                  fill={color}
+                  fillOpacity={0.6}
+                  stroke={isSelected ? 'var(--accent-primary)' : color}
+                  strokeWidth={isSelected ? 2 : 1}
+                />
+                {showLabel && (
+                  <text
+                    x={pos.x}
+                    y={pos.y + r + 10}
+                    textAnchor="middle"
+                    fontSize={9}
+                    fill="rgba(255,255,255,0.7)"
+                    className="pointer-events-none"
+                  >
+                    {n.displayName}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+        {tooltip?.kind === 'node' && (
+          <div
+            className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-[300px]"
+            style={{
+              left: tooltip.x + 12,
+              top: tooltip.y - 8,
+            }}
+          >
+            <div className="font-semibold mb-0.5">
+              {tooltip.node.displayName}
             </div>
-          )}
-        </div>
-      )}
+            <div className="text-text-secondary">
+              {classificationLabel(tooltip.node.classification)} ·{' '}
+              {tooltip.node.coAuthoredCommits} co-authored commit
+              {tooltip.node.coAuthoredCommits === 1 ? '' : 's'} ·{' '}
+              {tooltip.node.partnerCount} partner
+              {tooltip.node.partnerCount === 1 ? '' : 's'}
+            </div>
+          </div>
+        )}
+        {tooltip?.kind === 'edge' &&
+          (() => {
+            const a = nodesById.get(tooltip.link.source);
+            const b = nodesById.get(tooltip.link.target);
+            const labelA = a?.displayName ?? tooltip.link.source;
+            const labelB = b?.displayName ?? tooltip.link.target;
+            return (
+              <div
+                className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-[300px]"
+                style={{
+                  left: tooltip.x + 12,
+                  top: tooltip.y - 8,
+                }}
+              >
+                <div className="font-semibold mb-0.5">
+                  {labelA} ↔ {labelB}
+                </div>
+                <div className="text-text-secondary">
+                  {tooltip.link.coAuthoredCommits} co-commit
+                  {tooltip.link.coAuthoredCommits === 1 ? '' : 's'} ·{' '}
+                  {tooltip.link.sharedFiles} shared file
+                  {tooltip.link.sharedFiles === 1 ? '' : 's'}
+                </div>
+              </div>
+            );
+          })()}
+      </div>
+      <HeroCaption primary={captionPrimary} />
     </div>
   );
 }

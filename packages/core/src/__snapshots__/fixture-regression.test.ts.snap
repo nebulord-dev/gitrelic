@@ -679,8 +679,67 @@ exports[`fixture regression > churn velocity report is stable 1`] = `
 
 exports[`fixture regression > co-authors report is stable 1`] = `
 {
+  "aiAdoptionPercent": 0,
+  "aiAdoptionTier": "none",
+  "aiAssistedCommits": 0,
+  "aiAuthors": [],
   "authorStats": [],
+  "byMonth": [
+    {
+      "aiAssisted": 0,
+      "month": "2026-01",
+      "pureHuman": 6,
+      "total": 6,
+    },
+    {
+      "aiAssisted": 0,
+      "month": "2026-02",
+      "pureHuman": 6,
+      "total": 6,
+    },
+    {
+      "aiAssisted": 0,
+      "month": "2026-03",
+      "pureHuman": 6,
+      "total": 6,
+    },
+    {
+      "aiAssisted": 0,
+      "month": "2026-04",
+      "pureHuman": 2,
+      "total": 2,
+    },
+  ],
+  "filteredBotCommits": 0,
+  "humanAuthoredCommits": 20,
+  "humanPairs": [],
   "pairs": [],
+  "perAuthorMix": [
+    {
+      "aiCommits": 0,
+      "author": "alice@example.com",
+      "displayName": "Alice",
+      "personalRatio": 0,
+      "soloCommits": 13,
+      "totalCommits": 13,
+    },
+    {
+      "aiCommits": 0,
+      "author": "bob@example.com",
+      "displayName": "Bob",
+      "personalRatio": 0,
+      "soloCommits": 4,
+      "totalCommits": 4,
+    },
+    {
+      "aiCommits": 0,
+      "author": "charlie@example.com",
+      "displayName": "Charlie",
+      "personalRatio": 0,
+      "soloCommits": 3,
+      "totalCommits": 3,
+    },
+  ],
   "summary": "No co-authored commits found",
   "totalCoAuthoredCommits": 0,
 }

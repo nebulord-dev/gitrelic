@@ -7,7 +7,8 @@ import { BlastRadiusTab } from '../tabs/BlastRadiusTab';
 import { BusFactorTab } from '../tabs/BusFactorTab';
 import { ChurnTab } from '../tabs/ChurnTab';
 import { ChurnVelocityTab } from '../tabs/ChurnVelocityTab';
-import { CoAuthorsTab } from '../tabs/CoAuthorsTab';
+import { CoAuthorsAiAdoptionTab } from '../tabs/CoAuthorsAiAdoptionTab';
+import { CoAuthorsPairsTab } from '../tabs/CoAuthorsPairsTab';
 import { CommitTimingTab } from '../tabs/CommitTimingTab';
 import { ComplexityTrendTab } from '../tabs/ComplexityTrendTab';
 import { ContributorsTab } from '../tabs/ContributorsTab';
@@ -67,7 +68,8 @@ const TAB_LABELS: Record<BottomTab, string> = {
   'blast-radius': 'Blast Radius',
   'ghost-files': 'Ghost Files',
   'knowledge-silos': 'Knowledge Silos',
-  'co-authors': 'Co-Authors',
+  'co-authors-ai-adoption': 'AI Adoption',
+  'co-authors-pairs': 'Co-Author Pairs',
   'commit-timing': 'Commit Timing',
   languages: 'Languages',
   'test-coverage': 'Test Coverage',
@@ -140,8 +142,14 @@ function TabContent({
       return (
         <KnowledgeSilosTab report={report} onApplyPreset={onApplyPreset} />
       );
-    case 'co-authors':
-      return <CoAuthorsTab report={report} />;
+    case 'co-authors-ai-adoption':
+      return (
+        <CoAuthorsAiAdoptionTab report={report} onApplyPreset={onApplyPreset} />
+      );
+    case 'co-authors-pairs':
+      return (
+        <CoAuthorsPairsTab report={report} onApplyPreset={onApplyPreset} />
+      );
     case 'commit-timing':
       return <CommitTimingTab report={report} onApplyPreset={onApplyPreset} />;
     case 'languages':

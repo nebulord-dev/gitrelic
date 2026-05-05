@@ -131,7 +131,7 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
         },
         {
           id: 'co-authors',
-          label: 'Co-Authors',
+          label: 'Co-Authors / AI',
           badge: report.coAuthors.pairs.length,
         },
       ],

@@ -21,7 +21,6 @@ export default withMermaid(
       '/analyzers/knowledge-silos',
       '/analyzers/dead-code',
       '/analyzers/complexity-trend',
-      '/analyzers/co-authors',
     ],
 
     themeConfig: {
@@ -56,6 +55,7 @@ export default withMermaid(
             { text: 'Blast Radius', link: '/analyzers/blast-radius' },
             { text: 'Bus Factor', link: '/analyzers/bus-factor' },
             { text: 'Churn', link: '/analyzers/churn' },
+            { text: 'Co-Authors / AI', link: '/analyzers/co-authors' },
             { text: 'Commit Timing', link: '/analyzers/commit-timing' },
             { text: 'Contributors', link: '/analyzers/contributors' },
             { text: 'Ghost Files', link: '/analyzers/ghost-files' },

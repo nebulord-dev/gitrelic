@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { analyzeCoAuthors } from './co-author.js';
-import type { RawCommit } from '../utils/git.js';
+import type { CoAuthor, RawCommit } from '../utils/git.js';
 
 function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
   return {
@@ -10,6 +10,7 @@ function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
     authorName: 'Alice',
     date: '2025-06-01T00:00:00Z',
     message: '',
+    coAuthors: [],
     files: [],
     fileStats: [],
     insertions: 0,
@@ -18,114 +19,381 @@ function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
   };
 }
 
+function ca(name: string, email: string): CoAuthor {
+  return { name, email };
+}
+
 describe('analyzeCoAuthors', () => {
-  it('detects co-authored-by trailers in commit messages', () => {
-    const commits = [
-      makeCommit({
-        hash: '1',
-        authorEmail: 'alice@co.com',
-        message: 'feat: add auth\n\nCo-authored-by: Bob <bob@co.com>',
-        files: ['auth.ts'],
-      }),
-    ];
-    const result = analyzeCoAuthors(commits);
-    expect(result.totalCoAuthoredCommits).toBe(1);
-    expect(result.pairs).toHaveLength(1);
-    expect(result.pairs[0].authorA).toBe('alice@co.com');
-    expect(result.pairs[0].authorB).toBe('bob@co.com');
+  describe('basic detection', () => {
+    it('detects AI co-author trailer (Claude)', () => {
+      const result = analyzeCoAuthors([
+        makeCommit({
+          authorEmail: 'alice@co.com',
+          coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+          files: ['a.ts'],
+        }),
+      ]);
+      expect(result.aiAssistedCommits).toBe(1);
+      expect(result.humanAuthoredCommits).toBe(1);
+      expect(result.aiAdoptionPercent).toBe(100);
+      expect(result.aiAdoptionTier).toBe('high');
+    });
+
+    it('detects human-only pair', () => {
+      const result = analyzeCoAuthors([
+        makeCommit({
+          authorEmail: 'alice@co.com',
+          coAuthors: [ca('Bob', 'bob@co.com')],
+          files: ['a.ts'],
+        }),
+      ]);
+      expect(result.aiAssistedCommits).toBe(0);
+      expect(result.humanAuthoredCommits).toBe(1);
+      expect(result.aiAdoptionPercent).toBe(0);
+      expect(result.aiAdoptionTier).toBe('none');
+      expect(result.humanPairs).toHaveLength(1);
+      expect(result.humanPairs[0].classification).toBe('human-pair');
+    });
   });
 
-  it('handles multiple co-authors in one commit', () => {
-    const commits = [
-      makeCommit({
-        hash: '1',
-        authorEmail: 'alice@co.com',
-        message:
-          'feat: collab\n\nCo-authored-by: Bob <bob@co.com>\nCo-authored-by: Carol <carol@co.com>',
-        files: ['shared.ts'],
-      }),
-    ];
-    const result = analyzeCoAuthors(commits);
-    expect(result.pairs.length).toBeGreaterThanOrEqual(2);
+  describe('bot filtering', () => {
+    it('excludes bot-authored commits from human denominator', () => {
+      const result = analyzeCoAuthors([
+        makeCommit({
+          hash: '1',
+          authorEmail: 'semantic-release-bot@martynus.net',
+          coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+          files: ['a.ts'],
+        }),
+        makeCommit({
+          hash: '2',
+          authorEmail: 'alice@co.com',
+          files: ['b.ts'],
+        }),
+      ]);
+      expect(result.filteredBotCommits).toBe(1);
+      expect(result.humanAuthoredCommits).toBe(1);
+      expect(result.aiAssistedCommits).toBe(0);
+    });
+
+    it('does not include bot-involved pairs in pairs[] or humanPairs[]', () => {
+      const result = analyzeCoAuthors([
+        makeCommit({
+          authorEmail: 'alice@co.com',
+          coAuthors: [
+            ca('Bot', 'dependabot[bot]@users.noreply.github.com'),
+            ca('Claude', 'noreply@anthropic.com'),
+          ],
+          files: ['a.ts'],
+        }),
+      ]);
+      const allEmails = result.pairs.flatMap((p) => [p.authorA, p.authorB]);
+      expect(allEmails).not.toContain(
+        'dependabot[bot]@users.noreply.github.com',
+      );
+      expect(allEmails).toContain('noreply@anthropic.com');
+    });
   });
 
-  it('tracks files co-authored together', () => {
-    const commits = [
-      makeCommit({
-        hash: '1',
-        authorEmail: 'alice@co.com',
-        message: 'fix: auth\n\nCo-authored-by: Bob <bob@co.com>',
-        files: ['auth.ts', 'session.ts'],
-      }),
-    ];
-    const result = analyzeCoAuthors(commits);
-    expect(result.pairs[0].files).toContain('auth.ts');
-    expect(result.pairs[0].files).toContain('session.ts');
+  describe('AI as primary author edge case (Devin)', () => {
+    it('excludes AI-authored-as-primary from human denominator', () => {
+      const result = analyzeCoAuthors([
+        makeCommit({
+          authorEmail: 'devin-ai-integration[bot]@users.noreply.github.com',
+          coAuthors: [ca('Alice', 'alice@co.com')],
+          files: ['a.ts'],
+        }),
+        makeCommit({
+          authorEmail: 'alice@co.com',
+          files: ['b.ts'],
+        }),
+      ]);
+      expect(result.humanAuthoredCommits).toBe(1);
+      expect(result.aiAssistedCommits).toBe(0);
+    });
+
+    it('still records the AI↔human pair from an AI-primary commit', () => {
+      // Regression for the case where primaryIsAi previously dropped the AI
+      // primary out of the participant set entirely, making AI↔human pairs
+      // from Devin-style commits invisible in the graph.
+      const result = analyzeCoAuthors([
+        makeCommit({
+          authorEmail: 'devin-ai-integration[bot]@users.noreply.github.com',
+          coAuthors: [ca('Alice', 'alice@co.com')],
+          files: ['a.ts'],
+        }),
+      ]);
+      expect(result.pairs).toHaveLength(1);
+      expect(result.pairs[0].classification).toBe('human-ai');
+      const emails = [result.pairs[0].authorA, result.pairs[0].authorB];
+      expect(emails).toContain('alice@co.com');
+      expect(emails).toContain(
+        'devin-ai-integration[bot]@users.noreply.github.com',
+      );
+    });
   });
 
-  it('accumulates across multiple commits', () => {
-    const commits = [
-      makeCommit({
-        hash: '1',
-        authorEmail: 'alice@co.com',
-        message: 'feat: a\n\nCo-authored-by: Bob <bob@co.com>',
-        files: ['a.ts'],
-      }),
-      makeCommit({
-        hash: '2',
-        authorEmail: 'alice@co.com',
-        message: 'feat: b\n\nCo-authored-by: Bob <bob@co.com>',
-        files: ['b.ts'],
-      }),
-    ];
-    const result = analyzeCoAuthors(commits);
-    const pair = result.pairs.find(
-      (p) =>
-        (p.authorA === 'alice@co.com' && p.authorB === 'bob@co.com') ||
-        (p.authorA === 'bob@co.com' && p.authorB === 'alice@co.com'),
-    )!;
-    expect(pair.coAuthoredCommits).toBe(2);
-    expect(pair.files).toContain('a.ts');
-    expect(pair.files).toContain('b.ts');
+  describe('humanPairs invariant', () => {
+    it('contains only human-pair classifications when pairs is mixed', () => {
+      const result = analyzeCoAuthors([
+        makeCommit({
+          hash: '1',
+          authorEmail: 'alice@co.com',
+          coAuthors: [ca('Bob', 'bob@co.com')],
+          files: ['a.ts'],
+        }),
+        makeCommit({
+          hash: '2',
+          authorEmail: 'alice@co.com',
+          coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+          files: ['b.ts'],
+        }),
+      ]);
+      expect(result.pairs).toHaveLength(2);
+      expect(result.humanPairs).toHaveLength(1);
+      expect(result.humanPairs[0].classification).toBe('human-pair');
+    });
   });
 
-  it('returns empty report when no co-authored commits', () => {
-    const commits = [makeCommit({ hash: '1', message: 'normal commit' })];
-    const result = analyzeCoAuthors(commits);
-    expect(result.totalCoAuthoredCommits).toBe(0);
-    expect(result.pairs).toHaveLength(0);
+  describe('aiAuthors tiebreak ordering', () => {
+    it('breaks aiCommits ties by personalRatio desc, then alphabetical', () => {
+      // Both authors will have aiCommits=1 — tiebreak by personalRatio (Bob 100%, Alice 50%).
+      const result = analyzeCoAuthors([
+        makeCommit({
+          hash: '1',
+          authorEmail: 'alice@co.com',
+          authorName: 'Alice',
+          coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+          files: ['a.ts'],
+        }),
+        makeCommit({
+          hash: '2',
+          authorEmail: 'alice@co.com',
+          authorName: 'Alice',
+          files: ['a.ts'],
+        }),
+        makeCommit({
+          hash: '3',
+          authorEmail: 'bob@co.com',
+          authorName: 'Bob',
+          coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+          files: ['b.ts'],
+        }),
+      ]);
+      expect(result.aiAuthors.map((a) => a.author)).toEqual([
+        'bob@co.com',
+        'alice@co.com',
+      ]);
+    });
   });
 
-  it('builds per-author stats', () => {
-    const commits = [
-      makeCommit({
-        hash: '1',
-        authorEmail: 'alice@co.com',
-        message: 'feat\n\nCo-authored-by: Bob <bob@co.com>',
-        files: ['a.ts'],
-      }),
-    ];
-    const result = analyzeCoAuthors(commits);
-    const bobStats = result.authorStats.find((a) => a.author === 'bob@co.com');
-    expect(bobStats).toBeDefined();
-    expect(bobStats!.coAuthoredCommits).toBe(1);
+  describe('aiAdoptionTier thresholds', () => {
+    function commitsWith(aiCount: number, totalCount: number) {
+      const commits: RawCommit[] = [];
+      for (let i = 0; i < aiCount; i++) {
+        commits.push(
+          makeCommit({
+            hash: `ai-${i}`,
+            authorEmail: 'alice@co.com',
+            coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+            files: ['a.ts'],
+          }),
+        );
+      }
+      for (let i = aiCount; i < totalCount; i++) {
+        commits.push(
+          makeCommit({
+            hash: `solo-${i}`,
+            authorEmail: 'alice@co.com',
+            files: ['a.ts'],
+          }),
+        );
+      }
+      return commits;
+    }
+
+    it('0% → none', () => {
+      const r = analyzeCoAuthors(commitsWith(0, 10));
+      expect(r.aiAdoptionTier).toBe('none');
+    });
+
+    it('19% → low (boundary just below 20)', () => {
+      const r = analyzeCoAuthors(commitsWith(19, 100));
+      expect(r.aiAdoptionPercent).toBe(19);
+      expect(r.aiAdoptionTier).toBe('low');
+    });
+
+    it('20% → moderate (boundary just at 20)', () => {
+      const r = analyzeCoAuthors(commitsWith(20, 100));
+      expect(r.aiAdoptionPercent).toBe(20);
+      expect(r.aiAdoptionTier).toBe('moderate');
+    });
+
+    it('49% → moderate (boundary just below 50)', () => {
+      const r = analyzeCoAuthors(commitsWith(49, 100));
+      expect(r.aiAdoptionTier).toBe('moderate');
+    });
+
+    it('50% → high (boundary just at 50)', () => {
+      const r = analyzeCoAuthors(commitsWith(50, 100));
+      expect(r.aiAdoptionTier).toBe('high');
+    });
+
+    it('100% → high', () => {
+      const r = analyzeCoAuthors(commitsWith(10, 10));
+      expect(r.aiAdoptionTier).toBe('high');
+    });
   });
 
-  it('is case-insensitive for the trailer keyword', () => {
-    const commits = [
-      makeCommit({
-        hash: '1',
-        authorEmail: 'alice@co.com',
-        message: 'feat\n\nco-authored-by: Bob <bob@co.com>',
-        files: ['a.ts'],
-      }),
-    ];
-    const result = analyzeCoAuthors(commits);
-    expect(result.totalCoAuthoredCommits).toBe(1);
+  describe('byMonth aggregation', () => {
+    it('buckets commits by ISO month', () => {
+      const result = analyzeCoAuthors([
+        makeCommit({
+          hash: '1',
+          authorEmail: 'alice@co.com',
+          date: '2026-01-15T00:00:00Z',
+          coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+          files: ['a.ts'],
+        }),
+        makeCommit({
+          hash: '2',
+          authorEmail: 'alice@co.com',
+          date: '2026-02-15T00:00:00Z',
+          files: ['a.ts'],
+        }),
+      ]);
+      expect(result.byMonth).toEqual([
+        { month: '2026-01', aiAssisted: 1, pureHuman: 0, total: 1 },
+        { month: '2026-02', aiAssisted: 0, pureHuman: 1, total: 1 },
+      ]);
+    });
   });
 
-  it('produces a summary', () => {
-    const result = analyzeCoAuthors([]);
-    expect(result.summary).toBeTruthy();
+  describe('perAuthorMix shape', () => {
+    it('reports each human author with AI/solo split', () => {
+      const result = analyzeCoAuthors([
+        makeCommit({
+          hash: '1',
+          authorEmail: 'alice@co.com',
+          authorName: 'Alice',
+          coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+          files: ['a.ts'],
+        }),
+        makeCommit({
+          hash: '2',
+          authorEmail: 'alice@co.com',
+          authorName: 'Alice',
+          files: ['a.ts'],
+        }),
+      ]);
+      const alice = result.perAuthorMix.find(
+        (m) => m.author === 'alice@co.com',
+      );
+      expect(alice).toBeDefined();
+      expect(alice!.aiCommits).toBe(1);
+      expect(alice!.soloCommits).toBe(1);
+      expect(alice!.totalCommits).toBe(2);
+      expect(alice!.personalRatio).toBe(50);
+    });
+  });
+
+  describe('aiAuthors filtering', () => {
+    it('only includes humans with personalRatio > 0', () => {
+      const result = analyzeCoAuthors([
+        makeCommit({
+          hash: '1',
+          authorEmail: 'alice@co.com',
+          authorName: 'Alice',
+          coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+          files: ['a.ts'],
+        }),
+        makeCommit({
+          hash: '2',
+          authorEmail: 'bob@co.com',
+          authorName: 'Bob',
+          files: ['a.ts'],
+        }),
+      ]);
+      const emails = result.aiAuthors.map((a) => a.author);
+      expect(emails).toContain('alice@co.com');
+      expect(emails).not.toContain('bob@co.com');
+    });
+
+    it('sorts desc by aiCommits', () => {
+      const result = analyzeCoAuthors([
+        ...Array.from({ length: 3 }, (_, i) =>
+          makeCommit({
+            hash: `b-${i}`,
+            authorEmail: 'bob@co.com',
+            authorName: 'Bob',
+            coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+            files: ['a.ts'],
+          }),
+        ),
+        makeCommit({
+          authorEmail: 'alice@co.com',
+          authorName: 'Alice',
+          coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+          files: ['a.ts'],
+        }),
+      ]);
+      expect(result.aiAuthors[0].author).toBe('bob@co.com');
+      expect(result.aiAuthors[0].aiCommits).toBe(3);
+    });
+  });
+
+  describe('empty / scenario invariants', () => {
+    it('Scenario 1: zero co-authors at all → defaults', () => {
+      const result = analyzeCoAuthors([
+        makeCommit({ authorEmail: 'alice@co.com', files: ['a.ts'] }),
+      ]);
+      expect(result.totalCoAuthoredCommits).toBe(0);
+      expect(result.aiAdoptionPercent).toBe(0);
+      expect(result.aiAdoptionTier).toBe('none');
+      expect(result.aiAuthors).toEqual([]);
+      expect(result.humanPairs).toEqual([]);
+    });
+
+    it('Scenario 2: trailers but no AI', () => {
+      const result = analyzeCoAuthors([
+        makeCommit({
+          authorEmail: 'alice@co.com',
+          coAuthors: [ca('Bob', 'bob@co.com')],
+          files: ['a.ts'],
+        }),
+      ]);
+      expect(result.totalCoAuthoredCommits).toBe(1);
+      expect(result.aiAssistedCommits).toBe(0);
+      expect(result.aiAdoptionPercent).toBe(0);
+      expect(result.aiAdoptionTier).toBe('none');
+      expect(result.humanPairs).toHaveLength(1);
+    });
+
+    it('produces a summary string', () => {
+      expect(analyzeCoAuthors([]).summary).toBeTruthy();
+    });
+  });
+
+  describe('case-insensitive email matching', () => {
+    it('treats Alice@co.com === alice@co.com when accumulating', () => {
+      const result = analyzeCoAuthors([
+        makeCommit({
+          hash: '1',
+          authorEmail: 'Alice@co.com',
+          coAuthors: [ca('Claude', 'NOREPLY@anthropic.com')],
+          files: ['a.ts'],
+        }),
+        makeCommit({
+          hash: '2',
+          authorEmail: 'alice@co.com',
+          coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+          files: ['a.ts'],
+        }),
+      ]);
+      const alice = result.perAuthorMix.find(
+        (m) => m.author === 'alice@co.com',
+      );
+      expect(alice!.aiCommits).toBe(2);
+    });
   });
 });

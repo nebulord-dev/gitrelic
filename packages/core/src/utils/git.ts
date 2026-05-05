@@ -8,12 +8,18 @@ export interface FileStats {
   deletions: number;
 }
 
+export interface CoAuthor {
+  name: string;
+  email: string;
+}
+
 export interface RawCommit {
   hash: string;
   authorEmail: string;
   authorName: string;
   date: string; // ISO
   message: string;
+  coAuthors: CoAuthor[];
   files: string[];
   fileStats: FileStats[];
   insertions: number;
@@ -22,7 +28,10 @@ export interface RawCommit {
 
 /**
  * Fetches all commits with their changed files using git log.
- * Format: COMMIT|hash|email|name|date, then MSG|subject, then numstat lines.
+ * Format: COMMIT|hash|email|name|date, then MSG|subject, then
+ * TRAILERS|<co-author values separated by 0x1F>, then numstat lines.
+ * Co-author trailers live in commit bodies (not subjects), so we rely on
+ * git's native trailer parser via %(trailers:...) instead of regexing %B.
  * @see https://git-scm.com/docs/git-log
  * @param repoPath - The path to the git repository.
  * @param options - Optional parameters for filtering commits.
@@ -34,7 +43,7 @@ export async function getAllCommits(
 ): Promise<RawCommit[]> {
   const args = [
     'log',
-    '--format=COMMIT|%H|%ae|%an|%aI%nMSG|%s',
+    '--format=COMMIT|%H|%ae|%an|%aI%nMSG|%s%nTRAILERS|%(trailers:key=Co-authored-by,valueonly,separator=%x1F)',
     '--numstat',
     '--no-merges',
   ];
@@ -44,6 +53,20 @@ export async function getAllCommits(
 
   const { stdout } = await execa('git', args, { cwd: repoPath });
   return parseGitLog(stdout);
+}
+
+const CO_AUTHOR_VALUE_REGEX = /^(.*?)\s*<([^>]+)>\s*$/;
+
+function parseCoAuthorValues(raw: string): CoAuthor[] {
+  if (!raw) return [];
+  const out: CoAuthor[] = [];
+  for (const entry of raw.split('\u001F')) {
+    const match = CO_AUTHOR_VALUE_REGEX.exec(entry);
+    if (match) {
+      out.push({ name: match[1].trim(), email: match[2].trim() });
+    }
+  }
+  return out;
 }
 
 export function parseGitLog(raw: string): RawCommit[] {
@@ -60,6 +83,7 @@ export function parseGitLog(raw: string): RawCommit[] {
         authorName,
         date,
         message: '',
+        coAuthors: [],
         files: [],
         fileStats: [],
         insertions: 0,
@@ -67,6 +91,8 @@ export function parseGitLog(raw: string): RawCommit[] {
       };
     } else if (current && line.startsWith('MSG|')) {
       current.message = line.slice(4); // everything after "MSG|"
+    } else if (current && line.startsWith('TRAILERS|')) {
+      current.coAuthors = parseCoAuthorValues(line.slice(9));
     } else if (current && line.trim()) {
       // numstat lines: "insertions\tdeletions\tfilepath"
       const parts = line.split('\t');
