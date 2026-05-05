@@ -1,54 +1,8 @@
-import type { AuthorClass, Contributor, GitrelicReport } from '@gitrelic/core';
-
-// Inlined from packages/core/src/utils/authorClassification.ts
-// to avoid pulling core's bundled dist (which transitively includes execa
-// and other Node-only deps) into the browser build. Per CLAUDE.md the web
-// app may only `import type` from @gitrelic/core. Until core ships a
-// browser-safe subpath export, this small duplication preserves the
-// import-discipline invariant. Keep these patterns in sync with
-// packages/core/src/utils/authorClassification.ts.
-const AI_PATTERNS: { match: RegExp; productName: string }[] = [
-  { match: /^noreply@anthropic\.com$/i, productName: 'Claude' },
-  {
-    match: /^copilot(\[bot\])?@.*\.noreply\.github\.com$/i,
-    productName: 'GitHub Copilot',
-  },
-  { match: /^aider@aider\.chat$/i, productName: 'Aider' },
-  {
-    match: /^devin-ai-integration\[bot\]@.*\.noreply\.github\.com$/i,
-    productName: 'Devin',
-  },
-  { match: /@cursor\.sh$/i, productName: 'Cursor' },
-];
-
-const BOT_PATTERNS: RegExp[] = [
-  /^dependabot/i,
-  /^renovate/i,
-  /^semantic-release/i,
-  /\[bot\]@.*\.noreply\.github\.com$/i,
-  /^github-actions\[bot\]@/i,
-];
-
-function isAiEmail(email: string): boolean {
-  return AI_PATTERNS.some((p) => p.match.test(email));
-}
-
-function isBotEmail(email: string): boolean {
-  return BOT_PATTERNS.some((p) => p.test(email));
-}
-
-function classifyAuthor(email: string): AuthorClass {
-  if (isAiEmail(email)) return 'ai';
-  if (isBotEmail(email)) return 'bot';
-  return 'human';
-}
-
-function aiProductName(email: string): string | null {
-  for (const pattern of AI_PATTERNS) {
-    if (pattern.match.test(email)) return pattern.productName;
-  }
-  return null;
-}
+import {
+  classifyAuthor,
+  resolveAuthorDisplayName,
+} from '../../utils/authorClassification';
+import type { AuthorClass, GitrelicReport } from '@gitrelic/core';
 
 export interface AuthorGraphNode {
   id: string;
@@ -77,30 +31,16 @@ const AUTHOR_ID_RE = /^(.*) <(.+)>$/;
 
 function parseAuthorId(id: string): { name: string; email: string } {
   const match = AUTHOR_ID_RE.exec(id);
-  if (!match) return { name: id, email: '' };
-  return { name: match[1].trim(), email: match[2].trim() };
-}
-
-function resolveDisplayName(
-  id: string,
-  contributorsByEmail: Map<string, Contributor>,
-): string {
-  const { name, email } = parseAuthorId(id);
-  if (email) {
-    const product = aiProductName(email);
-    if (product) return product;
-  }
-  if (email) {
-    const contrib = contributorsByEmail.get(email.toLowerCase());
-    if (contrib && contrib.name && contrib.name.trim().length > 0) {
-      return contrib.name;
-    }
-  }
-  return name || id;
+  if (match) return { name: match[1].trim(), email: match[2].trim() };
+  // Co-author analyzer emits bare lowercased emails as pair.authorA/authorB.
+  // Treat any id containing `@` as the email (no name component).
+  if (id.includes('@')) return { name: '', email: id };
+  return { name: id, email: '' };
 }
 
 export function buildAuthorGraph(report: GitrelicReport): AuthorGraphResult {
   const pairs = report.coAuthors.pairs;
+  const contributors = report.contributors?.contributors ?? [];
 
   const filteredSingleCommitEdges = pairs.filter(
     (p) => p.coAuthoredCommits === 1,
@@ -117,14 +57,6 @@ export function buildAuthorGraph(report: GitrelicReport): AuthorGraphResult {
   const statsMap = new Map(
     report.coAuthors.authorStats.map((s) => [s.author, s]),
   );
-
-  const contributorsByEmail = new Map<string, Contributor>();
-  const contributors = report.contributors?.contributors ?? [];
-  for (const c of contributors) {
-    if (c.email) {
-      contributorsByEmail.set(c.email.toLowerCase(), c);
-    }
-  }
 
   const derivedCommits = new Map<string, number>();
   const partnerCounts = new Map<string, number>();
@@ -144,12 +76,22 @@ export function buildAuthorGraph(report: GitrelicReport): AuthorGraphResult {
   const nodes: AuthorGraphNode[] = Array.from(derivedCommits.keys()).map(
     (id) => {
       const stats = statsMap.get(id);
-      const { email } = parseAuthorId(id);
+      const { name, email } = parseAuthorId(id);
+      const lookupKey = email || id;
+      let displayName = resolveAuthorDisplayName(lookupKey, contributors);
+      // Legacy "Name <email>" id format: when AI/contributor lookup falls
+      // through to the email, prefer the parsed name. Bare-email ids skip
+      // this branch (name === '') and surface the email as the fallback.
+      if (displayName === lookupKey && name) {
+        displayName = name;
+      }
       return {
         id,
-        label: id.split(' <')[0],
-        displayName: resolveDisplayName(id, contributorsByEmail),
-        classification: classifyAuthor(email),
+        // `label` mirrors `displayName` — bare-email ids would otherwise leak
+        // through any code path that reads `label` instead of `displayName`.
+        label: displayName,
+        displayName,
+        classification: classifyAuthor(email || id),
         coAuthoredCommits:
           stats?.coAuthoredCommits ?? derivedCommits.get(id) ?? 0,
         partnerCount: partnerCounts.get(id) ?? 0,

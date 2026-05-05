@@ -365,6 +365,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
     tier: 'analyzer',
     label: 'Co-Authors / AI',
     group: 'team-activity',
+    heroLabel: 'Co-Authors / AI — adoption & collaboration',
     hero: {
       defaultViz: 'ai-adoption',
       altTabs: ['ai-adoption', 'per-author-ai-mix', 'author-force-graph'],

@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 
+import { resolveAuthorDisplayName } from '../../utils/authorClassification';
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fmt } from '../theme';
 import type { PresetId } from '../../presets/types';
-import type { CoAuthorPair, Contributor, GitrelicReport } from '@gitrelic/core';
+import type { CoAuthorPair, GitrelicReport } from '@gitrelic/core';
 
 interface CoAuthorsPairsTabProps {
   report: GitrelicReport;
@@ -15,16 +16,6 @@ interface PairRow {
   pair: CoAuthorPair;
   displayA: string;
   displayB: string;
-}
-
-function resolveDisplayName(
-  email: string,
-  contributors: Contributor[],
-): string {
-  const match = contributors.find(
-    (c) => c.email.toLowerCase() === email.toLowerCase(),
-  );
-  return match && match.name ? match.name : email;
 }
 
 export function CoAuthorsPairsTab({
@@ -40,8 +31,8 @@ export function CoAuthorsPairsTab({
         .sort((a, b) => b.coAuthoredCommits - a.coAuthoredCommits)
         .map((p) => ({
           pair: p,
-          displayA: resolveDisplayName(p.authorA, contributors),
-          displayB: resolveDisplayName(p.authorB, contributors),
+          displayA: resolveAuthorDisplayName(p.authorA, contributors),
+          displayB: resolveAuthorDisplayName(p.authorB, contributors),
         })),
     [ca.pairs, contributors],
   );
