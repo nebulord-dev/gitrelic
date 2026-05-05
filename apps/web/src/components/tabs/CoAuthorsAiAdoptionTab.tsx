@@ -69,19 +69,27 @@ function TopAiUsersList({ users }: { users: ReturnType<typeof topAiUsers> }) {
   if (users.length === 0)
     return <p className="text-sm text-text-tertiary">No AI users yet.</p>;
   return (
-    <ul className="space-y-1">
+    <div className="flex flex-col gap-1">
+      <div className="text-[9px] text-text-tertiary uppercase tracking-[1px]">
+        Top AI users
+      </div>
       {users.map((u) => (
-        <li key={u.author} className="text-sm">
-          <span className="font-medium text-text-primary">{u.displayName}</span>
-          <span className="ml-2 font-mono text-text-secondary">
-            {fmt(u.aiCommits)} AI commits
+        <div key={u.author} className="leading-[1.5]">
+          <span className="text-text-primary font-semibold">
+            {u.displayName}
+          </span>{' '}
+          <span className="text-text-tertiary">
+            <span className="font-mono text-text-primary">
+              {fmt(u.aiCommits)}
+            </span>{' '}
+            AI commit{u.aiCommits === 1 ? '' : 's'} ·{' '}
+            <span className="font-mono text-text-primary">
+              {u.personalRatio}%
+            </span>
           </span>
-          <span className="ml-2 text-xs text-text-tertiary">
-            ({u.personalRatio}%)
-          </span>
-        </li>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 }
 
