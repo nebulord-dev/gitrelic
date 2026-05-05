@@ -173,4 +173,31 @@ describe('normalizeReport', () => {
     expect(result.commitTiming.byMonth).toEqual([]);
     expect(result.commitTiming.authorStress).toEqual([]);
   });
+
+  it('fills empty defaults for new co-author aggregates on a pre-0.45 coAuthors object', () => {
+    // Simulate a report from GitRelic ≤ 0.44: coAuthors exists but lacks the
+    // new aggregates added in 0.45 (aiAssistedCommits, humanAuthoredCommits,
+    // aiAdoptionPercent, aiAdoptionTier, aiAuthors, humanPairs,
+    // filteredBotCommits, byMonth, perAuthorMix). The object-level ?? fallback
+    // would skip these, leaving them undefined. Field-level defaults must
+    // rescue them.
+    const result = normalizeReport({
+      coAuthors: {
+        pairs: [],
+        authorStats: [],
+        totalCoAuthoredCommits: 0,
+        summary: 'old report',
+      } as never,
+    });
+
+    expect(result.coAuthors.aiAssistedCommits).toBe(0);
+    expect(result.coAuthors.humanAuthoredCommits).toBe(0);
+    expect(result.coAuthors.aiAdoptionPercent).toBe(0);
+    expect(result.coAuthors.aiAdoptionTier).toBe('none');
+    expect(result.coAuthors.aiAuthors).toEqual([]);
+    expect(result.coAuthors.humanPairs).toEqual([]);
+    expect(result.coAuthors.filteredBotCommits).toBe(0);
+    expect(result.coAuthors.byMonth).toEqual([]);
+    expect(result.coAuthors.perAuthorMix).toEqual([]);
+  });
 });
