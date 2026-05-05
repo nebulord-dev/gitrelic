@@ -17,8 +17,6 @@ const AI_PATTERNS: Pattern[] = [
     productName: 'Devin',
   },
   { match: /@cursor\.sh$/i, productName: 'Cursor' },
-  // Generic fallback: any *ai*[bot] account on GitHub's noreply domain
-  { match: /^[^@]*ai[^@]*\[bot\]@.*\.noreply\.github\.com$/i },
 ];
 
 const BOT_PATTERNS: Pattern[] = [

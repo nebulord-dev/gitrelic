@@ -22,15 +22,18 @@ describe('authorClassification', () => {
       expect(aiProductName(email)).toBe(productName);
     });
 
-    it('classifies generic *ai*[bot]@... as AI without product name', () => {
-      const email = 'futureai[bot]@users.noreply.github.com';
-      expect(classifyAuthor(email)).toBe('ai');
-      expect(aiProductName(email)).toBeNull();
-    });
-
-    it('AI patterns evaluate before bot patterns (specificity wins)', () => {
-      const email = 'dependabot-ai[bot]@users.noreply.github.com';
-      expect(classifyAuthor(email)).toBe('ai');
+    it('does NOT classify generic *ai*[bot]@... as AI (no fallback pattern)', () => {
+      // Without the dropped generic fallback, these classify as bot via the [bot]@ catch-all.
+      // If a future AI tool ships with this convention, add a specific pattern.
+      expect(classifyAuthor('futureai[bot]@users.noreply.github.com')).toBe(
+        'bot',
+      );
+      expect(classifyAuthor('maintain[bot]@users.noreply.github.com')).toBe(
+        'bot',
+      );
+      expect(classifyAuthor('captain[bot]@users.noreply.github.com')).toBe(
+        'bot',
+      );
     });
   });
 
