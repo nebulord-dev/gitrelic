@@ -54,7 +54,7 @@ A few specifics worth knowing:
 - **Window:** the full reachable history of the analyzed branch, bounded by `--since=<date>` if provided.
 - **Merge commits are excluded** (`--no-merges`). A merge commit's line counts double-count the work that's already attributed to the branch's individual commits.
 - **Only currently-tracked files are scored.** Files deleted before scan time are filtered out via `git ls-files`, even if their old commits still appear in the log.
-- **Renames are *not* followed.** A renamed file's pre-rename insertion / deletion history is attributed to the old path. The [Rename Tracking](/analyzers/rename-tracking) analyzer surfaces these chains explicitly when you need to reconstruct continuity.
+- **Renames are *not* followed.** A renamed file's pre-rename insertion / deletion history is attributed to the old path. The [Rename Tracking](/analyzers/renames) analyzer surfaces these chains explicitly when you need to reconstruct continuity.
 - **Files with zero net change are skipped.** A file with `totalInsertions = 0` and `totalDeletions = 0` (e.g. a pure binary asset that git tracks but doesn't diff) does not appear in `files[]`.
 
 ## The score formula
@@ -161,8 +161,8 @@ Rewrite Ratio is a triage signal, not an indictment. A few patterns to act on:
 - **Heuristic balance, not semantic balance.** The analyzer measures *line-count* balance, not *meaning* balance. A file that grew 100 lines and then deleted 100 unrelated lines scores the same as a file whose 100 added lines were the same lines that later got deleted. Read the Rewrites hero alongside the Inspector's commit history; the analyzer is a starting point for triage, not a verdict.
 - **Confidence floor delays signal for small files.** Files with fewer than 30 minimum-side lines get their score scaled down proportionally, which means a tightly-scoped utility that's been balanced 5-for-5 over its life will score around 17 even though the pattern is real. The Inspector still shows the raw ratio (1.0); the leaderboard just won't surface the file until it earns enough rewrite volume to trust the score.
 - **Window-length sensitivity.** Short analysis windows compress the difference between growth and rewrite — every file looks more balanced when its history is truncated. Use `--since=<date>` deliberately, and prefer at least a few months of history when the rewrite signal is the question.
-- **Pure refactors look like rewrites.** A clean rename refactor that swaps `oldName → newName` across a file produces equal insertions and deletions, scoring high even though no logic changed. Pair the Rewrites hero with the [Rename Tracking](/analyzers/rename-tracking) analyzer to filter these out, or use the Inspector to read the actual commit messages.
-- **Renames break continuity.** A file's rewrite history is attributed to its current path; pre-rename commits are scored against the old path. See [Rename Tracking](/analyzers/rename-tracking).
+- **Pure refactors look like rewrites.** A clean rename refactor that swaps `oldName → newName` across a file produces equal insertions and deletions, scoring high even though no logic changed. Pair the Rewrites hero with the [Rename Tracking](/analyzers/renames) analyzer to filter these out, or use the Inspector to read the actual commit messages.
+- **Renames break continuity.** A file's rewrite history is attributed to its current path; pre-rename commits are scored against the old path. See [Rename Tracking](/analyzers/renames).
 - **Pre-1.0.** The confidence floor, the high-rewrite threshold, and the score normalization may change. See [CHANGELOG](https://github.com/nebulord-dev/gitrelic/blob/main/CHANGELOG.md) for shifts.
 
 ## Related analyzers

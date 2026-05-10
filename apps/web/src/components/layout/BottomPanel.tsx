@@ -157,7 +157,7 @@ function TabContent({
     case 'test-coverage':
       return <TestCoverageTab report={report} />;
     case 'renames':
-      return <RenamesTab report={report} onSelectFile={onSelectFile} />;
+      return <RenamesTab report={report} onApplyPreset={onApplyPreset} />;
     case 'risk-register':
       return <RiskRegisterTab report={report} onSelectFile={onSelectFile} />;
     case 'debt-inventory':

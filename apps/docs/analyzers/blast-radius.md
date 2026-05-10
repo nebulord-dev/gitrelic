@@ -53,7 +53,7 @@ A few specifics worth knowing:
 - **Merge commits are excluded** (`--no-merges`). Otherwise an octopus merge that touches 200 files would inflate every file's blast score artificially.
 - **Mass-change commits are excluded.** Any commit touching 30 or more tracked files is dropped from the calculation — these are typically reformatting, license header changes, or initial commits, none of which signal architectural coupling. The cap is a constant (`MAX_FILES_PER_COMMIT = 30`) and applies uniformly.
 - **Only currently-tracked files are scored.** Files that were deleted before scan time aren't in `git ls-files`, so they're filtered out — even if their old commits are still in the log.
-- **Renames are *not* followed.** A renamed file's pre-rename blast history is attributed to the old path. The [Rename Tracking](/analyzers/rename-tracking) analyzer surfaces these chains explicitly when you need to reconstruct continuity.
+- **Renames are *not* followed.** A renamed file's pre-rename blast history is attributed to the old path. The [Rename Tracking](/analyzers/renames) analyzer surfaces these chains explicitly when you need to reconstruct continuity.
 
 ## The four tiers
 
@@ -116,5 +116,5 @@ Click any file row in another analyzer's tab and the Inspector populates with it
 - **Mass-change commits are dropped.** The 30-file cap excludes valid signal occasionally — a sweeping refactor touching 31 related files is invisible to the analyzer. Tune `MAX_FILES_PER_COMMIT` if you have a repo where this matters.
 - **Test files inflate co-change cohorts.** A source file that's edited alongside its test will always pick up at least one co-changed file per commit. Repos with strict 1:1 test-to-source pairings see uniform medium-tier scores everywhere.
 - **The score is *relative* to the repo.** Top file = 100, everything else scales down. A "critical-tier" file in a low-coupling codebase might have a smaller raw cohort than a "medium-tier" file in a tightly-coupled one. Compare across repos with caution.
-- **Renames break continuity.** Pre-rename blast history is attributed to the old path. See [Rename Tracking](/analyzers/rename-tracking).
+- **Renames break continuity.** Pre-rename blast history is attributed to the old path. See [Rename Tracking](/analyzers/renames).
 - **Pre-1.0.** Thresholds, the file cap, and the score normalization may change. See [CHANGELOG](https://github.com/nebulord-dev/gitrelic/blob/main/CHANGELOG.md) for shifts.

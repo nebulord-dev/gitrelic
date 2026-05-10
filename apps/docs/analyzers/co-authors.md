@@ -210,7 +210,7 @@ Co-Authors is a workflow-shape signal, not a risk indictment. A few patterns wor
 - **Heuristic AI-tool detection.** New AI tools may not yet be classified — the patterns are explicit string matches, not behavioral inference. File an issue or PR to add patterns when you hit one.
 - **Trailer-only signal.** Some teams pair-program religiously but don't use `Co-Authored-By:` trailers; their collaboration is invisible here. The [Parallel Dev](/analyzers/parallel-dev) analyzer complements this with observed concurrent work.
 - **Squash merges may drop trailers.** GitHub's squash-merge UI can preserve or strip co-author trailers depending on the repository's configuration. A repo where trailers are routinely stripped during merge will under-report AI and human pairing alike.
-- **Renames are not followed.** The pair-graph counts shared files based on file path; rename history isn't followed. See [Rename Tracking](/analyzers/rename-tracking).
+- **Renames are not followed.** The pair-graph counts shared files based on file path; rename history isn't followed. See [Rename Tracking](/analyzers/renames).
 - **Credit ≠ coordination.** A commit with `Co-Authored-By: Claude` doesn't necessarily mean "Claude wrote this code" — it means the human author chose to attribute AI help. The signal reflects attribution behavior, not authorship reality.
 - **Pre-1.0.** The AI/bot pattern lists, the adoption-tier thresholds, and the single-commit-edge hiding default may change. See [CHANGELOG](https://github.com/nebulord-dev/gitrelic/blob/main/CHANGELOG.md) for shifts.
 

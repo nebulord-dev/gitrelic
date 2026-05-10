@@ -111,12 +111,12 @@ describe('prepareSankeyData', () => {
     expect(nodes).toHaveLength(6);
   });
 
-  it('defaults topN to 20 when unspecified', () => {
+  it('defaults to all chains when topN unspecified', () => {
     const chains = Array.from({ length: 25 }, (_, i) =>
       makeChain(`c${i}`, [`prev${i}`]),
     );
     const { links } = prepareSankeyData(makeReport(chains));
-    expect(links).toHaveLength(20);
+    expect(links).toHaveLength(25);
   });
 
   it('skips chains with empty previousNames (no rename to draw)', () => {
