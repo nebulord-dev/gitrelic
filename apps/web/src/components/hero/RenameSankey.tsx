@@ -192,10 +192,17 @@ export function RenameSankey({
 
   const linkPath = sankeyLinkHorizontal<RenameSankeyNode, RenameSankeyLink>();
 
+  const chainCount = report.renameTracking.chains.length;
+
   return (
     <div className="w-full h-full flex flex-col">
       <div ref={containerRef} className="relative flex-1 overflow-y-auto">
-        <svg width={dims.width} height={sankeyGraph.svgHeight}>
+        <svg
+          width={dims.width}
+          height={sankeyGraph.svgHeight}
+          role="img"
+          aria-label={`Rename chains. ${chainCount} ${chainCount === 1 ? 'chain' : 'chains'} from old paths to current paths.`}
+        >
           <g fill="none" strokeOpacity={0.3}>
             {sankeyGraph.graph.links.map((l, i) => (
               <path
@@ -223,6 +230,8 @@ export function RenameSankey({
               <g
                 key={i}
                 className="cursor-pointer"
+                role="button"
+                aria-label={`Inspect ${n.name}`}
                 onClick={() => onSelectFile(n.currentPath)}
                 onMouseEnter={(evt) => {
                   const el = containerRef.current;
