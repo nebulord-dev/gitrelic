@@ -110,6 +110,29 @@ describe('RenamesTab', () => {
     expect(screen.queryByText('low.ts')).toBeNull();
   });
 
+  it('tiebreaks tied-count chains by full path so the strip and panel agree', () => {
+    // All length-1 chains — the degenerate case where renameCount carries
+    // no signal. Sort fallback should be `a.currentPath.localeCompare(b)`
+    // so the bottom-panel top-3 matches the metrics strip's `Most Renamed`.
+    const chains = [
+      makeChain('zebra/late.ts', ['z-old.ts'], 1),
+      makeChain('compiler/.claude/settings.json', ['settings.local.json'], 1),
+      makeChain('mango/middle.ts', ['m-old.ts'], 1),
+      makeChain('apple/early.ts', ['a-old.ts'], 1),
+    ];
+    render(
+      <RenamesTab
+        report={makeReport({ chains, totalFiles: 100 })}
+        onApplyPreset={vi.fn()}
+      />,
+    );
+    // `apple/...` < `compiler/...` < `mango/...` < `zebra/...`
+    expect(screen.getByText('early.ts')).toBeTruthy();
+    expect(screen.getByText('settings.json')).toBeTruthy();
+    expect(screen.getByText('middle.ts')).toBeTruthy();
+    expect(screen.queryByText('late.ts')).toBeNull();
+  });
+
   it('renders the directory portion of paths alongside basenames', () => {
     const chains = [makeChain('packages/web/Foo.ts', ['legacy/Foo.ts'], 1)];
     render(

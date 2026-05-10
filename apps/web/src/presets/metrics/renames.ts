@@ -1,18 +1,27 @@
 import { fmt } from '../../components/theme';
 import type { Metric } from '../types';
-import type { GitrelicReport } from '@gitrelic/core';
+import type { FileRenameChain, GitrelicReport } from '@gitrelic/core';
 
 export function renamesMetrics(report: GitrelicReport): Metric[] {
   const { chains, totalRenames, filesWithRenames } = report.renameTracking;
 
-  let longest = 0;
-  let topChain = chains[0];
+  // Tiebreak by full path when renameCounts are tied so the strip's
+  // `Most Renamed` agrees with the bottom-panel `Most renamed` top-3.
+  // Without the tiebreak we'd silently pick chains[0] (whatever order the
+  // analyzer iterated trackedFiles), which on tied-count repos disagrees
+  // with any sorted UI surface downstream.
+  let topChain: FileRenameChain | undefined;
   for (const c of chains) {
-    if (c.renameCount > longest) {
-      longest = c.renameCount;
+    if (
+      !topChain ||
+      c.renameCount > topChain.renameCount ||
+      (c.renameCount === topChain.renameCount &&
+        c.currentPath.localeCompare(topChain.currentPath) < 0)
+    ) {
       topChain = c;
     }
   }
+  const longest = topChain?.renameCount ?? 0;
 
   const avg =
     filesWithRenames > 0 ? Math.round(totalRenames / filesWithRenames) : 0;

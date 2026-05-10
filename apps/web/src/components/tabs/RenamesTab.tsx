@@ -24,12 +24,13 @@ function rangeTier(filesWithRenames: number, longestChain: number): TierResult {
 }
 
 function topRenamed(chains: FileRenameChain[], n: number): FileRenameChain[] {
+  // Tiebreak by full path so this surface agrees with the metrics-strip
+  // `Most Renamed` slot when renameCounts are tied (the common degenerate
+  // case on repos where every chain is a single old → new pair).
   return [...chains]
     .sort((a, b) => {
       if (b.renameCount !== a.renameCount) return b.renameCount - a.renameCount;
-      const aBase = a.currentPath.split('/').pop() ?? a.currentPath;
-      const bBase = b.currentPath.split('/').pop() ?? b.currentPath;
-      return aBase.localeCompare(bBase);
+      return a.currentPath.localeCompare(b.currentPath);
     })
     .slice(0, n);
 }
