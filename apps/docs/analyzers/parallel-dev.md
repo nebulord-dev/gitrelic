@@ -50,7 +50,7 @@ A few specifics worth knowing:
 - **Window:** the full reachable history of the analyzed branch, bounded by `--since=<date>` if provided.
 - **Merge commits are excluded** (`--no-merges`). A merge that touches 50 files doesn't fabricate parallel work between the merger and the original authors.
 - **Co-authored commits count as a single author** at this layer — the matrix keys by `commit.authorEmail` only. Multi-author co-commits surface separately in the [Co-Authors](/analyzers/co-authors) analyzer.
-- **Renames are *not* followed.** A file's parallel history is attributed to its current path; pre-rename activity is scored against the old path. See [Rename Tracking](/analyzers/rename-tracking).
+- **Renames are *not* followed.** A file's parallel history is attributed to its current path; pre-rename activity is scored against the old path. See [Rename Tracking](/analyzers/renames).
 - **Files with fewer than 3 active weeks are skipped.** Even if a file had a parallel week, three weeks of total activity is the floor for the score's denominator to be meaningful — below that, a single parallel week dominates the ratio in misleading ways.
 - **Files with `parallelScore < 20` are skipped.** The minimum-signal floor keeps the leaderboard from being polluted by files with one parallel week out of fifty.
 
@@ -152,7 +152,7 @@ Parallel Dev is a coordination-cost signal, not an indictment of collaboration. 
 - **Active-weeks floor delays signal for new files.** A file needs at least 3 active weeks to be scored at all, which means files added recently won't appear even if they're already showing high concurrent-edit pressure. Run with a longer `--since` window if recent-file coordination is the question.
 - **Window-length sensitivity.** Short analysis windows compress active-week counts, making a single parallel week look like a larger share of the file's history. Use `--since=<date>` deliberately, and prefer at least a few months of history when concurrency signal is the question.
 - **Co-author trailers are invisible at this layer.** A `Co-authored-by: alice@example.com` trailer on bob's commit doesn't make alice an author of that commit for parallel-dev purposes — only `commit.authorEmail` is keyed. The [Co-Authors](/analyzers/co-authors) analyzer surfaces co-author relationships explicitly when that's the question.
-- **Renames break continuity.** A file's parallel history is attributed to its current path; pre-rename activity is scored against the old path. See [Rename Tracking](/analyzers/rename-tracking).
+- **Renames break continuity.** A file's parallel history is attributed to its current path; pre-rename activity is scored against the old path. See [Rename Tracking](/analyzers/renames).
 - **Pre-1.0.** The active-weeks floor, the minimum parallel score, the severity multiplier shape, and the high-parallel threshold may change. See [CHANGELOG](https://github.com/nebulord-dev/gitrelic/blob/main/CHANGELOG.md) for shifts.
 
 ## Related analyzers

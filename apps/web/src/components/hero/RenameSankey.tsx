@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 
+import { HeroCaption } from '../shared/HeroCaption';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export interface RenameSankeyNode {
@@ -51,7 +52,7 @@ export function prepareSankeyData(
   report: GitrelicReport,
   options: SankeyPrepOptions = {},
 ): { nodes: RenameSankeyNode[]; links: RenameSankeyLink[] } {
-  const topN = options.topN ?? 20;
+  const topN = options.topN ?? Number.POSITIVE_INFINITY;
   const sorted = [...report.renameTracking.chains]
     .sort((a, b) => b.renameCount - a.renameCount)
     .slice(0, topN);
@@ -136,119 +137,161 @@ export function RenameSankey({
     if (rawNodes.length === 0 || rawLinks.length === 0) return null;
     const margin = { top: 12, right: 120, bottom: 12, left: 120 };
     const innerWidth = Math.max(200, dims.width - margin.left - margin.right);
-    const innerHeight = Math.max(160, dims.height - margin.top - margin.bottom);
+
+    // Each row needs enough vertical space to be readable AND clickable.
+    // With many chains we grow the SVG taller than the container so the parent
+    // wrapper scrolls vertically — the alternative (cramming everything into the
+    // visible viewport) produces 1-px-tall rects on real-world repos (58 chains
+    // for the React repo).
+    const NODE_PADDING = 10;
+    const ROW_TARGET_PX = 14;
+    const dominantColumnNodes = rawLinks.length;
+    const targetInnerHeight =
+      dominantColumnNodes * ROW_TARGET_PX +
+      Math.max(0, dominantColumnNodes - 1) * NODE_PADDING;
+    const containerInnerHeight = Math.max(
+      160,
+      dims.height - margin.top - margin.bottom,
+    );
+    const innerHeight = Math.max(containerInnerHeight, targetInnerHeight);
+    const svgHeight = innerHeight + margin.top + margin.bottom;
 
     const generator = sankey<RenameSankeyNode, RenameSankeyLink>()
       .nodeWidth(12)
-      .nodePadding(10)
+      .nodePadding(NODE_PADDING)
       .extent([
         [margin.left, margin.top],
         [margin.left + innerWidth, margin.top + innerHeight],
       ]);
 
-    return generator({
-      nodes: rawNodes.map((n) => ({ ...n })),
-      links: rawLinks.map((l) => ({ ...l })),
-    });
+    return {
+      graph: generator({
+        nodes: rawNodes.map((n) => ({ ...n })),
+        links: rawLinks.map((l) => ({ ...l })),
+      }),
+      svgHeight,
+    };
   }, [rawNodes, rawLinks, dims]);
 
   if (!sankeyGraph) {
     return (
-      <div
-        ref={containerRef}
-        className="w-full h-full flex items-center justify-center text-text-tertiary text-xs"
-      >
-        No rename history detected.
+      <div className="w-full h-full flex flex-col">
+        <div
+          ref={containerRef}
+          className="flex-1 flex items-center justify-center text-text-tertiary text-xs"
+        >
+          No rename history detected.
+        </div>
+        <HeroCaption
+          primary="Sankey · old name → current name · width = 1 step · color: terminus = current path"
+          subtitle="Click any node to inspect the file in the right-side panel."
+        />
       </div>
     );
   }
 
   const linkPath = sankeyLinkHorizontal<RenameSankeyNode, RenameSankeyLink>();
 
-  return (
-    <div ref={containerRef} className="relative w-full h-full">
-      <svg width={dims.width} height={dims.height}>
-        <g fill="none" strokeOpacity={0.3}>
-          {sankeyGraph.links.map((l, i) => (
-            <path
-              key={i}
-              d={linkPath(l) ?? ''}
-              stroke="rgba(88,166,255,0.5)"
-              strokeWidth={Math.max(1, l.width ?? 1)}
-            />
-          ))}
-        </g>
-        {sankeyGraph.nodes.map((n, i) => {
-          const isSelected = selectedFile === n.currentPath;
-          const x0 = n.x0 ?? 0;
-          const x1 = n.x1 ?? 0;
-          const y0 = n.y0 ?? 0;
-          const y1 = n.y1 ?? 0;
-          const height = Math.max(1, y1 - y0);
-          const width = Math.max(1, x1 - x0);
-          const midY = (y0 + y1) / 2;
-          const color = n.isTerminus
-            ? 'var(--accent-primary)'
-            : 'var(--text-tertiary)';
+  const chainCount = report.renameTracking.chains.length;
 
-          return (
-            <g
-              key={i}
-              className="cursor-pointer"
-              onClick={() => onSelectFile(n.currentPath)}
-              onMouseEnter={(evt) => {
-                const rect = containerRef.current?.getBoundingClientRect();
-                if (!rect) return;
-                setTooltip({
-                  x: evt.clientX - rect.left,
-                  y: evt.clientY - rect.top,
-                  node: n,
-                });
-              }}
-              onMouseLeave={() => setTooltip(null)}
-            >
-              <rect
-                x={x0}
-                y={y0}
-                width={width}
-                height={height}
-                fill={color}
-                fillOpacity={isSelected ? 1 : 0.85}
-                stroke={isSelected ? 'var(--accent-primary)' : 'transparent'}
-                strokeWidth={isSelected ? 1 : 0}
-              />
-              <text
-                x={n.isTerminus ? x0 - 6 : x1 + 6}
-                y={midY}
-                textAnchor={n.isTerminus ? 'end' : 'start'}
-                dominantBaseline="middle"
-                fontSize={9}
-                fontFamily="var(--font-mono)"
-                fill="var(--text-secondary)"
-                className="pointer-events-none"
-              >
-                {n.displayName}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-      {tooltip && (
-        <div
-          className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-80 break-all"
-          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
+  return (
+    <div className="w-full h-full flex flex-col">
+      <div ref={containerRef} className="relative flex-1 overflow-y-auto">
+        <svg
+          width={dims.width}
+          height={sankeyGraph.svgHeight}
+          role="img"
+          aria-label={`Rename chains. ${chainCount} ${chainCount === 1 ? 'chain' : 'chains'} from old paths to current paths.`}
         >
-          <div className="font-semibold mb-0.5">{tooltip.node.name}</div>
-          {!tooltip.node.isTerminus && (
-            <div className="text-text-secondary">
-              Now: {tooltip.node.currentPath}
+          <g fill="none" strokeOpacity={0.3}>
+            {sankeyGraph.graph.links.map((l, i) => (
+              <path
+                key={i}
+                d={linkPath(l) ?? ''}
+                stroke="rgba(88,166,255,0.5)"
+                strokeWidth={Math.max(1, l.width ?? 1)}
+              />
+            ))}
+          </g>
+          {sankeyGraph.graph.nodes.map((n, i) => {
+            const isSelected = selectedFile === n.currentPath;
+            const x0 = n.x0 ?? 0;
+            const x1 = n.x1 ?? 0;
+            const y0 = n.y0 ?? 0;
+            const y1 = n.y1 ?? 0;
+            const height = Math.max(1, y1 - y0);
+            const width = Math.max(1, x1 - x0);
+            const midY = (y0 + y1) / 2;
+            const color = n.isTerminus
+              ? 'var(--accent-primary)'
+              : 'var(--text-tertiary)';
+
+            return (
+              <g
+                key={i}
+                className="cursor-pointer"
+                role="button"
+                aria-label={`Inspect ${n.name}`}
+                onClick={() => onSelectFile(n.currentPath)}
+                onMouseEnter={(evt) => {
+                  const el = containerRef.current;
+                  if (!el) return;
+                  const rect = el.getBoundingClientRect();
+                  setTooltip({
+                    x: evt.clientX - rect.left + el.scrollLeft,
+                    y: evt.clientY - rect.top + el.scrollTop,
+                    node: n,
+                  });
+                }}
+                onMouseLeave={() => setTooltip(null)}
+              >
+                <rect
+                  x={x0}
+                  y={y0}
+                  width={width}
+                  height={height}
+                  fill={color}
+                  fillOpacity={isSelected ? 1 : 0.85}
+                  stroke={isSelected ? 'var(--accent-primary)' : 'transparent'}
+                  strokeWidth={isSelected ? 2.5 : 0}
+                />
+                <text
+                  x={n.isTerminus ? x0 - 6 : x1 + 6}
+                  y={midY}
+                  textAnchor={n.isTerminus ? 'end' : 'start'}
+                  dominantBaseline="middle"
+                  fontSize={9}
+                  fontFamily="var(--font-mono)"
+                  fill="var(--text-secondary)"
+                  className="pointer-events-none"
+                >
+                  {n.displayName}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+        {tooltip && (
+          <div
+            className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-80 break-all"
+            style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
+          >
+            <div className="font-semibold mb-0.5">{tooltip.node.name}</div>
+            {!tooltip.node.isTerminus && (
+              <div className="text-text-secondary">
+                Now: {tooltip.node.currentPath}
+              </div>
+            )}
+            <div className="text-text-tertiary mt-0.5">
+              {tooltip.node.isTerminus ? 'Current name' : 'Previous name'}
             </div>
-          )}
-          <div className="text-text-tertiary mt-0.5">
-            {tooltip.node.isTerminus ? 'Current name' : 'Previous name'}
           </div>
-        </div>
-      )}
+        )}
+      </div>
+      <HeroCaption
+        primary="Sankey · old name → current name · width = 1 step · color: terminus = current path"
+        subtitle="Click any node to inspect the file in the right-side panel."
+      />
     </div>
   );
 }

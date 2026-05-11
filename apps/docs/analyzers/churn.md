@@ -49,7 +49,7 @@ A few specifics worth knowing:
 
 - **Window**: by default the full reachable history of the analyzed branch. The CLI's `--since=<date>` flag bounds it (e.g. `--since=2026-01-01` for "this year only"). The bottom-of-the-page summary tells you what window applied.
 - **Merge commits are excluded** (`--no-merges`). A merge that touches 50 files doesn't inflate any file's churn — only the original commits on the merged branches count.
-- **Renames are *not* followed.** Without `--follow`, git treats a rename as "old file deleted, new file created" — so a file's `commitCount` reflects only commits made under its current name. Pre-rename history is attributed to the old path. The [Rename Tracking](/analyzers/rename-tracking) analyzer surfaces these chains explicitly when you need to reconstruct continuity.
+- **Renames are *not* followed.** Without `--follow`, git treats a rename as "old file deleted, new file created" — so a file's `commitCount` reflects only commits made under its current name. Pre-rename history is attributed to the old path. The [Rename Tracking](/analyzers/renames) analyzer surfaces these chains explicitly when you need to reconstruct continuity.
 - **Only currently-tracked files appear in the rollup.** Files that were deleted before scan time aren't in `git ls-files`, so they're filtered out — even if their old commits are still in the log. They live in the raw `report.commits` array but don't surface in the analyzer's output.
 
 ## The four categories
@@ -147,5 +147,5 @@ The classifier is conservative on purpose: snapshots, fixtures, and `cypress/` c
 - **Counts commits, not LOC change.** A 1-line typo fix and a 1,000-line refactor each contribute one commit to the count. If you need volume-aware churn, see [Rewrite Ratio](/analyzers/rewrite-ratio).
 - **Test classification is a heuristic, not configuration.** Files your team treats as tests but that don't match the patterns above will land in the source view. Repo-level config is on the roadmap.
 - **Only currently-tracked files appear.** Files deleted before scan time are excluded from the rollup, even though their commits are still in the log.
-- **Renames break continuity in the count.** A file's `commitCount` reflects only commits made under its current path. Use [Rename Tracking](/analyzers/rename-tracking) to reconstruct full lifecycles.
+- **Renames break continuity in the count.** A file's `commitCount` reflects only commits made under its current path. Use [Rename Tracking](/analyzers/renames) to reconstruct full lifecycles.
 - **Pre-1.0.** Thresholds, classifiers, and column shapes may change. See [CHANGELOG](https://github.com/nebulord-dev/gitrelic/blob/main/CHANGELOG.md) for shifts.

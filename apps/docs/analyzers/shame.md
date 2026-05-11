@@ -80,7 +80,7 @@ A few specifics worth knowing:
 - **Window:** the full reachable history of the analyzed branch, bounded by `--since=<date>` if provided.
 - **Merge commits are excluded.** A merge commit's message is metadata, not a confession.
 - **Only currently-tracked files are scored.** Files deleted before scan time are filtered out, even if their commits still appear in the log.
-- **Renames are *not* followed.** Pre-rename shame is attributed to the old path. The [Rename Tracking](/analyzers/rename-tracking) analyzer surfaces these chains explicitly.
+- **Renames are *not* followed.** Pre-rename shame is attributed to the old path. The [Rename Tracking](/analyzers/renames) analyzer surfaces these chains explicitly.
 
 ### What the leaderboard contains
 
@@ -149,7 +149,7 @@ Shame is a triage signal, not an indictment. A few patterns to act on:
 - **Tier weights are not user-configurable.** The 3 / 2 / 1 weighting is baked in. Repos with a vocabulary that diverges substantially from the default keyword set (e.g. teams that say `revert` rarely but `unbreak` constantly) will under-detect critical-tier shame. Future versions may surface a repo-level keyword config; for now the keyword list is hardcoded in `packages/core/src/analyzers/forensics.ts`.
 - **Confidence floor delays signal for new files.** Files with fewer than 5 commits get their score scaled down proportionally, which means a freshly-created file that has already been reverted twice might score only 40 even though the pattern is real. The Inspector still shows the raw shame commits; the leaderboard just won't surface the file until it earns 5 commits of history.
 - **Trend bins by month, not week.** Short-lived spikes inside a single month get smoothed into a flat bar. For weekly resolution, see [Commit Timing](/analyzers/commit-timing) — its lens is different but it picks up high-frequency patterns the monthly Trend hides.
-- **Renames break continuity.** A file's shame history is attributed to its current path; pre-rename commits are scored against the old path. See [Rename Tracking](/analyzers/rename-tracking).
+- **Renames break continuity.** A file's shame history is attributed to its current path; pre-rename commits are scored against the old path. See [Rename Tracking](/analyzers/renames).
 - **Pre-1.0.** Keywords, tier weights, the confidence floor, and the leaderboard cap may change. See [CHANGELOG](https://github.com/nebulord-dev/gitrelic/blob/main/CHANGELOG.md) for shifts.
 
 ## Related analyzers

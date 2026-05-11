@@ -56,7 +56,7 @@ A few specifics worth knowing:
 - **Window:** the full reachable history of the analyzed branch, bounded by `--since=<date>` if provided.
 - **Merge commits are excluded** (`--no-merges`). Merge commits don't represent authorship of file content; including them would inflate the merger's apparent ownership.
 - **Only currently-tracked files are scored.** Files deleted before scan time are filtered out via `git ls-files`.
-- **Renames are *not* followed.** A file's pre-rename ownership history is attributed to its old path. The [Rename Tracking](/analyzers/rename-tracking) analyzer reconstructs continuity when needed.
+- **Renames are *not* followed.** A file's pre-rename ownership history is attributed to its old path. The [Rename Tracking](/analyzers/renames) analyzer reconstructs continuity when needed.
 - **Author identity is by email.** Two commits from `dan@old-job.com` and `dan@new-job.com` count as two different people. A `.mailmap` file in the repo is honored if present.
 
 ## The risk formula
@@ -168,7 +168,7 @@ Bus Factor is a triage signal, not an indictment. A few patterns to act on:
 - **Email-based identity.** A contributor who switches email addresses (job change, GitHub no-reply, multiple devices) appears as multiple authors. Configure a `.mailmap` to merge identities; the analyzer honors it via `git log`.
 - **Generated content inflates concentration.** Auto-regenerated files (snapshots, fixtures, lockfiles, migrations) accumulate "ownership" by whoever ran the regeneration last. Common saturation pathology that the analyzer can't disambiguate from real engineering ownership without external context.
 - **`overallBusFactor` is a top-20 metric.** The repo-level number is computed across the 20 most-concentrated files, so it doesn't reflect the long tail. A repo with `overallBusFactor === 4` can still have many single-owned files outside the top-20 — read the histogram and the directory rollup for the broader view.
-- **Renames break continuity.** A file's ownership history is attributed to its current path; pre-rename commits are credited against the old path. See [Rename Tracking](/analyzers/rename-tracking).
+- **Renames break continuity.** A file's ownership history is attributed to its current path; pre-rename commits are credited against the old path. See [Rename Tracking](/analyzers/renames).
 - **Pre-1.0.** The risk thresholds, the top-20 window for `overallBusFactor`, and the tier definitions may change. See [CHANGELOG](https://github.com/nebulord-dev/gitrelic/blob/main/CHANGELOG.md) for shifts.
 
 ## Related analyzers

@@ -408,5 +408,6 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['renames'],
     },
     metrics: renamesMetrics,
+    docsPath: 'analyzers/renames',
   },
 };

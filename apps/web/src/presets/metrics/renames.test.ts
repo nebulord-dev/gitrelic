@@ -86,6 +86,18 @@ describe('renamesMetrics', () => {
     expect(metrics[4].value).toBe('winner.ts');
   });
 
+  it('tiebreaks by full path when renameCounts are tied (matches bottom-panel)', () => {
+    // Iteration order puts `zebra/...` first but full-path tiebreak should
+    // pick `apple/...` so the strip agrees with the panel's top-N.
+    const chains = [
+      makeChain('zebra/late.ts', 1),
+      makeChain('mango/middle.ts', 1),
+      makeChain('apple/early.ts', 1),
+    ];
+    const metrics = renamesMetrics(makeReport(chains));
+    expect(metrics[4].value).toBe('early.ts');
+  });
+
   it('formats Total Renames with thousands separator via fmt()', () => {
     const chains = [makeChain('a.ts', 1234)];
     const metrics = renamesMetrics(makeReport(chains));
