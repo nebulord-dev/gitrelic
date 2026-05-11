@@ -1,3 +1,10 @@
+## [0.46.1](https://github.com/nebulord-dev/gitrelic/compare/v0.46.0...v0.46.1) (2026-05-11)
+
+
+### Bug Fixes
+
+* **web:** increase font sizes for better readability in RenameSankey component ([6743b25](https://github.com/nebulord-dev/gitrelic/commit/6743b255c9d78bb22939822ecd2edb655ff36da5))
+
 # [0.46.0](https://github.com/nebulord-dev/gitrelic/compare/v0.45.0...v0.46.0) (2026-05-11)
 
 
