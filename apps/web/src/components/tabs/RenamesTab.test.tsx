@@ -60,7 +60,7 @@ describe('RenamesTab', () => {
     ).toBeTruthy();
   });
 
-  it('renders the Renames Tracked tier when all chains are length 1', () => {
+  it('renders the Renames Detected tier when all chains are length 1', () => {
     const chains = [
       makeChain('src/a.ts', ['old/a.ts'], 1),
       makeChain('src/b.ts', ['old/b.ts'], 1),
@@ -74,7 +74,7 @@ describe('RenamesTab', () => {
     expect(screen.getByTestId('narrative-kpi-big-number').textContent).toBe(
       '2',
     );
-    expect(screen.getByText('Renames Tracked')).toBeTruthy();
+    expect(screen.getByText('Renames Detected')).toBeTruthy();
   });
 
   it('renders the Tracked Chains tier when any chain is length >= 2', () => {
@@ -158,7 +158,7 @@ describe('RenamesTab', () => {
     );
     const subline = screen.getByText(/longest chain/).closest('div')!;
     expect(subline.textContent).toContain('3');
-    expect(subline.textContent).toContain('renames');
+    expect(subline.textContent).toContain('rename events');
     expect(subline.textContent).toContain('longest chain:');
     expect(subline.textContent).toContain('2');
     expect(subline.textContent).toContain('steps');

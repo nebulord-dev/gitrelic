@@ -98,14 +98,14 @@ The badge classifies the codebase's *rename shape*, not its risk:
 | State | Tier | Meaning |
 |---|---|---|
 | `filesWithRenames === 0` | `No Renames` (neutral grey) | The codebase has no detected rename history in this analysis window. |
-| `filesWithRenames > 0`, `longestChain ≤ 1` | `Renames Tracked` (accent) | Surface renames only — every chain is a single old → new pair. Typical of a directory restructure. |
+| `filesWithRenames > 0`, `longestChain ≤ 1` | `Renames Detected` (accent) | Surface renames only — every chain is a single old → new pair. Typical of a directory restructure. |
 | `filesWithRenames > 0`, `longestChain ≥ 2` | `Tracked Chains` (accent) | At least one file has been renamed *and renamed again*. Multi-step structural history exists. |
 
 The tiers are intentionally **informational**, not severity-coded. A repo with many renames isn't unhealthier than one with none — it's just had more restructuring. The dashboard's `severity-critical` colors are reserved for risk axes (bus factor, ghost files, etc.), and rename volume is a workflow-shape signal.
 
 ### Finding (top-3 most renamed)
 
-The top-3 most-renamed files appear under a `Most renamed` label. Each row shows the file's basename, the parent directory in muted text, and the rename count. Sorted by `renameCount` descending, with basename-alphabetical tiebreaker.
+The top-3 most-renamed files appear under a `Most renamed` label. Each row shows the file's basename, the parent directory in muted text, and the rename count. Sorted by `renameCount` descending, with full-path-alphabetical tiebreaker — the same tiebreaker the metrics-strip `Most Renamed` slot uses, so the surfaces agree on tied-count repos.
 
 When the codebase has only length-1 chains, the top-3 list still surfaces — three arbitrary alphabetical chains is fine context, even though the count column shows `1` for each. When the codebase has *one* multi-step chain (typical), that chain leads the list with its full count and the next two slots fill alphabetically with length-1 chains.
 
@@ -115,9 +115,19 @@ The list is read-only — clicking a row does *not* drive the Inspector. Use the
 
 A single line carries the aggregate triple:
 
-> `<totalRenames> renames · longest chain: <N> step(s) · <pct>% of tracked files have rename history`
+> `<totalRenames> rename events · longest chain: <N> step(s) · <pct>% of tracked files have rename history`
 
 `pct` uses `report.loc.totalFiles` as the denominator. Empty-repo guard returns `0%` so the subline never renders `NaN%`.
+
+### Files vs events — why the big number and the subline differ
+
+The big number is **files** (`filesWithRenames` — count of currently-tracked files with at least one historical name). The subline's `rename events` is the raw `totalRenames` count straight from `git log --diff-filter=R`. They measure different things and they can diverge:
+
+- A file renamed twice contributes 1 to the big number, 2 to the subline.
+- A rename of a file that was later deleted (or further renamed to a now-deleted path) contributes to `totalRenames` but never anchors to a chain in the current tracked-file set, so it does *not* add to `filesWithRenames`.
+- When `buildRenameChains` walks backwards through the reverse map and finds multiple renames pointing at the same `newPath`, only the most recent rename anchors a chain — the older events stay in `totalRenames` but don't extend any visible chain.
+
+So the gap (`totalRenames − filesWithRenames`) is roughly the count of rename events that don't have a clean home in the current file tree — either now-deleted lineages or collapsed intermediate steps. On a repo like React, 58 files with rename history + 65 rename events is the typical shape.
 
 ### See also
 

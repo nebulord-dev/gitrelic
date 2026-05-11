@@ -20,7 +20,7 @@ function rangeTier(filesWithRenames: number, longestChain: number): TierResult {
   if (filesWithRenames === 0) return { variant: 'stale', label: 'No Renames' };
   if (longestChain >= 2)
     return { variant: 'coupling', label: 'Tracked Chains' };
-  return { variant: 'coupling', label: 'Renames Tracked' };
+  return { variant: 'coupling', label: 'Renames Detected' };
 }
 
 function topRenamed(chains: FileRenameChain[], n: number): FileRenameChain[] {
@@ -104,7 +104,7 @@ export function RenamesTab({ report, onApplyPreset }: RenamesTabProps) {
           <span className="font-mono text-text-primary">
             {fmt(rt.totalRenames)}
           </span>{' '}
-          rename{rt.totalRenames === 1 ? '' : 's'} · longest chain:{' '}
+          rename event{rt.totalRenames === 1 ? '' : 's'} · longest chain:{' '}
           <span className="font-mono">{longestChain}</span> step
           {longestChain === 1 ? '' : 's'} ·{' '}
           <span className="font-mono">{pct}%</span> of tracked files have rename
