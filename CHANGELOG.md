@@ -1,3 +1,10 @@
+# [0.46.0](https://github.com/nebulord-dev/gitrelic/compare/v0.45.0...v0.46.0) (2026-05-11)
+
+
+### Features
+
+* **web:** rename-tracking polish (RELIC-321) ([#74](https://github.com/nebulord-dev/gitrelic/issues/74)) ([a9c18ed](https://github.com/nebulord-dev/gitrelic/commit/a9c18ed0f73f51c483203f395c34439073d416d1))
+
 # [0.45.0](https://github.com/nebulord-dev/gitrelic/compare/v0.44.0...v0.45.0) (2026-05-05)
 
 
