@@ -260,7 +260,7 @@ export function RenameSankey({
                   y={midY}
                   textAnchor={n.isTerminus ? 'end' : 'start'}
                   dominantBaseline="middle"
-                  fontSize={9}
+                  fontSize={12}
                   fontFamily="var(--font-mono)"
                   fill="var(--text-secondary)"
                   className="pointer-events-none"
@@ -273,7 +273,7 @@ export function RenameSankey({
         </svg>
         {tooltip && (
           <div
-            className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[10px] text-tooltip-text pointer-events-none z-20 max-w-80 break-all"
+            className="absolute bg-tooltip-bg border border-border-primary rounded px-2.5 py-1.5 text-[14px] text-tooltip-text pointer-events-none z-20 max-w-80 break-all"
             style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
           >
             <div className="font-semibold mb-0.5">{tooltip.node.name}</div>
