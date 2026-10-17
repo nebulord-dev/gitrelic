@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { binCommitsByWeek, fromRawCommits } from '@gitrelic/scene';
 import { scaleLinear, scaleTime } from 'd3-scale';
 import { area, stack, stackOrderNone, stackOffsetNone } from 'd3-shape';
 
 import { authorColor } from '../../utils/colors';
-import type { GitrelicReport, RawCommit } from '@gitrelic/core';
+import type { GitrelicReport } from '@gitrelic/core';
 
 interface TimelineProps {
   report: GitrelicReport;
@@ -11,69 +12,8 @@ interface TimelineProps {
   onSelectContributor: (email: string) => void;
 }
 
-export interface WeekBin {
-  weekStart: Date;
-  counts: Record<string, number>;
-}
-
 const PADDING = { top: 20, right: 20, bottom: 30, left: 40 };
 const MAX_AUTHORS = 8;
-
-/**
- * Bin commits into weekly buckets grouped by author.
- * Returns week bins and author list sorted by total commits descending.
- */
-export function binCommitsByWeek(commits: RawCommit[]): {
-  weeks: WeekBin[];
-  authors: string[];
-} {
-  if (commits.length === 0) return { weeks: [], authors: [] };
-
-  // Count commits per author for sorting
-  const authorTotals = new Map<string, number>();
-  for (const c of commits) {
-    authorTotals.set(c.authorEmail, (authorTotals.get(c.authorEmail) ?? 0) + 1);
-  }
-  const authors = [...authorTotals.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([email]) => email);
-
-  // Find date range
-  const dates = commits.map((c) => new Date(c.date).getTime());
-  const minDate = new Date(dates.reduce((m, d) => (d < m ? d : m), dates[0]));
-  const maxDate = new Date(dates.reduce((m, d) => (d > m ? d : m), dates[0]));
-
-  // Align to Monday
-  const startMonday = new Date(minDate);
-  startMonday.setUTCDate(
-    startMonday.getUTCDate() - ((startMonday.getUTCDay() + 6) % 7),
-  );
-  startMonday.setUTCHours(0, 0, 0, 0);
-
-  // Build empty bins
-  const bins: WeekBin[] = [];
-  const cursor = new Date(startMonday);
-  while (cursor <= maxDate) {
-    const counts: Record<string, number> = {};
-    for (const a of authors) counts[a] = 0;
-    bins.push({ weekStart: new Date(cursor), counts });
-    cursor.setUTCDate(cursor.getUTCDate() + 7);
-  }
-
-  // Fill bins
-  for (const c of commits) {
-    const d = new Date(c.date);
-    const weekIdx = Math.floor(
-      (d.getTime() - startMonday.getTime()) / (7 * 24 * 60 * 60 * 1000),
-    );
-    if (weekIdx >= 0 && weekIdx < bins.length) {
-      bins[weekIdx].counts[c.authorEmail] =
-        (bins[weekIdx].counts[c.authorEmail] ?? 0) + 1;
-    }
-  }
-
-  return { weeks: bins, authors };
-}
 
 export function Timeline({
   report,
@@ -95,7 +35,7 @@ export function Timeline({
   }, []);
 
   const { weeks, authors } = useMemo(
-    () => binCommitsByWeek(report.commits ?? []),
+    () => binCommitsByWeek(fromRawCommits(report.commits ?? [])),
     [report.commits],
   );
 

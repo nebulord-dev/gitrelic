@@ -1,6 +1,6 @@
+import { HEADCOUNT_MODERATE_THRESHOLD as MODERATE_THRESHOLD } from '@gitrelic/scene';
 import { describe, expect, it } from 'vitest';
 
-import { MODERATE_THRESHOLD } from '../../components/tabs/ParallelDevTab';
 import { parallelDevMetrics } from './parallel-dev';
 import type {
   FileParallelDev,

@@ -1,4 +1,4 @@
-import { aggregateRewriteByDirectory } from '@gitrelic/scene';
+import { aggregateRewriteByDirectory, headcountTier } from '@gitrelic/scene';
 
 import { HIGH_REWRITE_THRESHOLD } from '../hero/RewriteHistogram';
 import { NarrativeKPI } from '../shared/NarrativeKPI';
@@ -16,18 +16,20 @@ interface RewriteRatioTabProps {
 const TOP_FILES_COUNT = 3;
 const DIRECTORY_ROLLUP_LIMIT = 5;
 
-// Headcount tiering: 0 = Healthy, 1 to MODERATE_THRESHOLD-1 = Moderate, ≥MODERATE_THRESHOLD = High Rewrite.
-// Shared with rewriteRatioMetrics so the panel badge and metrics-strip slot 2 color cannot drift.
-export const MODERATE_THRESHOLD = 5;
-
+// Headcount tiering lives in @gitrelic/scene so this badge and the metrics
+// strip's color can't drift.
 function tierBadge(highRewriteCount: number): {
   variant: BadgeVariant;
   label: string;
 } {
-  if (highRewriteCount === 0) return { variant: 'healthy', label: 'Healthy' };
-  if (highRewriteCount < MODERATE_THRESHOLD)
-    return { variant: 'warning', label: 'Moderate' };
-  return { variant: 'critical', label: 'High Rewrite' };
+  switch (headcountTier(highRewriteCount)) {
+    case 'none':
+      return { variant: 'healthy', label: 'Healthy' };
+    case 'moderate':
+      return { variant: 'warning', label: 'Moderate' };
+    case 'high':
+      return { variant: 'critical', label: 'High Rewrite' };
+  }
 }
 
 function signed(n: number): string {

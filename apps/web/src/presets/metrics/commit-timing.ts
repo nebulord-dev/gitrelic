@@ -1,8 +1,8 @@
 import { fmt } from '../../components/theme';
+import { headcountColor } from './headcountColor';
 import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 
-const HIGH_STRESS_FILES_THRESHOLD = 5; // matches CommitTimingTab.MODERATE_THRESHOLD
 const STRESSED_AUTHOR_SCORE_THRESHOLD = 50; // per-author warning band
 
 export function commitTimingMetrics(report: GitrelicReport): Metric[] {
@@ -37,12 +37,7 @@ export function commitTimingMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'High Stress',
       value: fmt(highStress),
-      color:
-        highStress === 0
-          ? 'var(--severity-healthy)'
-          : highStress < HIGH_STRESS_FILES_THRESHOLD
-            ? 'var(--severity-warning)'
-            : 'var(--severity-critical)',
+      color: headcountColor(highStress),
     },
     {
       label: 'Stressed Authors',

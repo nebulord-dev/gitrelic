@@ -1,5 +1,5 @@
-import { MODERATE_THRESHOLD } from '../../components/tabs/ParallelDevTab';
 import { fmt } from '../../components/theme';
+import { headcountColor } from './headcountColor';
 import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -25,12 +25,7 @@ export function parallelDevMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'High Parallel',
       value: fmt(highParallel),
-      color:
-        highParallel === 0
-          ? 'var(--severity-healthy)'
-          : highParallel < MODERATE_THRESHOLD
-            ? 'var(--severity-warning)'
-            : 'var(--severity-critical)',
+      color: headcountColor(highParallel),
     },
     {
       label: 'Top Score',

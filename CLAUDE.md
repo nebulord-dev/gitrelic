@@ -56,7 +56,9 @@ Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `@gitrelic/sc
 
 ### `packages/scene` — Shared Browser Derivations
 
-Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `normalizeReport`, the `*ByDirectory` aggregations, ownership rankings, AI/bot author classification, `makeFileKind`. The classic web app imports it today; Atlas will too.
+Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `normalizeReport`, the `*ByDirectory` aggregations, ownership rankings, AI/bot author classification, `makeFileKind`, `fileFacts` (the file inspector's rows, with semantic tiers rather than colors), `headcountTier`, swimlane/weekly binning, and the co-author graph. The classic web app imports it today; Atlas will too.
+
+- **Commit-based derivations take `CommitLike[]`**, not `RawCommit[]`. Classic adapts `report.commits` with `fromRawCommits`; Atlas adapts the columnar `/gitrelic-commits.json` with `fromCommitIndex`.
 
 - **No build step.** `exports` points at `src/index.ts`; each consumer's bundler compiles it. Turbo still hashes scene's files into dependents' build hashes, so the cache stays correct without a `build` script.
 - **No framework, no Node, no DOM.** Its tsconfig has `lib: ES2022` with no `types`, and an oxlint override bans `react`, `svelte` and `node:*` imports.

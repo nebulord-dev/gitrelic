@@ -1,4 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  fromRawCommits,
+  prepareSwimlaneData,
+  type SwimCommit,
+} from '@gitrelic/scene';
 import { scaleLinear, scaleTime } from 'd3-scale';
 
 import { authorColor } from '../../utils/colors';
@@ -13,108 +18,9 @@ interface ContributorSwimlanesProps {
   onSelectContributor: (email: string) => void;
 }
 
-export interface SwimCommit {
-  date: Date;
-  files: string[];
-  isHotspot: boolean;
-}
-
-export interface SwimLane {
-  email: string;
-  name: string;
-  commitCount: number;
-  commits: SwimCommit[];
-  weeklyIntensity: number[];
-  isGhost: boolean;
-  lastActiveDate: Date | null;
-}
-
 const LANE_HEIGHT = 56;
 const HEATSTRIP_H = 8;
 const LABEL_WIDTH = 130;
-
-export function prepareSwimlaneData(report: GitrelicReport): SwimLane[] {
-  const commits = report.commits ?? [];
-  const hotspotFiles = new Set(
-    report.hotspots.files
-      .filter((h) => h.category === 'critical' || h.category === 'warning')
-      .map((h) => h.file),
-  );
-  const ghostAuthors = new Set(
-    report.ghostFiles.files.map((g) => g.dominantAuthor),
-  );
-
-  // Group commits by author
-  const byAuthor = new Map<string, SwimCommit[]>();
-  for (const c of commits) {
-    const isHotspot = c.files.some((f) => hotspotFiles.has(f));
-    const entry: SwimCommit = {
-      date: new Date(c.date),
-      files: c.files,
-      isHotspot,
-    };
-    const arr = byAuthor.get(c.authorEmail) ?? [];
-    arr.push(entry);
-    byAuthor.set(c.authorEmail, arr);
-  }
-
-  // Date range for weekly binning
-  if (commits.length === 0) return [];
-  const allDates = commits.map((c) => new Date(c.date).getTime());
-  const minDate = new Date(
-    allDates.reduce((m, d) => (d < m ? d : m), allDates[0]),
-  );
-  const maxDate = new Date(
-    allDates.reduce((m, d) => (d > m ? d : m), allDates[0]),
-  );
-  const startMonday = new Date(minDate);
-  startMonday.setUTCDate(
-    startMonday.getUTCDate() - ((startMonday.getUTCDay() + 6) % 7),
-  );
-  startMonday.setUTCHours(0, 0, 0, 0);
-  const totalWeeks =
-    Math.ceil((maxDate.getTime() - startMonday.getTime()) / (7 * 86_400_000)) +
-    1;
-
-  // Build lanes from contributor report (sorted by commit count)
-  const sorted = [...report.contributors.contributors].sort(
-    (a, b) => b.commitCount - a.commitCount,
-  );
-
-  return sorted.map((contrib) => {
-    const authorCommits = byAuthor.get(contrib.email) ?? [];
-    const weekly = new Array(totalWeeks).fill(0);
-    for (const c of authorCommits) {
-      const idx = Math.floor(
-        (c.date.getTime() - startMonday.getTime()) / (7 * 86_400_000),
-      );
-      if (idx >= 0 && idx < totalWeeks) weekly[idx]++;
-    }
-
-    const isGhost = ghostAuthors.has(contrib.email) || contrib.isGhost;
-    const lastActiveDate =
-      authorCommits.length > 0
-        ? new Date(
-            authorCommits.reduce((m, c) => {
-              const t = c.date.getTime();
-              return t > m ? t : m;
-            }, 0),
-          )
-        : null;
-
-    return {
-      email: contrib.email,
-      name: contrib.name,
-      commitCount: contrib.commitCount,
-      commits: authorCommits.sort(
-        (a, b) => a.date.getTime() - b.date.getTime(),
-      ),
-      weeklyIntensity: weekly,
-      isGhost,
-      lastActiveDate,
-    };
-  });
-}
 
 export function ContributorSwimlanes({
   report,
@@ -140,17 +46,23 @@ export function ContributorSwimlanes({
     return () => observer.disconnect();
   }, []);
 
-  const lanes = useMemo(() => prepareSwimlaneData(report), [report]);
+  const commits = useMemo(
+    () => fromRawCommits(report.commits ?? []),
+    [report.commits],
+  );
+  const lanes = useMemo(
+    () => prepareSwimlaneData(report, commits),
+    [report, commits],
+  );
 
   const timeRange = useMemo(() => {
-    const commits = report.commits ?? [];
     if (commits.length === 0) return { min: new Date(), max: new Date() };
-    const dates = commits.map((c) => new Date(c.date).getTime());
+    const times = commits.map((c) => c.timeMs);
     return {
-      min: new Date(dates.reduce((m, d) => (d < m ? d : m), dates[0])),
-      max: new Date(dates.reduce((m, d) => (d > m ? d : m), dates[0])),
+      min: new Date(times.reduce((m, t) => (t < m ? t : m), times[0])),
+      max: new Date(times.reduce((m, t) => (t > m ? t : m), times[0])),
     };
-  }, [report.commits]);
+  }, [commits]);
 
   const trackWidth = width - LABEL_WIDTH;
   const xScale = scaleTime()

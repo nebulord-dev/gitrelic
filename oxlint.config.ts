@@ -8,6 +8,18 @@ const coreTypeOnly = {
     'Browser code may only `import type` from @gitrelic/core (see CLAUDE.md).',
 };
 
+// Scene is shared by a React and a Svelte app and bundled for the browser.
+const sceneBrowserOnly = [
+  {
+    group: ['react', 'react-dom', 'react/*', 'svelte', 'svelte/*'],
+    message: '@gitrelic/scene must stay framework-free.',
+  },
+  {
+    group: ['node:*', 'execa', 'fs', 'fs/*', 'path', 'os', 'child_process'],
+    message: '@gitrelic/scene runs in the browser.',
+  },
+];
+
 export default defineConfig({
   plugins: ['typescript', 'react'],
   ignorePatterns: [
@@ -53,24 +65,7 @@ export default defineConfig({
           'error',
           {
             paths: [coreTypeOnly],
-            patterns: [
-              {
-                group: ['react', 'react-dom', 'react/*', 'svelte', 'svelte/*'],
-                message: '@gitrelic/scene must stay framework-free.',
-              },
-              {
-                group: [
-                  'node:*',
-                  'execa',
-                  'fs',
-                  'fs/*',
-                  'path',
-                  'os',
-                  'child_process',
-                ],
-                message: '@gitrelic/scene runs in the browser.',
-              },
-            ],
+            patterns: sceneBrowserOnly,
           },
         ],
         // Scene compiles with verbatimModuleSyntax, which Vite honors per
@@ -78,6 +73,17 @@ export default defineConfig({
         // side-effect import `import {} from '@gitrelic/core'` and drags core
         // (and execa) into the browser bundle. Require `import type { X }`.
         'typescript/no-import-type-side-effects': 'error',
+      },
+    },
+    {
+      // Scene tests run in Node and never reach a bundle, so they may call
+      // core directly, e.g. to check an adapter against the real encoder.
+      files: ['packages/scene/src/**/*.test.ts'],
+      rules: {
+        'typescript/no-restricted-imports': [
+          'error',
+          { patterns: sceneBrowserOnly },
+        ],
       },
     },
   ],
