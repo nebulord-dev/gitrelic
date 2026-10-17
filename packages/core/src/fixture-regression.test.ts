@@ -109,7 +109,7 @@ beforeAll(async () => {
   // execFileSync with argv array — no shell, no injection surface.
   execFileSync('bash', [BUILD_SCRIPT, repoPath], { stdio: 'pipe' });
 
-  report = await runGitrelic({ repoPath });
+  report = await runGitrelic({ repoPath, version: '9.9.9-fixture' });
 }, 30_000);
 
 afterAll(() => {
