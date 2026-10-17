@@ -2636,6 +2636,7 @@ exports[`fixture regression > top-level report keys are stable 1`] = `
   "ghostFiles",
   "hotspotClusters",
   "hotspots",
+  "identities",
   "knowledgeConcentration",
   "loc",
   "meta",

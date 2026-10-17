@@ -34,6 +34,7 @@ export interface RawCommit {
  * TRAILERS|<co-author values separated by 0x1F>, then numstat lines.
  * Co-author trailers live in commit bodies (not subjects), so we rely on
  * git's native trailer parser via %(trailers:...) instead of regexing %B.
+ * %aE/%aN (not %ae/%an) apply the repo's .mailmap to author identity.
  * @see https://git-scm.com/docs/git-log
  * @param repoPath - The path to the git repository.
  * @param options - Optional parameters for filtering commits.
@@ -45,7 +46,7 @@ export async function getAllCommits(
 ): Promise<RawCommit[]> {
   const args = [
     'log',
-    '--format=COMMIT|%H|%ae|%an|%aI%nMSG|%s%nTRAILERS|%(trailers:key=Co-authored-by,valueonly,separator=%x1F)',
+    '--format=COMMIT|%H|%aE|%aN|%aI%nMSG|%s%nTRAILERS|%(trailers:key=Co-authored-by,valueonly,separator=%x1F)',
     '--numstat',
     '--no-merges',
   ];
