@@ -7,6 +7,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
   BlobLineCounter,
   parseGitLog,
+  resolveCommit,
   isIgnored,
   renameTarget,
   resolveRepoRoot,
@@ -362,6 +363,25 @@ describe('BlobLineCounter', () => {
     }
   });
 
+  it('counts identically when chunks straddle the sniff boundary', () => {
+    const body = Buffer.concat([
+      Buffer.from('ab\n'.repeat(4000)), // 12000 bytes, crosses 8000
+      Buffer.from('tail'),
+    ]);
+    const whole = batch([
+      { oid: 'x', body },
+      { oid: 'y', body: 'z\n' },
+    ]);
+    for (const size of [997, 4093, 7999, 8001]) {
+      const counter = new BlobLineCounter();
+      for (let i = 0; i < whole.length; i += size) {
+        counter.push(whole.subarray(i, i + size));
+      }
+      expect(counter.results.get('x')).toBe(4001);
+      expect(counter.results.get('y')).toBe(1);
+    }
+  });
+
   it('only sniffs the start of a blob for NUL bytes, like git', () => {
     const body = Buffer.concat([
       Buffer.from('x\n'.repeat(5000)),
@@ -370,5 +390,26 @@ describe('BlobLineCounter', () => {
     const counter = new BlobLineCounter();
     counter.push(batch([{ oid: 'big', body }]));
     expect(counter.results.get('big')).toBe(5001);
+  });
+});
+
+describe('resolveCommit', () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('surfaces the real git error outside a repository', async () => {
+    // Used to report every failure as "no commits yet" — misleading when the
+    // problem is git itself, or not being in a repo at all.
+    const dir = await makeSealedDir();
+    try {
+      await expect(resolveCommit(dir)).rejects.not.toThrow(/no commits yet/);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects option-looking revisions without running git', async () => {
+    await expect(resolveCommit('/nonexistent', '--output=x')).rejects.toThrow(
+      /Unknown branch or revision/,
+    );
   });
 });

@@ -55,7 +55,7 @@ A few specifics worth knowing:
 
 - **Window:** the full reachable history of the analyzed branch, bounded by `--since=<date>` if provided.
 - **Merge commits are excluded** (`--no-merges`). Merge commits don't represent authorship of file content; including them would inflate the merger's apparent ownership.
-- **Only currently-tracked files are scored.** Files deleted before scan time are filtered out via `git ls-files`.
+- **Only currently-tracked files are scored.** Files that don't exist in the analyzed commit are filtered out.
 - **Renames are *not* followed.** A file's pre-rename ownership history is attributed to its old path. The [Rename Tracking](/analyzers/renames) analyzer reconstructs continuity when needed.
 - **Author identity is by email.** Two commits from `dan@old-job.com` and `dan@new-job.com` count as two different people. A `.mailmap` file in the repo is honored if present.
 

@@ -53,7 +53,7 @@ A few specifics worth knowing:
 
 - **Window:** the full reachable history of the analyzed branch, bounded by `--since=<date>` if provided.
 - **Merge commits are excluded** (`--no-merges`). A merge commit's line counts double-count the work that's already attributed to the branch's individual commits.
-- **Only currently-tracked files are scored.** Files deleted before scan time are filtered out via `git ls-files`, even if their old commits still appear in the log.
+- **Only currently-tracked files are scored.** Files that don't exist in the analyzed commit are filtered out, even if their old commits still appear in the log.
 - **Renames are *not* followed.** A renamed file's pre-rename insertion / deletion history is attributed to the old path. The [Rename Tracking](/analyzers/renames) analyzer surfaces these chains explicitly when you need to reconstruct continuity.
 - **Files with zero net change are skipped.** A file with `totalInsertions = 0` and `totalDeletions = 0` (e.g. a pure binary asset that git tracks but doesn't diff) does not appear in `files[]`.
 

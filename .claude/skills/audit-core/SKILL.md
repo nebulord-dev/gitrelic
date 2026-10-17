@@ -48,7 +48,7 @@ Review `src/runner.ts`:
 
 ### 5. Cross-Platform Path Handling
 
-All analyzers consume file paths straight from `git ls-files` and `git log`, which return forward-slash paths on every OS — so analyzer code is generally safe. But any crossing of the boundary into Node's `path` module is a risk.
+All analyzers consume file paths straight from `git ls-tree` (the analyzed commit's tree) and `git log`, which return forward-slash paths on every OS — so analyzer code is generally safe. But any crossing of the boundary into Node's `path` module is a risk.
 
 - No analyzer should call `path.join` and then compare the result to a forward-slash git path — that breaks on Windows
 - No analyzer uses `fullPath.replace(projectRoot + '/', '')` — this silently breaks on Windows where the separator is `\`
@@ -80,7 +80,7 @@ Sample 5–6 analyzers (rotate each audit) and verify each handles:
 
 Reports are served from the CLI's local HTTP server (`--web`), written to stdout as JSON (`--json`), and end up in PR attachments and bug reports. Audit what leaks out.
 
-- **Absolute paths with usernames** — every path in a report must be repo-relative. `git ls-files` and `git log --name-only` already return relative paths, but any analyzer that builds `path.join(repoPath, file)` and then embeds that absolute path in the report is a leak. Grep for `repoPath` in analyzer files and trace where its value flows
+- **Absolute paths with usernames** — every path in a report must be repo-relative. `git ls-tree --full-tree` and `git log --numstat` already return repo-relative paths, but any analyzer that builds `path.join(repoPath, file)` and then embeds that absolute path in the report is a leak. Grep for `repoPath` in analyzer files and trace where its value flows
 - **Author emails** — `contributors.ts` includes email addresses by design. Confirm this is intentional (it is — but the report is trivially shareable, so users should be able to understand it's in there)
 - **Commit messages in `forensics.ts` / `cursed-files.ts`** — these can contain anything the committer wrote: API keys, internal URLs, offensive language. The report embeds them verbatim. Acceptable (this is what the git log contains), but worth a mental check whenever the selection logic changes
 - **Stack traces** — if an analyzer fails and the runner embeds the error in a report section, the stack trace can contain absolute paths. Scrub or redact before embedding

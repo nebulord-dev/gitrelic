@@ -94,6 +94,12 @@ describe('analyzed snapshot (integration)', () => {
     ).rejects.toThrow('Unknown branch or revision: "no-such-branch"');
   });
 
+  it('explains that revision ranges are not supported', async () => {
+    await expect(
+      runGitrelic({ repoPath: repo, branch: 'main..feature' }),
+    ).rejects.toThrow(/ranges like a\.\.b aren't supported/);
+  });
+
   it('never lets a branch value act as a git option', async () => {
     const target = path.join(repo, 'pwned.txt');
     await expect(
