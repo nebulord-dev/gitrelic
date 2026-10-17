@@ -26,6 +26,7 @@ describe('binCommitsForHeatmap', () => {
       authorName: 'Alice',
       date: '2025-06-02T10:00:00Z',
       message: 'test',
+      coAuthors: [],
       files: ['a.ts'],
       fileStats: [],
       insertions: 10,

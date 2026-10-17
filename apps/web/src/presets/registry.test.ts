@@ -1,5 +1,3 @@
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { PRESETS } from './registry';
@@ -182,7 +180,14 @@ describe('analyzer docsPath', () => {
     { id: 'shame', docsPath: 'analyzers/shame' },
   ];
 
-  const DOCS_DIR = join(__dirname, '../../../docs/analyzers');
+  // Vite resolves the glob at transform time, so the docs check needs no
+  // Node APIs (this tsconfig deliberately has no Node types).
+  const DOCS_FILES = new Set(
+    Object.keys(import.meta.glob('../../../docs/analyzers/*.md')).map((p) =>
+      p.replace(/^.*\//, ''),
+    ),
+  );
+  const docExists = (slug: string) => DOCS_FILES.has(`${slug}.md`);
 
   it.each(BACKFILLED)(
     'preset $id has docsPath $docsPath',
@@ -191,14 +196,17 @@ describe('analyzer docsPath', () => {
     },
   );
 
+  it('finds the docs pages at all (guards the glob path)', () => {
+    expect(DOCS_FILES.size).toBeGreaterThan(0);
+  });
+
   it('every docsPath value resolves to a real docs file', () => {
     for (const preset of Object.values(PRESETS)) {
       if (preset.docsPath === undefined) continue;
       const slug = preset.docsPath.replace(/^analyzers\//, '');
-      const filePath = join(DOCS_DIR, `${slug}.md`);
       expect(
-        existsSync(filePath),
-        `missing docs file: ${filePath} (referenced by preset ${preset.id})`,
+        docExists(slug),
+        `missing docs file: ${slug}.md (referenced by preset ${preset.id})`,
       ).toBe(true);
     }
   });
@@ -206,8 +214,7 @@ describe('analyzer docsPath', () => {
   it('every analyzer-tier preset whose <id>.md exists must set docsPath', () => {
     for (const preset of Object.values(PRESETS)) {
       if (preset.tier !== 'analyzer') continue;
-      const expectedDocPath = join(DOCS_DIR, `${preset.id}.md`);
-      if (existsSync(expectedDocPath)) {
+      if (docExists(preset.id)) {
         expect(
           preset.docsPath,
           `preset ${preset.id} has a docs page on disk but no docsPath set — see polish-pattern.md`,
@@ -258,7 +265,7 @@ describe('analyzer docsPath', () => {
     // analyzer is not awaiting polish and the entry must go.
     for (const id of AWAITING_POLISH) {
       expect(
-        existsSync(join(DOCS_DIR, `${id}.md`)),
+        docExists(id),
         `${id} is listed as awaiting polish but already has a docs page — remove it from AWAITING_POLISH and set docsPath`,
       ).toBe(false);
     }

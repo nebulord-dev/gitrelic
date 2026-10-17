@@ -162,6 +162,8 @@ describe('buildDirectoryBubbles', () => {
         activeContributors: [],
         ghostContributors: [],
         topContributor: EMPTY_TOP_CONTRIBUTOR,
+        top3CommitShare: 0,
+        newcomers90d: 0,
         summary: '',
       },
     });

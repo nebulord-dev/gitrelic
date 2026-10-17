@@ -10,6 +10,7 @@ function makeCommit(overrides: Partial<RawCommit>): RawCommit {
     authorName: 'Alice',
     date: '2025-06-02T10:00:00Z',
     message: 'test',
+    coAuthors: [],
     files: ['a.ts'],
     fileStats: [],
     insertions: 10,
@@ -46,6 +47,9 @@ function makeReport(commits: RawCommit[]): GitrelicReport {
         },
       ],
       totalGhostFiles: 1,
+      ghostOwners: 1,
+      ghostLoc: 50,
+      tierMix: { trueGhost: 0, fading: 1 },
       summary: '',
     },
     contributors: {
@@ -61,11 +65,14 @@ function makeReport(commits: RawCommit[]): GitrelicReport {
           activeDays: 3,
           focusAreas: [],
           isActive: true,
+          isGhost: false,
         },
       ],
       activeContributors: [],
       ghostContributors: [],
       topContributor: {} as any,
+      top3CommitShare: 0,
+      newcomers90d: 0,
       summary: '',
     },
   } as Partial<GitrelicReport> as GitrelicReport;
@@ -96,6 +103,7 @@ describe('prepareSwimlaneData', () => {
       activeDays: 1,
       focusAreas: [],
       isActive: true,
+      isGhost: false,
     });
 
     const lanes = prepareSwimlaneData(report);
@@ -138,6 +146,7 @@ describe('prepareSwimlaneData', () => {
       activeDays: 1,
       focusAreas: [],
       isActive: false,
+      isGhost: false,
     });
 
     const lanes = prepareSwimlaneData(report);

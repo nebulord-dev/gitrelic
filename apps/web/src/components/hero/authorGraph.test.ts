@@ -14,6 +14,7 @@ function makePair(overrides: Partial<CoAuthorPair> = {}): CoAuthorPair {
     authorB: 'Bob <bob@example.com>',
     coAuthoredCommits: 10,
     files: ['src/a.ts', 'src/b.ts'],
+    classification: 'human-pair',
     ...overrides,
   };
 }
