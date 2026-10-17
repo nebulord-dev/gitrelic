@@ -15,14 +15,17 @@ export interface CommitLike {
 }
 
 export function fromRawCommits(commits: readonly RawCommit[]): CommitLike[] {
-  // `report.commits` is git-log order (newest first); the index is ascending.
+  // `report.commits` is git-log order (newest first). Sort the way
+  // buildCommitIndex does — by instant, then hash — so same-second commits
+  // (rebases, cherry-picks, imports) land in the same order as the index.
   return commits
-    .map((c) => ({
-      timeMs: Date.parse(c.date),
+    .map((c) => ({ c, timeMs: Date.parse(c.date) }))
+    .sort((a, b) => a.timeMs - b.timeMs || a.c.hash.localeCompare(b.c.hash))
+    .map(({ c, timeMs }) => ({
+      timeMs,
       author: c.authorEmail,
       files: c.files,
-    }))
-    .sort((a, b) => a.timeMs - b.timeMs);
+    }));
 }
 
 export function fromCommitIndex(index: CommitIndex): CommitLike[] {

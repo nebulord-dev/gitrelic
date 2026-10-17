@@ -4,8 +4,9 @@ import { describe, expect, it } from 'vitest';
 import { fromCommitIndex, fromRawCommits } from './commitLike';
 import type { CommitIndex, RawCommit } from '@gitrelic/core';
 
-// Uses core's real encoder (from its built dist — `pnpm test` builds first),
-// so a change to the index's units or layout fails here, not in Atlas.
+// Uses core's real encoder (vitest aliases @gitrelic/core to its source, so
+// no build is needed and it's never stale): a change to the index's units or
+// layout fails here, not in Atlas.
 
 function raw(o: Partial<RawCommit> & Pick<RawCommit, 'date'>): RawCommit {
   return {
@@ -62,6 +63,23 @@ describe('fromCommitIndex', () => {
     expect(fromCommitIndex(buildCommitIndex(commits))).toEqual(
       fromRawCommits(commits),
     );
+  });
+
+  it('orders same-second commits the way the index does', () => {
+    const sameSecond = [
+      raw({ hash: 'b'.repeat(40), date: '2026-01-01T00:00:00Z' }),
+      raw({
+        hash: 'a'.repeat(40),
+        date: '2026-01-01T00:00:00Z',
+        authorEmail: 'bob@corp.com',
+      }),
+    ];
+    const decoded = fromCommitIndex(buildCommitIndex(sameSecond));
+    expect(decoded.map((c) => c.author)).toEqual([
+      'bob@corp.com',
+      'ann@corp.com',
+    ]);
+    expect(fromRawCommits(sameSecond)).toEqual(decoded);
   });
 
   it('decodes an empty history', () => {
