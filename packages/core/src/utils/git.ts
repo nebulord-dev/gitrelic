@@ -390,10 +390,13 @@ export class BlobLineCounter {
         if (byte === NEWLINE) this.newlines++;
         else if (byte === 0) this.binary = true;
       }
+      // Bounded view, so the search can't run past this blob into the next
+      // object's header.
+      const body = chunk.subarray(0, end);
       for (
-        let j = chunk.indexOf(NEWLINE, sniffEnd);
-        j !== -1 && j < end;
-        j = chunk.indexOf(NEWLINE, j + 1)
+        let j = body.indexOf(NEWLINE, sniffEnd);
+        j !== -1;
+        j = body.indexOf(NEWLINE, j + 1)
       ) {
         this.newlines++;
       }

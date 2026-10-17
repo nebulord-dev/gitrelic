@@ -77,7 +77,7 @@ Ink (React for terminals) has specific rules that differ from browser React. Rev
 
 ### 7. Child Process Cleanup
 
-Scans spawn `git log`, `git ls-files`, `git branch`, and `git diff` via execa inside `utils/git.ts`. The CLI owns the process lifecycle.
+Scans spawn `git log`, `git rev-parse`, `git ls-tree`, `git cat-file --batch`, `git branch` and `git check-mailmap` via execa inside `utils/git.ts`. The CLI owns the process lifecycle.
 
 - On SIGINT mid-scan, are all spawned `git` processes killed? Orphaned node/git processes after Ctrl-C is a user-visible failure mode
 - Does the Ink app unmount cleanly so the terminal isn't left broken (cursor hidden, alt-screen active, stdin in raw mode)? Ink handles most of this, but a thrown exception during render can leave the terminal in a bad state
