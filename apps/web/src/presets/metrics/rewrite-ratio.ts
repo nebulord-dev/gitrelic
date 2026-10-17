@@ -1,5 +1,5 @@
-import { MODERATE_THRESHOLD } from '../../components/tabs/RewriteRatioTab';
 import { fmt } from '../../components/theme';
+import { headcountColor } from './headcountColor';
 import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -27,12 +27,7 @@ export function rewriteRatioMetrics(report: GitrelicReport): Metric[] {
     {
       label: 'Files ≥70',
       value: fmt(report.rewriteRatio.highRewrite),
-      color:
-        report.rewriteRatio.highRewrite >= MODERATE_THRESHOLD
-          ? 'var(--severity-critical)'
-          : report.rewriteRatio.highRewrite > 0
-            ? 'var(--severity-warning)'
-            : 'var(--severity-healthy)',
+      color: headcountColor(report.rewriteRatio.highRewrite),
     },
     {
       label: 'Avg Ratio',

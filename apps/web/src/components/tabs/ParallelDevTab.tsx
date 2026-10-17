@@ -1,4 +1,7 @@
-import { aggregateParallelDevByDirectory } from '@gitrelic/scene';
+import {
+  aggregateParallelDevByDirectory,
+  headcountTier,
+} from '@gitrelic/scene';
 
 import { HIGH_PARALLEL_THRESHOLD } from '../hero/ParallelScoreHistogram';
 import { NarrativeKPI } from '../shared/NarrativeKPI';
@@ -16,18 +19,20 @@ interface ParallelDevTabProps {
 const TOP_FILES_COUNT = 3;
 const DIRECTORY_ROLLUP_LIMIT = 5;
 
-// Headcount tiering: 0 = Healthy, 1..MODERATE_THRESHOLD-1 = Moderate, ≥MODERATE_THRESHOLD = High Concurrency.
-// Same shape as Rewrite Ratio's panel — concurrent-work files are uncommon at any repo size.
-export const MODERATE_THRESHOLD = 5;
-
+// Headcount tiering lives in @gitrelic/scene so this badge and the metrics
+// strip's color can't drift.
 function tierBadge(highParallelCount: number): {
   variant: BadgeVariant;
   label: string;
 } {
-  if (highParallelCount === 0) return { variant: 'healthy', label: 'Healthy' };
-  if (highParallelCount < MODERATE_THRESHOLD)
-    return { variant: 'warning', label: 'Moderate' };
-  return { variant: 'critical', label: 'High Concurrency' };
+  switch (headcountTier(highParallelCount)) {
+    case 'none':
+      return { variant: 'healthy', label: 'Healthy' };
+    case 'moderate':
+      return { variant: 'warning', label: 'Moderate' };
+    case 'high':
+      return { variant: 'critical', label: 'High Concurrency' };
+  }
 }
 
 export function ParallelDevTab({ report, onApplyPreset }: ParallelDevTabProps) {

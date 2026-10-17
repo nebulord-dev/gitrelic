@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { binCommitsByWeek } from './Timeline';
+import { fromRawCommits } from '../commits/commitLike';
+import { binCommitsByWeek } from './weeklyBins';
 import type { RawCommit } from '@gitrelic/core';
 
 function makeCommit(overrides: Partial<RawCommit>): RawCommit {
@@ -37,7 +38,7 @@ describe('binCommitsByWeek', () => {
       }),
     ];
 
-    const { weeks, authors } = binCommitsByWeek(commits);
+    const { weeks, authors } = binCommitsByWeek(fromRawCommits(commits));
 
     expect(authors).toContain('alice@dev.com');
     expect(authors).toContain('bob@dev.com');
@@ -56,7 +57,39 @@ describe('binCommitsByWeek', () => {
       makeCommit({ authorEmail: 'bob@dev.com' }),
     ];
 
-    const { authors } = binCommitsByWeek(commits);
+    const { authors } = binCommitsByWeek(fromRawCommits(commits));
     expect(authors[0]).toBe('alice@dev.com');
+  });
+});
+
+describe('binCommitsByWeek edges', () => {
+  const at = (iso: string, author = 'a@x.com') => ({
+    timeMs: Date.parse(iso),
+    author,
+    files: [],
+  });
+
+  it('returns nothing for an empty history', () => {
+    expect(binCommitsByWeek([])).toEqual({ weeks: [], authors: [] });
+  });
+
+  it('starts at the Monday of the first commit and splits at Monday 00:00 UTC', () => {
+    const { weeks } = binCommitsByWeek([
+      at('2026-01-11T23:59:00Z'), // Sunday
+      at('2026-01-12T00:01:00Z'), // Monday
+    ]);
+    expect(weeks.map((w) => w.weekStart.toISOString())).toEqual([
+      '2026-01-05T00:00:00.000Z',
+      '2026-01-12T00:00:00.000Z',
+    ]);
+    expect(weeks.map((w) => w.counts['a@x.com'])).toEqual([1, 1]);
+  });
+
+  it('keeps empty weeks in a gap so the series stays evenly spaced', () => {
+    const { weeks } = binCommitsByWeek([
+      at('2026-01-05T10:00:00Z'),
+      at('2026-01-26T10:00:00Z'),
+    ]);
+    expect(weeks.map((w) => w.counts['a@x.com'])).toEqual([1, 0, 0, 1]);
   });
 });

@@ -1,4 +1,7 @@
-import { aggregateCommitTimingByDirectory } from '@gitrelic/scene';
+import {
+  aggregateCommitTimingByDirectory,
+  headcountTier,
+} from '@gitrelic/scene';
 
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { Tooltip } from '../shared/Tooltip';
@@ -15,18 +18,20 @@ const TOP_AUTHORS_COUNT = 3;
 const DIRECTORY_ROLLUP_LIMIT = 5;
 export const HIGH_STRESS_THRESHOLD = 70;
 
-// Headcount tiering: 0 = Healthy, 1..MODERATE_THRESHOLD-1 = Moderate, ≥MODERATE_THRESHOLD = High Stress.
-// Same shape as Parallel Dev — Team & Activity group consistency.
-export const MODERATE_THRESHOLD = 5;
-
+// Headcount tiering lives in @gitrelic/scene so this badge and the metrics
+// strip's color can't drift.
 function tierBadge(highStressCount: number): {
   variant: BadgeVariant;
   label: string;
 } {
-  if (highStressCount === 0) return { variant: 'healthy', label: 'Healthy' };
-  if (highStressCount < MODERATE_THRESHOLD)
-    return { variant: 'warning', label: 'Moderate' };
-  return { variant: 'critical', label: 'High Stress' };
+  switch (headcountTier(highStressCount)) {
+    case 'none':
+      return { variant: 'healthy', label: 'Healthy' };
+    case 'moderate':
+      return { variant: 'warning', label: 'Moderate' };
+    case 'high':
+      return { variant: 'critical', label: 'High Stress' };
+  }
 }
 
 export function CommitTimingTab({

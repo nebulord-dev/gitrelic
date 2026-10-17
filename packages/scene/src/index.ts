@@ -14,6 +14,27 @@ export { perAuthorAiMix } from './authors/perAuthorAiMix';
 export { topAiUsers } from './authors/topAiUsers';
 
 export {
+  buildAuthorGraph,
+  type AuthorGraphLink,
+  type AuthorGraphNode,
+  type AuthorGraphResult,
+  type GraphAuthorClass,
+} from './coauthors/authorGraph';
+
+export {
+  fromCommitIndex,
+  fromRawCommits,
+  type CommitLike,
+} from './commits/commitLike';
+
+export {
+  prepareSwimlaneData,
+  type SwimCommit,
+  type SwimLane,
+} from './contributors/swimlanes';
+export { binCommitsByWeek, type WeekBin } from './contributors/weeklyBins';
+
+export {
   churnCategoryDescription,
   severityForChurn,
 } from './churn/churnCategory';
@@ -60,6 +81,8 @@ export { isTestPath } from './files/isTestPath';
 
 export { formatRelative } from './format/relativeTime';
 
+export { fileFacts, type FactTier, type FileFact } from './inspect/fileFacts';
+
 export { topGhostOwners, type TopGhostOwner } from './ownership/ghostOwners';
 export { sortCriticalByImpact } from './ownership/sortBusFactor';
 export {
@@ -68,3 +91,11 @@ export {
 } from './ownership/topDominantOwners';
 
 export { normalizeReport } from './report/normalizeReport';
+
+export {
+  HEADCOUNT_MODERATE_THRESHOLD,
+  headcountTier,
+  type HeadcountTier,
+} from './tiers/headcount';
+
+export { startOfUtcWeek, WEEK_MS } from './time/week';
