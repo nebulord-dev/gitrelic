@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
-
 import {
   aggregateChurnByDirectory,
   type DirectoryChurnRow,
-} from '../../utils/churnByDirectory';
-import { makeFileKind } from '../../utils/fileKind';
+  makeFileKind,
+} from '@gitrelic/scene';
+
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fmt } from '../theme';
 import type { PresetId } from '../../presets/types';

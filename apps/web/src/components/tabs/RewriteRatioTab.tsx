@@ -1,4 +1,5 @@
-import { aggregateRewriteByDirectory } from '../../utils/rewriteByDirectory';
+import { aggregateRewriteByDirectory } from '@gitrelic/scene';
+
 import { HIGH_REWRITE_THRESHOLD } from '../hero/RewriteHistogram';
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { Tooltip } from '../shared/Tooltip';

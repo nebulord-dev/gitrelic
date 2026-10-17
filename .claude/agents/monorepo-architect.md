@@ -10,6 +10,9 @@ You are a monorepo architect specializing in the Gitrelic codebase — a git arc
 ```
 @gitrelic/core  (packages/core — private; 22 analyzers, types, git utilities)
     ↓
+@gitrelic/scene (packages/scene — private; framework-free browser derivations,
+                 ships TS source with no build step; type-only imports from core)
+    ↓
 gitrelic        (apps/cli — the only published package; Ink terminal UI, Commander;
                  bundles core inline and ships apps/web's dist inside its tarball)
 @gitrelic/web   (apps/web — Vite + React + Tailwind dashboard; type-only imports from core)
@@ -28,7 +31,8 @@ Review code changes for architectural violations, misplaced functionality, and b
 
 - `core` must NEVER import from `cli` or `web`
 - `cli` may import from `core` (value and type imports)
-- `web` may ONLY use `import type` from `core` — never value imports
+- `web` and `scene` may ONLY use `import type` from `core` — never value imports (oxlint enforces this)
+- `web` may import values from `scene`; `scene` must NEVER import from `web`, `cli`, React, Svelte, or `node:*`
 - `cli` and `web` must NEVER import from each other
 
 **Why the web constraint matters:** `@gitrelic/core` uses `execa` to run git commands. A value import from core into the Vite browser build would pull Node.js modules into the browser bundle and break the build.
@@ -43,8 +47,9 @@ Review code changes for architectural violations, misplaced functionality, and b
 | Report orchestration | `core/src/runner.ts` | cli or web |
 | Terminal UI components | `cli/src/components/` | core or web |
 | CLI flags/commands | `cli/src/index.tsx` | core or web |
+| Pure report derivations (aggregation, ranking, classification) | `scene/src/` | React components, core |
 | Web UI components | `web/src/components/` | core or cli |
-| Report loading (HTTP fetch) | `web/src/App.tsx` (+ `web/src/utils/normalizeReport.ts` backfills older reports) | core or cli |
+| Report loading (HTTP fetch) | `web/src/App.tsx` (+ `normalizeReport` from scene backfills older reports) | core or cli |
 
 ### 3. Analyzer Discipline
 

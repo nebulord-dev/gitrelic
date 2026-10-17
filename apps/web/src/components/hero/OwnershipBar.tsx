@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { sortCriticalByImpact } from '@gitrelic/scene';
 
-import { sortCriticalByImpact } from '../../utils/sortBusFactor';
 import { HeroCaption } from '../shared/HeroCaption';
 import type { BusFactorRisk, GitrelicReport } from '@gitrelic/core';
 

@@ -91,7 +91,7 @@ Reports are served from the CLI's local HTTP server (`--web`), written to stdout
 `src/types.ts` is the wire format — the web dashboard, JSON consumers, and snapshot tests all depend on it.
 
 - Any recent renames or field removals? Type-only imports in the web won't catch these at build time — the dashboard silently receives `undefined` and crashes at render
-- Fields that are optional on the wire (`?`) must have consumers that handle `undefined`. The dashboard's `normalizeReport.ts` backfills missing sections for older reports — verify it stays aligned with the current type shape
+- Fields that are optional on the wire (`?`) must have consumers that handle `undefined`. The dashboards' `normalizeReport` (`packages/scene/src/report/normalizeReport.ts`) backfills missing sections for older reports — verify it stays aligned with the current type shape
 - Adding a new field is safe; renaming or removing one is a breaking change for every downstream consumer. Treat wire-format diffs as a separate review concern
 
 ### 10. Snapshot Regression Suite

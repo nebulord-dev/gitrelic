@@ -1,7 +1,5 @@
-import {
-  aggregateAgeByDirectory,
-  type AgeDirectoryRow,
-} from '../../utils/ageByDirectory';
+import { aggregateAgeByDirectory, type AgeDirectoryRow } from '@gitrelic/scene';
+
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fileName, filePath, fmt } from '../theme';
 import type { GitrelicReport } from '@gitrelic/core';

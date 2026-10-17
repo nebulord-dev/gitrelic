@@ -1,4 +1,5 @@
-import { aggregateShameByDirectory } from '../../utils/shameByDirectory';
+import { aggregateShameByDirectory } from '@gitrelic/scene';
+
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { Tooltip } from '../shared/Tooltip';
 import { fileName } from '../theme';

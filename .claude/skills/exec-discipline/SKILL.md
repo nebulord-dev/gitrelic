@@ -63,4 +63,3 @@ Before completing work that touches git command execution:
 - [ ] Any new git primitives added to `utils/git.ts` with proper typing
 - [ ] New functions accept `repoPath: string` as first parameter
 - [ ] New functions return structured data, not raw stdout
-- [ ] Existing violation in `rename-tracking.ts` addressed (if touching that file)

@@ -1,4 +1,5 @@
-import { topAiUsers } from '../../utils/topAiUsers';
+import { topAiUsers } from '@gitrelic/scene';
+
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { fmt } from '../theme';
 import type { PresetId } from '../../presets/types';

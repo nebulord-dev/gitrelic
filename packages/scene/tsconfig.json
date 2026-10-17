@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Shipped as source and bundled by each consumer: no DOM, no Node types,
+    // and every type-only import spelled `import type`.
+    "lib": ["ES2022"],
+    "types": [],
+    "noEmit": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true
+  },
+  "include": ["src"]
+}

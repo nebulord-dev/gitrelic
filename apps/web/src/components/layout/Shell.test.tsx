@@ -1,8 +1,8 @@
+import { normalizeReport } from '@gitrelic/scene';
 import { fireEvent, render, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { PRESETS } from '../../presets/registry';
-import { normalizeReport } from '../../utils/normalizeReport';
 import { computeVisibility, HERO_LABELS, Shell } from './Shell';
 import type { GitrelicReport } from '@gitrelic/core';
 

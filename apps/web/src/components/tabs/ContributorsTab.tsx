@@ -1,4 +1,5 @@
-import { formatRelative } from '../../utils/relativeTime';
+import { formatRelative } from '@gitrelic/scene';
+
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fmt } from '../theme';

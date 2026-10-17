@@ -1,0 +1,23 @@
+{
+  "name": "@gitrelic/scene",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui --coverage",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@gitrelic/core": "workspace:*",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

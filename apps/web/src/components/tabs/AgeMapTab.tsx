@@ -1,4 +1,5 @@
-import { aggregateAgeByDirectory } from '../../utils/ageByDirectory';
+import { aggregateAgeByDirectory } from '@gitrelic/scene';
+
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { Tooltip } from '../shared/Tooltip';
 import { fmt } from '../theme';

@@ -15,7 +15,8 @@ Dispatch the `monorepo-architect` agent (`.claude/agents/monorepo-architect.md`)
 
 - Search `apps/web/src/` for any `from '@gitrelic/core'` that is NOT `import type`
 - Search for any `require('@gitrelic/core')` in web
-- Check `apps/web/src/utils/` — constants that needed core values (thresholds, weights, category names) must be duplicated here, not imported from core
+- Check `packages/scene/src/` and `apps/web/src/utils/` — constants that needed core values (thresholds, weights, category names) must be duplicated there, not imported from core
+- `packages/scene` must stay framework-free and browser-safe: no `react`, `svelte` or `node:*` imports (oxlint override in `oxlint.config.ts`), and nothing may import from `apps/*`
 - Run `pnpm --filter @gitrelic/web build` and read the output — a Node.js import may only produce a "Module externalized for browser compatibility" **warning** while the build succeeds and the dashboard breaks at runtime. Don't treat a green build as proof; the grep above is the real check
 
 ### 2. Dependency Direction
@@ -132,7 +133,8 @@ packages/core/src/utils/git.ts          # Exec-discipline boundary
 apps/cli/package.json                   # Must mirror core's runtime deps
 apps/cli/tsdown.config.ts               # deps.alwaysBundle + copy-web-dist onSuccess
 apps/cli/scripts/copy-web-dist.mjs      # Published-asset mirror
-apps/web/src/utils/                     # Browser-safe duplicates of core constants
+packages/scene/src/                     # Framework-free browser derivations (TS source, no build)
+apps/web/src/utils/                     # Classic-only styling helpers (cn, classMaps, colors)
 apps/docs/.vitepress/config.ts          # VitePress site — separate deploy
 .releaserc.json                         # Publishing scope — CLI only, pre-1.0 guard
 .github/workflows/                      # ci.yml (install-smoke), publish.yml, docs.yml

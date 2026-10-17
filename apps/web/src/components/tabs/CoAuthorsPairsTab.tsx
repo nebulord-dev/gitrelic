@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
+import { resolveAuthorDisplayName } from '@gitrelic/scene';
 
-import { resolveAuthorDisplayName } from '../../utils/authorClassification';
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fmt } from '../theme';

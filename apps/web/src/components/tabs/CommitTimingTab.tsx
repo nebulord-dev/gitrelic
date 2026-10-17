@@ -1,4 +1,5 @@
-import { aggregateCommitTimingByDirectory } from '../../utils/commitTimingByDirectory';
+import { aggregateCommitTimingByDirectory } from '@gitrelic/scene';
+
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { Tooltip } from '../shared/Tooltip';
 import type { PresetId } from '../../presets/types';

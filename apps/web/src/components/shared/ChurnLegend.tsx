@@ -1,4 +1,5 @@
-import { severityForChurn } from '../../utils/churn';
+import { severityForChurn } from '@gitrelic/scene';
+
 import { categoryColor } from '../../utils/colors';
 import type { ChurnCategory } from '@gitrelic/core';
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { churnCategoryDescription, severityForChurn } from './churn';
+import { churnCategoryDescription, severityForChurn } from './churnCategory';
 
 describe('severityForChurn', () => {
   it('maps hot → critical', () => {
