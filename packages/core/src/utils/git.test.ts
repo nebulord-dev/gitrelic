@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 
 import {
+  BlobLineCounter,
   parseGitLog,
   isIgnored,
   renameTarget,
@@ -305,5 +306,69 @@ describe('resolveRepoRoot', () => {
     // the one thing that was never wrong.
     vi.stubEnv('PATH', '');
     await expect(resolveRepoRoot(thisDir)).rejects.toThrow(/not found on PATH/);
+  });
+});
+
+describe('BlobLineCounter', () => {
+  /** Encodes blobs the way `git cat-file --batch` emits them. */
+  function batch(blobs: { oid: string; body?: Buffer | string }[]): Buffer {
+    const parts: Buffer[] = [];
+    for (const { oid, body } of blobs) {
+      if (body === undefined) {
+        parts.push(Buffer.from(`${oid} missing\n`));
+        continue;
+      }
+      const bytes = Buffer.isBuffer(body) ? body : Buffer.from(body);
+      parts.push(
+        Buffer.from(`${oid} blob ${bytes.length}\n`),
+        bytes,
+        Buffer.from('\n'),
+      );
+    }
+    return Buffer.concat(parts);
+  }
+
+  const input = [
+    { oid: 'a1', body: 'one\ntwo\nthree\n' }, // 3
+    { oid: 'b2', body: 'no trailing newline\nsecond' }, // 2
+    { oid: 'c3', body: '' }, // 0
+    { oid: 'd4', body: Buffer.from([0x50, 0x4e, 0x00, 0x0a, 0x0a]) }, // binary
+    { oid: 'e5' }, // missing
+    { oid: 'f6', body: 'ünïcödé\nlines\n' }, // 2 — counts bytes, not chars
+  ];
+  const expected = new Map<string, number | null>([
+    ['a1', 3],
+    ['b2', 2],
+    ['c3', 0],
+    ['d4', null],
+    ['e5', null],
+    ['f6', 2],
+  ]);
+
+  it('counts lines per blob from a single chunk', () => {
+    const counter = new BlobLineCounter();
+    counter.push(batch(input));
+    expect(counter.results).toEqual(expected);
+  });
+
+  it('gives identical results however the stream is chunked', () => {
+    const whole = batch(input);
+    for (const size of [1, 2, 3, 7, 16]) {
+      const counter = new BlobLineCounter();
+      for (let i = 0; i < whole.length; i += size) {
+        counter.push(whole.subarray(i, i + size));
+      }
+      expect(counter.results).toEqual(expected);
+    }
+  });
+
+  it('only sniffs the start of a blob for NUL bytes, like git', () => {
+    const body = Buffer.concat([
+      Buffer.from('x\n'.repeat(5000)),
+      Buffer.from([0x00]),
+    ]);
+    const counter = new BlobLineCounter();
+    counter.push(batch([{ oid: 'big', body }]));
+    expect(counter.results.get('big')).toBe(5001);
   });
 });

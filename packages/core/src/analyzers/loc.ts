@@ -1,6 +1,3 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
-
 import type { LocReport, FileLocEntry, LanguageBreakdown } from '../types.js';
 
 const LANG_MAP: Record<string, string> = {
@@ -45,32 +42,21 @@ function getLanguage(file: string): string {
   return LANG_MAP[ext] ?? 'Other';
 }
 
-function countLines(content: string): number {
-  if (content.length === 0) return 0;
-  let count = 0;
-  for (let i = 0; i < content.length; i++) {
-    if (content[i] === '\n') count++;
-  }
-  if (content[content.length - 1] !== '\n') count++;
-  return count;
-}
-
-export async function analyzeLoc(
+/**
+ * Builds the LOC report from per-file line counts. Pure: the counts come from
+ * the analyzed commit's blobs (see countBlobLines in utils/git.ts), so LOC
+ * matches the analyzed branch and ignores uncommitted edits. A null or
+ * missing count (binary, symlink, unreadable) contributes 0 lines.
+ */
+export function analyzeLoc(
   trackedFiles: string[],
-  repoPath: string,
-): Promise<LocReport> {
-  const files: FileLocEntry[] = await Promise.all(
-    trackedFiles.map(async (file) => {
-      let lines = 0;
-      try {
-        const content = await readFile(path.join(repoPath, file), 'utf-8');
-        lines = countLines(content);
-      } catch {
-        // Unreadable file — skip
-      }
-      return { file, lines, language: getLanguage(file) };
-    }),
-  );
+  lineCounts: ReadonlyMap<string, number | null>,
+): LocReport {
+  const files: FileLocEntry[] = trackedFiles.map((file) => ({
+    file,
+    lines: lineCounts.get(file) ?? 0,
+    language: getLanguage(file),
+  }));
 
   const totalLines = files.reduce((sum, f) => sum + f.lines, 0);
 

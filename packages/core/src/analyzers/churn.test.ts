@@ -92,3 +92,18 @@ describe('analyzeChurn', () => {
     expect(result.summary).toContain('main.ts');
   });
 });
+
+describe('analyzeChurn score scale', () => {
+  it('scales scores against the most-changed *tracked* file only', () => {
+    // A deleted (or ignored) path that churned more than anything still in
+    // the repo used to set the 100-point mark, deflating every real score.
+    const commits = [
+      ...Array.from({ length: 10 }, () => makeCommit({ files: ['gone.ts'] })),
+      ...Array.from({ length: 4 }, () => makeCommit({ files: ['a.ts'] })),
+      ...Array.from({ length: 2 }, () => makeCommit({ files: ['b.ts'] })),
+    ];
+    const { files } = analyzeChurn(commits, ['a.ts', 'b.ts']);
+    expect(files.find((f) => f.file === 'a.ts')?.churnScore).toBe(100);
+    expect(files.find((f) => f.file === 'b.ts')?.churnScore).toBe(50);
+  });
+});
