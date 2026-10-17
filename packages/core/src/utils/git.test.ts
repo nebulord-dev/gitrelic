@@ -4,7 +4,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 
-import { parseGitLog, isIgnored, resolveRepoRoot } from './git.js';
+import {
+  parseGitLog,
+  isIgnored,
+  renameTarget,
+  resolveRepoRoot,
+} from './git.js';
 
 const thisDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -28,10 +33,15 @@ async function makeSealedDir(): Promise<string> {
   return dir;
 }
 
+/** Builds a getAllCommits header line (fields are 0x1F-separated). */
+function header(hash: string, email: string, name: string, date: string) {
+  return ['COMMIT', hash, email, name, date].join('\u001F');
+}
+
 describe('parseGitLog', () => {
   it('parses a single commit with numstat', () => {
     const raw = [
-      'COMMIT|abc123|alice@example.com|Alice|2025-01-15T10:00:00Z',
+      header('abc123', 'alice@example.com', 'Alice', '2025-01-15T10:00:00Z'),
       'MSG|fix: handle edge case',
       '10\t2\tsrc/index.ts',
       '5\t0\tsrc/utils.ts',
@@ -50,11 +60,11 @@ describe('parseGitLog', () => {
 
   it('parses multiple commits', () => {
     const raw = [
-      'COMMIT|aaa|alice@example.com|Alice|2025-01-15T10:00:00Z',
+      header('aaa', 'alice@example.com', 'Alice', '2025-01-15T10:00:00Z'),
       'MSG|feat: new thing',
       '1\t0\tfile-a.ts',
       '',
-      'COMMIT|bbb|bob@example.com|Bob|2025-01-16T10:00:00Z',
+      header('bbb', 'bob@example.com', 'Bob', '2025-01-16T10:00:00Z'),
       'MSG|revert: undo bad change',
       '2\t1\tfile-b.ts',
     ].join('\n');
@@ -69,22 +79,70 @@ describe('parseGitLog', () => {
     expect(parseGitLog('')).toEqual([]);
   });
 
-  it('skips rename noise with curly braces', () => {
+  it('attributes a whole-path rename to the new path', () => {
     const raw = [
-      'COMMIT|abc|a@b.com|A|2025-01-15T10:00:00Z',
+      header('abc', 'a@b.com', 'A', '2025-01-15T10:00:00Z'),
+      'MSG|chore: rename',
+      '2\t1\told.ts => new.ts',
+    ].join('\n');
+
+    const [commit] = parseGitLog(raw);
+    expect(commit.files).toEqual(['new.ts']);
+    expect(commit.fileStats).toEqual([
+      { file: 'new.ts', insertions: 2, deletions: 1 },
+    ]);
+  });
+
+  it('expands brace-style renames to the new path', () => {
+    const raw = [
+      header('abc', 'a@b.com', 'A', '2025-01-15T10:00:00Z'),
       'MSG|chore: rename files',
       '5\t3\tsrc/{old => new}/file.ts',
+      '0\t0\tsrc/{a.ts => b.ts}',
+      '1\t0\tsrc/{ => nested}/x.ts',
+      '1\t0\tsrc/{flat => }/y.ts',
       '1\t0\tsrc/clean.ts',
     ].join('\n');
 
-    const commits = parseGitLog(raw);
-    expect(commits[0].files).toEqual(['src/clean.ts']);
-    expect(commits[0].message).toBe('chore: rename files');
+    const [commit] = parseGitLog(raw);
+    expect(commit.files).toEqual([
+      'src/new/file.ts',
+      'src/b.ts',
+      'src/nested/x.ts',
+      'src/y.ts',
+      'src/clean.ts',
+    ]);
+    expect(commit.insertions).toBe(8);
+    expect(commit.message).toBe('chore: rename files');
+  });
+
+  it('keeps files whose names contain braces', () => {
+    const raw = [
+      header('abc', 'a@b.com', 'A', '2025-01-15T10:00:00Z'),
+      'MSG|feat: templates',
+      '4\t0\tsrc/{slug}.tsx',
+    ].join('\n');
+
+    expect(parseGitLog(raw)[0].files).toEqual(['src/{slug}.tsx']);
+  });
+
+  it('handles pipe characters in author names', () => {
+    // %aN is user-controlled; with a '|' delimiter "Jane | Corp" used to shift
+    // the date field and crash commit-timing downstream.
+    const raw = [
+      header('abc', 'jane@corp.com', 'Jane | Corp', '2025-01-15T10:00:00Z'),
+      'MSG|feat: x',
+      '1\t0\ta.ts',
+    ].join('\n');
+
+    const [commit] = parseGitLog(raw);
+    expect(commit.authorName).toBe('Jane | Corp');
+    expect(commit.date).toBe('2025-01-15T10:00:00Z');
   });
 
   it('handles pipe characters in commit messages', () => {
     const raw = [
-      'COMMIT|abc|a@b.com|A|2025-01-15T10:00:00Z',
+      header('abc', 'a@b.com', 'A', '2025-01-15T10:00:00Z'),
       'MSG|fix: handle a|b edge case',
       '1\t0\tsrc/a.ts',
     ].join('\n');
@@ -95,7 +153,7 @@ describe('parseGitLog', () => {
 
   it('parses Co-authored-by trailers from the TRAILERS line', () => {
     const raw = [
-      'COMMIT|abc|alice@co.com|Alice|2025-01-15T10:00:00Z',
+      header('abc', 'alice@co.com', 'Alice', '2025-01-15T10:00:00Z'),
       'MSG|feat: collab',
       'TRAILERS|Bob <bob@co.com>\u001FCarol <carol@co.com>',
       '1\t0\tshared.ts',
@@ -110,7 +168,7 @@ describe('parseGitLog', () => {
 
   it('returns an empty coAuthors array when the TRAILERS line has no values', () => {
     const raw = [
-      'COMMIT|abc|alice@co.com|Alice|2025-01-15T10:00:00Z',
+      header('abc', 'alice@co.com', 'Alice', '2025-01-15T10:00:00Z'),
       'MSG|feat: solo',
       'TRAILERS|',
       '1\t0\ta.ts',
@@ -122,7 +180,7 @@ describe('parseGitLog', () => {
 
   it('skips malformed trailer values', () => {
     const raw = [
-      'COMMIT|abc|alice@co.com|Alice|2025-01-15T10:00:00Z',
+      header('abc', 'alice@co.com', 'Alice', '2025-01-15T10:00:00Z'),
       'MSG|feat: weird',
       'TRAILERS|just some text\u001FBob <bob@co.com>',
       '1\t0\ta.ts',
@@ -132,6 +190,21 @@ describe('parseGitLog', () => {
     expect(commits[0].coAuthors).toEqual([
       { name: 'Bob', email: 'bob@co.com' },
     ]);
+  });
+});
+
+describe('renameTarget', () => {
+  it.each([
+    ['src/a.ts', 'src/a.ts'],
+    ['old.ts => new.ts', 'new.ts'],
+    ['src/{a => b}/c.ts', 'src/b/c.ts'],
+    ['{lib => src}/c.ts', 'src/c.ts'],
+    ['{nested => }/c.ts', 'c.ts'],
+    ['src/{ => deep}/c.ts', 'src/deep/c.ts'],
+    ['src/{old.ts => new.ts}', 'src/new.ts'],
+    ['src/{slug}.tsx', 'src/{slug}.tsx'],
+  ])('%s → %s', (input, expected) => {
+    expect(renameTarget(input)).toBe(expected);
   });
 });
 

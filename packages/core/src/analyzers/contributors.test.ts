@@ -351,3 +351,16 @@ describe('analyzeContributors', () => {
     });
   });
 });
+
+describe('analyzeContributors timezone handling', () => {
+  it('orders first/last commit by instant, not by their ISO strings', () => {
+    const later = '2026-01-01T23:30:00-08:00'; // 07:30Z on Jan 2
+    const earlier = '2026-01-02T01:00:00+00:00';
+    const [alice] = analyzeContributors(
+      [makeCommit({ date: later }), makeCommit({ date: earlier })],
+      365,
+    ).contributors;
+    expect(alice.firstCommit).toBe(earlier);
+    expect(alice.lastCommit).toBe(later);
+  });
+});

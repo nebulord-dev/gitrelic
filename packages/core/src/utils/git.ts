@@ -30,7 +30,8 @@ export interface RawCommit {
 
 /**
  * Fetches all commits with their changed files using git log.
- * Format: COMMIT|hash|email|name|date, then MSG|subject, then
+ * Format: COMMIT␟hash␟email␟name␟date (0x1F-separated — names can contain
+ * '|', and a shifted field once corrupted every date), then MSG|subject, then
  * TRAILERS|<co-author values separated by 0x1F>, then numstat lines.
  * Co-author trailers live in commit bodies (not subjects), so we rely on
  * git's native trailer parser via %(trailers:...) instead of regexing %B.
@@ -46,7 +47,7 @@ export async function getAllCommits(
 ): Promise<RawCommit[]> {
   const args = [
     'log',
-    '--format=COMMIT|%H|%aE|%aN|%aI%nMSG|%s%nTRAILERS|%(trailers:key=Co-authored-by,valueonly,separator=%x1F)',
+    '--format=COMMIT%x1F%H%x1F%aE%x1F%aN%x1F%aI%nMSG|%s%nTRAILERS|%(trailers:key=Co-authored-by,valueonly,separator=%x1F)',
     '--numstat',
     '--no-merges',
   ];
@@ -129,14 +130,37 @@ function parseCoAuthorValues(raw: string): CoAuthor[] {
   return out;
 }
 
+const FIELD_SEP = '\u001F';
+const HEADER_PREFIX = `COMMIT${FIELD_SEP}`;
+
+// numstat reports a rename as `old => new` or, when the paths share a prefix
+// or suffix, `pre/{old => new}/post` (either side of the braces may be empty).
+const BRACE_RENAME_RE = /^(.*)\{(.*) => (.*)\}(.*)$/;
+
+/**
+ * Resolves a numstat path to the file that exists after the commit, so a
+ * rename is attributed to the new name instead of being dropped (or kept as
+ * a bogus "old => new" path). Plain paths, including ones with literal braces,
+ * pass through unchanged.
+ */
+export function renameTarget(file: string): string {
+  if (!file.includes(' => ')) return file;
+  const brace = file.match(BRACE_RENAME_RE);
+  if (brace) {
+    const [, prefix, , to, suffix] = brace;
+    return `${prefix}${to}${suffix}`.replace(/\/{2,}/g, '/').replace(/^\//, '');
+  }
+  return file.slice(file.lastIndexOf(' => ') + 4);
+}
+
 export function parseGitLog(raw: string): RawCommit[] {
   const commits: RawCommit[] = [];
   let current: RawCommit | null = null;
 
   for (const line of raw.split('\n')) {
-    if (line.startsWith('COMMIT|')) {
+    if (line.startsWith(HEADER_PREFIX)) {
       if (current) commits.push(current);
-      const [, hash, authorEmail, authorName, date] = line.split('|');
+      const [, hash, authorEmail, authorName, date] = line.split(FIELD_SEP);
       current = {
         hash,
         authorEmail,
@@ -157,9 +181,9 @@ export function parseGitLog(raw: string): RawCommit[] {
       // numstat lines: "insertions\tdeletions\tfilepath"
       const parts = line.split('\t');
       if (parts.length === 3) {
-        const [ins, del, file] = parts;
-        if (file && !file.includes('{')) {
-          // skip rename noise like "src/{a => b}/file.ts"
+        const [ins, del, rawFile] = parts;
+        const file = rawFile ? renameTarget(rawFile) : '';
+        if (file) {
           current.files.push(file);
           current.fileStats.push({
             file,

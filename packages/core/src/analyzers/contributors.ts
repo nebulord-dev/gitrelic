@@ -58,8 +58,8 @@ export function analyzeContributors(
 
   const contributors: Contributor[] = Array.from(authorMap.entries())
     .map(([email, data]) => {
-      const sorted = [...data.commits].sort((a, b) =>
-        a.date.localeCompare(b.date),
+      const sorted = [...data.commits].sort(
+        (a, b) => Date.parse(a.date) - Date.parse(b.date),
       );
       const firstCommit = sorted[0].date;
       const lastCommit = sorted[sorted.length - 1].date;
