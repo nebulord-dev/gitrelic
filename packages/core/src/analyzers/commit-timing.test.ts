@@ -366,12 +366,9 @@ describe('tierMix and highStress', () => {
         const isWknd = i < wkndN;
         // Choose a date that satisfies the predicates
         let date: string;
-        if (isLate && isWknd)
-          date = '2026-03-21T03:00:00Z'; // Sat 03 = both
-        else if (isLate)
-          date = '2026-03-16T03:00:00Z'; // Mon 03 = late only
-        else if (isWknd)
-          date = '2026-03-21T14:00:00Z'; // Sat 14 = wknd only
+        if (isLate && isWknd) date = '2026-03-21T03:00:00Z'; // Sat 03 = both
+        else if (isLate) date = '2026-03-16T03:00:00Z'; // Mon 03 = late only
+        else if (isWknd) date = '2026-03-21T14:00:00Z'; // Sat 14 = wknd only
         else date = '2026-03-16T14:00:00Z'; // Mon 14 = healthy
         commits.push(
           makeCommit({

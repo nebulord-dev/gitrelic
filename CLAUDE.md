@@ -263,13 +263,22 @@ The heading deliberately says "vite 6" rather than a patch version — the pin g
 | Override | Advisories | Drop when |
 | --- | --- | --- |
 | `ws@>=8.0.0 <8.21.0` | GHSA-96hv-2xvq-fx4p, GHSA-58qx-3vcg-4xpx | `ink` ships a release resolving ws ≥ 8.21.0 |
-| `undici@>=6.0.0 <6.28.0` | GHSA-8xcm-r25x-g524, GHSA-m8rv-5g2x-5cg5, GHSA-v3r7-h72x-cjcm, GHSA-35p6-xmwp-9g52, GHSA-g8m3-5g58-fq7m, GHSA-p88m-4jfj-68fv | `semantic-release` → `@actions/core` drops undici 6 |
-| `undici@>=7.0.0 <7.29.0` | GHSA-4cwx-7wf7-3272, GHSA-jr45-8vmc-qm54, GHSA-hm92-r4w5-c3mj, GHSA-vmh5-mc38-953g, GHSA-pr7r-676h-xcf6 | `@semantic-release/github` requires undici ≥ 7.29.0 |
-| `js-yaml@>=4.0.0 <4.3.1` | GHSA-5p4m-2wfm-xmqj, GHSA-52cp-r559-cp3m, GHSA-h67p-54hq-rp68 | `cosmiconfig` requires js-yaml ≥ 4.3.1 |
+| `undici@>=6.0.0 <6.28.1` | GHSA-8xcm-r25x-g524, GHSA-m8rv-5g2x-5cg5, GHSA-v3r7-h72x-cjcm, GHSA-35p6-xmwp-9g52, GHSA-g8m3-5g58-fq7m, GHSA-p88m-4jfj-68fv, GHSA-3wwx-pv8p-q78v, GHSA-r53p-7pc4-xj5r, GHSA-rfgv-xxqx-mfg5 | `semantic-release` → `@actions/core` drops undici 6 |
+| `undici@>=7.0.0 <7.29.1` | GHSA-4cwx-7wf7-3272, GHSA-jr45-8vmc-qm54, GHSA-hm92-r4w5-c3mj, GHSA-vmh5-mc38-953g, GHSA-pr7r-676h-xcf6, GHSA-3wwx-pv8p-q78v, GHSA-pmjh-fq2x-6v4x, GHSA-r53p-7pc4-xj5r, GHSA-rfgv-xxqx-mfg5, GHSA-3xpg-4rpp-hhhm, GHSA-2jfj-6hjv-fm6j, GHSA-2gqq-gqf2-x968, GHSA-w293-vg96-wgc3, GHSA-8436-99hf-9mmv, GHSA-rx4f-c7p8-82vq | `@semantic-release/github` requires undici ≥ 7.29.1 |
+| `js-yaml@>=4.0.0 <4.3.2` | GHSA-5p4m-2wfm-xmqj, GHSA-52cp-r559-cp3m, GHSA-h67p-54hq-rp68, GHSA-2883-xcg3-v3hh | `cosmiconfig` requires js-yaml ≥ 4.3.2 |
 | `postcss@>=8.0.0 <8.5.23` | GHSA-fxqj-rqcc-2cmp, GHSA-r28c-9q8g-f849 | vitepress/vue toolchain resolves postcss ≥ 8.5.23 |
-| `dompurify@>=3.0.0 <3.4.13` | GHSA-55q2-fjhq-7xh7, GHSA-c2j3-45gr-mqc4 | `mermaid` requires dompurify ≥ 3.4.13 |
+| `dompurify@>=3.0.0 <3.4.16` | GHSA-55q2-fjhq-7xh7, GHSA-c2j3-45gr-mqc4, GHSA-p98j-92pf-mc4p, GHSA-6688-9rhm-gjv2 | `mermaid` requires dompurify ≥ 3.4.16 |
 | `esbuild@>=0.27.3 <0.28.1` | GHSA-g7r4-m6w7-qqqr | nothing in the tree can match the selector (see below) |
 | `vitepress>vite` | GHSA-fx2h-pf6j-xcff, GHSA-v6wh-96g9-6wx3 | moving to VitePress 2.x |
+
+### Ignored advisories
+
+`pnpm.auditConfig.ignoreGhsas` in `package.json` silences advisories that have no usable fix and no reachable attack path. Each one needs a row here, and drops out the moment its condition clears. Don't add to the list just to make `pnpm audit` quiet.
+
+| Advisory | Package / path | Why ignored | Revisit when |
+| --- | --- | --- | --- |
+| GHSA-vfj7-8cjw-p6xm (high) | `braces` ≤ 3.0.3 via `@semantic-release/git` → `micromatch` | No patched release exists. The DoS needs attacker-controlled glob patterns; the only patterns are the two hardcoded `assets` in `.releaserc.json`, run in CI. | `braces` ships a fix, or `@semantic-release/git` drops micromatch |
+| GHSA-238p-pmpm-9mq7 (low) | `katex` < 0.18.2 via `apps/docs` → `mermaid` | Fix is katex 0.18, but mermaid 11 pins `^0.16` — overriding would force a breaking line on it. Docs-site only, needs pre-existing prototype pollution, and we author every diagram. | `mermaid` 11.x widens to katex ≥ 0.18.2, or docs move to mermaid 12 |
 
 **Always bound the lower end at the major.** Write `ws@>=8.0.0 <8.21.0`, never `ws@<8.21.0`. A bare `<X` selector also matches every earlier major, so the override would silently force a major upgrade on any future transitive that pulls an older line — a breaking change disguised as a security pin. Nothing in the tree triggers it today, which is exactly why it would be missed. The `postcss` and `dompurify` entries are narrowed to the 8.x / 3.x lines for this reason even though their advisories nominally cover everything below the patched version.
 
