@@ -106,6 +106,7 @@ const EMPTY_AGE_MAP: AgeMapReport = {
   staleFiles: [],
   ancientFiles: [],
   medianAgeDays: 0,
+  thresholds: { freshLimit: 0, agingLimit: 0, staleLimit: 0 },
   summary: 'unavailable',
 };
 const EMPTY_CONTRIBUTORS: ContributorReport = {
@@ -123,19 +124,27 @@ const EMPTY_CONTRIBUTORS: ContributorReport = {
     activeDays: 0,
     focusAreas: [],
     isActive: false,
+    isGhost: false,
   },
+  top3CommitShare: 0,
+  newcomers90d: 0,
   summary: 'unavailable',
 };
 const EMPTY_FORENSICS: ForensicsReport = {
   files: [],
   shameLeaderboard: [],
   totalShameCommits: 0,
+  keywordTiers: { critical: 0, moderate: 0, mild: 0 },
+  byMonth: [],
   summary: 'unavailable',
 };
 const EMPTY_PARALLEL_DEV: ParallelDevReport = {
   files: [],
   hotFiles: [],
   totalParallelFiles: 0,
+  highParallel: 0,
+  tierMix: { low: 0, medium: 0, high: 0, critical: 0 },
+  byMonth: [],
   summary: 'unavailable',
 };
 const EMPTY_LOC: LocReport = {
@@ -164,6 +173,9 @@ const EMPTY_CHURN_VELOCITY: ChurnVelocityReport = {
 const EMPTY_REWRITE_RATIO: RewriteRatioReport = {
   files: [],
   topRewriters: [],
+  totalInsertions: 0,
+  totalDeletions: 0,
+  highRewrite: 0,
   summary: 'unavailable',
 };
 const EMPTY_BLAST_RADIUS: BlastRadiusReport = {
@@ -200,9 +212,18 @@ const EMPTY_KNOWLEDGE: KnowledgeConcentrationReport = {
 };
 const EMPTY_CO_AUTHORS: CoAuthorReport = {
   pairs: [],
+  humanPairs: [],
   authorStats: [],
   totalCoAuthoredCommits: 0,
   summary: 'unavailable',
+  aiAssistedCommits: 0,
+  humanAuthoredCommits: 0,
+  aiAdoptionPercent: 0,
+  aiAdoptionTier: 'none',
+  aiAuthors: [],
+  filteredBotCommits: 0,
+  byMonth: [],
+  perAuthorMix: [],
 };
 const EMPTY_HOTSPOT_CLUSTERS: HotspotClusterReport = {
   clusters: [],
@@ -221,6 +242,13 @@ const EMPTY_COMMIT_TIMING: CommitTimingReport = {
   repoLateNightPercent: 0,
   repoWeekendPercent: 0,
   summary: 'unavailable',
+  repoHourDayMatrix: Array.from({ length: 7 }, () =>
+    new Array<number>(24).fill(0),
+  ),
+  highStress: 0,
+  tierMix: { low: 0, medium: 0, high: 0, critical: 0 },
+  byMonth: [],
+  authorStress: [],
 };
 const EMPTY_RENAME_TRACKING: RenameTrackingReport = {
   renames: [],
