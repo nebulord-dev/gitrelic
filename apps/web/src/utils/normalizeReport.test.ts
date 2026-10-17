@@ -275,7 +275,7 @@ describe('normalizeReport', () => {
     expect(normalizeReport({ identities } as any).identities).toBe(identities);
   });
 
-  it('backfills fileClasses and busFactors.excluded on pre-0.50 reports', () => {
+  it('backfills fileClasses and busFactors.excluded on reports without them', () => {
     const out = normalizeReport({
       busFactors: {
         files: [],

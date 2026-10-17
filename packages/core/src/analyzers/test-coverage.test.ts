@@ -102,4 +102,25 @@ describe('analyzeTestCoverage — files[]', () => {
     const { files: perFile } = analyzeTestCoverage(['src/orphan.test.ts']);
     expect(perFile).toHaveLength(0);
   });
+
+  it('counts tests/ and cypress/ directories as tests', () => {
+    const result = analyzeTestCoverage(['tests/api.ts', 'cypress/e2e/flow.ts']);
+    const total = result.directories.reduce((n, d) => n + d.testFiles, 0);
+    expect(total).toBe(2);
+    expect(result.files).toEqual([]); // no source files
+  });
+
+  it('ignores fixtures, mocks and generated code entirely', () => {
+    // Previously these counted as uncovered source and dragged the ratio down.
+    const result = analyzeTestCoverage([
+      'src/a.ts',
+      'src/a.test.ts',
+      'src/__mocks__/fs.ts',
+      'pkg/testdata/case.go',
+      'vendor/lib/x.go',
+      'src/__generated__/schema.ts',
+    ]);
+    expect(result.files.map((f) => f.file)).toEqual(['src/a.ts']);
+    expect(result.directories.map((d) => d.directory)).toEqual(['src']);
+  });
 });

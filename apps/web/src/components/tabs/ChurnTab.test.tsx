@@ -186,4 +186,62 @@ describe('ChurnTab', () => {
       expect(screen.getByText('Cursed Files')).toBeTruthy();
     });
   });
+
+  describe('with core file classes', () => {
+    function classifiedReport(): GitrelicReport {
+      const r = makeReport() as GitrelicReport & {
+        churn: { files: { file: string }[] };
+      };
+      r.churn.files.push(
+        {
+          file: 'vendor/github.com/x/y.go',
+          commitCount: 99,
+          churnScore: 100,
+          category: 'hot',
+        } as never,
+        {
+          file: 'src/__snapshots__/Header.snap',
+          commitCount: 4,
+          churnScore: 10,
+          category: 'cold',
+        } as never,
+      );
+      return {
+        ...r,
+        fileClasses: {
+          'src/components/__tests__/Header.test.tsx': 'test',
+          'src/utils/format.spec.ts': 'test',
+          'src/__snapshots__/Header.snap': 'fixture',
+          'vendor/github.com/x/y.go': 'generated',
+        },
+      } as GitrelicReport;
+    }
+
+    it('keeps vendored code out of the Test Files view', () => {
+      // Regression: a Go repo's vendor/ tree used to take over this tab.
+      render(
+        <ChurnTab
+          report={classifiedReport()}
+          onApplyPreset={vi.fn()}
+          mode="tests"
+        />,
+      );
+      expect(screen.queryByText('vendor/github.com/x')).toBeNull();
+      expect(screen.getByText('src/__snapshots__')).toBeTruthy();
+    });
+
+    it('keeps vendored code out of the Source view and says so', () => {
+      render(
+        <ChurnTab
+          report={classifiedReport()}
+          onApplyPreset={vi.fn()}
+          mode="source"
+        />,
+      );
+      expect(screen.queryByText('vendor/github.com/x')).toBeNull();
+      expect(
+        screen.getByText(/1 generated or vendored file hidden/),
+      ).toBeTruthy();
+    });
+  });
 });

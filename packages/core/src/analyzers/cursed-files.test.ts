@@ -752,4 +752,48 @@ describe('findCursedFiles', () => {
       ).toBe(false);
     });
   });
+
+  it('never lists files in excludedFiles, however hot', () => {
+    const churn = makeChurnReport([
+      { file: 'src/__snapshots__/a.snap', commitCount: 50, churnScore: 100 },
+      { file: 'a.ts', commitCount: 10, churnScore: 80 },
+    ]);
+    const bus = makeBusFactorReport([
+      // Both qualify on churn (35) + bus factor (15) = 50, so only the
+      // exclusion set can keep the snapshot out.
+      {
+        file: 'src/__snapshots__/a.snap',
+        risk: 'high',
+        dominantAuthorPercent: 80,
+        uniqueAuthors: 2,
+      },
+      {
+        file: 'a.ts',
+        risk: 'high',
+        dominantAuthorPercent: 80,
+        uniqueAuthors: 2,
+      },
+    ]);
+    const age = makeAgeMapReport([
+      { file: 'src/__snapshots__/a.snap', ageInDays: 50 },
+      { file: 'a.ts', ageInDays: 50 },
+    ]);
+    const args = [
+      churn,
+      bus,
+      age,
+      makeEmptyForensics(),
+      makeEmptyParallelDev(),
+      makeCommits(20),
+    ] as const;
+
+    expect(findCursedFiles(...args).files.map((f) => f.file)).toContain(
+      'src/__snapshots__/a.snap',
+    );
+    const withExclusion = findCursedFiles(
+      ...args,
+      new Set(['src/__snapshots__/a.snap']),
+    );
+    expect(withExclusion.files.map((f) => f.file)).toEqual(['a.ts']);
+  });
 });

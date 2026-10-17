@@ -1,7 +1,8 @@
 // Conservative heuristic for distinguishing test/snapshot/fixture paths from
 // production source. Core now classifies files itself (`report.fileClasses`,
 // see packages/core/src/utils/fileClass.ts); this remains only as the fallback
-// for reports from before 0.50 — use isNonSourcePath, not this, in components.
+// for reports that don't carry `fileClasses` — use makeFileKind (utils/fileKind.ts),
+// not this, in components.
 //
 // Rules:
 //   - Any of these segments appearing as a *full* path segment (not substring):

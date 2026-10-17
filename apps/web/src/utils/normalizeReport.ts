@@ -35,7 +35,7 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       files: raw.busFactors?.files ?? [],
       criticalFiles: raw.busFactors?.criticalFiles ?? [],
       overallBusFactor: raw.busFactors?.overallBusFactor ?? 0,
-      // Pre-0.50 reports didn't exclude anything from ownership analysis.
+      // Reports without this field didn't exclude anything from ownership analysis.
       excluded: raw.busFactors?.excluded ?? { fixture: 0, generated: 0 },
       summary: raw.busFactors?.summary ?? 'Not available',
     },

@@ -46,9 +46,3 @@ export function classifyFile(filePath: string): FileClass {
   }
   return 'source';
 }
-
-/** Fixture and generated files are excluded from ownership analysis by default. */
-export function isOwnershipNoise(filePath: string): boolean {
-  const cls = classifyFile(filePath);
-  return cls === 'fixture' || cls === 'generated';
-}

@@ -92,6 +92,10 @@ export function findCursedFiles(
   forensics: ForensicsReport,
   parallelDev: ParallelDevReport,
   commits: RawCommit[],
+  // Files never eligible: test fixtures, snapshots and generated code by
+  // default (see utils/fileClass.ts). Snapshots churn constantly, so without
+  // this they'd be "cursed" on churn alone.
+  excludedFiles: ReadonlySet<string> = new Set(),
 ): CursedFilesReport {
   const totalCommits = commits.length;
   const botShare = botChurnShareByFile(commits);
@@ -114,6 +118,7 @@ export function findCursedFiles(
   const cursed: CursedFile[] = [];
 
   for (const file of candidates) {
+    if (excludedFiles.has(file)) continue;
     const c = churnByFile.get(file);
     const b = busFactorByFile.get(file);
     const a = ageByFile.get(file);

@@ -308,6 +308,7 @@ export async function runGitrelic(
   const fileClasses: GitrelicReport['fileClasses'] = {};
   const excluded = { fixture: 0, generated: 0 };
   const ownershipFiles: string[] = [];
+  const excludedFiles = new Set<string>();
   for (const file of trackedFiles) {
     const cls = classifyFile(file);
     if (cls !== 'source') fileClasses[file] = cls;
@@ -316,6 +317,7 @@ export async function runGitrelic(
       (cls === 'fixture' || cls === 'generated')
     ) {
       excluded[cls]++;
+      excludedFiles.add(file);
     } else {
       ownershipFiles.push(file);
     }
@@ -530,6 +532,7 @@ export async function runGitrelic(
         forensics,
         parallelDev,
         commits,
+        excludedFiles,
       ),
     EMPTY_CURSED_FILES,
   );
