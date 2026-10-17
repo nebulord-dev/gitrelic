@@ -10,6 +10,15 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+# Every push to a PR (including rebases) is a `synchronize` event, and each one
+# starts a full paid review. Pushing again while a review is still running
+# makes the older one moot, so cancel it. Grouped by event type as well as
+# number so a push never cancels an in-flight reply to an @claude comment, and
+# comment replies themselves are never cancelled.
+concurrency:
+  group: claude-${{ github.event_name }}-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   claude:
     runs-on: ubuntu-latest
