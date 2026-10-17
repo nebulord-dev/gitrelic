@@ -58,7 +58,9 @@ Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `gitrelic` (N
 - `scripts/copy-web-dist.mjs` — tsdown `onSuccess` hook: copies `apps/web/dist/*` → `apps/cli/dist/web/*` so the dashboard ships inside the published tarball
 - `tsdown.config.ts` — `deps.alwaysBundle: ['@gitrelic/core']` inlines core's source into the CLI bundle (core stays private)
 
-### `apps/web` — Web Dashboard
+### `apps/web` — Web Dashboard (classic)
+
+> **Migration note:** a new dashboard, **Atlas** (Svelte 5, planned as `apps/atlas` + `packages/scene`), is being built alongside this one and will replace it. Everything in this section and in [Web Styling](#web-styling) applies to the **classic React app only**. Don't carry its React/Tailwind conventions (`cn()`, `classMaps.ts`, `style={{}}` carve-outs, the disabled theme toggle) into Atlas code.
 
 - `src/App.tsx` — loads `/gitrelic-report.json`, normalizes missing fields via `utils/normalizeReport.ts`, then renders `Shell`
 - `src/utils/normalizeReport.ts` — fills empty defaults for analyzer fields missing from older reports so tabs don't crash
@@ -68,7 +70,7 @@ Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `gitrelic` (N
 - `src/components/layout/InspectorPanel.tsx` — drill-down panel for the selected file/contributor/activity
 - `src/components/hero/` — D3 visualizations (commit graph, swimlanes, treemaps, force graphs, etc.). Biggest XSS surface — must only use `.text()`, never `.html()`
 - `src/components/tabs/` — 22 deep-dive tabs, one per analyzer
-- Critical rule: only `import type` from `@gitrelic/core`. Value imports bundle Node.js modules into the browser build and break Vite.
+- Critical rule: only `import type` from `@gitrelic/core` — see [Browser code imports](#browser-code-imports).
 - **Styling:** Tailwind v4 only — see [Web Styling](#web-styling) section below.
 
 ### `apps/docs` — VitePress Documentation Site
@@ -91,12 +93,17 @@ Add tests to all changes that can benefit from tests.  If a test is deemed not n
 2. CLI receives `GitrelicReport` and renders Ink UI
 3. With `--web`: CLI starts HTTP server (dynamic port via `getFreePort`, preferred 7777), serves web/dist + `/gitrelic-report.json`
 
+### Browser code imports
+
+Any code that runs in the browser — `apps/web` today, `packages/scene` and `apps/atlas` once they land — may only `import type` from `@gitrelic/core`. Value imports bundle Node.js modules (execa, `node:fs`) into the browser build and break Vite. The one sanctioned exception is Node-side build tooling (e.g. a Vite dev plugin in `vite.config.ts` that calls `runGitrelic` to serve dev data), which never reaches the browser bundle.
+
 ### Adding a new analyzer
 
 1. Create `packages/core/src/analyzers/my-analyzer.ts`
 2. Export a function `analyzeX(commits, trackedFiles): XReport`
-3. Add result to `GitrelicReport` in `types.ts`
+3. Add result to `GitrelicReport` in `types.ts`, and an `EMPTY_*` fallback in `runner.ts` for `safeRun`
 4. Call it in `runner.ts` and include in return value
+5. Backfill a default in `apps/web/src/utils/normalizeReport.ts` (with a test) — older saved reports lack the field, and the dashboard crashes on `undefined` sections. The same applies to any new top-level `GitrelicReport` field, not just analyzers.
 
 ### Architectural review
 
@@ -134,12 +141,17 @@ Changes to either side (new core dep, removed core dep, web dist layout change) 
 
 ## Issue tracking
 
-Issues live in Linear under the GitRelic team. The team backlog is hand-ordered
+Issues live in Linear under the GitRelic team. Track GitRelic work only in Linear — not Jira, and not a markdown kanban file. The team backlog is hand-ordered
 — top of the list is the next thing to work on. When asked "what's next" or
 "pick up the next issue," look at the GitRelic backlog (sorted by manual order,
 not priority or date) and start with the topmost issue in Todo state.
 
-### Polish Initiative
+### Polish Initiative (frozen during the Atlas migration)
+
+**Paused.** Classic hero/bottom-panel polish is on hold while Atlas is built — don't
+start `Polish:` tickets without a maintainer confirming. `docs/polish-pattern.md` is now input
+to each Atlas view's design checkpoint (what the analyzer must communicate), not a spec
+for new React work.
 
 Issues prefixed `Polish: <analyzer>` belong to the Polish Initiative — a forensic pass
 to optimize each analyzer's hero graphs and bottom panels. Before working on any
@@ -287,6 +299,8 @@ Effect during pre-1.0:
 **Do not remove this rule casually.** It exists because a single `chore!:` commit (the gitlore→gitrelic rename) once caused semantic-release to jump straight to `v2.0.0`, which had to be unpublished and reset. Remove it only when intentionally cutting `1.0.0`, and do so in the same PR that marks the 1.0 release.
 
 ## Web Styling
+
+> Classic dashboard (`apps/web`) only. Atlas styling rules will get their own section when `apps/atlas` lands.
 
 `apps/web` uses Tailwind v4 for all styling. Inline `style={{}}` on JSX is reserved for runtime/data-driven values only — static styling lives in className via Tailwind utilities.
 
