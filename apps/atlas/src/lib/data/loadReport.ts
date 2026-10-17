@@ -7,16 +7,38 @@ type Fetch = (url: string) => Promise<Response>;
 // Resolve fetch at call time so tests can stub the global.
 const globalFetch: Fetch = (url) => fetch(url);
 
-async function fetchJson<T>(fetchImpl: Fetch, url: string): Promise<T> {
+async function fetchJson<T>(
+  fetchImpl: Fetch,
+  url: string,
+  label: string,
+): Promise<T> {
   const res = await fetchImpl(url);
+  if (res.status === 404) {
+    throw new Error(`No ${label} found. Run gitrelic --web to generate one.`);
+  }
   if (!res.ok) {
-    throw new Error('No report found. Run gitrelic --web to generate one.');
+    throw new Error(`Couldn't load the ${label} (HTTP ${res.status}).`);
   }
   try {
     return (await res.json()) as T;
   } catch {
-    throw new Error('Report file is malformed. Re-run gitrelic --web.');
+    throw new Error(`The ${label} is malformed. Re-run gitrelic --web.`);
   }
+}
+
+async function fetchCommitIndex(fetchImpl: Fetch): Promise<CommitIndex> {
+  const index = await fetchJson<CommitIndex>(
+    fetchImpl,
+    '/gitrelic-commits.json',
+    'commit history',
+  );
+  // Checked at the boundary so no view decodes a layout it doesn't know.
+  if (index.version !== 1) {
+    throw new Error(
+      `Unsupported commit history version ${index.version}. Re-run gitrelic --web.`,
+    );
+  }
+  return index;
 }
 
 /**
@@ -29,6 +51,7 @@ export async function loadReport(
   const raw = await fetchJson<Partial<GitrelicReport>>(
     fetchImpl,
     '/gitrelic-report.lite.json',
+    'report',
   );
   return normalizeReport(raw);
 }
@@ -43,10 +66,7 @@ export function createCommitsLoader(
 ): () => Promise<CommitIndex> {
   let pending: Promise<CommitIndex> | undefined;
   return () =>
-    (pending ??= fetchJson<CommitIndex>(
-      fetchImpl,
-      '/gitrelic-commits.json',
-    ).catch((err: unknown) => {
+    (pending ??= fetchCommitIndex(fetchImpl).catch((err: unknown) => {
       pending = undefined;
       throw err;
     }));

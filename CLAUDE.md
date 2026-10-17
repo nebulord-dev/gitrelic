@@ -93,7 +93,7 @@ Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `norm
 Svelte 5 (runes) + Vite + Tailwind v4. Not served by the CLI yet; `--ui atlas` lands in a later PR. Each analyzer view starts with a design checkpoint with a maintainer before it is built.
 
 - `src/App.svelte` — loads `/gitrelic-report.lite.json` via `lib/data/loadReport.ts` (normalized with `normalizeReport`), applies the theme, renders `lib/shell/Shell.svelte` (top bar, collapsible rail, stage, inspector). `loadCommits()` fetches `/gitrelic-commits.json` once, only when a view needs commits.
-- `src/lib/state/hash.ts` — URL hash `#v=&l=&s=` (parse/serialize only; the shell wires it up with the views) (view, layout, selected entity id). The selection is untrusted: resolve it through the entity map, never render it.
+- `src/lib/state/hash.ts` — URL hash `#v=&l=&s=` for view, layout and selected entity id. Parse/serialize only for now; the shell wires it up with the views. The selection is untrusted: resolve it through the entity map, never render it.
 - `dev/devData.ts` — Vite dev plugin serving both JSON endpoints: the scene fixture by default, or a live analysis with `GITRELIC_DEV_REPO=<path>` (`GITRELIC_DEV_SINCE` defaults to `12 months ago` like the CLI, `all` for full history; needs a built core). Node-side, so it may value-import core.
 - Dev port 7778 (`pnpm --filter @gitrelic/atlas dev`); 7777 is classic's and the CLI's.
 - `typecheck` is `svelte-check` for `src` plus `tsc -p tsconfig.node.json` for `vite.config.ts`, `dev/` and `test/`, so browser code never sees Node types.

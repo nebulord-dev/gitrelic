@@ -8,14 +8,22 @@
     theme = $bindable(),
   }: { report: GitrelicReport; theme: ThemeName } = $props();
 
-  const day = (iso: string) => (iso ? new Date(iso).toLocaleDateString() : '');
-  let span = $derived(
-    [
+  // Empty for the blank dates normalizeReport backfills, or unparseable ones.
+  const day = (iso: string) => {
+    const ms = Date.parse(iso);
+    return Number.isNaN(ms) ? '' : new Date(ms).toLocaleDateString();
+  };
+  let span = $derived.by(() => {
+    const from = day(report.meta.firstCommit);
+    const to = day(report.meta.lastCommit);
+    return [
       `${report.meta.totalCommits.toLocaleString()} commits`,
       `${report.meta.totalAuthors.toLocaleString()} authors`,
-      `${day(report.meta.firstCommit)} – ${day(report.meta.lastCommit)}`,
-    ].join(' · '),
-  );
+      from && to ? `${from} – ${to}` : '',
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  });
 </script>
 
 <header class="flex flex-wrap items-center justify-between gap-3">

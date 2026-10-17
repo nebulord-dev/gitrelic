@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite --port 7778",
-    "preview": "vite preview --port 7778",
+    "dev": "vite",
+    "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings && tsc -p tsconfig.node.json",
     "clean": "rm -rf dist"

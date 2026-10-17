@@ -19,6 +19,8 @@ const outDir = path.join(root, 'packages/scene/test/fixtures');
 // Same anchor as packages/core/src/fixture-regression.test.ts.
 const FROZEN_NOW = Date.parse('2026-05-01T12:00:00Z');
 const RealDate = Date;
+// A class can't be called without `new`, so a bare `Date()` call in core
+// would throw here. Core has none today; keep it that way or extend this.
 globalThis.Date = class extends RealDate {
   constructor(...args) {
     if (args.length === 0) super(FROZEN_NOW);

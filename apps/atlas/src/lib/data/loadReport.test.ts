@@ -21,6 +21,12 @@ describe('loadReport', () => {
     ).rejects.toThrow('No report found');
   });
 
+  it('reports a server error as such, not as a missing report', async () => {
+    await expect(
+      loadReport(async () => new Response('', { status: 500 })),
+    ).rejects.toThrow("Couldn't load the report (HTTP 500).");
+  });
+
   it('explains a malformed report', async () => {
     await expect(
       loadReport(async () => new Response('{nope', { status: 200 })),
@@ -36,6 +42,20 @@ describe('createCommitsLoader', () => {
     await load();
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(fetchImpl).toHaveBeenCalledWith('/gitrelic-commits.json');
+  });
+
+  it('names the commit history, not the report, when it fails', async () => {
+    const load = createCommitsLoader(
+      async () => new Response('', { status: 404 }),
+    );
+    await expect(load()).rejects.toThrow('No commit history found');
+  });
+
+  it('rejects an index version it cannot decode', async () => {
+    const load = createCommitsLoader(async () => json({ version: 2 }));
+    await expect(load()).rejects.toThrow(
+      'Unsupported commit history version 2',
+    );
   });
 
   it('retries after a failure', async () => {

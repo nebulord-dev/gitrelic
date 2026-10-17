@@ -4,6 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gitrelic Atlas</title>
+    <script>
+      // Apply the saved theme before first paint, so a Glow user doesn't see
+      // Flat fade into Glow on every load. Mirrors src/lib/state/theme.ts.
+      try {
+        var saved = localStorage.getItem('gitrelic-atlas-theme');
+        if (saved === 'glow' || saved === 'flat') {
+          document.documentElement.dataset.theme = saved;
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="app"></div>
