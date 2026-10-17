@@ -80,3 +80,17 @@ GIT_COMMITTER_NAME="Sam Lee" \
 git commit --quiet -m "feat: paired ui work
 
 Co-authored-by: joshstory <12345+joshstory@users.noreply.github.com>"
+
+# Sam credits Dana under her pre-.mailmap identity. git applies .mailmap to
+# authors but not to trailers, so this must be mapped explicitly.
+echo "review" >> src/ui.ts
+git add -A
+GIT_AUTHOR_DATE="2026-01-26T09:00:00+00:00" \
+GIT_COMMITTER_DATE="2026-01-26T09:00:00+00:00" \
+GIT_AUTHOR_EMAIL="sam@work.com" \
+GIT_AUTHOR_NAME="Sam Lee" \
+GIT_COMMITTER_EMAIL="sam@work.com" \
+GIT_COMMITTER_NAME="Sam Lee" \
+git commit --quiet -m "fix: review follow-ups
+
+Co-authored-by: Old Name <old@corp.com>"

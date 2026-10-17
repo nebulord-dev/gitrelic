@@ -36,6 +36,10 @@ program
     'Only analyze commits since this date (default: "12 months ago", use "all" for full history)',
     '12 months ago',
   )
+  .option(
+    '--no-merge-identities',
+    "Don't merge one person's split author emails (case variants, GitHub noreply, same full name)",
+  )
   .option('--web', 'Open web dashboard after analysis')
   .option('--json', 'Output raw JSON report to stdout')
   .option('--shame', 'Show commit message forensics / shame leaderboard panel')
@@ -46,6 +50,7 @@ const opts = program.opts<{
   path: string;
   branch?: string;
   since?: string;
+  mergeIdentities: boolean;
   web?: boolean;
   json?: boolean;
   shame?: boolean;
@@ -99,6 +104,7 @@ if (opts.json) {
       repoPath,
       branch: opts.branch,
       since,
+      mergeIdentities: opts.mergeIdentities,
     });
     // A consumer that stops reading early (`gitrelic --json | head`) makes Node
     // emit 'error' on stdout, which is fatal if unhandled. Awaiting the flush
@@ -161,6 +167,7 @@ function GitrelicApp() {
       repoPath,
       branch: opts.branch,
       since,
+      mergeIdentities: opts.mergeIdentities,
       onProgress: setProgress,
     })
       .then(async (result) => {

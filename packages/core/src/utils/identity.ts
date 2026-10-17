@@ -13,13 +13,17 @@ import type { RawCommit } from './git.js';
 // Rules, applied via union-find over lowercased emails:
 //   1. Emails equal ignoring case.
 //   2. A GitHub noreply login (`123+login@users.noreply.github.com`) equal to
-//      another identity's email local-part or its de-spaced name.
+//      another identity's email local-part or its de-spaced name — only when
+//      that match points at a single person.
 //   3. The same normalized name, only when it has 2+ words and isn't a
 //      placeholder. Single names ("Alex") are too common to trust.
 // Rules 2 and 3 never touch bots or AI identities — "Claude Code" the human
 // and "Claude Code" the agent are not one contributor.
 
 const NOREPLY_RE = /^(?:\d+\+)?([^@]+)@users\.noreply\.github\.com$/i;
+
+// Handles shorter than this ("me", "hi", "js") are too generic to trust.
+const MIN_HANDLE_LENGTH = 3;
 
 const NAME_DENYLIST = new Set([
   'your name',
@@ -127,27 +131,8 @@ export function mergeIdentities(commits: RawCommit[]): {
   const uf = new UnionFind();
   const humans = [...stats.values()].filter((s) => s.human);
 
-  // Rule 2: noreply login ↔ local-part or de-spaced name.
-  const keysByHandle = new Map<string, string[]>();
-  for (const s of humans) {
-    if (noreplyLogin(s.key)) continue;
-    const handles = new Set([s.key.split('@')[0]]);
-    for (const name of s.names.keys()) {
-      handles.add(normalizeName(name).replace(/ /g, ''));
-    }
-    for (const h of handles) {
-      if (!h) continue;
-      const list = keysByHandle.get(h) ?? [];
-      list.push(s.key);
-      keysByHandle.set(h, list);
-    }
-  }
-  for (const s of humans) {
-    const login = noreplyLogin(s.key);
-    if (!login) continue;
-    for (const other of keysByHandle.get(login) ?? []) uf.union(s.key, other);
-  }
-
+  // Rule 3 runs first so rule 2 can tell "one person, several emails" apart
+  // from "several people" when a login matches more than one key.
   // Rule 3: shared multi-word, non-placeholder name.
   const keyByName = new Map<string, string>();
   for (const s of humans) {
@@ -158,6 +143,37 @@ export function mergeIdentities(commits: RawCommit[]): {
       if (seen) uf.union(seen, s.key);
       else keyByName.set(n, s.key);
     }
+  }
+
+  // Rule 2: noreply login ↔ local-part, de-spaced name, or another noreply
+  // spelling of the same login. Merges only when every match already belongs
+  // to one cluster — a login matching two different people ("alex") is
+  // ambiguous and left alone. Very short handles ("me", "hi") are skipped.
+  const keysByHandle = new Map<string, string[]>();
+  const addHandle = (handle: string, key: string) => {
+    if (handle.length < MIN_HANDLE_LENGTH) return;
+    const list = keysByHandle.get(handle) ?? [];
+    list.push(key);
+    keysByHandle.set(handle, list);
+  };
+  for (const s of humans) {
+    const login = noreplyLogin(s.key);
+    if (login) {
+      addHandle(login.toLowerCase(), s.key);
+      continue;
+    }
+    const handles = new Set([s.key.split('@')[0]]);
+    for (const name of s.names.keys()) {
+      handles.add(normalizeName(name).replace(/ /g, ''));
+    }
+    for (const h of handles) addHandle(h, s.key);
+  }
+  for (const s of humans) {
+    const login = noreplyLogin(s.key)?.toLowerCase();
+    if (!login) continue;
+    const matches = (keysByHandle.get(login) ?? []).filter((k) => k !== s.key);
+    const clustersHit = new Set(matches.map((k) => uf.find(k)));
+    if (clustersHit.size === 1) uf.union(s.key, matches[0]);
   }
 
   const clusters = new Map<string, IdentityStats[]>();

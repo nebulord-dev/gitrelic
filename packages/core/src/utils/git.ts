@@ -55,7 +55,64 @@ export async function getAllCommits(
   if (options.branch) args.push(options.branch);
 
   const { stdout } = await execa('git', args, { cwd: repoPath });
-  return parseGitLog(stdout);
+  const commits = parseGitLog(stdout);
+  await mailmapCoAuthors(repoPath, commits);
+  return commits;
+}
+
+// git applies .mailmap to %aE/%aN but not to %(trailers), so co-author
+// identities would otherwise stay split from the same person's authorship.
+// Argument form (not --stdin) keeps this working on git < 2.43.
+const CHECK_MAILMAP_BATCH = 100;
+
+async function mailmapCoAuthors(
+  repoPath: string,
+  commits: RawCommit[],
+): Promise<void> {
+  const contacts = new Set<string>();
+  for (const c of commits) {
+    for (const co of c.coAuthors) contacts.add(formatContact(co));
+  }
+  if (contacts.size === 0) return;
+
+  let mapped: Map<string, CoAuthor>;
+  try {
+    mapped = await checkMailmap(repoPath, [...contacts]);
+  } catch {
+    // A trailer value git can't parse as a contact shouldn't sink the whole
+    // analysis — unmapped co-authors are still correct, just possibly split.
+    return;
+  }
+  for (const c of commits) {
+    c.coAuthors = c.coAuthors.map((co) => mapped.get(formatContact(co)) ?? co);
+  }
+}
+
+function formatContact(co: CoAuthor): string {
+  return co.name ? `${co.name} <${co.email}>` : `<${co.email}>`;
+}
+
+/**
+ * Resolves contacts through the repo's mailmap via `git check-mailmap`.
+ * Returns only contacts whose identity actually changed.
+ */
+export async function checkMailmap(
+  repoPath: string,
+  contacts: string[],
+): Promise<Map<string, CoAuthor>> {
+  const out = new Map<string, CoAuthor>();
+  for (let i = 0; i < contacts.length; i += CHECK_MAILMAP_BATCH) {
+    const batch = contacts.slice(i, i + CHECK_MAILMAP_BATCH);
+    const { stdout } = await execa('git', ['check-mailmap', ...batch], {
+      cwd: repoPath,
+    });
+    // One output line per input contact, in order.
+    stdout.split('\n').forEach((line, j) => {
+      const parsed = parseCoAuthorValues(line)[0];
+      if (parsed && line !== batch[j]) out.set(batch[j], parsed);
+    });
+  }
+  return out;
 }
 
 const CO_AUTHOR_VALUE_REGEX = /^(.*?)\s*<([^>]+)>\s*$/;

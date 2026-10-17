@@ -112,6 +112,15 @@ describe('identity merging (integration)', () => {
     ]);
   });
 
+  it('applies .mailmap to co-author trailers', () => {
+    const review = merged.commits.find((c) =>
+      c.message.startsWith('fix: review follow-ups'),
+    );
+    expect(review?.coAuthors).toEqual([
+      { name: 'Dana Park', email: 'dana@corp.com' },
+    ]);
+  });
+
   it('reports merged identities with their aliases', () => {
     expect(merged.identities.map((i) => i.canonicalEmail)).toEqual([
       'josh@corp.com',

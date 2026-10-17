@@ -195,6 +195,44 @@ describe('mergeIdentities', () => {
     expect(input[1].authorEmail).toBe('ann@home.net');
   });
 
+  it('does not merge a noreply login that matches more than one person', () => {
+    // Both Alexes index under handle "alex"; unioning the login with every
+    // match would merge two different people the single-word guard keeps apart.
+    const { commits } = mergeIdentities([
+      commit('alex@a.com', 'Alex'),
+      commit('alex@b.com', 'Alex'),
+      commit('999+alex@users.noreply.github.com', 'alex'),
+    ]);
+    expect(new Set(commits.map((c) => c.authorEmail)).size).toBe(3);
+  });
+
+  it('still merges an ambiguous-looking handle when all matches are one person', () => {
+    // Two emails already merged by name (rule 3) both index "annlee" — that's
+    // one cluster, so the login is unambiguous.
+    const { commits } = mergeIdentities([
+      commit('ann@corp.com', 'Ann Lee'),
+      commit('ann@home.net', 'Ann Lee'),
+      commit('5+annlee@users.noreply.github.com', 'annlee'),
+    ]);
+    expect(new Set(commits.map((c) => c.authorEmail)).size).toBe(1);
+  });
+
+  it('merges two noreply spellings of the same login', () => {
+    const { commits } = mergeIdentities([
+      commit('octo@users.noreply.github.com', 'octo'),
+      commit('42+octo@users.noreply.github.com', 'octo'),
+    ]);
+    expect(new Set(commits.map((c) => c.authorEmail)).size).toBe(1);
+  });
+
+  it('ignores very short handles', () => {
+    const { commits } = mergeIdentities([
+      commit('me@one.com', 'Pat Doe'),
+      commit('1+me@users.noreply.github.com', 'me'),
+    ]);
+    expect(new Set(commits.map((c) => c.authorEmail)).size).toBe(2);
+  });
+
   it('is transitive across rules', () => {
     // case → name → login chains into one person
     const { commits } = mergeIdentities([
