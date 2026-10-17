@@ -302,7 +302,10 @@ export async function runGitrelic(
   const analyzedBranch = branch ?? (await getCurrentBranch(repoPath));
   const primaryLanguage = detectPrimaryLanguage(trackedFiles);
 
-  const sorted = [...commits].sort((a, b) => a.date.localeCompare(b.date));
+  // By instant, not string: %aI carries each author's own UTC offset.
+  const sorted = [...commits].sort(
+    (a, b) => Date.parse(a.date) - Date.parse(b.date),
+  );
   const firstCommit = sorted[0].date;
   const lastCommit = sorted[sorted.length - 1].date;
   // Clamp to at least 1 day so downstream analyzers (age-map thresholds,

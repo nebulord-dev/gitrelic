@@ -47,7 +47,9 @@ export function buildRenameChains(
 ): FileRenameChain[] {
   // Build a reverse map: newPath → { oldPath, date }
   // Sort renames by date so we process them in chronological order
-  const sorted = [...renames].sort((a, b) => a.date.localeCompare(b.date));
+  const sorted = [...renames].sort(
+    (a, b) => Date.parse(a.date) - Date.parse(b.date),
+  );
 
   // For each tracked file, walk backwards through renames to find all previous names
   // Build forward map: oldPath → newPath (chronological)

@@ -38,7 +38,9 @@ export function analyzeAgeMap(
     for (const file of commit.files) {
       if (!trackedSet.has(file)) continue;
       const existing = fileLastCommit.get(file);
-      if (!existing || commit.date > existing) {
+      // Compare instants: ISO strings with different UTC offsets don't sort
+      // chronologically as text.
+      if (!existing || Date.parse(commit.date) > Date.parse(existing)) {
         fileLastCommit.set(file, commit.date);
       }
     }

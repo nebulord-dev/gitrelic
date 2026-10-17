@@ -151,3 +151,21 @@ describe('analyzeAgeMap', () => {
     });
   });
 });
+
+describe('analyzeAgeMap timezone handling', () => {
+  it('orders commits by instant, not by their ISO strings', () => {
+    // 23:30 at -08:00 is 07:30Z the next day — later than 01:00Z — but sorts
+    // earlier as a string. Mixed-offset teams hit this on every file.
+    const later = '2026-01-01T23:30:00-08:00';
+    const earlier = '2026-01-02T01:00:00+00:00';
+    const result = analyzeAgeMap(
+      [
+        makeCommit({ date: later, files: ['a.ts'] }),
+        makeCommit({ date: earlier, files: ['a.ts'] }),
+      ],
+      ['a.ts'],
+      365,
+    );
+    expect(result.files[0].lastCommitDate).toBe(later);
+  });
+});
