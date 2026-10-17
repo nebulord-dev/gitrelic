@@ -274,4 +274,34 @@ describe('normalizeReport', () => {
     ];
     expect(normalizeReport({ identities } as any).identities).toBe(identities);
   });
+
+  it('backfills fileClasses and busFactors.excluded on reports without them', () => {
+    const out = normalizeReport({
+      busFactors: {
+        files: [],
+        criticalFiles: [],
+        overallBusFactor: 1,
+        summary: 'old',
+      },
+    } as any);
+    expect(out.fileClasses).toEqual({});
+    expect(out.busFactors.excluded).toEqual({ fixture: 0, generated: 0 });
+    expect(out.busFactors.overallBusFactor).toBe(1);
+  });
+
+  it('preserves fileClasses and excluded counts from a fresh report', () => {
+    const fileClasses = { 'a.snap': 'fixture' };
+    const out = normalizeReport({
+      fileClasses,
+      busFactors: {
+        files: [],
+        criticalFiles: [],
+        overallBusFactor: 1,
+        excluded: { fixture: 3, generated: 2 },
+        summary: '',
+      },
+    } as any);
+    expect(out.fileClasses).toBe(fileClasses);
+    expect(out.busFactors.excluded).toEqual({ fixture: 3, generated: 2 });
+  });
 });

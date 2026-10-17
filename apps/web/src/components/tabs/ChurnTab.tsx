@@ -4,7 +4,7 @@ import {
   aggregateChurnByDirectory,
   type DirectoryChurnRow,
 } from '../../utils/churnByDirectory';
-import { isTestPath } from '../../utils/isTestPath';
+import { makeFileKind } from '../../utils/fileKind';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fmt } from '../theme';
 import type { PresetId } from '../../presets/types';
@@ -24,18 +24,26 @@ function formatShare(share: number): string {
 
 function emptyStateCopy(mode: ChurnTabMode): string {
   return mode === 'tests'
-    ? 'No test files detected in the analysis window. Looking for __tests__/, __snapshots__/, __fixtures__/, tests/, cypress/ paths and .test./.spec. basenames.'
+    ? 'No test files detected in the analysis window. Looking for __tests__/, tests/, cypress/ and fixture/snapshot/mock paths, and .test./.spec. basenames.'
     : 'No source files detected in the analysis window.';
 }
 
 export function ChurnTab({ report, onApplyPreset, mode }: ChurnTabProps) {
-  const rows = useMemo(() => {
+  const { rows, hiddenGenerated } = useMemo(() => {
     const files = report.churn?.files ?? [];
-    const filtered = files.filter((f) =>
-      mode === 'tests' ? isTestPath(f.file) : !isTestPath(f.file),
-    );
-    return aggregateChurnByDirectory(filtered);
-  }, [report.churn?.files, mode]);
+    const kindOf = makeFileKind(report);
+    const want = mode === 'tests' ? 'test' : 'source';
+    let hidden = 0;
+    const filtered = files.filter((f) => {
+      const kind = kindOf(f.file);
+      if (kind === 'generated') hidden++;
+      return kind === want;
+    });
+    return {
+      rows: aggregateChurnByDirectory(filtered),
+      hiddenGenerated: hidden,
+    };
+  }, [report, mode]);
 
   const columns: Column<DirectoryChurnRow>[] = [
     {
@@ -101,6 +109,12 @@ export function ChurnTab({ report, onApplyPreset, mode }: ChurnTabProps) {
   return (
     <div className="flex flex-col min-h-full">
       <div className="flex-1">
+        {hiddenGenerated > 0 && (
+          <div className="px-3 pt-1.5 text-[10px] text-text-tertiary">
+            {fmt(hiddenGenerated)} generated or vendored{' '}
+            {hiddenGenerated === 1 ? 'file' : 'files'} hidden from both views.
+          </div>
+        )}
         {rows.length === 0 ? (
           <div className="py-6 px-3 text-[11px] text-text-tertiary text-center">
             {emptyStateCopy(mode)}

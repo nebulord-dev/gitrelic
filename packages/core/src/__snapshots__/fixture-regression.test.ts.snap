@@ -364,6 +364,10 @@ exports[`fixture regression > bus factor report is stable 1`] = `
       "uniqueAuthors": 1,
     },
   ],
+  "excluded": {
+    "fixture": 0,
+    "generated": 0,
+  },
   "files": [
     {
       "authors": [
@@ -2635,6 +2639,7 @@ exports[`fixture regression > top-level report keys are stable 1`] = `
   "coupling",
   "cursedFiles",
   "deadCode",
+  "fileClasses",
   "forensics",
   "ghostFiles",
   "hotspotClusters",

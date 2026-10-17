@@ -19,6 +19,7 @@ function makeReport(
       files: busFactorsFiles,
       criticalFiles: [],
       overallBusFactor: 1,
+      excluded: { fixture: 0, generated: 0 },
       summary: '',
     },
     ghostFiles: {

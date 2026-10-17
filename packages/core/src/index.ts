@@ -10,6 +10,7 @@ export {
   aiProductName,
 } from './utils/authorClassification.js';
 export type { AuthorClass } from './utils/authorClassification.js';
+export type { FileClass } from './utils/fileClass.js';
 export type {
   GitrelicReport,
   IdentityAlias,

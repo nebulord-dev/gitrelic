@@ -70,6 +70,9 @@ gitrelic --path ~/projects/my-app --parallel
 
 # Keep split author emails separate (merging is on by default; .mailmap still applies)
 gitrelic --path ~/projects/my-app --no-merge-identities
+
+# Count test fixtures, snapshots and generated code in ownership metrics (excluded by default)
+gitrelic --path ~/projects/my-app --include-fixtures
 ```
 
 ## How GitRelic scores files

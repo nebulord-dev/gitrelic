@@ -31,11 +31,13 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       hotspotCount: 0,
       summary: 'Not available',
     },
-    busFactors: raw.busFactors ?? {
-      files: [],
-      criticalFiles: [],
-      overallBusFactor: 0,
-      summary: 'Not available',
+    busFactors: {
+      files: raw.busFactors?.files ?? [],
+      criticalFiles: raw.busFactors?.criticalFiles ?? [],
+      overallBusFactor: raw.busFactors?.overallBusFactor ?? 0,
+      // Reports without this field didn't exclude anything from ownership analysis.
+      excluded: raw.busFactors?.excluded ?? { fixture: 0, generated: 0 },
+      summary: raw.busFactors?.summary ?? 'Not available',
     },
     ageMap: {
       files: raw.ageMap?.files ?? [],
@@ -221,6 +223,7 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       summary: 'Not available',
     },
     identities: raw.identities ?? [],
+    fileClasses: raw.fileClasses ?? {},
     commits: raw.commits ?? [],
   };
 }

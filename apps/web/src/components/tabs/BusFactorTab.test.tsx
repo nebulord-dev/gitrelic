@@ -29,6 +29,7 @@ const makeReport = (
       files: [],
       criticalFiles: [],
       overallBusFactor: 0,
+      excluded: { fixture: 0, generated: 0 },
       summary: '',
       ...overrides,
     },
@@ -53,6 +54,7 @@ describe('BusFactorTab', () => {
           files,
           criticalFiles: files,
           overallBusFactor: 1,
+          excluded: { fixture: 0, generated: 0 },
         })}
         onApplyPreset={vi.fn()}
       />,
@@ -100,6 +102,7 @@ describe('BusFactorTab', () => {
           files: criticalFiles,
           criticalFiles,
           overallBusFactor: 1,
+          excluded: { fixture: 0, generated: 0 },
         })}
         onApplyPreset={vi.fn()}
       />,
@@ -156,6 +159,7 @@ describe('BusFactorTab', () => {
           files: criticalFiles,
           criticalFiles,
           overallBusFactor: 1,
+          excluded: { fixture: 0, generated: 0 },
         })}
         onApplyPreset={vi.fn()}
       />,

@@ -25,7 +25,13 @@ function fileFixture(
 
 function makeReport(files: FileBusFactor[]): GitrelicReport {
   return {
-    busFactors: { files, criticalFiles: [], overallBusFactor: 0, summary: '' },
+    busFactors: {
+      files,
+      criticalFiles: [],
+      overallBusFactor: 0,
+      excluded: { fixture: 0, generated: 0 },
+      summary: '',
+    },
   } as unknown as GitrelicReport;
 }
 

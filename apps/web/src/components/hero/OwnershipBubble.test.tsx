@@ -54,6 +54,7 @@ function makeReport(overrides: Partial<GitrelicReport> = {}): GitrelicReport {
       ],
       criticalFiles: [],
       overallBusFactor: 1,
+      excluded: { fixture: 0, generated: 0 },
       summary: '',
     },
     contributors: {
@@ -193,6 +194,7 @@ describe('buildDirectoryBubbles', () => {
         files: [],
         criticalFiles: [],
         overallBusFactor: 0,
+        excluded: { fixture: 0, generated: 0 },
         summary: '',
       },
     });
@@ -239,6 +241,7 @@ describe('buildDirectoryBubbles', () => {
         files: [],
         criticalFiles: [],
         overallBusFactor: 0,
+        excluded: { fixture: 0, generated: 0 },
         summary: '',
       },
     });
@@ -282,6 +285,7 @@ describe('buildDirectoryBubbles', () => {
         ],
         criticalFiles: [],
         overallBusFactor: 1,
+        excluded: { fixture: 0, generated: 0 },
         summary: '',
       },
     });

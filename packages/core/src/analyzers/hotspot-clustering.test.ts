@@ -37,7 +37,13 @@ function makeHotspotReport(
 }
 
 function emptyBusFactor(): BusFactorReport {
-  return { files: [], criticalFiles: [], overallBusFactor: 0, summary: '' };
+  return {
+    files: [],
+    criticalFiles: [],
+    overallBusFactor: 0,
+    excluded: { fixture: 0, generated: 0 },
+    summary: '',
+  };
 }
 
 function emptyCoupling(): CouplingReport {
@@ -101,6 +107,7 @@ function makeBusFactor(
     })),
     criticalFiles: [],
     overallBusFactor: 2,
+    excluded: { fixture: 0, generated: 0 },
     summary: '',
   };
 }

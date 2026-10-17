@@ -18,6 +18,7 @@ function makeReport(churnFiles: ChurnFixture[]): GitrelicReport {
       files: [],
       criticalFiles: [],
       overallBusFactor: 0,
+      excluded: { fixture: 0, generated: 0 },
       summary: '',
     },
   } as unknown as GitrelicReport;

@@ -73,7 +73,15 @@ export function analyzeBusFactor(
     ? `${criticalFiles.length} files are owned by a single author — ${worstFile.file} is most at risk`
     : 'Bus factor looks healthy across the codebase';
 
-  return { files, criticalFiles, overallBusFactor, summary };
+  // The analyzer only sees the files it was given; the runner fills in how
+  // many fixture/generated files it held back.
+  return {
+    files,
+    criticalFiles,
+    overallBusFactor,
+    excluded: { fixture: 0, generated: 0 },
+    summary,
+  };
 }
 
 function getBusFactorRisk(
