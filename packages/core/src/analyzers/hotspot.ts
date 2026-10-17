@@ -42,7 +42,9 @@ export function analyzeHotspots(
     });
   }
 
-  const maxRaw = Math.max(...rawEntries.map((e) => e.rawScore), 1);
+  // Loop, not Math.max(...spread): the spread overflows the stack on huge repos.
+  let maxRaw = 1;
+  for (const e of rawEntries) if (e.rawScore > maxRaw) maxRaw = e.rawScore;
 
   const files: HotspotEntry[] = rawEntries
     .map((e) => {

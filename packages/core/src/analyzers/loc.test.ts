@@ -1,18 +1,17 @@
-import * as fs from 'node:fs/promises';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import { analyzeLoc } from './loc.js';
 
-vi.mock('node:fs/promises');
-
-const mockReadFile = vi.mocked(fs.readFile);
+/** Line counts keyed by path, as the runner derives them from git blobs. */
+const counts = (entries: Record<string, number | null>) =>
+  new Map(Object.entries(entries));
 
 describe('analyzeLoc', () => {
-  it('counts lines for each file', async () => {
-    mockReadFile.mockResolvedValueOnce('line1\nline2\nline3\n');
-    mockReadFile.mockResolvedValueOnce('single\n');
-
-    const result = await analyzeLoc(['src/a.ts', 'src/b.ts'], '/repo');
+  it('counts lines for each file', () => {
+    const result = analyzeLoc(
+      ['src/a.ts', 'src/b.ts'],
+      counts({ 'src/a.ts': 3, 'src/b.ts': 1 }),
+    );
 
     expect(result.files).toEqual([
       { file: 'src/a.ts', lines: 3, language: 'TypeScript' },
@@ -22,14 +21,10 @@ describe('analyzeLoc', () => {
     expect(result.totalFiles).toBe(2);
   });
 
-  it('detects language from file extension', async () => {
-    mockReadFile.mockResolvedValueOnce('x\n');
-    mockReadFile.mockResolvedValueOnce('x\n');
-    mockReadFile.mockResolvedValueOnce('x\n');
-
-    const result = await analyzeLoc(
+  it('detects language from file extension', () => {
+    const result = analyzeLoc(
       ['app.py', 'main.go', 'style.css'],
-      '/repo',
+      counts({ 'app.py': 1, 'main.go': 1, 'style.css': 1 }),
     );
 
     expect(result.files[0].language).toBe('Python');
@@ -37,12 +32,11 @@ describe('analyzeLoc', () => {
     expect(result.files[2].language).toBe('CSS');
   });
 
-  it('aggregates language breakdown with percentages', async () => {
-    mockReadFile.mockResolvedValueOnce('a\nb\nc\n'); // 3 lines TS
-    mockReadFile.mockResolvedValueOnce('a\nb\nc\nd\ne\nf\ng\n'); // 7 lines TS
-    mockReadFile.mockResolvedValueOnce('a\n'); // 1 line CSS
-
-    const result = await analyzeLoc(['a.ts', 'b.tsx', 'c.css'], '/repo');
+  it('aggregates language breakdown with percentages', () => {
+    const result = analyzeLoc(
+      ['a.ts', 'b.tsx', 'c.css'],
+      counts({ 'a.ts': 3, 'b.tsx': 7, 'c.css': 1 }),
+    );
 
     const ts = result.languages.find((l) => l.language === 'TypeScript')!;
     expect(ts.files).toBe(2);
@@ -54,56 +48,41 @@ describe('analyzeLoc', () => {
     expect(css.lines).toBe(1);
   });
 
-  it('handles unreadable files gracefully with lines: 0', async () => {
-    mockReadFile.mockResolvedValueOnce('ok\n');
-    mockReadFile.mockRejectedValueOnce(new Error('EACCES'));
+  it('treats binary/unreadable (null) and missing counts as 0 lines', () => {
+    const result = analyzeLoc(
+      ['good.ts', 'bin.ts', 'gone.ts'],
+      counts({ 'good.ts': 1, 'bin.ts': null }),
+    );
 
-    const result = await analyzeLoc(['good.ts', 'bad.ts'], '/repo');
-
-    expect(result.files[0].lines).toBe(1);
-    expect(result.files[1].lines).toBe(0);
+    expect(result.files.map((f) => f.lines)).toEqual([1, 0, 0]);
     expect(result.totalLines).toBe(1);
   });
 
-  it('handles empty files as 0 lines', async () => {
-    mockReadFile.mockResolvedValueOnce('');
-
-    const result = await analyzeLoc(['empty.ts'], '/repo');
+  it('handles empty files as 0 lines', () => {
+    const result = analyzeLoc(['empty.ts'], counts({ 'empty.ts': 0 }));
 
     expect(result.files[0].lines).toBe(0);
   });
 
-  it('sorts languages by lines descending', async () => {
-    mockReadFile.mockResolvedValueOnce('a\n');
-    mockReadFile.mockResolvedValueOnce('a\nb\nc\n');
-
-    const result = await analyzeLoc(['small.css', 'big.ts'], '/repo');
+  it('sorts languages by lines descending', () => {
+    const result = analyzeLoc(
+      ['small.css', 'big.ts'],
+      counts({ 'small.css': 1, 'big.ts': 3 }),
+    );
 
     expect(result.languages[0].language).toBe('TypeScript');
     expect(result.languages[1].language).toBe('CSS');
   });
 
-  it('produces a summary string', async () => {
-    mockReadFile.mockResolvedValueOnce('a\nb\n');
-
-    const result = await analyzeLoc(['file.ts'], '/repo');
+  it('produces a summary string', () => {
+    const result = analyzeLoc(['file.ts'], counts({ 'file.ts': 2 }));
 
     expect(result.summary).toContain('2');
     expect(result.summary).toContain('1');
   });
 
-  it('counts files without trailing newline correctly', async () => {
-    mockReadFile.mockResolvedValueOnce('no-newline');
-
-    const result = await analyzeLoc(['file.ts'], '/repo');
-
-    expect(result.files[0].lines).toBe(1);
-  });
-
-  it('labels unknown extensions as "Other"', async () => {
-    mockReadFile.mockResolvedValueOnce('x\n');
-
-    const result = await analyzeLoc(['data.xyz'], '/repo');
+  it('labels unknown extensions as "Other"', () => {
+    const result = analyzeLoc(['data.xyz'], counts({ 'data.xyz': 1 }));
 
     expect(result.files[0].language).toBe('Other');
   });

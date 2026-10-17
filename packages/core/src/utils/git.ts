@@ -43,7 +43,7 @@ export interface RawCommit {
  */
 export async function getAllCommits(
   repoPath: string,
-  options: { since?: string; branch?: string } = {},
+  options: { since?: string; ref?: string } = {},
 ): Promise<RawCommit[]> {
   const args = [
     'log',
@@ -53,7 +53,9 @@ export async function getAllCommits(
   ];
 
   if (options.since) args.push(`--since=${options.since}`);
-  if (options.branch) args.push(options.branch);
+  // `ref` should be a resolved commit id (see resolveCommit); `--end-of-options`
+  // keeps even a hostile value from being parsed as a git flag.
+  if (options.ref) args.push('--end-of-options', options.ref);
 
   const { stdout } = await execa('git', args, { cwd: repoPath });
   const commits = parseGitLog(stdout);
@@ -257,12 +259,186 @@ export function isIgnored(file: string): boolean {
   return false;
 }
 
+// ─── Analyzed tree ─────────────────────────────────────────────────────────────
+//
+// Everything about "the files" — which exist, how long they are — is read from
+// the analyzed commit's tree, never the working copy. Otherwise `--branch other`
+// pairs other's history with the checked-out branch's files, and uncommitted
+// edits leak into LOC.
+
 /**
- * Returns all tracked files in the repo right now.
+ * Resolves a branch, tag or revision to a commit id, failing with a readable
+ * message instead of a buried git error. All later git calls use the returned
+ * id, so commits, files and LOC are guaranteed to describe the same snapshot.
  */
-export async function getTrackedFiles(repoPath: string): Promise<string[]> {
-  const { stdout } = await execa('git', ['ls-files'], { cwd: repoPath });
-  return stdout.split('\n').filter((f) => f && !isIgnored(f));
+export async function resolveCommit(
+  repoPath: string,
+  rev = 'HEAD',
+): Promise<string> {
+  try {
+    const { stdout } = await execa(
+      'git',
+      [
+        'rev-parse',
+        '--verify',
+        '--quiet',
+        '--end-of-options',
+        `${rev}^{commit}`,
+      ],
+      { cwd: repoPath },
+    );
+    return stdout.trim();
+  } catch {
+    throw new Error(
+      rev === 'HEAD'
+        ? 'This repository has no commits yet.'
+        : `Unknown branch or revision: "${rev}"`,
+    );
+  }
+}
+
+export interface TreeBlob {
+  path: string;
+  /** Git object id of the file's contents at the analyzed commit. */
+  oid: string;
+  isSymlink: boolean;
+}
+
+/**
+ * Lists the files in a commit's tree (excluding noise per isIgnored).
+ * Submodules (gitlinks) are skipped — they aren't files in this repo.
+ */
+export async function getTreeBlobs(
+  repoPath: string,
+  ref: string,
+): Promise<TreeBlob[]> {
+  const { stdout } = await execa(
+    'git',
+    ['ls-tree', '-r', '-z', '--full-tree', '--end-of-options', ref],
+    { cwd: repoPath },
+  );
+  return parseLsTree(stdout).filter((b) => !isIgnored(b.path));
+}
+
+/** Parses `git ls-tree -r -z` output: `<mode> <type> <oid>\t<path>\0`. */
+export function parseLsTree(raw: string): TreeBlob[] {
+  const out: TreeBlob[] = [];
+  for (const entry of raw.split('\0')) {
+    if (!entry) continue;
+    const tab = entry.indexOf('\t');
+    const [mode, type, oid] = entry.slice(0, tab).split(' ');
+    if (type !== 'blob') continue;
+    out.push({ path: entry.slice(tab + 1), oid, isSymlink: mode === '120000' });
+  }
+  return out;
+}
+
+// git's own binary heuristic: a NUL byte in the first 8000 bytes.
+const BINARY_SNIFF_BYTES = 8000;
+const NEWLINE = 0x0a;
+
+/**
+ * Incrementally parses `git cat-file --batch` output into a line count per
+ * object id. Fed raw chunks, which may split a header or body anywhere, so a
+ * whole repository's contents never have to sit in memory at once.
+ * Binary and missing objects map to null.
+ */
+export class BlobLineCounter {
+  readonly results = new Map<string, number | null>();
+  private header: number[] = [];
+  private oid = '';
+  private remaining = -1; // bytes of body left; -1 = reading a header
+  private bodyOffset = 0;
+  private newlines = 0;
+  private binary = false;
+  private lastByte = NEWLINE;
+  private skipTerminator = false;
+
+  push(chunk: Buffer): void {
+    let i = 0;
+    while (i < chunk.length) {
+      if (this.skipTerminator) {
+        // Each body is followed by one LF that isn't part of the blob.
+        this.skipTerminator = false;
+        i++;
+        continue;
+      }
+      if (this.remaining < 0) {
+        const lf = chunk.indexOf(NEWLINE, i);
+        if (lf === -1) {
+          for (; i < chunk.length; i++) this.header.push(chunk[i]);
+          return;
+        }
+        for (; i < lf; i++) this.header.push(chunk[i]);
+        i++; // the header's LF
+        this.startBlob(Buffer.from(this.header).toString('utf8'));
+        this.header = [];
+        continue;
+      }
+      const end = Math.min(chunk.length, i + this.remaining);
+      for (let j = i; j < end; j++) {
+        const byte = chunk[j];
+        if (byte === NEWLINE) this.newlines++;
+        else if (byte === 0 && this.bodyOffset + (j - i) < BINARY_SNIFF_BYTES) {
+          this.binary = true;
+        }
+      }
+      if (end > i) this.lastByte = chunk[end - 1];
+      this.bodyOffset += end - i;
+      this.remaining -= end - i;
+      i = end;
+      if (this.remaining === 0) this.finishBlob();
+    }
+  }
+
+  private startBlob(header: string): void {
+    const [oid, type, size] = header.split(' ');
+    if (type === 'missing' || size === undefined) {
+      this.results.set(oid, null);
+      return;
+    }
+    this.oid = oid;
+    this.remaining = Number(size);
+    this.bodyOffset = 0;
+    this.newlines = 0;
+    this.binary = false;
+    this.lastByte = NEWLINE;
+    if (this.remaining === 0) this.finishBlob();
+  }
+
+  private finishBlob(): void {
+    const size = this.bodyOffset;
+    // Same rule as counting a file's text: a final line without a trailing
+    // newline still counts.
+    const lines =
+      size === 0 ? 0 : this.newlines + (this.lastByte === NEWLINE ? 0 : 1);
+    this.results.set(this.oid, this.binary ? null : lines);
+    this.remaining = -1;
+    this.skipTerminator = true;
+  }
+}
+
+/**
+ * Counts lines for each object id by streaming one `git cat-file --batch`
+ * process — no working-copy reads, one subprocess for the whole tree.
+ */
+export async function countBlobLines(
+  repoPath: string,
+  oids: string[],
+): Promise<Map<string, number | null>> {
+  const unique = [...new Set(oids)];
+  const counter = new BlobLineCounter();
+  if (unique.length === 0) return counter.results;
+  const proc = execa('git', ['cat-file', '--batch'], {
+    cwd: repoPath,
+    input: unique.join('\n') + '\n',
+    buffer: false,
+  });
+  for await (const chunk of proc.stdout as AsyncIterable<Buffer>) {
+    counter.push(chunk);
+  }
+  await proc;
+  return counter.results;
 }
 
 /**
@@ -337,7 +513,7 @@ export async function getBranches(repoPath: string): Promise<string[]> {
  */
 export async function getRenameLog(
   repoPath: string,
-  options: { since?: string } = {},
+  options: { since?: string; ref?: string } = {},
 ): Promise<string> {
   const args = [
     'log',
@@ -349,6 +525,7 @@ export async function getRenameLog(
   ];
 
   if (options.since) args.push(`--since=${options.since}`);
+  if (options.ref) args.push('--end-of-options', options.ref);
 
   try {
     const { stdout } = await execa('git', args, { cwd: repoPath });

@@ -45,7 +45,9 @@ export function analyzeBlastRadius(
     });
   }
 
-  const maxAvg = Math.max(...rawFiles.map((f) => f.avg), 1);
+  // Loop, not Math.max(...spread): the spread overflows the stack on huge repos.
+  let maxAvg = 1;
+  for (const f of rawFiles) if (f.avg > maxAvg) maxAvg = f.avg;
 
   const files: FileBlastRadius[] = rawFiles
     .map((f) => ({

@@ -21,10 +21,16 @@ export function analyzeChurn(
 
   // Only report on currently tracked files (ignore deleted files)
   const trackedSet = new Set(trackedFiles);
-  const maxCount = Math.max(...Object.values(fileCounts), 1);
+  const tracked = Object.entries(fileCounts).filter(([file]) =>
+    trackedSet.has(file),
+  );
+  // Scale against tracked files only: a deleted file or lockfile that out-churned
+  // everything still in the repo would otherwise deflate every score. A loop,
+  // not Math.max(...spread), which overflows the stack on huge repos.
+  let maxCount = 1;
+  for (const [, count] of tracked) if (count > maxCount) maxCount = count;
 
-  const files: FileChurn[] = Object.entries(fileCounts)
-    .filter(([file]) => trackedSet.has(file))
+  const files: FileChurn[] = tracked
     .map(([file, commitCount]) => {
       const churnScore = Math.round((commitCount / maxCount) * 100);
       return {

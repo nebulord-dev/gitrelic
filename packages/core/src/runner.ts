@@ -23,8 +23,10 @@ import { analyzeRenameTracking } from './analyzers/rename-tracking.js';
 import { analyzeRewriteRatio } from './analyzers/rewrite-ratio.js';
 import { analyzeTestCoverage } from './analyzers/test-coverage.js';
 import {
+  countBlobLines,
   getAllCommits,
-  getTrackedFiles,
+  getTreeBlobs,
+  resolveCommit,
   getBranches,
   getCurrentBranch,
   detectPrimaryLanguage,
@@ -274,8 +276,13 @@ export async function runGitrelic(
   const shouldMergeIdentities = options.mergeIdentities ?? true;
   const repoName = path.basename(repoPath);
 
+  // Resolve the branch once and use the commit id everywhere, so history,
+  // the file list and LOC all describe the same snapshot (and a typo fails
+  // here with a clear message).
+  const ref = await resolveCommit(repoPath, branch);
+
   onProgress?.('Reading git history...');
-  const rawCommits = await getAllCommits(repoPath, { since, branch });
+  const rawCommits = await getAllCommits(repoPath, { since, ref });
   // Merge before anything else so every analyzer, and report.commits, sees
   // one canonical email per person.
   const { commits, identities } = shouldMergeIdentities
@@ -290,7 +297,8 @@ export async function runGitrelic(
   }
 
   onProgress?.('Scanning tracked files...');
-  const trackedFiles = await getTrackedFiles(repoPath);
+  const treeBlobs = await getTreeBlobs(repoPath, ref);
+  const trackedFiles = treeBlobs.map((b) => b.path);
   const branches = await getBranches(repoPath);
   const analyzedBranch = branch ?? (await getCurrentBranch(repoPath));
   const primaryLanguage = detectPrimaryLanguage(trackedFiles);
@@ -365,7 +373,19 @@ export async function runGitrelic(
   onProgress?.('Counting lines of code...');
   const loc = await safeRunAsync(
     'loc',
-    () => analyzeLoc(trackedFiles, repoPath),
+    async () => {
+      const linesByOid = await countBlobLines(
+        repoPath,
+        treeBlobs.filter((b) => !b.isSymlink).map((b) => b.oid),
+      );
+      const linesByPath = new Map(
+        treeBlobs.map((b) => [
+          b.path,
+          b.isSymlink ? null : (linesByOid.get(b.oid) ?? null),
+        ]),
+      );
+      return analyzeLoc(trackedFiles, linesByPath);
+    },
     EMPTY_LOC,
   );
 
@@ -471,7 +491,7 @@ export async function runGitrelic(
   onProgress?.('Tracking file renames...');
   const renameTracking = await safeRunAsync(
     'renameTracking',
-    () => analyzeRenameTracking(repoPath, trackedFiles, { since }),
+    () => analyzeRenameTracking(repoPath, trackedFiles, { since, ref }),
     EMPTY_RENAME_TRACKING,
   );
 
