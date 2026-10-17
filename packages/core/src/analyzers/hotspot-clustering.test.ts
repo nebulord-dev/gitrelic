@@ -58,6 +58,7 @@ function emptyContributors(): ContributorReport {
         activeDays: 0,
         focusAreas: [],
         isActive: true,
+        isGhost: false,
       },
       {
         email: 'b@dev.com',
@@ -70,11 +71,14 @@ function emptyContributors(): ContributorReport {
         activeDays: 0,
         focusAreas: [],
         isActive: true,
+        isGhost: false,
       },
     ],
     activeContributors: [],
     ghostContributors: [],
     topContributor: {} as any,
+    top3CommitShare: 0,
+    newcomers90d: 0,
     summary: '',
   };
 }
@@ -249,11 +253,14 @@ describe('ownership clustering', () => {
           activeDays: 0,
           focusAreas: [],
           isActive: true,
+          isGhost: false,
         },
       ],
       activeContributors: [],
       ghostContributors: [],
       topContributor: {} as any,
+      top3CommitShare: 0,
+      newcomers90d: 0,
       summary: '',
     };
     const result = analyzeHotspotClustering(
