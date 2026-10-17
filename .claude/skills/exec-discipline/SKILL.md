@@ -51,9 +51,9 @@ grep -r "from 'execa'" packages/core/src/ --include='*.ts' | grep -v 'utils/git.
 
 Any results are violations that need refactoring.
 
-### Known Existing Violation
+### Known Existing Violations
 
-`packages/core/src/analyzers/rename-tracking.ts` currently imports execa directly. This should be refactored — the rename log fetching should be a function in `utils/git.ts`.
+None. (`rename-tracking.ts` used to import execa; it now calls `getRenameLog` from `utils/git.ts`.)
 
 ## Checklist
 

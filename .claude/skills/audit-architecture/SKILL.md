@@ -16,11 +16,11 @@ Dispatch the `monorepo-architect` agent (`.claude/agents/monorepo-architect.md`)
 - Search `apps/web/src/` for any `from '@gitrelic/core'` that is NOT `import type`
 - Search for any `require('@gitrelic/core')` in web
 - Check `apps/web/src/utils/` — constants that needed core values (thresholds, weights, category names) must be duplicated here, not imported from core
-- Run `pnpm --filter @gitrelic/web build` — a Node.js import violation fails Vite at build time with a cryptic "Module externalized for browser compatibility" error
+- Run `pnpm --filter @gitrelic/web build` and read the output — a Node.js import may only produce a "Module externalized for browser compatibility" **warning** while the build succeeds and the dashboard breaks at runtime. Don't treat a green build as proof; the grep above is the real check
 
 ### 2. Dependency Direction
 
-The enforced direction is `@gitrelic/core` → `@gitrelic/cli` and `@gitrelic/web`. The two apps are siblings; neither depends on the other at import time.
+The enforced direction is `@gitrelic/core` → `gitrelic` (apps/cli; not `@gitrelic/cli`) and `@gitrelic/web`. The two apps are siblings; neither depends on the other at import time.
 
 - `packages/core` must not import from `apps/cli`, `apps/web`, or `apps/docs`
 - `apps/cli` must not import from `apps/web` (the web `dist/` is served as static files at runtime — copied in at build time, not imported)
