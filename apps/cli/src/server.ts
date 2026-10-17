@@ -134,6 +134,9 @@ export function createDashboardHandler({
         return;
       }
 
+      // Only `pathname` is trusted from this. An absolute-form request target
+      // (`GET http://evil/x`) sets URL#host from the target, not the Host header
+      // checked above — never route on it.
       const { pathname } = new URL(req.url ?? '/', 'http://localhost');
 
       if (pathname === REPORT_PATH) {

@@ -656,6 +656,7 @@ export interface RunGitrelicOptions {
    * Version stamped into `meta.gitrelicVersion`. Passed in by the caller (the
    * CLI) rather than read from a package.json at runtime: core is bundled into
    * the CLI, so any path relative to core's own module is fragile.
+   * Omitted → `''`, which consumers treat as "unknown".
    */
   version?: string;
   onProgress?: (step: string) => void;
