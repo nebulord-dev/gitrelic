@@ -140,7 +140,7 @@ Changes to either side (new core dep, removed core dep, web dist layout change) 
 
 ## Issue tracking
 
-Issues live in Linear under the GitRelic team. This overrides the global instruction to track tasks in Jira / a kanban markdown file — that rule applies to other projects, not GitRelic. The team backlog is hand-ordered
+Issues live in Linear under the GitRelic team. Track GitRelic work only in Linear — not Jira, and not a markdown kanban file. The team backlog is hand-ordered
 — top of the list is the next thing to work on. When asked "what's next" or
 "pick up the next issue," look at the GitRelic backlog (sorted by manual order,
 not priority or date) and start with the topmost issue in Todo state.
@@ -148,7 +148,7 @@ not priority or date) and start with the topmost issue in Todo state.
 ### Polish Initiative (frozen during the Atlas migration)
 
 **Paused.** Classic hero/bottom-panel polish is on hold while Atlas is built — don't
-start `Polish:` tickets without Dan confirming. `docs/polish-pattern.md` is now input
+start `Polish:` tickets without a maintainer confirming. `docs/polish-pattern.md` is now input
 to each Atlas view's design checkpoint (what the analyzer must communicate), not a spec
 for new React work.
 
