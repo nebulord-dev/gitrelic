@@ -53,6 +53,7 @@ function makeBusFactorReport(
         dominantAuthor: 'alice@example.com',
       })),
     overallBusFactor: 1,
+    excluded: { fixture: 0, generated: 0 },
     summary: '',
   };
 }

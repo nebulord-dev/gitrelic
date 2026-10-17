@@ -4,7 +4,7 @@ import {
   aggregateChurnByDirectory,
   type DirectoryChurnRow,
 } from '../../utils/churnByDirectory';
-import { isTestPath } from '../../utils/isTestPath';
+import { isNonSourcePath } from '../../utils/isNonSourcePath';
 import { type Column, SortableTable } from '../shared/SortableTable';
 import { fmt } from '../theme';
 import type { PresetId } from '../../presets/types';
@@ -32,10 +32,12 @@ export function ChurnTab({ report, onApplyPreset, mode }: ChurnTabProps) {
   const rows = useMemo(() => {
     const files = report.churn?.files ?? [];
     const filtered = files.filter((f) =>
-      mode === 'tests' ? isTestPath(f.file) : !isTestPath(f.file),
+      mode === 'tests'
+        ? isNonSourcePath(report, f.file)
+        : !isNonSourcePath(report, f.file),
     );
     return aggregateChurnByDirectory(filtered);
-  }, [report.churn?.files, mode]);
+  }, [report, mode]);
 
   const columns: Column<DirectoryChurnRow>[] = [
     {

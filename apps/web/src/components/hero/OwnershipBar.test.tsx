@@ -22,7 +22,13 @@ function makeReport(
   churnFiles: ChurnFixture[] = [],
 ): GitrelicReport {
   return {
-    busFactors: { files: [], criticalFiles, overallBusFactor: 1, summary: '' },
+    busFactors: {
+      files: [],
+      criticalFiles,
+      overallBusFactor: 1,
+      excluded: { fixture: 0, generated: 0 },
+      summary: '',
+    },
     churn: { files: churnFiles, topFiles: [], summary: '' },
   } as unknown as GitrelicReport;
 }

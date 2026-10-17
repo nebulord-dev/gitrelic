@@ -1,5 +1,6 @@
 // ─── Core report shape ────────────────────────────────────────────────────────
 
+import type { FileClass } from './utils/fileClass.js';
 import type { RawCommit } from './utils/git.js';
 
 export interface GitrelicReport {
@@ -31,6 +32,12 @@ export interface GitrelicReport {
   renameTracking: RenameTrackingReport;
   /** People whose split emails were merged into one canonical identity. */
   identities: IdentityAlias[];
+  /**
+   * Non-source files in the analyzed tree, keyed by path (source files are
+   * omitted). Fixture and generated files are excluded from ownership
+   * analysis unless `includeFixtures` is set.
+   */
+  fileClasses: Record<string, Exclude<FileClass, 'source'>>;
   commits: RawCommit[];
 }
 
@@ -93,6 +100,8 @@ export interface BusFactorReport {
   files: FileBusFactor[];
   criticalFiles: FileBusFactor[]; // single author owns >80% of commits
   overallBusFactor: number; // min unique authors across top files
+  /** Tracked files left out of ownership analysis (0/0 with includeFixtures). */
+  excluded: { fixture: number; generated: number };
   summary: string;
 }
 
@@ -652,6 +661,11 @@ export interface RunGitrelicOptions {
   maxFiles?: number; // limit analysis to top N churned files
   /** Merge split author identities (see utils/identity.ts). Default true. */
   mergeIdentities?: boolean;
+  /**
+   * Keep test fixtures, snapshots and generated code in ownership analysis
+   * (bus factor and everything derived from it). Default false.
+   */
+  includeFixtures?: boolean;
   /**
    * Version stamped into `meta.gitrelicVersion`. Passed in by the caller (the
    * CLI) rather than read from a package.json at runtime: core is bundled into

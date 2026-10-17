@@ -82,6 +82,7 @@ The most pernicious ghost files are exactly the ones that *aren't* stale — the
 
 ## Limitations
 
+- **Inherits Bus Factor's file set.** Ghost files are computed from bus-factor ownership, so test fixtures, snapshots and generated code are excluded by default (see [Bus Factor](./bus-factor.md)); `--include-fixtures` brings them back.
 - **Heuristic activity cutoff.** People on long leave look identical to people who left.
 - **80% ownership may miss meaningfully-distributed files** where two or three authors share equal knowledge of a now-orphaned area.
 - **Sliding window scales the cutoff.** A 6-month `--since` flag catches more "ghosts" than a 5-year analysis.

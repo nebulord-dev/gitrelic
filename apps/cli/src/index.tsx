@@ -40,6 +40,10 @@ program
     '--no-merge-identities',
     "Don't merge one person's split author emails (case variants, GitHub noreply, same full name)",
   )
+  .option(
+    '--include-fixtures',
+    'Count test fixtures, snapshots and generated code in ownership metrics (bus factor, ghost files, knowledge silos)',
+  )
   .option('--web', 'Open web dashboard after analysis')
   .option('--json', 'Output raw JSON report to stdout')
   .option('--shame', 'Show commit message forensics / shame leaderboard panel')
@@ -51,6 +55,7 @@ const opts = program.opts<{
   branch?: string;
   since?: string;
   mergeIdentities: boolean;
+  includeFixtures?: boolean;
   web?: boolean;
   json?: boolean;
   shame?: boolean;
@@ -105,6 +110,7 @@ if (opts.json) {
       branch: opts.branch,
       since,
       mergeIdentities: opts.mergeIdentities,
+      includeFixtures: opts.includeFixtures,
       version: pkg.version,
     });
     // A consumer that stops reading early (`gitrelic --json | head`) makes Node
@@ -169,6 +175,7 @@ function GitrelicApp() {
       branch: opts.branch,
       since,
       mergeIdentities: opts.mergeIdentities,
+      includeFixtures: opts.includeFixtures,
       version: pkg.version,
       onProgress: setProgress,
     })

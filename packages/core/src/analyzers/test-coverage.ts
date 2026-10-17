@@ -1,5 +1,6 @@
 import path from 'node:path';
 
+import { classifyFile } from '../utils/fileClass.js';
 import type {
   TestCoverageProxyReport,
   DirectoryCoverage,
@@ -27,11 +28,6 @@ const CODE_EXTENSIONS = new Set([
   '.astro',
 ]);
 
-function isTestFile(file: string): boolean {
-  const base = path.basename(file);
-  return /\.(test|spec)\./.test(base) || file.includes('__tests__/');
-}
-
 function isCodeFile(file: string): boolean {
   const ext = path.extname(file).toLowerCase();
   return CODE_EXTENSIONS.has(ext);
@@ -46,10 +42,13 @@ export function analyzeTestCoverage(
 
   for (const file of trackedFiles) {
     if (!isCodeFile(file)) continue;
+    // Fixtures and generated code are neither source to cover nor tests.
+    const cls = classifyFile(file);
+    if (cls === 'fixture' || cls === 'generated') continue;
     const dir = path.dirname(file);
     if (!dirStats.has(dir)) dirStats.set(dir, { source: 0, test: 0 });
     const entry = dirStats.get(dir)!;
-    if (isTestFile(file)) {
+    if (cls === 'test') {
       entry.test++;
       testFileSet.add(file);
     } else {

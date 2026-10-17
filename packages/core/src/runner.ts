@@ -22,6 +22,7 @@ import { analyzeParallelDev } from './analyzers/parallel-dev.js';
 import { analyzeRenameTracking } from './analyzers/rename-tracking.js';
 import { analyzeRewriteRatio } from './analyzers/rewrite-ratio.js';
 import { analyzeTestCoverage } from './analyzers/test-coverage.js';
+import { classifyFile } from './utils/fileClass.js';
 import {
   countBlobLines,
   getAllCommits,
@@ -100,6 +101,7 @@ const EMPTY_BUS_FACTOR: BusFactorReport = {
   files: [],
   criticalFiles: [],
   overallBusFactor: 0,
+  excluded: { fixture: 0, generated: 0 },
   summary: 'unavailable',
 };
 const EMPTY_AGE_MAP: AgeMapReport = {
@@ -299,6 +301,25 @@ export async function runGitrelic(
   onProgress?.('Scanning tracked files...');
   const treeBlobs = await getTreeBlobs(repoPath, ref);
   const trackedFiles = treeBlobs.map((b) => b.path);
+
+  // Fixtures and generated code would inflate ownership metrics (nobody
+  // "owns" a snapshot), so bus factor — and everything built on it — sees
+  // only the rest unless the caller opts back in.
+  const fileClasses: GitrelicReport['fileClasses'] = {};
+  const excluded = { fixture: 0, generated: 0 };
+  const ownershipFiles: string[] = [];
+  for (const file of trackedFiles) {
+    const cls = classifyFile(file);
+    if (cls !== 'source') fileClasses[file] = cls;
+    if (
+      !options.includeFixtures &&
+      (cls === 'fixture' || cls === 'generated')
+    ) {
+      excluded[cls]++;
+    } else {
+      ownershipFiles.push(file);
+    }
+  }
   const branches = await getBranches(repoPath);
   const analyzedBranch = branch ?? (await getCurrentBranch(repoPath));
   const primaryLanguage = detectPrimaryLanguage(trackedFiles);
@@ -331,7 +352,10 @@ export async function runGitrelic(
   onProgress?.('Calculating bus factors...');
   const busFactors = safeRun(
     'busFactor',
-    () => analyzeBusFactor(commits, trackedFiles),
+    () => ({
+      ...analyzeBusFactor(commits, ownershipFiles),
+      excluded,
+    }),
     EMPTY_BUS_FACTOR,
   );
 
@@ -549,6 +573,7 @@ export async function runGitrelic(
     commitTiming,
     renameTracking,
     identities,
+    fileClasses,
     commits,
   };
 }

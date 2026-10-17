@@ -27,6 +27,7 @@ function makeReport(files: FixtureFile[]): GitrelicReport {
       })),
       criticalFiles: [],
       overallBusFactor: 1,
+      excluded: { fixture: 0, generated: 0 },
       summary: '',
     },
     churn: {

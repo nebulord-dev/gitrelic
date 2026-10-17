@@ -18,6 +18,7 @@ function makeBusReport(
     })),
     criticalFiles: [],
     overallBusFactor: 1,
+    excluded: { fixture: 0, generated: 0 },
     summary: '',
   };
 }
