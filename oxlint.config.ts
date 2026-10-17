@@ -59,12 +59,25 @@ export default defineConfig({
                 message: '@gitrelic/scene must stay framework-free.',
               },
               {
-                group: ['node:*'],
+                group: [
+                  'node:*',
+                  'execa',
+                  'fs',
+                  'fs/*',
+                  'path',
+                  'os',
+                  'child_process',
+                ],
                 message: '@gitrelic/scene runs in the browser.',
               },
             ],
           },
         ],
+        // Scene compiles with verbatimModuleSyntax, which Vite honors per
+        // file: `import { type X } from '@gitrelic/core'` survives as the
+        // side-effect import `import {} from '@gitrelic/core'` and drags core
+        // (and execa) into the browser bundle. Require `import type { X }`.
+        'typescript/no-import-type-side-effects': 'error',
       },
     },
   ],
