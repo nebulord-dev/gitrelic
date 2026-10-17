@@ -8,7 +8,12 @@ import { describe, expect, it } from 'vitest';
 // index.html applies the saved theme before the bundle loads. It can't import
 // theme.ts, so run its inline script against fakes to keep the two in step.
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-const inline = html.match(/<script>([\s\S]*?)<\/script>/)?.[1] ?? '';
+// Plain slicing, not a regex: this reads our own file, it doesn't filter HTML.
+const open = html.indexOf('<script>');
+const inline =
+  open === -1
+    ? ''
+    : html.slice(open + '<script>'.length, html.indexOf('</script>', open));
 
 function boot(stored: string | null, opts: { throws?: boolean } = {}) {
   const documentElement = { dataset: { theme: 'flat' } };
