@@ -14,6 +14,7 @@
     "docs:build": "pnpm --filter @gitrelic/docs docs:build",
     "typecheck": "turbo run typecheck",
     "gitrelic": "node apps/cli/dist/index.mjs",
+    "measure:report": "node scripts/measure-report.mjs",
     "test": "pnpm build && pnpm -r test",
     "test:coverage": "pnpm -r test:coverage",
     "test:core": "vitest --ui --coverage --root packages/core",

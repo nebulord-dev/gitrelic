@@ -2,6 +2,7 @@ export { runGitrelic } from './runner.js';
 export { analyzeParallelDev } from './analyzers/parallel-dev.js';
 export { analyzeHotspotClustering } from './analyzers/hotspot-clustering.js';
 export { resolveRepoRoot } from './utils/git.js';
+export { buildCommitIndex } from './utils/commitIndex.js';
 export type { CoAuthor, FileStats, RawCommit } from './utils/git.js';
 export {
   classifyAuthor,
@@ -13,6 +14,7 @@ export type { AuthorClass } from './utils/authorClassification.js';
 export type { FileClass } from './utils/fileClass.js';
 export type {
   GitrelicReport,
+  CommitIndex,
   IdentityAlias,
   RunGitrelicOptions,
   ChurnReport,

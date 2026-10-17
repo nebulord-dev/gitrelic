@@ -41,6 +41,35 @@ export interface GitrelicReport {
   commits: RawCommit[];
 }
 
+// ─── Commit index ──────────────────────────────────────────────────────────────
+
+/**
+ * Compact, columnar form of the commit history for the dashboard: one array
+ * per field, authors and paths stored once and referenced by position. About
+ * 10× smaller than `RawCommit[]` as JSON. Commits are sorted by instant.
+ * Files of commit `i` are `fileIds.slice(fileOffsets[i], fileOffsets[i + 1])`.
+ */
+export interface CommitIndex {
+  version: 1;
+  /** Canonical author emails; `author[i]` indexes into this. */
+  authors: string[];
+  /** Display name for each entry in `authors`. */
+  authorNames: string[];
+  files: string[];
+  /** Commit instant, epoch seconds (ascending). */
+  time: number[];
+  /** Author's UTC offset in minutes at commit time (local = time + tz·60). */
+  tz: number[];
+  author: number[];
+  /** Length commits + 1. */
+  fileOffsets: number[];
+  fileIds: number[];
+  insertions: number[];
+  deletions: number[];
+  /** 12-character abbreviated hashes. */
+  hash: string[];
+}
+
 // ─── Author identities ────────────────────────────────────────────────────────
 
 export interface IdentityAlias {
