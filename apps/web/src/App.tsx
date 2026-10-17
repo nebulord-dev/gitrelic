@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
+import { normalizeReport } from '@gitrelic/scene';
 
 import { Shell } from './components/layout/Shell';
-import { normalizeReport } from './utils/normalizeReport';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export default function App() {

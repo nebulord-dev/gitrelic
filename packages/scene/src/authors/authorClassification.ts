@@ -1,9 +1,10 @@
-// Web-side mirror of packages/core/src/utils/authorClassification.ts
+// Browser-side mirror of packages/core/src/utils/authorClassification.ts
 //
-// The web app may only `import type` from @gitrelic/core (CLAUDE.md rule —
+// Browser code may only `import type` from @gitrelic/core (CLAUDE.md rule —
 // value imports leak Node-only deps like execa into the browser bundle).
-// These pure-function variants of the classification logic let the web
-// classify emails and resolve display names without crossing that line.
+// These pure-function variants of the classification logic let the
+// dashboards classify emails and resolve display names without crossing
+// that line.
 // Keep the AI / bot patterns in sync with the core utility.
 
 import type { AuthorClass, Contributor } from '@gitrelic/core';

@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
+import { aiAdoptionByMonth, perAuthorAiMix } from '@gitrelic/scene';
 
 import { useSelection } from '../../hooks/useSelection';
 import { PRESETS } from '../../presets/registry';
-import { aiAdoptionByMonth } from '../../utils/aiAdoptionByMonth';
 import { cn } from '../../utils/cn';
-import { perAuthorAiMix } from '../../utils/perAuthorAiMix';
 import { AgeHistogram } from '../hero/AgeHistogram';
 import { AiAdoptionTrend } from '../hero/AiAdoptionTrend';
 import { AuthorForceGraph } from '../hero/AuthorForceGraph';

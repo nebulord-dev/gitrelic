@@ -1,4 +1,5 @@
-import { aggregateParallelDevByDirectory } from '../../utils/parallelDevByDirectory';
+import { aggregateParallelDevByDirectory } from '@gitrelic/scene';
+
 import { HIGH_PARALLEL_THRESHOLD } from '../hero/ParallelScoreHistogram';
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { Tooltip } from '../shared/Tooltip';

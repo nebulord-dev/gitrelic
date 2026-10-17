@@ -18,6 +18,7 @@
     "test": "pnpm build && pnpm -r test",
     "test:coverage": "pnpm -r test:coverage",
     "test:core": "vitest --ui --coverage --root packages/core",
+    "test:scene": "vitest --ui --coverage --root packages/scene",
     "test:web": "vitest --ui --coverage --root apps/web",
     "prepare": "husky",
     "all-checks": "pnpm build && pnpm test && pnpm lint && pnpm format"

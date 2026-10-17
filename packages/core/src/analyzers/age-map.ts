@@ -5,7 +5,7 @@ import type { RawCommit } from '../utils/git.js';
  * Computes repo-age-relative thresholds used to bucket files into the
  * `fresh / aging / stale / ancient` tiers. Pure helper used inside
  * `analyzeAgeMap` and exposed for analyzer-internal callers. The web
- * layer (`apps/web/src/utils/normalizeReport.ts`) duplicates this formula
+ * layer (`packages/scene/src/report/normalizeReport.ts`) duplicates this formula
  * inline because the project rule is type-only imports from @gitrelic/core
  * — keep the two in sync if the multipliers ever change.
  */

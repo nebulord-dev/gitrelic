@@ -60,8 +60,8 @@ Read based on the task at hand:
 
 **If working on web dashboard:**
 
-- `apps/web/src/App.tsx` — fetches `/gitrelic-report.json`, normalizes via `utils/normalizeReport.ts`, renders `Shell`
-- `apps/web/src/utils/normalizeReport.ts` — fills empty defaults for analyzer fields missing from older reports
+- `apps/web/src/App.tsx` — fetches `/gitrelic-report.json`, normalizes via `normalizeReport` from `@gitrelic/scene`, renders `Shell`
+- `packages/scene/src/` — framework-free derivations shared by the dashboards: `report/normalizeReport.ts` (fills empty defaults for fields missing from older reports), `directory/*ByDirectory.ts`, ownership rankings, author classification. Type-only imports from core; no React/Svelte/Node
 - `apps/web/src/components/layout/Shell.tsx` — top-level layout (sidebar + top bar + main pane + bottom panel + inspector)
 - `apps/web/src/components/layout/BottomPanel.tsx` — routes the active tab mode to one of 22 tab components under `components/tabs/`
 - `apps/web/src/components/layout/InspectorPanel.tsx` — drill-down panel for selected file/contributor/activity

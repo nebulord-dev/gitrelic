@@ -1,8 +1,10 @@
 import {
   aggregateGhostFilesByDirectory,
   type GhostDirectoryRow,
-} from '../../utils/ghostFilesByDirectory';
-import { topGhostOwners, type TopGhostOwner } from '../../utils/ghostOwners';
+  topGhostOwners,
+  type TopGhostOwner,
+} from '@gitrelic/scene';
+
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { Tooltip } from '../shared/Tooltip';
 import { fmt } from '../theme';

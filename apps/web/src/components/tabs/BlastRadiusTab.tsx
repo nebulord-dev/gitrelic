@@ -1,4 +1,5 @@
-import { aggregateBlastByDirectory } from '../../utils/blastByDirectory';
+import { aggregateBlastByDirectory } from '@gitrelic/scene';
+
 import {
   type BlastTier,
   HIGH_BLAST_THRESHOLD,

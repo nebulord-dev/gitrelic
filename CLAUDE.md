@@ -11,12 +11,14 @@ pnpm workspace + Turbo. Strict dependency order:
 ```
 @gitrelic/core (foundation — private)
     ↓
+@gitrelic/scene       (framework-free browser derivations — private, ships TS source)
+    ↓
 gitrelic              (CLI, the only published package; bundles core inline)
 @gitrelic/web         (browser dashboard; served by CLI --web flag)
 @gitrelic/docs        (VitePress site; deploys separately via .github/workflows/docs.yml)
 ```
 
-Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `gitrelic` (NOT `@gitrelic/cli`), `@gitrelic/web`, `@gitrelic/docs`.
+Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `@gitrelic/scene`, `gitrelic` (NOT `@gitrelic/cli`), `@gitrelic/web`, `@gitrelic/docs`.
 
 ## Package Breakdown
 
@@ -26,7 +28,7 @@ Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `gitrelic` (N
 - `src/types.ts` — all TypeScript interfaces (`GitrelicReport`, `ChurnReport`, etc.)
 - `src/utils/git.ts` — raw git primitives (parsing `git log`, `Co-authored-by` trailers via git's native trailer parser into `RawCommit.coAuthors`). The runner resolves `--branch` once (`resolveCommit`) and reads files (`git ls-tree`) and LOC (`git cat-file --batch`) from that commit, never the working copy: uncommitted edits don't count, and Git LFS files count their pointer, not the smudged content.
 - `src/utils/identity.ts` — `mergeIdentities()`: runs in `runner.ts` right after `getAllCommits` (which reads `%aE|%aN`, so `.mailmap` already applies) and folds one person's split emails (case variants, GitHub noreply logins, same multi-word name) into a canonical identity. Every analyzer and `report.commits` see canonical emails; merges are listed in `report.identities`. Bots/AI never merge by name. Disable with `RunGitrelicOptions.mergeIdentities: false`.
-- `src/utils/fileClass.ts` — `classifyFile()`: `source | test | fixture | generated` by path (precedence generated > fixture > test). The runner records non-source files in `report.fileClasses` and keeps fixture/generated files out of bus factor's input by default (so ghost files, knowledge concentration, hotspot clusters and `filesOwned` inherit it; cursed files gets the excluded set explicitly, since its candidates also come from churn); counts land in `busFactors.excluded`. `includeFixtures` / `--include-fixtures` opts back in. Web uses `utils/fileKind.ts` (`makeFileKind`: source / test-incl-fixture / generated), which prefers `fileClasses` and falls back to `isTestPath` for reports without it.
+- `src/utils/fileClass.ts` — `classifyFile()`: `source | test | fixture | generated` by path (precedence generated > fixture > test). The runner records non-source files in `report.fileClasses` and keeps fixture/generated files out of bus factor's input by default (so ghost files, knowledge concentration, hotspot clusters and `filesOwned` inherit it; cursed files gets the excluded set explicitly, since its candidates also come from churn); counts land in `busFactors.excluded`. `includeFixtures` / `--include-fixtures` opts back in. The dashboards use `makeFileKind` from `@gitrelic/scene` (source / test-incl-fixture / generated), which prefers `fileClasses` and falls back to `isTestPath` for reports without it.
 - `src/utils/authorClassification.ts` — pure-function AI/bot/human classifier (Claude / Copilot / Aider / Devin / Cursor + dependabot / renovate / semantic-release / github-actions). Shared infrastructure; consumed by co-author and by cursed-files, which uses it to withhold files whose churn is majority bot-authored. Use `classifyAuthor`, not `isBotEmail`, when AI commits should count as human — only the former checks AI patterns first.
 - `src/analyzers/` — 22 analyzers, each with a corresponding `.test.ts`:
   - `churn.ts` — file churn frequency analysis
@@ -52,6 +54,15 @@ Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `gitrelic` (N
   - `commit-timing.ts` — late-night/weekend stress patterns
   - `rename-tracking.ts` — file rename chain detection
 
+### `packages/scene` — Shared Browser Derivations
+
+Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `normalizeReport`, the `*ByDirectory` aggregations, ownership rankings, AI/bot author classification, `makeFileKind`. The classic web app imports it today; Atlas will too.
+
+- **No build step.** `exports` points at `src/index.ts`; each consumer's bundler compiles it. Turbo still hashes scene's files into dependents' build hashes, so the cache stays correct without a `build` script.
+- **No framework, no Node, no DOM.** Its tsconfig has `lib: ES2022` with no `types`, and an oxlint override bans `react`, `svelte` and `node:*` imports.
+- Imports from `@gitrelic/core` are `import type` only, like any browser code.
+- Tests sit next to each file (`*.test.ts`); run with `pnpm --filter @gitrelic/scene test`.
+
 ### `apps/cli` — Terminal Interface (published as `gitrelic` on npm)
 
 - `src/index.tsx` — Commander entry, Ink render, `--web` server
@@ -63,8 +74,7 @@ Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `gitrelic` (N
 
 > **Migration note:** a new dashboard, **Atlas** (Svelte 5, planned as `apps/atlas` + `packages/scene`), is being built alongside this one and will replace it. Everything in this section and in [Web Styling](#web-styling) applies to the **classic React app only**. Don't carry its React/Tailwind conventions (`cn()`, `classMaps.ts`, `style={{}}` carve-outs, the disabled theme toggle) into Atlas code.
 
-- `src/App.tsx` — loads `/gitrelic-report.json`, normalizes missing fields via `utils/normalizeReport.ts`, then renders `Shell`
-- `src/utils/normalizeReport.ts` — fills empty defaults for analyzer fields missing from older reports so tabs don't crash
+- `src/App.tsx` — loads `/gitrelic-report.json`, normalizes missing fields via `normalizeReport` (from `@gitrelic/scene`), then renders `Shell`
 - `src/components/layout/Shell.tsx` — top-level layout (sidebar + top bar + main pane + bottom panel + inspector)
 - `src/components/layout/Sidebar.tsx` — left nav, switches between overview and tab modes
 - `src/components/layout/BottomPanel.tsx` — routes to the 22 tab components under `components/tabs/`
@@ -101,7 +111,7 @@ Add tests to all changes that can benefit from tests.  If a test is deemed not n
 
 ### Browser code imports
 
-Any code that runs in the browser — `apps/web` today, `packages/scene` and `apps/atlas` once they land — may only `import type` from `@gitrelic/core`. Value imports bundle Node.js modules (execa, `node:fs`) into the browser build and break Vite. The one sanctioned exception is Node-side build tooling (e.g. a Vite dev plugin in `vite.config.ts` that calls `runGitrelic` to serve dev data), which never reaches the browser bundle.
+Any code that runs in the browser — `apps/web`, `packages/scene`, and `apps/atlas` once it lands — may only `import type` from `@gitrelic/core`. An oxlint `typescript/no-restricted-imports` override in `oxlint.config.ts` enforces it (Vite 8 only warns when it externalizes a Node built-in, so the build alone won't catch it). Value imports bundle Node.js modules (execa, `node:fs`) into the browser build and break Vite. The one sanctioned exception is Node-side build tooling (e.g. a Vite dev plugin in `vite.config.ts` that calls `runGitrelic` to serve dev data), which never reaches the browser bundle.
 
 ### Adding a new analyzer
 
@@ -109,7 +119,7 @@ Any code that runs in the browser — `apps/web` today, `packages/scene` and `ap
 2. Export a function `analyzeX(commits, trackedFiles): XReport`
 3. Add result to `GitrelicReport` in `types.ts`, and an `EMPTY_*` fallback in `runner.ts` for `safeRun`
 4. Call it in `runner.ts` and include in return value
-5. Backfill a default in `apps/web/src/utils/normalizeReport.ts` (with a test) — older saved reports lack the field, and the dashboard crashes on `undefined` sections. The same applies to any new top-level `GitrelicReport` field, not just analyzers.
+5. Backfill a default in `packages/scene/src/report/normalizeReport.ts` (with a test) — older saved reports lack the field, and the dashboard crashes on `undefined` sections. The same applies to any new top-level `GitrelicReport` field, not just analyzers.
 
 ### Architectural review
 
@@ -196,6 +206,7 @@ Pre-commit hook (husky + lint-staged) runs `oxlint --fix` and `oxfmt` on staged 
 ```bash
 pnpm test                           # build, then run all tests (core + web + cli)
 pnpm test:core                      # core package tests with Vitest UI
+pnpm test:scene                     # scene package tests with Vitest UI
 pnpm test:web                       # web package tests with Vitest UI
 pnpm test:coverage                  # coverage report
 ```

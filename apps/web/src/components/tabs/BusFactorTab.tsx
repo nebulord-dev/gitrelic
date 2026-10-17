@@ -1,5 +1,8 @@
-import { aggregateBusFactorByDirectory } from '../../utils/busFactorByDirectory';
-import { topDominantOwners } from '../../utils/topDominantOwners';
+import {
+  aggregateBusFactorByDirectory,
+  topDominantOwners,
+} from '@gitrelic/scene';
+
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { Tooltip } from '../shared/Tooltip';
 import type { PresetId } from '../../presets/types';

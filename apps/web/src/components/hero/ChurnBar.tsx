@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { churnCategoryDescription, severityForChurn } from '@gitrelic/scene';
 
-import { churnCategoryDescription, severityForChurn } from '../../utils/churn';
 import { categoryColor } from '../../utils/colors';
 import { ChurnLegend } from '../shared/ChurnLegend';
 import { HeroCaption } from '../shared/HeroCaption';

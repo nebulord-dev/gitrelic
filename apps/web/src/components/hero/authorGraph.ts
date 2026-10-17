@@ -1,7 +1,5 @@
-import {
-  classifyAuthor,
-  resolveAuthorDisplayName,
-} from '../../utils/authorClassification';
+import { classifyAuthor, resolveAuthorDisplayName } from '@gitrelic/scene';
+
 import type { GitrelicReport } from '@gitrelic/core';
 
 // Bots are stripped from pairs[] upstream by the analyzer, so the graph

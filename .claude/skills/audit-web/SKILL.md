@@ -15,7 +15,7 @@ The browser dashboard. Two critical constraints: never import values from `@gitr
 
 - Run: `grep -r "from '@gitrelic/core'" apps/web/src` — every match must be `import type`
 - Run: `grep -r "require('@gitrelic/core')" apps/web/src` — must be zero
-- Check `apps/web/src/utils/` — any constants from core (thresholds, weights, category labels) should be duplicated here intentionally. If they're missing and being imported from core, that's a violation
+- Check `packages/scene/src/` (shared derivations) and `apps/web/src/utils/` — any constants from core (thresholds, weights, category labels) should be duplicated here intentionally. If they're missing and being imported from core, that's a violation
 - Run `pnpm --filter @gitrelic/web build` — a Node.js import violation fails Vite at build time with a "Module externalized for browser compatibility" error. The error is cryptic; the audit exists partly because this error is easy to miss
 
 ### 2. XSS Surface (Overview)
@@ -48,7 +48,7 @@ Hero components to sweep on every audit, one per analyzer surface:
 
 For each: confirm every text binding uses `.text(d => d.label)` or a React text child, never `.html(...)`.
 
-### 4. Report Loading (`apps/web/src/App.tsx` + `utils/normalizeReport.ts`)
+### 4. Report Loading (`apps/web/src/App.tsx` + `normalizeReport` in `packages/scene/src/report/`)
 
 `App.tsx` fetches `/gitrelic-report.json`, parses it, runs it through `normalizeReport`, then renders `Shell`. Review edge cases:
 
@@ -114,8 +114,7 @@ Components not otherwise called out that render user-controlled data:
 ```
 apps/web/src/
 ├── App.tsx                          # Report loading — edge cases
-├── utils/
-│   └── normalizeReport.ts           # Backfill for missing/older report sections
+├── utils/                           # cn, classMaps, colors (normalizeReport lives in packages/scene/src/report/)
 ├── components/
 │   ├── layout/
 │   │   ├── Shell.tsx                # Top-level layout
@@ -152,5 +151,5 @@ Dispatch a `feature-dev:code-reviewer` agent. First action: run the import-disci
 ## Related Audits
 
 - Changes that touch the CLI's web server or `/gitrelic-report.json` endpoint → cross-check **audit-cli** (CORS parity, content-type, path traversal)
-- Changes to `apps/web/src/utils/` constants → verify against core's source (run **audit-core** side-by-side to confirm thresholds haven't drifted)
+- Changes to constants in `packages/scene/src/` or `apps/web/src/utils/` → verify against core's source (run **audit-core** side-by-side to confirm thresholds haven't drifted)
 - New component rendering report fields → consider XSS implications, verify source-of-truth rule, extend this checklist
