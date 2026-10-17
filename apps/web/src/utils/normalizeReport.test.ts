@@ -256,4 +256,22 @@ describe('normalizeReport', () => {
     expect(out.cursedFiles.files).toEqual([]);
     expect(out.cursedFiles.excludedBotFiles).toEqual([]);
   });
+
+  it('defaults identities to an empty list on pre-0.49 reports', () => {
+    expect(normalizeReport({} as any).identities).toEqual([]);
+  });
+
+  it('preserves identities from a fresh report', () => {
+    const identities = [
+      {
+        canonicalEmail: 'ann@corp.com',
+        name: 'Ann Lee',
+        aliases: [
+          { email: 'ann@corp.com', name: 'Ann Lee', commits: 2 },
+          { email: 'ann@home.net', name: 'Ann Lee', commits: 1 },
+        ],
+      },
+    ];
+    expect(normalizeReport({ identities } as any).identities).toBe(identities);
+  });
 });

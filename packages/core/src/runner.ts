@@ -31,6 +31,7 @@ import {
   getCurrentBranch,
   detectPrimaryLanguage,
 } from './utils/git.js';
+import { mergeIdentities } from './utils/identity.js';
 import type {
   AgeMapReport,
   BlastRadiusReport,
@@ -277,10 +278,16 @@ export async function runGitrelic(
   options: RunGitrelicOptions,
 ): Promise<GitrelicReport> {
   const { repoPath, branch, since, onProgress } = options;
+  const shouldMergeIdentities = options.mergeIdentities ?? true;
   const repoName = path.basename(repoPath);
 
   onProgress?.('Reading git history...');
-  const commits = await getAllCommits(repoPath, { since, branch });
+  const rawCommits = await getAllCommits(repoPath, { since, branch });
+  // Merge before anything else so every analyzer, and report.commits, sees
+  // one canonical email per person.
+  const { commits, identities } = shouldMergeIdentities
+    ? mergeIdentities(rawCommits)
+    : { commits: rawCommits, identities: [] };
 
   if (commits.length === 0) {
     const msg = since
@@ -525,6 +532,7 @@ export async function runGitrelic(
     complexityTrend,
     commitTiming,
     renameTracking,
+    identities,
     commits,
   };
 }

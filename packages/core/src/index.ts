@@ -12,6 +12,7 @@ export {
 export type { AuthorClass } from './utils/authorClassification.js';
 export type {
   GitrelicReport,
+  IdentityAlias,
   RunGitrelicOptions,
   ChurnReport,
   FileChurn,

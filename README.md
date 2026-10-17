@@ -67,6 +67,9 @@ gitrelic --path ~/projects/my-app --shame
 
 # Show parallel development panel
 gitrelic --path ~/projects/my-app --parallel
+
+# Keep split author emails separate (merging is on by default; .mailmap still applies)
+gitrelic --path ~/projects/my-app --no-merge-identities
 ```
 
 ## How GitRelic scores files

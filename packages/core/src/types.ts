@@ -29,7 +29,18 @@ export interface GitrelicReport {
   complexityTrend: ComplexityTrendReport;
   commitTiming: CommitTimingReport;
   renameTracking: RenameTrackingReport;
+  /** People whose split emails were merged into one canonical identity. */
+  identities: IdentityAlias[];
   commits: RawCommit[];
+}
+
+// ─── Author identities ────────────────────────────────────────────────────────
+
+export interface IdentityAlias {
+  canonicalEmail: string;
+  name: string;
+  /** Every email folded into this identity, most commits first. */
+  aliases: { email: string; name: string; commits: number }[];
 }
 
 // ─── Repo metadata ─────────────────────────────────────────────────────────────
@@ -639,5 +650,7 @@ export interface RunGitrelicOptions {
   branch?: string;
   since?: string; // e.g. "6 months ago", "2023-01-01"
   maxFiles?: number; // limit analysis to top N churned files
+  /** Merge split author identities (see utils/identity.ts). Default true. */
+  mergeIdentities?: boolean;
   onProgress?: (step: string) => void;
 }

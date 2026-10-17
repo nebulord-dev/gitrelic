@@ -46,7 +46,7 @@ flowchart LR
 
 The analyzer iterates every commit in the analysis window and builds a per-email author map. A few specifics worth knowing:
 
-- **Identity:** keyed by `commit.authorEmail`. Two email addresses with the same display name are treated as two distinct contributors. No name-collision dedup or `.mailmap` resolution happens at this layer.
+- **Identity:** keyed by `commit.authorEmail`, after identity merging. Before any analyzer runs, core applies the repo's `.mailmap` (to authors and `Co-authored-by` trailers) and then folds one person's split emails into a canonical identity: case variants, a GitHub noreply address whose login matches exactly one person, and the same full name (two or more words) across emails. Bots and AI identities never merge by name. Merges are listed in `report.identities`; disable with `--no-merge-identities`.
 - **Active vs ghost cutoffs:** The active window is `max(90, round(repoAgeDays × 0.25))` days before now; the ghost window is `max(180, round(repoAgeDays × 0.5))` days before now. On a 1-year repo (365 days), active = last 91 days, ghost = past 183 days. A contributor is **active** if their last commit falls within the active window; a contributor is a **ghost** if they are not active and their last commit falls before the ghost cutoff. The zone between the two cutoffs is neither active nor ghost — former contributors who may return.
 - **Focus areas:** the top three directories per author by commit count. Directory depth is fixed at 2 (e.g. `packages/react-dom`, not just `packages/`). Files at the repo root (no `/`) map to `.`.
 - **Newcomers (90d):** count of contributors whose `firstCommit` is within the last 90 days. The boundary is inclusive — a commit exactly 90 days old counts.
@@ -144,7 +144,7 @@ Contributors surfaces patterns that warrant action when they cross risk threshol
 
 ## Limitations
 
-- **Email-keyed identity — no dedup.** The same developer committing from two email addresses (home vs. work, pre/post company change) appears as two contributors. `.mailmap` files are not consulted at this layer. Active counts, ghost counts, and Top-3 Share can all be slightly off in repos with email inconsistency.
+- **Identity merging is heuristic.** Split identities with no shared name or matching noreply login (e.g. a personal address under a nickname) stay separate — add them to `.mailmap` to fix. Conversely, two different people with the same full name ("David Smith") merge into one; run with `--no-merge-identities` if that matters for your repo. Counts can shift after upgrading to a version with merging, because previously split contributors now count once.
 - **Two-deep focus areas only.** The directory depth is fixed at 2 (`packages/react-dom`, not `packages/react-dom/src/fiber`). Deep repo structures may produce focus areas that are too coarse to be actionable.
 - **Heuristic active/ghost thresholds.** The 90-day and 180-day floors, and the 25%/50%-of-repo-age scaling, are heuristics. They work well for medium-tenure repos (1–5 years) but may classify contributors misleadingly on very young repos (< 6 months) or very old ones (> 10 years). Trust the direction, not the exact boundary.
 - **Renames are not followed.** If an author predominantly worked on a file before it was renamed, their commits will be attributed to the old path. Focus areas computed from the current path may undercount their actual involvement.

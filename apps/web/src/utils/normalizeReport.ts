@@ -220,6 +220,7 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       filesWithRenames: 0,
       summary: 'Not available',
     },
+    identities: raw.identities ?? [],
     commits: raw.commits ?? [],
   };
 }
