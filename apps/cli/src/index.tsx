@@ -1,5 +1,4 @@
 import { readFileSync, existsSync } from 'node:fs';
-import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { useState, useEffect } from 'react';
@@ -9,6 +8,7 @@ import { render } from 'ink';
 import open from 'open';
 
 import { App } from './components/App.js';
+import { createDashboardServer, listenOnFreePort } from './server.js';
 import type { GitrelicReport } from '@gitrelic/core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -105,6 +105,7 @@ if (opts.json) {
       branch: opts.branch,
       since,
       mergeIdentities: opts.mergeIdentities,
+      version: pkg.version,
     });
     // A consumer that stops reading early (`gitrelic --json | head`) makes Node
     // emit 'error' on stdout, which is fatal if unhandled. Awaiting the flush
@@ -168,6 +169,7 @@ function GitrelicApp() {
       branch: opts.branch,
       since,
       mergeIdentities: opts.mergeIdentities,
+      version: pkg.version,
       onProgress: setProgress,
     })
       .then(async (result) => {
@@ -209,126 +211,27 @@ async function serveWebDashboard(report: GitrelicReport): Promise<number> {
   // The web dashboard is copied into the cli's own dist/web/ at build time
   // (see scripts/copy-web-dist.mjs) so it ships inside the published package
   // and resolves identically in the monorepo and in node_modules installs.
-  // `import.meta.url` points at `.../dist/index.js`, so `./web` resolves to
-  // `.../dist/web/`.
   //
   // Use fileURLToPath rather than URL#pathname: on Windows, pathname returns
   // `/C:/Users/...` with a leading slash before the drive letter, which the
   // fs module can't open. fileURLToPath normalizes it to a real OS path.
   const webDist = fileURLToPath(new URL('./web', import.meta.url));
-  const port = await getFreePort(7777);
-
-  const server = createServer((req, res) => {
-    if (req.url === '/gitrelic-report.json') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(report));
-      return;
-    }
-
-    // Decode the URL and strip the query string. decodeURIComponent handles
-    // percent-encoded traversal sequences (e.g. `/%2e%2e/etc/passwd`) so the
-    // explicit `..` / null-byte check below sees them in normalized form.
-    let decoded: string;
-    try {
-      const rawUrl = (req.url ?? '/').split('?')[0];
-      decoded = decodeURIComponent(rawUrl);
-    } catch {
-      res.writeHead(400);
-      res.end();
-      return;
-    }
-
-    // Hard-reject any traversal indicator or null byte before touching the
-    // filesystem. This is the primary sanitizer — `path.resolve` + boundary
-    // check below is defense-in-depth.
-    if (decoded.includes('..') || decoded.includes('\0')) {
-      res.writeHead(400);
-      res.end();
-      return;
-    }
-
-    // Collapse to a safe relative segment, then join (not resolve) under the
-    // dist root. `path.basename`-per-segment normalization ensures every
-    // segment is a simple filename — no '.', no '..', no absolute anchors.
-    const rel = decoded.replace(/^\/+/, '');
-    const safeSegments = rel
-      .split('/')
-      .filter((seg) => seg.length > 0)
-      .map((seg) => path.basename(seg));
-    const safeRel = safeSegments.join('/');
-    const candidate =
-      safeRel === ''
-        ? path.join(webDist, 'index.html')
-        : path.join(webDist, safeRel);
-
-    // Belt-and-braces boundary check. With the explicit rejections above this
-    // should be unreachable, but keeping it protects against any future change
-    // that relaxes the input validation.
-    const boundary = webDist.endsWith(path.sep) ? webDist : webDist + path.sep;
-    if (!candidate.startsWith(boundary) && candidate !== webDist) {
-      res.writeHead(403);
-      res.end();
-      return;
-    }
-
-    if (existsSync(candidate)) {
-      const ext = path.extname(candidate);
-      const mimeTypes: Record<string, string> = {
-        '.html': 'text/html',
-        '.js': 'application/javascript',
-        '.css': 'text/css',
-        '.json': 'application/json',
-        '.svg': 'image/svg+xml',
-        '.woff': 'font/woff',
-        '.woff2': 'font/woff2',
-        '.ttf': 'font/ttf',
-        '.map': 'application/json',
-        '.wasm': 'application/wasm',
-      };
-      res.writeHead(200, { 'Content-Type': mimeTypes[ext] ?? 'text/plain' });
-      res.end(readFileSync(candidate));
-    } else {
-      // SPA fallback
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end(readFileSync(path.join(webDist, 'index.html')));
-    }
-  });
-
-  // Surface any unexpected listen errors with a clean message. Port conflicts
-  // are already handled upstream by getFreePort, which walks forward until it
-  // finds a free port.
-  await new Promise<void>((resolve, reject) => {
-    server.once('error', reject);
-    server.listen(port, '127.0.0.1', () => resolve());
+  const server = createDashboardServer({ report, webDist });
+  const port = await listenOnFreePort(server, 7777);
+  // Once listening, a later server error would otherwise be an unhandled
+  // 'error' event and kill the CLI. Report it and keep serving.
+  server.on('error', (err) => {
+    process.stderr.write(`gitrelic: dashboard server error: ${err.message}\n`);
   });
   // Structured line for machine consumption (CI, scripts). Ink's colored
   // output can embed ANSI codes that break naive grep; this is always clean.
   process.stderr.write(`GITRELIC_PORT=${port}\n`);
-  await open(`http://localhost:${port}`);
-  return port;
-}
-
-async function getFreePort(preferred: number, attempts = 0): Promise<number> {
-  if (attempts >= 10) {
-    throw new Error(
-      `No free port found after 10 attempts starting from port ${preferred - attempts}`,
-    );
-  }
-  return new Promise((resolve, reject) => {
-    const probe = createServer();
-    // Probe must bind to the same host as the real server (127.0.0.1), otherwise
-    // Node defaults to `::` and we can miss an IPv4-loopback-only conflict —
-    // the probe says "free", then the real listen crashes with EADDRINUSE.
-    probe.listen(preferred, '127.0.0.1', () => {
-      const addr = probe.address() as { port: number };
-      probe.close(() => resolve(addr.port));
-    });
-    probe.on('error', (err: NodeJS.ErrnoException) => {
-      if (err.code === 'EADDRINUSE') {
-        resolve(getFreePort(preferred + 1, attempts + 1));
-      } else {
-        reject(err);
-      }
-    });
+  // 127.0.0.1, not localhost: the server binds IPv4 loopback only, and
+  // localhost can resolve to ::1 first. A missing browser (CI, SSH) is not a
+  // failure — the dashboard is still reachable at the printed URL.
+  const url = `http://127.0.0.1:${port}`;
+  open(url).catch(() => {
+    process.stderr.write(`gitrelic: could not open a browser; visit ${url}\n`);
   });
+  return port;
 }

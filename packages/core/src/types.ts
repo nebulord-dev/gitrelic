@@ -652,5 +652,11 @@ export interface RunGitrelicOptions {
   maxFiles?: number; // limit analysis to top N churned files
   /** Merge split author identities (see utils/identity.ts). Default true. */
   mergeIdentities?: boolean;
+  /**
+   * Version stamped into `meta.gitrelicVersion`. Passed in by the caller (the
+   * CLI) rather than read from a package.json at runtime: core is bundled into
+   * the CLI, so any path relative to core's own module is fragile.
+   */
+  version?: string;
   onProgress?: (step: string) => void;
 }
