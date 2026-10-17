@@ -56,6 +56,14 @@ export default defineConfig({
       },
     },
     {
+      // Atlas compiles with verbatimModuleSyntax too; see the scene override
+      // below for why inline `{ type X }` imports from core are unsafe.
+      files: ['apps/atlas/src/**'],
+      rules: {
+        'typescript/no-import-type-side-effects': 'error',
+      },
+    },
+    {
       // Overrides replace a rule rather than merge it, so scene repeats the
       // core restriction. Scene is shared by a React and a Svelte app and is
       // bundled for the browser: no framework, no Node.

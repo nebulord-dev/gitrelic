@@ -1,0 +1,82 @@
+/*
+ * Theme tokens, from Claude's Atlas mockups. Every name in THEME_TOKENS
+ * (packages/scene/src/theme/tokens.ts) must be defined by both themes; a test
+ * in apps/atlas/test checks it. Values are literals (no color-mix or var() chains) so
+ * the canvas renderer can read them with getComputedStyle.
+ *
+ * --risk-0..3 step from --ghost to --accent in equal sRGB thirds.
+ */
+
+:root[data-theme='glow'] {
+  color-scheme: dark;
+
+  --bg: #070c0e;
+  --text: #e8ecea;
+  --soft: #b9c3c0;
+  --muted: #8d9a97;
+  --panel-bg:
+    radial-gradient(circle at 50% 50%, rgba(40, 92, 92, 0.22), transparent 60%),
+    rgba(255, 255, 255, 0.02);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-radius: 18px;
+  --card-bg: rgba(255, 255, 255, 0.04);
+  --card-border: rgba(255, 255, 255, 0.09);
+  --card-radius: 16px;
+  --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+  --control-border: rgba(255, 255, 255, 0.14);
+  --chip-radius: 999px;
+  --font-body: 'Sora', system-ui, sans-serif;
+
+  --accent: #e2b86b;
+  --accent-ink: #070c0e;
+  --selected-glow: 0 0 28px rgba(226, 184, 107, 0.3);
+
+  --person: #8fc7be;
+  --file: #e2b86b;
+  --dir: #b9a3e3;
+  --ghost: #6e7b78;
+
+  --link: rgba(226, 184, 107, 0.22);
+  --link-hot: rgba(226, 184, 107, 0.75);
+  --cell-base: rgba(255, 255, 255, 0.035);
+  --risk-0: #6e7b78;
+  --risk-1: #958f74;
+  --risk-2: #bba46f;
+  --risk-3: #e2b86b;
+}
+
+:root[data-theme='flat'] {
+  color-scheme: dark;
+
+  --bg: #1f2225;
+  --text: #e6e6e3;
+  --soft: #b3b7bc;
+  --muted: #8b9096;
+  --panel-bg: #24282c;
+  --panel-border: #2e3337;
+  --panel-radius: 2px;
+  --card-bg: #272b2f;
+  --card-border: #2e3337;
+  --card-radius: 2px;
+  --card-shadow: none;
+  --control-border: #353a40;
+  --chip-radius: 2px;
+  --font-body: 'Barlow', system-ui, sans-serif;
+
+  --accent: #f26b3a;
+  --accent-ink: #1f2225;
+  --selected-glow: none;
+
+  --person: #7fb3c8;
+  --file: #f26b3a;
+  --dir: #c9ccd0;
+  --ghost: #5a6067;
+
+  --link: #3a3f44;
+  --link-hot: #f26b3a;
+  --cell-base: #2a2e33;
+  --risk-0: #5a6067;
+  --risk-1: #8d6458;
+  --risk-2: #bf6749;
+  --risk-3: #f26b3a;
+}

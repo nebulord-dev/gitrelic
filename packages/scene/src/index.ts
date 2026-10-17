@@ -93,6 +93,15 @@ export {
 export { normalizeReport } from './report/normalizeReport';
 
 export {
+  DEFAULT_THEME,
+  isThemeName,
+  THEME_TOKENS,
+  THEMES,
+  type ThemeName,
+  type ThemeToken,
+} from './theme/tokens';
+
+export {
   HEADCOUNT_MODERATE_THRESHOLD,
   headcountTier,
   type HeadcountTier,
