@@ -19,7 +19,7 @@ features:
   - title: Terminal & Web
     details: Rich Ink-powered terminal UI for quick scans, plus a full web dashboard with hero visualizations and 23 deep-dive tabs.
   - title: Zero Dependencies
-    details: Everything comes from `git log` and `git ls-files`. No external tool wrappers, no language-specific assumptions.
+    details: Everything comes from git itself — `git log` for history, the analyzed commit's tree (`git ls-tree` / `git cat-file`) for files and line counts. No external tool wrappers, no language-specific assumptions.
   - title: Built on Research
     details: Inspired by Adam Tornhill's "Your Code as a Crime Scene" and "Software Design X-Rays" — proven techniques, applied to your repo.
 ---

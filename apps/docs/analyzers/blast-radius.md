@@ -52,7 +52,7 @@ A few specifics worth knowing:
 - **Window**: the full reachable history of the analyzed branch, bounded by `--since=<date>` if provided.
 - **Merge commits are excluded** (`--no-merges`). Otherwise an octopus merge that touches 200 files would inflate every file's blast score artificially.
 - **Mass-change commits are excluded.** Any commit touching 30 or more tracked files is dropped from the calculation — these are typically reformatting, license header changes, or initial commits, none of which signal architectural coupling. The cap is a constant (`MAX_FILES_PER_COMMIT = 30`) and applies uniformly.
-- **Only currently-tracked files are scored.** Files that were deleted before scan time aren't in `git ls-files`, so they're filtered out — even if their old commits are still in the log.
+- **Only currently-tracked files are scored.** Files that don't exist in the analyzed commit (deleted before it) are filtered out — even if their old commits are still in the log.
 - **Renames are *not* followed.** A renamed file's pre-rename blast history is attributed to the old path. The [Rename Tracking](/analyzers/renames) analyzer surfaces these chains explicitly when you need to reconstruct continuity.
 
 ## The four tiers

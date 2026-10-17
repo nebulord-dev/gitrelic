@@ -275,25 +275,28 @@ export async function resolveCommit(
   repoPath: string,
   rev = 'HEAD',
 ): Promise<string> {
+  const unknown = () =>
+    new Error(
+      rev === 'HEAD'
+        ? 'This repository has no commits yet.'
+        : `Unknown branch or revision: "${rev}" (expected a single branch, tag or commit — ranges like a..b aren't supported)`,
+    );
+  // A leading dash would be read as a git option. Rejected up front rather
+  // than via `--end-of-options`, which rev-parse only accepts from git 2.30.
+  if (rev.startsWith('-')) throw unknown();
   try {
     const { stdout } = await execa(
       'git',
-      [
-        'rev-parse',
-        '--verify',
-        '--quiet',
-        '--end-of-options',
-        `${rev}^{commit}`,
-      ],
+      ['rev-parse', '--verify', '--quiet', `${rev}^{commit}`],
       { cwd: repoPath },
     );
     return stdout.trim();
-  } catch {
-    throw new Error(
-      rev === 'HEAD'
-        ? 'This repository has no commits yet.'
-        : `Unknown branch or revision: "${rev}"`,
-    );
+  } catch (err) {
+    // `--verify --quiet` exits 1 with no output for an unknown revision. Any
+    // other failure (git missing, not a repo, permissions) is a real error
+    // and must not be reported as a typo.
+    if ((err as { exitCode?: number }).exitCode === 1) throw unknown();
+    throw err;
   }
 }
 
@@ -376,12 +379,23 @@ export class BlobLineCounter {
         continue;
       }
       const end = Math.min(chunk.length, i + this.remaining);
-      for (let j = i; j < end; j++) {
+      // Byte-by-byte only while still inside the binary sniff window; past it,
+      // native indexOf finds newlines far faster than a JS loop.
+      const sniffEnd = Math.min(
+        end,
+        i + Math.max(0, BINARY_SNIFF_BYTES - this.bodyOffset),
+      );
+      for (let j = i; j < sniffEnd; j++) {
         const byte = chunk[j];
         if (byte === NEWLINE) this.newlines++;
-        else if (byte === 0 && this.bodyOffset + (j - i) < BINARY_SNIFF_BYTES) {
-          this.binary = true;
-        }
+        else if (byte === 0) this.binary = true;
+      }
+      for (
+        let j = chunk.indexOf(NEWLINE, sniffEnd);
+        j !== -1 && j < end;
+        j = chunk.indexOf(NEWLINE, j + 1)
+      ) {
+        this.newlines++;
       }
       if (end > i) this.lastByte = chunk[end - 1];
       this.bodyOffset += end - i;

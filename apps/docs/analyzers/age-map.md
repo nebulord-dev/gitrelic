@@ -49,7 +49,7 @@ A few specifics worth knowing:
 
 - **Window:** the full reachable history of the analyzed branch, bounded by `--since=<date>` if provided. The `repoAgeDays` value used for threshold scaling comes from the analysis-window length (first commit to today), not the full git history.
 - **Merge commits are excluded** (`--no-merges`). A merge that re-touches 50 files via merge mechanics doesn't refresh those files' ages — only the original commits on the merged branches count.
-- **Only currently-tracked files appear.** Files that were deleted before scan time aren't in `git ls-files`, so they're filtered out — even if their old commits are still in the log. They live in the raw `report.commits` array but don't surface in the analyzer's output.
+- **Only currently-tracked files appear.** Files that don't exist in the analyzed commit (deleted before it) are filtered out — even if their old commits are still in the log. They live in the raw `report.commits` array but don't surface in the analyzer's output.
 - **Renames are *not* followed.** A file's `ageInDays` reflects only commits made under its current name. Pre-rename history is attributed to the old path and won't bring the current path's age down. The [Rename Tracking](/analyzers/renames) analyzer surfaces these chains explicitly when you need continuity.
 - **Median is the upper-middle for even-length arrays** (`sorted[Math.floor(n/2)]`), consistent across the analyzer and the per-directory rollup. This is a deliberate convention — the directional signal is what matters, not the arithmetic mean of two middles.
 

@@ -24,7 +24,7 @@ Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `gitrelic` (N
 
 - `src/runner.ts` — orchestrates all analyzers, entry point is `runGitrelic()`
 - `src/types.ts` — all TypeScript interfaces (`GitrelicReport`, `ChurnReport`, etc.)
-- `src/utils/git.ts` — raw git primitives (parsing `git log`, `git ls-files`, `Co-authored-by` trailers via git's native trailer parser into `RawCommit.coAuthors`)
+- `src/utils/git.ts` — raw git primitives (parsing `git log`, `Co-authored-by` trailers via git's native trailer parser into `RawCommit.coAuthors`). The runner resolves `--branch` once (`resolveCommit`) and reads files (`git ls-tree`) and LOC (`git cat-file --batch`) from that commit, never the working copy: uncommitted edits don't count, and Git LFS files count their pointer, not the smudged content.
 - `src/utils/identity.ts` — `mergeIdentities()`: runs in `runner.ts` right after `getAllCommits` (which reads `%aE|%aN`, so `.mailmap` already applies) and folds one person's split emails (case variants, GitHub noreply logins, same multi-word name) into a canonical identity. Every analyzer and `report.commits` see canonical emails; merges are listed in `report.identities`. Bots/AI never merge by name. Disable with `RunGitrelicOptions.mergeIdentities: false`.
 - `src/utils/authorClassification.ts` — pure-function AI/bot/human classifier (Claude / Copilot / Aider / Devin / Cursor + dependabot / renovate / semantic-release / github-actions). Shared infrastructure; consumed by co-author and by cursed-files, which uses it to withhold files whose churn is majority bot-authored. Use `classifyAuthor`, not `isBotEmail`, when AI commits should count as human — only the former checks AI patterns first.
 - `src/analyzers/` — 22 analyzers, each with a corresponding `.test.ts`:
@@ -127,7 +127,7 @@ Run these before merging large feature branches or when onboarding to a specific
 
 ### Data source
 
-Everything comes from `git log` and `git ls-files`. No external tool dependencies — pure git.
+Everything comes from git: `git log` for history, the analyzed commit's tree for files and LOC. No external tool dependencies — pure git.
 
 ### Publishing invariants
 
