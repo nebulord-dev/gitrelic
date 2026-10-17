@@ -2,10 +2,13 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { request, type Server, createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { gunzipSync } from 'node:zlib';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
+  COMMITS_PATH,
   createDashboardServer,
+  LITE_REPORT_PATH,
   isAllowedHost,
   listenOnFreePort,
   REPORT_PATH,
@@ -20,12 +23,13 @@ interface Reply {
   status: number;
   headers: Record<string, string | string[] | undefined>;
   body: string;
+  bytes: Buffer;
 }
 
 function hit(
   port: number,
   urlPath: string,
-  opts: { method?: string; host?: string } = {},
+  opts: { method?: string; host?: string; acceptEncoding?: string } = {},
 ): Promise<Reply> {
   return new Promise((resolve, reject) => {
     const req = request(
@@ -34,15 +38,25 @@ function hit(
         port,
         path: urlPath,
         method: opts.method ?? 'GET',
-        headers: { Host: opts.host ?? `127.0.0.1:${port}` },
+        headers: {
+          Host: opts.host ?? `127.0.0.1:${port}`,
+          ...(opts.acceptEncoding
+            ? { 'Accept-Encoding': opts.acceptEncoding }
+            : {}),
+        },
       },
       (res) => {
-        let body = '';
-        res.setEncoding('utf8');
-        res.on('data', (c) => (body += c));
-        res.on('end', () =>
-          resolve({ status: res.statusCode ?? 0, headers: res.headers, body }),
-        );
+        const chunks: Buffer[] = [];
+        res.on('data', (c: Buffer) => chunks.push(c));
+        res.on('end', () => {
+          const bytes = Buffer.concat(chunks);
+          resolve({
+            status: res.statusCode ?? 0,
+            headers: res.headers,
+            body: bytes.toString('utf8'),
+            bytes,
+          });
+        });
       },
     );
     req.on('error', reject);
@@ -52,7 +66,33 @@ function hit(
 
 const report = {
   repoName: 'fixture',
-  meta: { totalCommits: 3 },
+  meta: { totalCommits: 2 },
+  commits: [
+    {
+      hash: 'a'.repeat(40),
+      authorEmail: 'ann@corp.com',
+      authorName: 'Ann Lee',
+      date: '2026-01-01T23:30:00-08:00',
+      message: 'feat: a',
+      coAuthors: [],
+      files: ['src/a.ts'],
+      fileStats: [{ file: 'src/a.ts', insertions: 2, deletions: 0 }],
+      insertions: 2,
+      deletions: 0,
+    },
+    {
+      hash: 'b'.repeat(40),
+      authorEmail: 'bob@corp.com',
+      authorName: 'Bob Brown',
+      date: '2026-01-03T09:00:00Z',
+      message: 'fix: b',
+      coAuthors: [],
+      files: ['src/a.ts', 'src/b.ts'],
+      fileStats: [],
+      insertions: 4,
+      deletions: 1,
+    },
+  ],
 } as unknown as GitrelicReport;
 
 let webDist = '';
@@ -165,6 +205,47 @@ describe('dashboard server', () => {
       expect(res.body).not.toContain('root:');
       expect([200, 400, 404]).toContain(res.status);
     }
+  });
+});
+
+describe('data endpoints', () => {
+  it('serves the lite report without raw commits', async () => {
+    const res = await hit(port, LITE_REPORT_PATH);
+    expect(res.status).toBe(200);
+    expect(res.headers['cache-control']).toBe('no-store');
+    const lite = JSON.parse(res.body);
+    expect(lite.commits).toEqual([]);
+    expect(lite.repoName).toBe('fixture');
+  });
+
+  it('serves the columnar commit index', async () => {
+    const res = await hit(port, COMMITS_PATH);
+    const ix = JSON.parse(res.body);
+    expect(ix.version).toBe(1);
+    expect(ix.hash).toEqual(['aaaaaaaaaaaa', 'bbbbbbbbbbbb']);
+    expect(ix.authors).toEqual(['ann@corp.com', 'bob@corp.com']);
+    expect(ix.tz).toEqual([-480, 0]);
+    expect(ix.files).toEqual(['src/a.ts', 'src/b.ts']);
+  });
+
+  it('gzips JSON when the client accepts it', async () => {
+    for (const p of [REPORT_PATH, LITE_REPORT_PATH, COMMITS_PATH]) {
+      const res = await hit(port, p, { acceptEncoding: 'gzip, deflate, br' });
+      expect(res.headers['content-encoding']).toBe('gzip');
+      expect(res.headers.vary).toBe('Accept-Encoding');
+      expect(JSON.parse(gunzipSync(res.bytes).toString('utf8'))).toBeTruthy();
+    }
+  });
+
+  it('sends plain JSON when the client does not accept gzip', async () => {
+    const res = await hit(port, COMMITS_PATH);
+    expect(res.headers['content-encoding']).toBeUndefined();
+    expect(JSON.parse(res.body).version).toBe(1);
+  });
+
+  it('keeps the classic report complete', async () => {
+    const full = JSON.parse((await hit(port, REPORT_PATH)).body);
+    expect(full.commits).toHaveLength(2);
   });
 });
 

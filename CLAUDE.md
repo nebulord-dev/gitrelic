@@ -92,7 +92,12 @@ Add tests to all changes that can benefit from tests.  If a test is deemed not n
 
 1. `runGitrelic()` in core runs all analyzers
 2. CLI receives `GitrelicReport` and renders Ink UI
-3. With `--web`: CLI starts HTTP server (dynamic port via `getFreePort`, preferred 7777), serves web/dist + `/gitrelic-report.json`
+3. With `--web`: CLI starts HTTP server (`apps/cli/src/server.ts`; preferred port 7777), serves web/dist plus three JSON endpoints, each serialized and gzipped once on first request:
+   - `/gitrelic-report.json` — the full report (classic dashboard)
+   - `/gitrelic-report.lite.json` — the report with `commits: []` (what Atlas loads first)
+   - `/gitrelic-commits.json` — `buildCommitIndex(report.commits)`: columnar `CommitIndex` (authors/paths stored once, per-commit UTC offset for local-time views), ~9× smaller than `RawCommit[]`
+
+`node scripts/measure-report.mjs <repo> [--since all]` (after `pnpm build`) prints report size per top-level key — use it before adding anything large to the report.
 
 ### Browser code imports
 

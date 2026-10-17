@@ -6,8 +6,8 @@ import {
   type ServerResponse,
 } from 'node:http';
 import path from 'node:path';
-
-import type { GitrelicReport } from '@gitrelic/core';
+import { gzipSync } from 'node:zlib';
+import { buildCommitIndex, type GitrelicReport } from '@gitrelic/core';
 
 // ─── Local dashboard server ────────────────────────────────────────────────────
 //
@@ -18,6 +18,10 @@ import type { GitrelicReport } from '@gitrelic/core';
 // and nothing a request can trigger is allowed to crash the process.
 
 export const REPORT_PATH = '/gitrelic-report.json';
+/** Full report minus raw commits — what the Atlas dashboard loads first. */
+export const LITE_REPORT_PATH = '/gitrelic-report.lite.json';
+/** Columnar commit history (CommitIndex), loaded lazily by views that need it. */
+export const COMMITS_PATH = '/gitrelic-commits.json';
 
 const MIME_TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -110,11 +114,44 @@ function send(
   res.end(req.method === 'HEAD' ? undefined : body);
 }
 
+interface Payload {
+  raw: Buffer;
+  gzip: Buffer;
+}
+
+/**
+ * JSON endpoints, each serialized (and gzipped) on first request only — the
+ * commit index costs nothing unless a view asks for it — then cached.
+ */
+function jsonEndpoints(report: GitrelicReport) {
+  const build: Record<string, () => unknown> = {
+    [REPORT_PATH]: () => report,
+    [LITE_REPORT_PATH]: () => ({ ...report, commits: [] }),
+    [COMMITS_PATH]: () => buildCommitIndex(report.commits),
+  };
+  const cache = new Map<string, Payload>();
+  return (pathname: string): Payload | null => {
+    const make = build[pathname];
+    if (!make) return null;
+    let payload = cache.get(pathname);
+    if (!payload) {
+      const raw = Buffer.from(JSON.stringify(make()));
+      payload = { raw, gzip: gzipSync(raw) };
+      cache.set(pathname, payload);
+    }
+    return payload;
+  };
+}
+
+function acceptsGzip(req: IncomingMessage): boolean {
+  return /\bgzip\b/.test(String(req.headers['accept-encoding'] ?? ''));
+}
+
 export function createDashboardHandler({
   report,
   webDist,
 }: DashboardServerOptions) {
-  let reportJson: string | null = null;
+  const jsonFor = jsonEndpoints(report);
   const indexPath = path.join(webDist, 'index.html');
 
   return (req: IncomingMessage, res: ServerResponse): void => {
@@ -139,8 +176,9 @@ export function createDashboardHandler({
       // checked above — never route on it.
       const { pathname } = new URL(req.url ?? '/', 'http://localhost');
 
-      if (pathname === REPORT_PATH) {
-        reportJson ??= JSON.stringify(report);
+      const payload = jsonFor(pathname);
+      if (payload) {
+        const gzip = acceptsGzip(req);
         send(
           req,
           res,
@@ -148,8 +186,10 @@ export function createDashboardHandler({
           {
             'Content-Type': MIME_TYPES['.json'],
             'Cache-Control': 'no-store',
+            Vary: 'Accept-Encoding',
+            ...(gzip ? { 'Content-Encoding': 'gzip' } : {}),
           },
-          reportJson,
+          gzip ? payload.gzip : payload.raw,
         );
         return;
       }
