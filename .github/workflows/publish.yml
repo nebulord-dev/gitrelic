@@ -37,15 +37,18 @@ jobs:
 
       - name: Verify core runtime deps are a subset of cli runtime deps
         run: |
-          CORE_DEPS=$(jq -r '.dependencies // {} | keys[]' packages/core/package.json | sort)
-          CLI_DEPS=$(jq -r '.dependencies // {} | keys[]' apps/cli/package.json | sort)
+          # Compare name@range pairs, not just names: two declarations of the
+          # same dep can drift to different ranges and resolve differently on a
+          # fresh install.
+          CORE_DEPS=$(jq -r '.dependencies // {} | to_entries[] | "\(.key)@\(.value)"' packages/core/package.json | sort)
+          CLI_DEPS=$(jq -r '.dependencies // {} | to_entries[] | "\(.key)@\(.value)"' apps/cli/package.json | sort)
           MISSING=$(comm -23 <(echo "$CORE_DEPS") <(echo "$CLI_DEPS") || true)
           if [ -n "$MISSING" ]; then
-            echo "❌ apps/cli is missing runtime deps that @gitrelic/core declares:"
+            echo "❌ apps/cli is missing (or declares a different range for) runtime deps that @gitrelic/core declares:"
             echo "$MISSING" | sed 's/^/    - /'
             exit 1
           fi
-          echo "✓ All core runtime deps are declared in cli"
+          echo "✓ All core runtime deps are declared in cli with matching ranges"
 
       - name: Build
         run: pnpm build

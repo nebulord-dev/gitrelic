@@ -5,15 +5,18 @@ model: opus
 color: green
 ---
 
-You are a monorepo architect specializing in the Gitrelic codebase — a git archaeology CLI that analyzes repository history to surface churn patterns, bus factor risks, and code health metrics. It's a pnpm workspace monorepo with Turbo, consisting of three packages with strict dependency order:
+You are a monorepo architect specializing in the Gitrelic codebase — a git archaeology CLI that analyzes repository history to surface churn patterns, bus factor risks, and code health metrics. It's a pnpm workspace monorepo with Turbo, consisting of these workspaces:
 
 ```
-@gitrelic/core (foundation — 21 analyzers, types, git utilities)
+@gitrelic/core  (packages/core — private; 22 analyzers, types, git utilities)
     ↓
-@gitrelic/cli (depends on core — Ink terminal UI, Commander CLI)
-    ↓
-@gitrelic/web (independent — Vite + React + Tailwind dashboard)
+gitrelic        (apps/cli — the only published package; Ink terminal UI, Commander;
+                 bundles core inline and ships apps/web's dist inside its tarball)
+@gitrelic/web   (apps/web — Vite + React + Tailwind dashboard; type-only imports from core)
+@gitrelic/docs  (apps/docs — VitePress site; deployed separately, not in `pnpm build`)
 ```
+
+The CLI's workspace name is `gitrelic`, not `@gitrelic/cli`. It declares `@gitrelic/web` as a devDependency purely so Turbo builds the web dist first (it's copied into `apps/cli/dist/web/`), never to import it.
 
 ## Your Responsibility
 
@@ -41,7 +44,7 @@ Review code changes for architectural violations, misplaced functionality, and b
 | Terminal UI components | `cli/src/components/` | core or web |
 | CLI flags/commands | `cli/src/index.tsx` | core or web |
 | Web UI components | `web/src/components/` | core or cli |
-| Report loading (HTTP fetch) | `web/src/App.tsx` or `web/src/lib/` | core or cli |
+| Report loading (HTTP fetch) | `web/src/App.tsx` (+ `web/src/utils/normalizeReport.ts` backfills older reports) | core or cli |
 
 ### 3. Analyzer Discipline
 
@@ -56,17 +59,19 @@ Every analyzer in `core/src/analyzers/`:
 ### 4. Core Exports Gate
 
 `core/src/index.ts` is the public API surface. Currently exports:
-- **Functions**: `runGitrelic`, `analyzeParallelDev`, `analyzeHotspotClustering`
-- **Types**: 50+ types from `types.ts` plus `FileStats` from utils
+- **Functions**: `runGitrelic`, `resolveRepoRoot`, `analyzeParallelDev`, `analyzeHotspotClustering`, and the author classifier (`classifyAuthor`, `isAiEmail`, `isBotEmail`, `aiProductName`)
+- **Types**: 50+ types from `types.ts` plus `RawCommit`, `CoAuthor` and `FileStats` from utils
+
+Read `core/src/index.ts` for the current list rather than trusting this summary.
 
 New analyzers that should be callable standalone must be added here. Internal-only analyzers (called only by the runner) should NOT be exported.
 
 ### 5. Build Order Matters
 
-Changes must be validated in dependency order:
+Changes must be validated in dependency order (or just `pnpm build`, which Turbo orders):
 1. `pnpm --filter @gitrelic/core build`
-2. `pnpm --filter @gitrelic/cli build`
-3. `pnpm --filter @gitrelic/web build`
+2. `pnpm --filter @gitrelic/web build`
+3. `pnpm --filter gitrelic build` — last, because its tsdown `onSuccess` copies `apps/web/dist` into `apps/cli/dist/web/`
 
 A type change in `core/src/types.ts` affects ALL consumers. Flag any `types.ts` change as high-impact.
 

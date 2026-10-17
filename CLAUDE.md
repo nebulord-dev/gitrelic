@@ -240,7 +240,7 @@ pnpm -r up -L --interactive          # pick-list — use this for anything major
 
 ### Bundled-deps mirror discipline
 
-When bumping any runtime dep in `packages/core`, bump the matching entry in `apps/cli/package.json` in the **same commit**. The `install-smoke` CI only checks that keys match, not versions — so two declarations can drift to different ranges while CI stays green, and a future fresh install could resolve them differently.
+When bumping any runtime dep in `packages/core`, bump the matching entry in `apps/cli/package.json` in the **same commit**. The `install-smoke` CI job (and the same step in `publish.yml`) compares `name@range` pairs, so a missing dep *or* a drifted range fails the build.
 
 `pnpm -r up -L <pkg>` handles this automatically when both packages declare the dep (common case: `execa`).
 
