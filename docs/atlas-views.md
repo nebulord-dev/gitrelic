@@ -78,6 +78,11 @@ Theme is a viewer preference and stays in localStorage, not the URL.
 - **Catalog:** gains the view → lens mapping if a checkpoint diverges from `PRESET_GROUPS`.
 - **Kept as is:** catalog, badges, entity index, ⌘K palette, inspector cards, `AnalyzerView` / `Layout` model.
 
+### Open items for the views that need them
+
+- **Selecting `cell:`, `week:` and `commit:` marks.** `Nav.select` drops any id the entity index doesn't hold, so today a click on one of those marks clears the selection. The first view that draws them (Commit Timing's clock, Contributors' strips) either adds them to the index or gets its own selection path, with an inspector card for the kind.
+- **Palette cost on huge repos.** `rankEntities` scores every entry and keyword (full paths included) on each keystroke. Fine at this repo's size; if a large monorepo stutters, filter the previous results when the query extends the last one, or debounce.
+
 ---
 
 ## Views

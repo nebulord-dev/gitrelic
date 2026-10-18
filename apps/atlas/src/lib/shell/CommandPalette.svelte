@@ -74,6 +74,16 @@
     onpick(entry);
   }
 
+  // Escape closes the palette wherever focus is. Capture phase, so it runs
+  // before the inspector's window listener, which sees it already handled
+  // and leaves the selection behind the palette alone.
+  function onWindowKeyCapture(e: KeyboardEvent) {
+    if (open && e.key === 'Escape') {
+      e.preventDefault();
+      close();
+    }
+  }
+
   function onWindowKey(e: KeyboardEvent) {
     if (opensPalette(e)) {
       e.preventDefault();
@@ -92,14 +102,14 @@
     } else if (e.key === 'Enter') {
       e.preventDefault();
       pick(results[active]);
-    } else if (e.key === 'Escape') {
+    } else if (e.key === 'Tab') {
+      // The input is the dialog's only control: keep focus in the modal.
       e.preventDefault();
-      close();
     }
   }
 </script>
 
-<svelte:window onkeydown={onWindowKey} />
+<svelte:window onkeydown={onWindowKey} onkeydowncapture={onWindowKeyCapture} />
 
 {#if open}
   <!-- Backdrop: a click outside the dialog closes it. -->
@@ -112,6 +122,14 @@
     role="dialog"
     aria-modal="true"
     aria-label="Search"
+    tabindex="-1"
+    onmousedown={(e) => {
+      // Clicks on the padding or empty list keep focus in the input.
+      if (open && e.target !== input) {
+        e.preventDefault();
+        input?.focus();
+      }
+    }}
     class="card fixed top-[14vh] left-1/2 z-50 flex max-h-[70vh] w-[min(560px,calc(100vw-32px))] -translate-x-1/2 flex-col overflow-hidden"
   >
     <input

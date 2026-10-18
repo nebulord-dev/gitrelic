@@ -68,6 +68,21 @@ describe('attachViewportInput', () => {
     expect(opts.click).toHaveBeenCalledWith(41, 30);
   });
 
+  it("ignores a pen's barrel button", () => {
+    const { el, opts } = setup();
+    for (const type of ['pointerdown', 'pointerup'])
+      el.dispatchEvent(
+        new PointerEvent(type, {
+          pointerId: 1,
+          pointerType: 'pen',
+          button: 2,
+          clientX: 50,
+          clientY: 50,
+        }),
+      );
+    expect(opts.click).not.toHaveBeenCalled();
+  });
+
   it('ignores mouse buttons other than the primary one', () => {
     const { el, opts, view } = setup();
     const press = (type: string, x: number, button: number) =>

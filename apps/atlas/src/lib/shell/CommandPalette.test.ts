@@ -66,6 +66,34 @@ describe('CommandPalette', () => {
     expect(onpick.mock.calls[0][0].label).toBe('api.ts');
   });
 
+  it('closes on Escape even when focus has left the input, and says so', async () => {
+    render(CommandPalette, { index, onpick: vi.fn() });
+    const input = await openWithShortcut();
+    input.blur();
+    const behind = vi.fn((e: KeyboardEvent) => e.defaultPrevented);
+    window.addEventListener('keydown', behind);
+    await fireEvent.keyDown(document.body, { key: 'Escape' });
+    window.removeEventListener('keydown', behind);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    // The inspector's listener sees it handled, so it keeps the selection.
+    expect(behind).toHaveReturnedWith(true);
+  });
+
+  it('keeps focus in the dialog: Tab stays put, clicks on padding refocus', async () => {
+    render(CommandPalette, { index, onpick: vi.fn() });
+    const input = await openWithShortcut();
+    const tab = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      cancelable: true,
+      bubbles: true,
+    });
+    input.dispatchEvent(tab);
+    expect(tab.defaultPrevented).toBe(true);
+    input.blur();
+    await fireEvent.mouseDown(screen.getByRole('dialog'));
+    expect(document.activeElement).toBe(input);
+  });
+
   it('opens on / unless the viewer is typing in a field', async () => {
     render(CommandPalette, { index, onpick: vi.fn() });
     const field = document.createElement('input');
