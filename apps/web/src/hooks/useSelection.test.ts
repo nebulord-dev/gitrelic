@@ -14,6 +14,26 @@ describe('useSelection (preset-driven)', () => {
       expect(result.current.selectedContributor).toBeNull();
     });
 
+    it('opens the preset named by #preset= in the URL', () => {
+      window.location.hash = '#preset=coupling';
+      try {
+        const { result } = renderHook(() => useSelection());
+        expect(result.current.activePresetId).toBe('coupling');
+      } finally {
+        window.location.hash = '';
+      }
+    });
+
+    it('falls back to overview for an unknown #preset=', () => {
+      window.location.hash = '#preset=bogus';
+      try {
+        const { result } = renderHook(() => useSelection());
+        expect(result.current.activePresetId).toBe('overview');
+      } finally {
+        window.location.hash = '';
+      }
+    });
+
     it('derives activeHeroViz from the overview preset default', () => {
       const { result } = renderHook(() => useSelection());
       expect(result.current.activeHeroViz).toBe('treemap');

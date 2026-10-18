@@ -11,21 +11,24 @@ Dispatch the `monorepo-architect` agent (`.claude/agents/monorepo-architect.md`)
 
 ### 1. Package Boundary Violations
 
-**Critical rule:** `apps/web` must NEVER import values from `@gitrelic/core`. Only `import type` is allowed — value imports would bundle Node.js modules (`execa`, `node:fs`, `node:http`) into the browser build and break Vite.
+**Critical rule:** browser code — `apps/web`, `apps/atlas` and `packages/scene` — must NEVER import values from `@gitrelic/core`. Only `import type` is allowed — value imports would bundle Node.js modules (`execa`, `node:fs`, `node:http`) into the browser build and break Vite. The oxlint `typescript/no-restricted-imports` overrides in `oxlint.config.ts` must still cover `apps/web/src/**`, `apps/atlas/src/**` and `packages/scene/src/**`.
 
-- Search `apps/web/src/` for any `from '@gitrelic/core'` that is NOT `import type`
-- Search for any `require('@gitrelic/core')` in web
+- Search `apps/web/src/`, `apps/atlas/src/` and `packages/scene/src/` (excluding `*.test.ts`) for any `from '@gitrelic/core'` that is NOT `import type`
+- Search for any `require('@gitrelic/core')` in those trees
+- In `apps/atlas/src/` and `packages/scene/src/` (both `verbatimModuleSyntax`), `import { type X } from '@gitrelic/core'` is a violation too — it survives as a side-effect import of core. oxlint's `typescript/no-import-type-side-effects` must stay enabled for both
+- `apps/atlas/dev/devData.ts` value-imports core on purpose: it's the Vite dev plugin, Node-side, never in the browser bundle. Flag it only if something under `apps/atlas/src/` starts importing it
 - Check `packages/scene/src/` and `apps/web/src/utils/` — constants that needed core values (thresholds, weights, category names) must be duplicated there, not imported from core
 - `packages/scene` must stay framework-free and browser-safe: no `react`, `svelte` or `node:*` imports (oxlint override in `oxlint.config.ts`), and nothing may import from `apps/*`
-- Run `pnpm --filter @gitrelic/web build` and read the output — a Node.js import may only produce a "Module externalized for browser compatibility" **warning** while the build succeeds and the dashboard breaks at runtime. Don't treat a green build as proof; the grep above is the real check
+- Run `pnpm --filter @gitrelic/web build` and `pnpm --filter @gitrelic/atlas build` and read the output — a Node.js import may only produce a "Module externalized for browser compatibility" **warning** while the build succeeds and the dashboard breaks at runtime. Don't treat a green build as proof; the grep above is the real check
 
 ### 2. Dependency Direction
 
-The enforced direction is `@gitrelic/core` → `gitrelic` (apps/cli; not `@gitrelic/cli`) and `@gitrelic/web`. The two apps are siblings; neither depends on the other at import time.
+The enforced direction is `@gitrelic/core` → `@gitrelic/scene` → `@gitrelic/web` and `@gitrelic/atlas`, plus `@gitrelic/core` → `gitrelic` (apps/cli; not `@gitrelic/cli`). The three apps are siblings; none depends on another at import time.
 
-- `packages/core` must not import from `apps/cli`, `apps/web`, or `apps/docs`
-- `apps/cli` must not import from `apps/web` (the web `dist/` is served as static files at runtime — copied in at build time, not imported)
-- `apps/web` must not import values from `apps/cli`
+- `packages/core` must not import from `packages/scene`, `apps/cli`, `apps/web`, `apps/atlas`, or `apps/docs`
+- `packages/scene` must not import from any `apps/*`
+- `apps/cli` must not import from `apps/web` or `apps/atlas` (both `dist/`s are served as static files at runtime — copied in at build time, not imported)
+- `apps/web` and `apps/atlas` must not import from each other or values from `apps/cli`
 - Check `turbo.json` — the `build.dependsOn: ["^build"]` chain must reflect the direction via workspace dependencies
 - Check `pnpm-workspace.yaml` — no circular workspace references
 
@@ -40,12 +43,13 @@ The enforced direction is `@gitrelic/core` → `gitrelic` (apps/cli; not `@gitre
 
 ### 4. Published-Package Asset Mirror Invariant
 
-`apps/cli` also bundles the built web dashboard into its own `dist/web/` via `tsdown.config.ts`'s `onSuccess: 'node scripts/copy-web-dist.mjs'`. Without this, `npx gitrelic --web` crashes with `ENOENT` on `node_modules/web/dist/index.html` — the monorepo path `../../web/dist` only resolves in development.
+`apps/cli` also bundles both built dashboards into its own `dist/` via `tsdown.config.ts`'s `onSuccess`, which runs `scripts/copy-web-dist.mjs` (name predates Atlas): `apps/web/dist` → `apps/cli/dist/web/` (classic) and `apps/atlas/dist` → `apps/cli/dist/atlas/`. Without this, `npx gitrelic --web` crashes with `ENOENT` on `node_modules/web/dist/index.html` — the monorepo path `../../web/dist` only resolves in development.
 
 - `apps/cli/package.json` has `files: ["dist"]` — only `dist/` lands in the tarball. Anything the CLI reads at runtime outside `dist/` is a latent crash
-- `scripts/copy-web-dist.mjs` must fail loudly (`process.exit(1)`) when `apps/web/dist/` is missing, with a message that mentions the fix (`pnpm --filter @gitrelic/web build`)
-- `apps/cli/package.json` declares `@gitrelic/web` as `devDependencies` with `workspace:*` — turbo uses this to order the builds so the copy script always finds a built web dist
-- CI `install-smoke` verifies `node_modules/gitrelic/dist/web/index.html` exists after installing the packed tarball
+- `scripts/copy-web-dist.mjs` must fail loudly (`process.exit(1)`) when **either** dist or its `index.html` is missing, with a message that names the package to build (`pnpm --filter @gitrelic/web build` / `@gitrelic/atlas`)
+- `apps/cli/package.json` declares both `@gitrelic/web` and `@gitrelic/atlas` as `devDependencies` with `workspace:*` — turbo uses these to order the builds so the copy script always finds both dists. Dropping either races the build
+- `apps/web/vite.config.ts` must keep `base: './'`: `--ui atlas` serves classic under `/classic/`, and absolute asset URLs would 404 there
+- CI `install-smoke` verifies `node_modules/gitrelic/dist/web/index.html` and `dist/atlas/index.html` exist after installing the packed tarball, probes `--web --no-open`, and has a `--ui atlas --no-open` step that checks Atlas at `/`, classic at `/classic/` (including one relative script), and the lite + commits endpoints
 
 ### 5. Exec Discipline Invariant
 
@@ -60,13 +64,14 @@ All git command execution MUST go through `packages/core/src/utils/git.ts`. See 
 - Run `pnpm --filter @gitrelic/core exec madge --circular src/` — must return no cycles
 - Run `pnpm --filter gitrelic exec madge --circular src/` — same
 - Run `pnpm --filter @gitrelic/web exec madge --circular src/` — same
+- Run it on `packages/scene/src/` too. For Atlas, `.svelte` imports need a manual look — don't read a clean madge run over `apps/atlas/src` as proof
 - Pay attention to `packages/core/src/analyzers/` — analyzers must not import from each other. Cross-analyzer composition belongs in `runner.ts` or in a dedicated consumer like `cursed-files.ts` (which takes other analyzers' output as arguments rather than importing them)
 
 ### 7. Type Export Discipline
 
 - `packages/core/src/index.ts` — all public types re-exported here. Internal implementation (individual analyzer functions, git utils) should only be exported if intentionally public API
-- `apps/cli` and `apps/web` should import from `@gitrelic/core` via the package name (workspace import), not via relative paths like `../../../packages/core/src`. Relative path imports across packages bypass the build system and cause subtle bugs
-- `apps/web` imports must be `import type` only (see §1) — any value in the public export from core will eventually tempt someone to value-import it
+- `apps/cli`, `apps/web`, `apps/atlas` and `packages/scene` should import from `@gitrelic/core` (and the dashboards from `@gitrelic/scene`) via the package name (workspace import), not via relative paths like `../../../packages/core/src`. Relative path imports across packages bypass the build system and cause subtle bugs
+- `apps/web`, `apps/atlas` and `packages/scene` imports from core must be `import type` only (see §1) — any value in the public export from core will eventually tempt someone to value-import it
 
 ### 8. Documentation Site (`apps/docs`)
 
@@ -85,10 +90,11 @@ VitePress site deployed to `nebulord-dev.github.io/gitrelic` via `.github/workfl
 
 ### 10. Release Workflow Invariant
 
-Only `gitrelic` (the CLI) publishes to npm via semantic-release. Core and web are private, and this must not change without a plan.
+Only `gitrelic` (the CLI) publishes to npm via semantic-release. Core, scene, web and atlas are private, and this must not change without a plan.
 
 - `packages/core/package.json` must stay `"private": true` — publishing it separately would break the bundled-deps invariant (users would end up with two copies of core's source)
-- `apps/web/package.json` must stay `"private": true` — it's served as static assets, not consumed as a module
+- `apps/web/package.json` and `apps/atlas/package.json` must stay `"private": true` — they're served as static assets, not consumed as modules
+- `packages/scene/package.json` must stay `"private": true` — it ships TS source (`exports` → `src/index.ts`) that only workspace bundlers can compile
 - `apps/docs/package.json` must stay `"private": true`
 - `.releaserc.json` has `pkgRoot: "apps/cli"` — only that path gets version-bumped and published
 - **Pre-1.0 guard:** `.releaserc.json` reclassifies breaking changes as minor bumps (`"releaseRules": [{ "breaking": true, "release": "minor" }]`). Do not remove this rule outside a deliberate 1.0 cut — a single `chore!:` commit once shipped `v2.0.0` that had to be unpublished and reset
@@ -132,9 +138,13 @@ packages/core/package.json              # Private, dependency source-of-truth
 packages/core/src/utils/git.ts          # Exec-discipline boundary
 apps/cli/package.json                   # Must mirror core's runtime deps
 apps/cli/tsdown.config.ts               # deps.alwaysBundle + copy-web-dist onSuccess
-apps/cli/scripts/copy-web-dist.mjs      # Published-asset mirror
+apps/cli/scripts/copy-web-dist.mjs      # Published-asset mirror (web + atlas dists)
+apps/cli/src/server.ts                  # Dashboard mounts + JSON endpoints
 packages/scene/src/                     # Framework-free browser derivations (TS source, no build)
 apps/web/src/utils/                     # Classic-only styling helpers (cn, classMaps, colors)
+apps/web/vite.config.ts                 # base: './' — classic must work under /classic/
+apps/atlas/dev/devData.ts               # Node-side Vite dev plugin — the sanctioned core value import
+apps/atlas/test/noRawHtml.test.ts       # Bans {@html}/innerHTML/outerHTML/insertAdjacentHTML in src
 apps/docs/.vitepress/config.ts          # VitePress site — separate deploy
 .releaserc.json                         # Publishing scope — CLI only, pre-1.0 guard
 .github/workflows/                      # ci.yml (install-smoke), publish.yml, docs.yml
@@ -155,7 +165,7 @@ Skip style/formatting issues entirely — oxlint and oxfmt handle those.
 
 ## How to Run
 
-Dispatch the `monorepo-architect` agent. Provide it this checklist plus the current state of: `turbo.json`, `pnpm-workspace.yaml`, `packages/core/package.json`, `apps/cli/package.json`, `apps/cli/tsdown.config.ts`, `apps/cli/scripts/copy-web-dist.mjs`, `.releaserc.json`, and the results of grepping `apps/web/src/` for value imports from core.
+Dispatch the `monorepo-architect` agent. Provide it this checklist plus the current state of: `turbo.json`, `pnpm-workspace.yaml`, `packages/core/package.json`, `apps/cli/package.json`, `apps/cli/tsdown.config.ts`, `apps/cli/scripts/copy-web-dist.mjs`, `.releaserc.json`, `apps/web/vite.config.ts`, `oxlint.config.ts`, and the results of grepping `apps/web/src/`, `apps/atlas/src/` and `packages/scene/src/` for value imports from core.
 
 First action: diff `jq -r '.dependencies | keys[]' packages/core/package.json` against the same for `apps/cli/package.json` — any core dep not mirrored in cli is the highest-severity finding. Then walk the checklist, citing war stories when a finding maps to a recurring class of bug.
 

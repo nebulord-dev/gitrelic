@@ -3,12 +3,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { useState, useEffect } from 'react';
 import { runGitrelic, resolveRepoRoot } from '@gitrelic/core';
-import { program } from 'commander';
+import { Option, program } from 'commander';
 import { render } from 'ink';
 import open from 'open';
 
 import { App } from './components/App.js';
-import { createDashboardServer, listenOnFreePort } from './server.js';
+import {
+  createDashboardServer,
+  listenOnFreePort,
+  type DashboardMount,
+} from './server.js';
 import type { GitrelicReport } from '@gitrelic/core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -45,6 +49,13 @@ program
     'Count test fixtures, snapshots and generated code in ownership metrics (bus factor, ghost files, knowledge silos)',
   )
   .option('--web', 'Open web dashboard after analysis')
+  .addOption(
+    new Option(
+      '--ui <dashboard>',
+      'Dashboard to serve (implies --web): classic, or the Atlas preview',
+    ).choices(['classic', 'atlas']),
+  )
+  .option('--no-open', "Serve the dashboard but don't open a browser")
   .option('--json', 'Output raw JSON report to stdout')
   .option('--shame', 'Show commit message forensics / shame leaderboard panel')
   .option('--parallel', 'Show parallel development leaderboard panel')
@@ -57,10 +68,20 @@ const opts = program.opts<{
   mergeIdentities: boolean;
   includeFixtures?: boolean;
   web?: boolean;
+  ui?: 'classic' | 'atlas';
+  open: boolean;
   json?: boolean;
   shame?: boolean;
   parallel?: boolean;
 }>();
+
+if (opts.json && opts.ui) {
+  process.stderr.write(
+    'Error: --ui serves a dashboard and --json prints a report; pick one.\n',
+  );
+  process.exit(1);
+}
+const web = opts.web || opts.ui !== undefined;
 
 const inputPath = path.resolve(opts.path);
 const since = opts.since === 'all' ? undefined : opts.since;
@@ -181,7 +202,7 @@ function GitrelicApp() {
     })
       .then(async (result) => {
         setReport(result);
-        if (opts.web) {
+        if (web) {
           const port = await serveWebDashboard(result);
           setWebPort(port);
         } else {
@@ -215,15 +236,25 @@ const inkInstance = render(<GitrelicApp />);
 await inkInstance.waitUntilExit();
 
 async function serveWebDashboard(report: GitrelicReport): Promise<number> {
-  // The web dashboard is copied into the cli's own dist/web/ at build time
-  // (see scripts/copy-web-dist.mjs) so it ships inside the published package
+  // The dashboards are copied into the cli's own dist/ at build time
+  // (see scripts/copy-web-dist.mjs) so they ship inside the published package
   // and resolves identically in the monorepo and in node_modules installs.
   //
   // Use fileURLToPath rather than URL#pathname: on Windows, pathname returns
   // `/C:/Users/...` with a leading slash before the drive letter, which the
   // fs module can't open. fileURLToPath normalizes it to a real OS path.
-  const webDist = fileURLToPath(new URL('./web', import.meta.url));
-  const server = createDashboardServer({ report, webDist });
+  const dist = (name: string) =>
+    fileURLToPath(new URL(`./${name}`, import.meta.url));
+  // Atlas takes the root and keeps classic one link away, for the analyzers
+  // it doesn't cover yet.
+  const mounts: DashboardMount[] =
+    opts.ui === 'atlas'
+      ? [
+          { prefix: '/', dist: dist('atlas') },
+          { prefix: '/classic/', dist: dist('web') },
+        ]
+      : [{ prefix: '/', dist: dist('web') }];
+  const server = createDashboardServer({ report, mounts });
   const port = await listenOnFreePort(server, 7777);
   // Once listening, a later server error would otherwise be an unhandled
   // 'error' event and kill the CLI. Report it and keep serving.
@@ -237,6 +268,7 @@ async function serveWebDashboard(report: GitrelicReport): Promise<number> {
   // localhost can resolve to ::1 first. A missing browser (CI, SSH) is not a
   // failure — the dashboard is still reachable at the printed URL.
   const url = `http://127.0.0.1:${port}`;
+  if (!opts.open) return port;
   open(url).catch(() => {
     process.stderr.write(`gitrelic: could not open a browser; visit ${url}\n`);
   });

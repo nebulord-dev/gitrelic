@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 
+import { presetFromHash } from '../presets/presetFromHash';
 import { PRESETS } from '../presets/registry';
 import type { BottomTab, HeroViz, Metric, PresetId } from '../presets/types';
 import type { GitrelicReport } from '@gitrelic/core';
@@ -35,7 +36,10 @@ export interface SelectionState {
 }
 
 export function useSelection(): SelectionState {
-  const [activePresetId, setActivePresetId] = useState<PresetId>('overview');
+  // Atlas deep-links here with `#preset=<id>`; read once, on load.
+  const [activePresetId, setActivePresetId] = useState<PresetId>(
+    () => presetFromHash(window.location.hash) ?? 'overview',
+  );
   const [heroOverride, setHeroOverrideState] = useState<HeroViz | null>(null);
   const [bottomTabOverride, setBottomTabOverrideState] =
     useState<BottomTab | null>(null);

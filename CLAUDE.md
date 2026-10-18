@@ -15,7 +15,7 @@ pnpm workspace + Turbo. Strict dependency order:
     ↓
 gitrelic              (CLI, the only published package; bundles core inline)
 @gitrelic/web         (classic browser dashboard; served by CLI --web flag)
-@gitrelic/atlas       (Svelte 5 dashboard replacing web — private, not served by the CLI yet)
+@gitrelic/atlas       (Svelte 5 dashboard replacing web — private; served by CLI --ui atlas)
 @gitrelic/docs        (VitePress site; deploys separately via .github/workflows/docs.yml)
 ```
 
@@ -69,9 +69,10 @@ Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `norm
 
 ### `apps/cli` — Terminal Interface (published as `gitrelic` on npm)
 
-- `src/index.tsx` — Commander entry, Ink render, `--web` server
+- `src/index.tsx` — Commander entry, Ink render, `--web` / `--ui` / `--no-open`
+- `src/server.ts` — the dashboard HTTP server: dashboards mounted by URL prefix (`--ui atlas` puts Atlas at `/` and classic at `/classic/`), the JSON endpoints at the root, Host-header and traversal guards
 - `src/components/App.tsx` — root Ink component (loading → results)
-- `scripts/copy-web-dist.mjs` — tsdown `onSuccess` hook: copies `apps/web/dist/*` → `apps/cli/dist/web/*` so the dashboard ships inside the published tarball
+- `scripts/copy-web-dist.mjs` — tsdown `onSuccess` hook: copies `apps/web/dist` → `apps/cli/dist/web` and `apps/atlas/dist` → `apps/cli/dist/atlas` so both dashboards ship inside the published tarball
 - `tsdown.config.ts` — `deps.alwaysBundle: ['@gitrelic/core']` inlines core's source into the CLI bundle (core stays private)
 
 ### `apps/web` — Web Dashboard (classic)
@@ -90,7 +91,7 @@ Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `norm
 
 ### `apps/atlas` — Web Dashboard (Atlas, in progress)
 
-Svelte 5 (runes) + Vite + Tailwind v4. Not served by the CLI yet; `--ui atlas` lands in a later PR. Each analyzer view starts with a design checkpoint with a maintainer before it is built.
+Svelte 5 (runes) + Vite + Tailwind v4. Served by `gitrelic --ui atlas` (implies `--web`) at `/`, with classic under `/classic/`; classic's `useSelection` reads `#preset=<id>` on load, so Atlas can link analyzers it has no view for to `/classic/#preset=<id>` (the rail does that from PR 3.1). Each analyzer view starts with a design checkpoint with a maintainer before it is built.
 
 - `src/App.svelte` — loads `/gitrelic-report.lite.json` via `lib/data/loadReport.ts` (normalized with `normalizeReport`), applies the theme, renders `lib/shell/Shell.svelte` (top bar, collapsible rail, stage, inspector). `loadCommits()` fetches `/gitrelic-commits.json` once, only when a view needs commits.
 - `src/lib/state/hash.ts` — URL hash `#v=&l=&s=` for view, layout and selected entity id. Parse/serialize only for now; the shell wires it up with the views. The selection is untrusted: resolve it through the entity map, never render it.
@@ -117,7 +118,7 @@ Add tests to all changes that can benefit from tests.  If a test is deemed not n
 
 1. `runGitrelic()` in core runs all analyzers
 2. CLI receives `GitrelicReport` and renders Ink UI
-3. With `--web`: CLI starts HTTP server (`apps/cli/src/server.ts`; preferred port 7777), serves web/dist plus three JSON endpoints, each serialized and gzipped once on first request:
+3. With `--web` (or `--ui`): CLI starts HTTP server (`apps/cli/src/server.ts`; preferred port 7777), serves the dashboard dist(s) plus three JSON endpoints at the root, each serialized and gzipped once on first request:
    - `/gitrelic-report.json` — the full report (classic dashboard)
    - `/gitrelic-report.lite.json` — the report with `commits: []` (what Atlas loads first)
    - `/gitrelic-commits.json` — `buildCommitIndex(report.commits)`: columnar `CommitIndex` (authors/paths stored once, per-commit UTC offset for local-time views), ~9× smaller than `RawCommit[]`
@@ -167,7 +168,7 @@ The published `gitrelic` package relies on two invariants that CI enforces. Both
 
 1. **Bundled-deps mirror.** `apps/cli/tsdown.config.ts` inlines `@gitrelic/core`'s source via `deps.alwaysBundle`. The bundled code still calls `require('execa')` (and anything else core declares) against the CLI's own `node_modules` — so every runtime dep in `packages/core/package.json` MUST also appear in `apps/cli/package.json` with matching version ranges. The `install-smoke` CI job diffs the two dependency lists and fails on drift.
 
-2. **Published-asset mirror.** `apps/cli/package.json` ships `files: ["dist"]`, so only `dist/` lands in the tarball. The web dashboard lives at `apps/web/dist/`, outside the tarball — `scripts/copy-web-dist.mjs` (run as tsdown `onSuccess`) copies it into `apps/cli/dist/web/` at build time. Without this, `--web` crashes with `ENOENT` on every published version. Turbo orders the web build first because `apps/cli/package.json` declares `@gitrelic/web` as a `devDependency: workspace:*`.
+2. **Published-asset mirror.** `apps/cli/package.json` ships `files: ["dist"]`, so only `dist/` lands in the tarball. The dashboards live at `apps/web/dist/` and `apps/atlas/dist/`, outside the tarball — `scripts/copy-web-dist.mjs` (run as tsdown `onSuccess`) copies them into `apps/cli/dist/web/` and `apps/cli/dist/atlas/` at build time. Without this, `--web` crashes with `ENOENT` on every published version. Turbo orders both dashboard builds first because `apps/cli/package.json` declares `@gitrelic/web` and `@gitrelic/atlas` as `devDependency: workspace:*`. Classic builds with `base: './'` so the same dist works at `/` and under `/classic/`.
 
 Changes to either side (new core dep, removed core dep, web dist layout change) must keep both invariants intact in the same PR.
 
@@ -240,10 +241,11 @@ with an explicit "Run `pnpm build`" error rather than skipping.
 ```bash
 node apps/cli/dist/index.mjs --path ~/path/to/any-git-repo
 node apps/cli/dist/index.mjs --path ~/path/to/any-git-repo --web
+node apps/cli/dist/index.mjs --path ~/path/to/any-git-repo --ui atlas --no-open
 node apps/cli/dist/index.mjs --path ~/path/to/any-git-repo --json
 ```
 
-The built output is `dist/index.mjs` (matches `apps/cli/package.json` `bin` field). To verify the published layout, pack the tarball: `cd apps/cli && pnpm pack && tar -tzf gitrelic-*.tgz`.
+The built output is `dist/index.mjs` (matches `apps/cli/package.json` `bin` field). To verify the published layout, pack the tarball: `cd apps/cli && pnpm pack && tar -tzf gitrelic-*.tgz` (both `dist/web/index.html` and `dist/atlas/index.html` must be there).
 
 ## Dependency Hygiene
 

@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   COMMITS_PATH,
   createDashboardServer,
+  findMount,
   LITE_REPORT_PATH,
   isAllowedHost,
   listenOnFreePort,
@@ -110,7 +111,10 @@ beforeAll(async () => {
   writeFileSync(path.join(webDist, 'assets', 'mod.mjs'), 'export {}');
   writeFileSync(path.join(webDist, 'favicon.ico'), 'ico');
 
-  server = createDashboardServer({ report, webDist });
+  server = createDashboardServer({
+    report,
+    mounts: [{ prefix: '/', dist: webDist }],
+  });
   port = await listenOnFreePort(server, 0);
 });
 
@@ -153,18 +157,24 @@ describe('dashboard server', () => {
 
   it('does not crash on a directory request', async () => {
     // Used to readFileSync a directory → EISDIR thrown in the handler → the
-    // whole CLI died. A directory now falls through to the SPA shell.
+    // whole CLI died. A directory is now just a stray path.
     const res = await hit(port, '/assets');
-    expect(res.status).toBe(200);
-    expect(res.body).toContain('shell');
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/');
     // And the server is still alive afterwards.
     expect((await hit(port, '/')).status).toBe(200);
   });
 
-  it('returns the SPA shell for client-side routes', async () => {
-    const res = await hit(port, '/some/route');
+  it('serves the shell at the root as HTML', async () => {
+    const res = await hit(port, '/');
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/^text\/html/);
+  });
+
+  it('redirects stray paths to the root, where relative assets resolve', async () => {
+    const res = await hit(port, '/some/route');
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/');
   });
 
   it('404s missing asset-looking paths instead of serving HTML', async () => {
@@ -203,7 +213,7 @@ describe('dashboard server', () => {
     ]) {
       const res = await hit(port, p);
       expect(res.body).not.toContain('root:');
-      expect([200, 400, 404]).toContain(res.status);
+      expect([302, 400, 404]).toContain(res.status);
     }
   });
 });
@@ -246,6 +256,115 @@ describe('data endpoints', () => {
   it('keeps the classic report complete', async () => {
     const full = JSON.parse((await hit(port, REPORT_PATH)).body);
     expect(full.commits).toHaveLength(2);
+  });
+});
+
+// --ui atlas: Atlas at the root, classic under /classic/.
+describe('two dashboards', () => {
+  let atlasDist = '';
+  let classicDist = '';
+  let dual: Server;
+  let dualPort = 0;
+
+  beforeAll(async () => {
+    atlasDist = mkdtempSync(path.join(tmpdir(), 'gitrelic-atlas-'));
+    writeFileSync(path.join(atlasDist, 'index.html'), '<p>atlas</p>');
+    mkdirSync(path.join(atlasDist, 'assets'));
+    writeFileSync(path.join(atlasDist, 'assets', 'atlas.js'), 'atlas()');
+    classicDist = mkdtempSync(path.join(tmpdir(), 'gitrelic-classic-'));
+    writeFileSync(path.join(classicDist, 'index.html'), '<p>classic</p>');
+    mkdirSync(path.join(classicDist, 'assets'));
+    writeFileSync(path.join(classicDist, 'assets', 'app.js'), 'classic()');
+
+    dual = createDashboardServer({
+      report,
+      mounts: [
+        { prefix: '/', dist: atlasDist },
+        { prefix: '/classic/', dist: classicDist },
+      ],
+    });
+    dualPort = await listenOnFreePort(dual, 0);
+  });
+
+  afterAll(async () => {
+    await new Promise<void>((r) => dual.close(() => r()));
+    rmSync(atlasDist, { recursive: true, force: true });
+    rmSync(classicDist, { recursive: true, force: true });
+  });
+
+  it('serves Atlas at the root and classic under /classic/', async () => {
+    expect((await hit(dualPort, '/')).body).toBe('<p>atlas</p>');
+    expect((await hit(dualPort, '/assets/atlas.js')).body).toBe('atlas()');
+    expect((await hit(dualPort, '/classic/')).body).toBe('<p>classic</p>');
+    expect((await hit(dualPort, '/classic/assets/app.js')).body).toBe(
+      'classic()',
+    );
+  });
+
+  it('keeps each dashboard to its own files', async () => {
+    expect((await hit(dualPort, '/assets/app.js')).status).toBe(404);
+    expect((await hit(dualPort, '/classic/assets/atlas.js')).status).toBe(404);
+  });
+
+  it('redirects /classic to /classic/ so relative assets resolve', async () => {
+    const res = await hit(dualPort, '/classic?x=1');
+    expect(res.status).toBe(308);
+    expect(res.headers.location).toBe('/classic/?x=1');
+  });
+
+  it("sends stray paths to their own mount's root", async () => {
+    expect((await hit(dualPort, '/some/route')).headers.location).toBe('/');
+    expect((await hit(dualPort, '/classic/some/route')).headers.location).toBe(
+      '/classic/',
+    );
+  });
+
+  it('serves the JSON endpoints at the root for both', async () => {
+    for (const p of [REPORT_PATH, LITE_REPORT_PATH, COMMITS_PATH]) {
+      expect((await hit(dualPort, p)).status).toBe(200);
+    }
+  });
+
+  it('never serves files outside a mount', async () => {
+    // Encoded separators survive URL parsing and are refused per segment.
+    for (const p of ['/classic/..%2fassets%2fatlas.js', '/classic/%2e%2e%2f']) {
+      expect((await hit(dualPort, p)).status).toBe(400);
+    }
+    // Whole `%2e%2e` segments are collapsed by the URL parser before routing,
+    // so this is just `/etc/passwd`: a stray path on the root mount.
+    const dotted = await hit(dualPort, '/classic/%2e%2e/%2e%2e/etc/passwd');
+    expect(dotted.status).toBe(302);
+    expect(dotted.headers.location).toBe('/');
+  });
+});
+
+describe('findMount', () => {
+  const mounts = [
+    { prefix: '/', dist: 'a' },
+    { prefix: '/classic/', dist: 'c' },
+  ];
+
+  it('picks the longest matching prefix, whatever the order', () => {
+    expect(findMount(mounts, '/classic/x.js')?.dist).toBe('c');
+    expect(findMount([...mounts].reverse(), '/classic/x.js')?.dist).toBe('c');
+    expect(findMount(mounts, '/classical')?.dist).toBe('a');
+  });
+
+  it('finds nothing when no prefix matches', () => {
+    expect(
+      findMount([{ prefix: '/classic/', dist: 'c' }], '/'),
+    ).toBeUndefined();
+  });
+});
+
+describe('createDashboardServer', () => {
+  it('rejects a mount prefix without both slashes', () => {
+    expect(() =>
+      createDashboardServer({
+        report,
+        mounts: [{ prefix: '/classic', dist: 'c' }],
+      }),
+    ).toThrow(/must start and end/);
   });
 });
 
