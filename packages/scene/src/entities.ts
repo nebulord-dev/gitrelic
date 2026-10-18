@@ -64,11 +64,16 @@ export function buildEntityIndex(report: GitrelicReport): EntityIndex {
   const files = new Set<string>();
   for (const f of report.loc.files) files.add(f.file);
   for (const f of report.churn.files) files.add(f.file);
+  // Every directory either list touches is searchable, but its count is
+  // tracked files only, the same number dirFacts shows in the inspector.
   const dirCounts = new Map<string, number>();
   for (const file of files) {
-    for (let d = dirOf(file); d; d = dirOf(d)) {
+    for (let d = dirOf(file); d; d = dirOf(d))
+      if (!dirCounts.has(d)) dirCounts.set(d, 0);
+  }
+  for (const f of report.loc.files) {
+    for (let d = dirOf(f.file); d; d = dirOf(d))
       dirCounts.set(d, (dirCounts.get(d) ?? 0) + 1);
-    }
   }
   for (const [dir, count] of [...dirCounts].sort(([a], [b]) =>
     a < b ? -1 : 1,
@@ -77,7 +82,10 @@ export function buildEntityIndex(report: GitrelicReport): EntityIndex {
       id: ids.dir(dir),
       kind: 'dir',
       label: `${dir}/`,
-      detail: `${count.toLocaleString()} file${count === 1 ? '' : 's'}`,
+      detail:
+        count === 0
+          ? 'no tracked files'
+          : `${count.toLocaleString()} file${count === 1 ? '' : 's'}`,
       keywords: [],
     });
   }

@@ -19,6 +19,39 @@ describe('Inspector', () => {
     ).toBeNull();
   });
 
+  it('clears the selection on Escape, unless the key was already handled', async () => {
+    const onselect = vi.fn();
+    render(Inspector, {
+      report,
+      index,
+      selection: ids.file('src/api.ts'),
+      onselect,
+    });
+    const handled = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      cancelable: true,
+    });
+    handled.preventDefault();
+    window.dispatchEvent(handled);
+    expect(onselect).not.toHaveBeenCalled();
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onselect).toHaveBeenCalledWith(null);
+  });
+
+  it('closes the narrow-screen drawer from its backdrop', async () => {
+    const onselect = vi.fn();
+    const { container } = render(Inspector, {
+      report,
+      index,
+      selection: ids.file('src/api.ts'),
+      onselect,
+    });
+    const backdrop = container.querySelector('[role="presentation"]');
+    expect(backdrop).toBeTruthy();
+    await fireEvent.click(backdrop!);
+    expect(onselect).toHaveBeenCalledWith(null);
+  });
+
   it('shows a file’s facts and contributors, and selects a contributor', async () => {
     const onselect = vi.fn();
     render(Inspector, {

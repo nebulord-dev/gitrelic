@@ -11,6 +11,15 @@ const entry = (
 ): EntityEntry => ({ id, kind, label, detail: '', keywords });
 
 describe('fuzzyScore', () => {
+  it('survives characters that grow when lowercased', () => {
+    // 'İ'.toLowerCase() is two UTF-16 units; indexing by the lowercased
+    // string used to run off the end of the original.
+    expect(fuzzyScore('x', 'İx.ts')).not.toBeNull();
+    expect(fuzzyScore('s', 'aİİİİs')).not.toBeNull();
+    expect(fuzzyScore('ix', 'İx.ts')).not.toBeNull();
+    expect(fuzzyScore('q', 'İx.ts')).toBeNull();
+  });
+
   it('matches subsequences, case-insensitively, and rejects the rest', () => {
     expect(fuzzyScore('bf', 'Bus Factor')).not.toBeNull();
     expect(fuzzyScore('BUS', 'bus factor')).not.toBeNull();

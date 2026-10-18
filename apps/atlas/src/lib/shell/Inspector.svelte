@@ -38,10 +38,25 @@
   let analyzer = $derived(kind === 'analyzer' ? catalogEntry(key) : undefined);
 </script>
 
+<!-- Escape clears the selection, unless something else (the palette) used it. -->
+<svelte:window
+  onkeydown={(e) => {
+    if (e.key === 'Escape' && selection && !e.defaultPrevented)
+      onselect?.(null);
+  }}
+/>
+
 <!--
   Docked from 1200px (320px, 380px from 1600px). Narrower, it's a drawer that
-  opens over the stage while something is selected.
+  opens over the stage while something is selected; a click beside it closes it.
 -->
+{#if selection}
+  <div
+    class="fixed inset-0 z-20 bg-[rgb(0_0_0/0.3)] min-[1200px]:hidden"
+    role="presentation"
+    onclick={() => onselect?.(null)}
+  ></div>
+{/if}
 <aside
   aria-label="Inspector"
   class={[

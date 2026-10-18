@@ -56,6 +56,7 @@ describe('DetailTable', () => {
       title: 'Files',
       columns,
       rows,
+      rowKey: 'name',
     });
     expect(container.querySelector('details')?.open).toBe(false);
     expect(screen.getByText('Files (3)')).toBeTruthy();
@@ -63,7 +64,7 @@ describe('DetailTable', () => {
   });
 
   it('sorts numbers high-first, text A–Z, and flips on a second click', async () => {
-    render(DetailTable, { title: 'Files', columns, rows });
+    render(DetailTable, { title: 'Files', columns, rows, rowKey: 'name' });
     await fireEvent.click(screen.getByRole('button', { name: 'Commits' }));
     expect(names()).toEqual(['a.ts', 'b.ts', 'c.ts']);
     expect(

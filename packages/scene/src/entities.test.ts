@@ -38,6 +38,25 @@ describe('buildEntityIndex', () => {
     expect(index.get('file:../../etc/passwd')).toBeUndefined();
   });
 
+  it('counts tracked files for a directory, as the inspector does', () => {
+    const gone = {
+      ...report,
+      churn: {
+        ...report.churn,
+        files: [
+          ...report.churn.files,
+          { ...report.churn.files[0], file: 'old/removed.ts' },
+          { ...report.churn.files[0], file: 'src/deleted.ts' },
+        ],
+      },
+    } as GitrelicReport;
+    const idx = buildEntityIndex(gone);
+    // Still searchable, but no tracked files to count.
+    expect(idx.get(ids.dir('old'))?.detail).toBe('no tracked files');
+    expect(idx.get(ids.dir('src'))?.detail).toBe('7 files');
+    expect(idx.get(ids.file('src/deleted.ts'))).toBeDefined();
+  });
+
   it('labels root-level files as such', () => {
     expect(index.get(ids.file('README.md'))?.detail).toBe('(repository root)');
   });

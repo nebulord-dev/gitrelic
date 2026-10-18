@@ -48,14 +48,18 @@
     if (active >= results.length) active = Math.max(0, results.length - 1);
   });
 
-  async function show() {
-    returnFocus = document.activeElement as HTMLElement | null;
-    query = '';
-    active = 0;
-    open = true;
-    await tick();
-    input?.focus();
-  }
+  // Set up on every open, however it was opened: the shortcut, or a parent
+  // setting `open` (TopBar's Search button).
+  let wasOpen = false;
+  $effect(() => {
+    if (open && !wasOpen) {
+      returnFocus = document.activeElement as HTMLElement | null;
+      query = '';
+      active = 0;
+      void tick().then(() => input?.focus());
+    }
+    wasOpen = open;
+  });
 
   function close() {
     open = false;
@@ -73,7 +77,7 @@
     if (opensPalette(e)) {
       e.preventDefault();
       if (open) close();
-      else void show();
+      else open = true;
     }
   }
 

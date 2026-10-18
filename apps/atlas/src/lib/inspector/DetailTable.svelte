@@ -5,10 +5,13 @@
     title,
     columns,
     rows,
+    rowKey,
   }: {
     title: string;
     columns: readonly Column<Row>[];
     rows: readonly Row[];
+    /** The column whose value is unique per row (a path, an email). */
+    rowKey: keyof Row & string;
   } = $props();
 
   // Collapsed by default: the canvas is the primary view, the table the detail.
@@ -73,7 +76,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each sorted as row, i (i)}
+        {#each sorted as row (row[rowKey])}
           <tr class="border-t border-panel-border">
             {#each columns as column (column.key)}
               <td class={['py-1', column.numeric ? 'text-right' : 'text-left']}>

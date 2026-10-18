@@ -29,6 +29,26 @@ describe('CommandPalette', () => {
     expect(screen.getByRole('dialog')).toBeTruthy();
   });
 
+  it('sets itself up when a parent opens it (the Search button)', async () => {
+    const button = document.createElement('button');
+    document.body.append(button);
+    button.focus();
+    const { rerender } = render(CommandPalette, { index, onpick: vi.fn() });
+    await rerender({ open: true });
+    await tick();
+    const input = screen.getByRole('combobox') as HTMLInputElement;
+    expect(document.activeElement).toBe(input);
+    await fireEvent.input(input, { target: { value: 'api' } });
+    await fireEvent.keyDown(input, { key: 'Escape' });
+    expect(document.activeElement).toBe(button);
+
+    // Reopening starts from an empty query, not the last search.
+    await rerender({ open: true });
+    await tick();
+    expect((screen.getByRole('combobox') as HTMLInputElement).value).toBe('');
+    button.remove();
+  });
+
   it('opens on / unless the viewer is typing in a field', async () => {
     render(CommandPalette, { index, onpick: vi.fn() });
     const field = document.createElement('input');

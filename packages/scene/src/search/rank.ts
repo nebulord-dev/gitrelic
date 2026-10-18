@@ -10,19 +10,21 @@ const BOUNDARY = /[/._\-\s@:]/;
 /** Score of `query` against `text`, or null when it isn't a subsequence. */
 export function fuzzyScore(query: string, text: string): number | null {
   const q = query.toLowerCase();
-  const t = text.toLowerCase();
   if (q.length === 0) return 0;
   let score = 0;
   let run = 0;
   let qi = 0;
   let last = -1;
-  for (let ti = 0; ti < t.length && qi < q.length; ti++) {
-    if (t[ti] !== q[qi]) continue;
+  // Walk the original text, lowercasing one unit at a time: some characters
+  // grow when lowercased ('İ' → 'i̇'), so indices into text.toLowerCase()
+  // don't line up with text. A unit that grows matches on its first char.
+  for (let ti = 0; ti < text.length && qi < q.length; ti++) {
+    const lower = text[ti].toLowerCase();
+    if (lower[0] !== q[qi]) continue;
     const atStart =
       ti === 0 ||
       BOUNDARY.test(text[ti - 1]) ||
-      (text[ti] !== text[ti].toLowerCase() &&
-        text[ti - 1] === text[ti - 1].toLowerCase());
+      (text[ti] !== lower && text[ti - 1] === text[ti - 1].toLowerCase());
     run = ti === last + 1 ? run + 1 : 1;
     score += 1 + (atStart ? 4 : 0) + (run > 1 ? 3 * (run - 1) : 0);
     if (last >= 0) score -= Math.min(3, (ti - last - 1) * 0.1);
@@ -30,7 +32,7 @@ export function fuzzyScore(query: string, text: string): number | null {
     qi++;
   }
   if (qi < q.length) return null;
-  return score - t.length * 0.01;
+  return score - text.length * 0.01;
 }
 
 const KIND_ORDER: Record<SearchKind, number> = {

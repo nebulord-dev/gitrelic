@@ -19,6 +19,9 @@ export class Nav {
     private readonly index: () => EntityIndex,
     private readonly win: Window = window,
   ) {
+    // The selection is validated here and on every hashchange, not when the
+    // index changes: Shell builds the index once from a report that's fixed
+    // for its lifetime. Revalidate on index change if that ever stops holding.
     this.read();
     win.addEventListener('hashchange', this.onHashChange);
   }
