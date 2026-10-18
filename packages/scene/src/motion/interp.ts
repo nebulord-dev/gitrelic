@@ -1,6 +1,7 @@
 import {
   COLOR_ROLES,
   type ColorRole,
+  type Guide,
   type MarkGeom,
   type Paint,
 } from '../model';
@@ -45,6 +46,29 @@ export function lerpGeom(
   out.a1 = a1;
   out.alpha = lerp(from.alpha, to.alpha, t);
   return out;
+}
+
+/**
+ * Writes a guide's interpolated geometry into `out`, the live guide: a line's
+ * ends, a circle's centre and radius, a text's anchor. Alpha is left alone
+ * (it fades on its own schedule), and so is a guide that changed kind.
+ */
+export function lerpGuide(from: Guide, to: Guide, t: number, out: Guide): void {
+  if (from.kind === 'line' && to.kind === 'line' && out.kind === 'line') {
+    out.x1 = lerp(from.x1, to.x1, t);
+    out.y1 = lerp(from.y1, to.y1, t);
+    out.x2 = lerp(from.x2, to.x2, t);
+    out.y2 = lerp(from.y2, to.y2, t);
+  } else if (
+    from.kind !== 'line' &&
+    to.kind === from.kind &&
+    out.kind === from.kind
+  ) {
+    out.x = lerp(from.x, to.x, t);
+    out.y = lerp(from.y, to.y, t);
+    if (from.kind === 'circle' && to.kind === 'circle' && out.kind === 'circle')
+      out.r = lerp(from.r, to.r, t);
+  }
 }
 
 /** sRGB channels and alpha, each 0..1. */

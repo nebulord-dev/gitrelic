@@ -3,10 +3,11 @@
 // moves where, and when.
 //
 // Timeline, in order:
-//   1. links that are going away retract
-//   2. marks move; new marks grow out of their nearest ancestor on screen, and
-//      leaving marks shrink into their nearest ancestor in the next scene
-//   3. new links draw in, staggered
+//   1. links that are going away retract, and marks that fold on exit (a
+//      fan closing) shrink into their ancestor where it is now
+//   2. once those are mostly done, marks (and guides that stay) move; new marks grow out of their nearest ancestor on screen, and
+//      other leaving marks shrink into their nearest ancestor in the next scene
+//   3. new links draw in, staggered, starting while the move settles
 //
 // Every track starts from the live (possibly mid-flight) state, so a
 // transition interrupted by another picks up where things actually are.
@@ -57,6 +58,8 @@ export interface GuideTrack {
   id: string;
   phase: Phase;
   guide: Guide;
+  /** Where a staying guide is drawn now, to move it from; null when it only fades. */
+  from: Guide | null;
   fromAlpha: number;
   toAlpha: number;
   delay: number;
@@ -82,6 +85,19 @@ export const TIMING = {
   move: 600,
   exit: 400,
   draw: 300,
+  /** New links start drawing this far into the move: out-cubic has covered
+   * most of the distance, and a pause between arriving and connecting reads
+   * as a stall. */
+  drawAfter: 250,
+  /** Marks that fold on exit, before anything moves. */
+  fold: 300,
+  /**
+   * When the move starts after retracting links, or after a fold. Out-cubic
+   * has done most of either by then; waiting for the tail leaves the stage
+   * still for a beat after the click, which reads as a stall.
+   */
+  retractLead: 80,
+  foldLead: 120,
   /** Gap between successive new links… */
   stagger: 40,
   /** …compressed so the whole cascade never spans more than this. */
@@ -126,7 +142,16 @@ export function planTransition(
       ease: reduced ? 'linear' : 'out-cubic',
     });
   }
-  const moveAt = !reduced && links.length > 0 ? TIMING.retract : 0;
+  const folding = (m: Mark) => !reduced && m.foldOnExit === true;
+  let moveAt = 0;
+  if (!reduced) {
+    if (links.length > 0) moveAt = TIMING.retractLead;
+    for (const m of live.marks.values())
+      if (!nextMarks.has(m.id) && folding(m)) {
+        moveAt = Math.max(moveAt, TIMING.foldLead);
+        break;
+      }
+  }
 
   // 2. Marks.
   for (const mark of next.marks) {
@@ -162,9 +187,17 @@ export function planTransition(
   for (const current of live.marks.values()) {
     if (nextMarks.has(current.id)) continue;
     const from = geomOf(current);
+    const folds = folding(current);
+    // A folding mark closes into its ancestor where that is now, before the
+    // ancestor moves on; any other goes where its ancestor is going.
     const target = reduced
       ? null
-      : nearestAncestor(current, nextMarks, live.marks, nextMarks);
+      : nearestAncestor(
+          current,
+          nextMarks,
+          live.marks,
+          folds ? live.marks : nextMarks,
+        );
     marks.push({
       id: current.id,
       phase: 'exit',
@@ -173,14 +206,14 @@ export function planTransition(
       to: reduced
         ? { ...from, alpha: 0 }
         : collapsed(from, current.shape, target),
-      delay: moveAt,
-      duration: reduced ? TIMING.fade : TIMING.exit,
+      delay: folds ? 0 : moveAt,
+      duration: reduced ? TIMING.fade : folds ? TIMING.fold : TIMING.exit,
       ease: reduced ? 'linear' : 'out-cubic',
     });
   }
 
-  // 3. Links that stay finish drawing; new ones cascade in after the move.
-  const drawAt = reduced ? 0 : moveAt + TIMING.move;
+  // 3. Links that stay finish drawing; new ones cascade in as the move settles.
+  const drawAt = reduced ? 0 : moveAt + TIMING.drawAfter;
   const entering = next.links.filter((l) => !live.links.has(l.id));
   const step =
     entering.length > 1
@@ -216,13 +249,15 @@ export function planTransition(
     });
   }
 
-  // Guides only ever fade.
+  // Guides fade in and out; those that stay move with the marks, so a plot's
+  // grid shrinks with its dots instead of jumping ahead of them.
   for (const guide of live.guides.values()) {
     if (nextGuides.has(guide.id)) continue;
     guides.push({
       id: guide.id,
       phase: 'exit',
       guide,
+      from: null,
       fromAlpha: guide.alpha,
       toAlpha: 0,
       delay: 0,
@@ -236,6 +271,7 @@ export function planTransition(
       id: guide.id,
       phase: current ? 'update' : 'enter',
       guide,
+      from: current && !reduced && current.kind === guide.kind ? current : null,
       fromAlpha: current?.alpha ?? 0,
       toAlpha: guide.alpha,
       delay: moveAt,

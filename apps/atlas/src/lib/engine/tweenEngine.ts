@@ -6,12 +6,14 @@
 import {
   easeOutCubic,
   lerpArc,
+  lerpGuide,
   linear,
   mixColor,
   resolvePaint,
   trackProgress,
   type EaseName,
   type EntityId,
+  type Guide,
   type LiveGuide,
   type LiveLink,
   type LiveState,
@@ -80,7 +82,10 @@ export class TweenEngine {
 
   private marks: MarkRun[] = [];
   private linkRuns: ValueRun<LiveLink>[] = [];
-  private guideRuns: ValueRun<LiveGuide>[] = [];
+  private guideRuns: (ValueRun<LiveGuide> & {
+    /** A staying guide's placements, moved between like a mark (out-cubic). */
+    geom: { from: Guide; to: Guide } | null;
+  })[] = [];
   private planStart = 0;
   private planDuration = 0;
   private planActive = false;
@@ -154,9 +159,13 @@ export class TweenEngine {
 
     this.guideRuns = plan.guides.map((t) => {
       const item: LiveGuide = { ...t.guide, alpha: t.fromAlpha };
+      const geom = t.from ? { from: t.from, to: t.guide } : null;
+      // A staying guide starts where it is drawn now.
+      if (geom) lerpGuide(geom.from, geom.to, 0, item);
       this.guides.set(t.id, item);
       return {
         item,
+        geom,
         from: [t.fromAlpha, 0],
         to: [t.toAlpha, 0],
         delay: t.delay,
@@ -247,6 +256,13 @@ export class TweenEngine {
     for (const run of this.guideRuns) {
       const p = trackProgress(t, run.delay, run.duration, run.ease);
       run.item.alpha = run.from[0] + (run.to[0] - run.from[0]) * p;
+      if (run.geom)
+        lerpGuide(
+          run.geom.from,
+          run.geom.to,
+          trackProgress(t, run.delay, run.duration, easeOutCubic),
+          run.item,
+        );
     }
   }
 

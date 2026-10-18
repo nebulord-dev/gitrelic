@@ -20,6 +20,8 @@
   --panel-border: rgba(255, 255, 255, 0.08);
   --panel-radius: 18px;
   --card-bg: rgba(255, 255, 255, 0.04);
+  /* Dialogs over the stage: the card tint pre-blended onto --bg, so they're solid. */
+  --modal-bg: #111618;
   --card-border: rgba(255, 255, 255, 0.09);
   --card-radius: 16px;
   --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
@@ -56,6 +58,7 @@
   --panel-border: #2e3337;
   --panel-radius: 2px;
   --card-bg: #272b2f;
+  --modal-bg: #272b2f;
   --card-border: #2e3337;
   --card-radius: 2px;
   --card-shadow: none;

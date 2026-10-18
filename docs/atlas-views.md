@@ -117,6 +117,7 @@ Still to come, with the first lens that fills them (the Hotspots PR): **What to 
 ### Open items for the views that need them
 
 - **Selecting `cell:`, `week:` and `commit:` marks.** `Nav.select` drops any id the entity index doesn't hold, so today a click on one of those marks clears the selection. The first view that draws them (Commit Timing's clock, Contributors' strips) either adds them to the index or gets its own selection path, with an inspector card for the kind.
+- **Two answers to "what does it change with?"** The file card's *Flagged by* row (`fileFacts`) names coupling's `topPartner`, the strongest partner by percentage; its *Changes with* section and the Hotspots facet (`coupledWith`) name the partner with the most shared commits. On `ReactFizzServer.js` that's `ReactDOMBrowser.js (76%)` against `ReactDOMFizzServer-test.js · 14×`. Pick one rule (or show both, labelled) when the file card next changes.
 - **Palette cost on huge repos.** `rankEntities` scores every entry and keyword (full paths included) on each keystroke. Fine at this repo's size; if a large monorepo stutters, filter the previous results when the query extends the last one, or debounce.
 
 ## Lens inventory (2026-10-18)
@@ -251,7 +252,8 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 - **Findings** (on React): the hottest file (`ReactFizzServer.js`, 33 commits across 6,656 lines); two kinds of heat among files at 25+ (24 large, 7 under 300 lines hot on churn alone); and the package with the largest share of its own files at 25+, set against the biggest package when that runs much cooler (`packages/shared/`: 7 of 22; `compiler/`: 7 of 1,369).
 - **Tooltips:** a file (in either form) shows its name, score and tier, commits and lines, and its folder; a density cell shows how many files it holds and their range of commits and lines; a package shows its file count, how many are at 25+, and its hottest file. Ticks, callouts and names say nothing.
 - **Table:** every scored file: path, score, commits, lines, package; hottest first.
-- **Next PR:** selecting a file fans its facets; What to do.
+- **Selecting a file (second Hotspots PR).** The field squeezes into the left 36% of the stage (every dot tweens there) and drops the callout column; the file travels to a root right of it, with a faint ring and leader back to where it sits in the plot, and its facets (`hotspots/facets.ts` `fileFacets`) fan out on an arc to the right, growing from the root. Other dots stay clickable, so picking another file sends the old root home and the new one out. Hot facets (thresholds in the docs page) are accent dots with hot links. Facet and ring ids (`facet:`, `home:`) aren't entity kinds, so clicking one selects nothing. By package doesn't fan.
+- **Next PR:** What to do.
 
 ### Code Health › Churn (checkpoint 2026-10-18)
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import reportJson from '../../test/fixtures/report.small.json';
 import { hotspotReport } from '../../test/hotspotReport';
+import { fileFacets } from '../hotspots/facets';
 import { hotspotPoints, hotspotScale } from '../hotspots/points';
 import { ids } from '../ids';
 import { checkScene } from '../model';
@@ -183,5 +184,80 @@ describe('fieldScene', () => {
     expect(
       scene.marks.find((m) => m.id.startsWith('tick:'))!.tip,
     ).toBeUndefined();
+  });
+
+  describe('with a file fanned out', () => {
+    const top = points[0];
+    const facets = fileFacets(top, report);
+    const fanned = () =>
+      fieldScene(
+        { points, scale, focus: ids.file(top.file), facets },
+        viewport,
+      );
+
+    it('builds a sound scene', () => {
+      expect(checkScene(fanned())).toEqual([]);
+    });
+
+    it('sends the file to a root right of the narrowed plot, leaving a ring', () => {
+      const scene = fanned();
+      const roots = scene.marks.filter((m) => m.id === ids.file(top.file));
+      expect(roots).toHaveLength(1);
+      const home = scene.marks.find((m) => m.id === `home:${top.file}`)!;
+      expect(home.shape).toBe('ring');
+      // The plot ends at 36% of the width; the root sits past it.
+      expect(home.x).toBeLessThanOrEqual(viewport.width * 0.36);
+      expect(roots[0].x).toBeGreaterThan(viewport.width * 0.36);
+      expect(roots[0].r).toBeGreaterThan(home.r);
+      expect(scene.links.map((l) => l.id)).toContain(`home-leader:${top.file}`);
+    });
+
+    it('fans every facet out of the root, hot ones in the accent', () => {
+      const scene = fanned();
+      const marks = scene.marks.filter((m) => m.id.startsWith('facet:'));
+      expect(marks.map((m) => m.id)).toEqual(
+        facets.map((f) => `facet:${f.id}`),
+      );
+      const root = scene.marks.find((m) => m.id === ids.file(top.file))!;
+      for (const [i, m] of marks.entries()) {
+        expect(m.parent).toBe(root.id);
+        // Clearing the selection folds the fan before the root goes home.
+        expect(m.foldOnExit).toBe(true);
+        expect(m.x).toBeGreaterThan(root.x);
+        expect(m.r).toBeGreaterThan(0);
+        expect(m.label).toBe(`${facets[i].name}  ${facets[i].value}`);
+        expect(m.tip).toEqual([
+          facets[i].name,
+          facets[i].value,
+          facets[i].hint,
+        ]);
+        expect(m.paint).toBe(facets[i].hot ? '--accent' : '--soft');
+      }
+      const facetLinks = scene.links.filter((l) =>
+        l.id.startsWith('facet-link:'),
+      );
+      expect(facetLinks).toHaveLength(facets.length);
+      for (const l of facetLinks) expect(l.source).toBe(root.id);
+    });
+
+    it('drops the callout column', () => {
+      expect(fanned().marks.some((m) => m.id.startsWith('callout:'))).toBe(
+        false,
+      );
+    });
+
+    it('stays a plain field without facets, or for a file it has no point for', () => {
+      const plain = fieldScene(
+        { points, scale, focus: ids.file(top.file) },
+        viewport,
+      );
+      expect(plain.marks.some((m) => m.id.startsWith('facet:'))).toBe(false);
+      expect(plain.marks.some((m) => m.id.startsWith('callout:'))).toBe(true);
+      const unknown = fieldScene(
+        { points, scale, focus: ids.file('nope.ts'), facets },
+        viewport,
+      );
+      expect(unknown.marks.some((m) => m.id.startsWith('facet:'))).toBe(false);
+    });
   });
 });

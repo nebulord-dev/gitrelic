@@ -24,6 +24,7 @@ export const THEME_TOKENS = [
   '--card-border',
   '--card-radius',
   '--card-shadow',
+  '--modal-bg',
   '--control-border',
   '--chip-radius',
   '--font-body',

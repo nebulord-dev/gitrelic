@@ -1,9 +1,12 @@
 // Code Health › Hotspots: the churn × size field, with By package as its one
 // alternate form (docs/atlas-views.md › Hotspots).
 
+import { fileFacets, type FileFacet } from '../hotspots/facets';
 import {
   HOTSPOT_TIER_NAMES,
   hotspotPoints,
+  LARGE_FILE,
+  SMALL_FILE,
   hotspotScale,
   packageOf,
   type HotspotPoint,
@@ -20,9 +23,7 @@ import type {
 } from '../model';
 import type { GitrelicReport } from '@gitrelic/core';
 
-/** "Large" and "small" for the two kinds of heat, in lines. */
-export const LARGE_FILE = 1000;
-export const SMALL_FILE = 300;
+export { LARGE_FILE, SMALL_FILE } from '../hotspots/points';
 /** A package needs this many warm files, and this share of its files, to be named. */
 export const CONCENTRATION_MIN = 3;
 export const CONCENTRATION_SHARE = 0.2;
@@ -42,6 +43,15 @@ export function pointsOf(report: GitrelicReport): readonly HotspotPoint[] {
   return points;
 }
 
+/** The focused file's facets, when it is a scored file. */
+function facetsOf(input: ViewInput): FileFacet[] | undefined {
+  const file = input.focus?.startsWith('file:') ? input.focus.slice(5) : null;
+  const point = file
+    ? pointsOf(input.report).find((p) => p.file === file)
+    : undefined;
+  return point ? fileFacets(point, input.report) : undefined;
+}
+
 export const fieldLayout: Layout = {
   id: 'field',
   label: 'Field',
@@ -55,6 +65,7 @@ export const fieldLayout: Layout = {
         points: pointsOf(input.report),
         scale: hotspotScale(input.report),
         focus: input.focus,
+        facets: facetsOf(input),
       },
       viewport,
     ),

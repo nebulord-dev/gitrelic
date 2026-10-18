@@ -178,6 +178,7 @@ export {
   lerp,
   lerpArc,
   lerpGeom,
+  lerpGuide,
   mixColor,
   mixPalette,
   parseColor,
@@ -247,6 +248,15 @@ export {
   type HotspotSummary,
   type HotspotTier,
 } from './hotspots/points';
+export {
+  BLAST_HOT,
+  CLUSTERS_HOT,
+  COUPLING_HOT,
+  fileFacets,
+  REWRITE_HOT,
+  type FacetId,
+  type FileFacet,
+} from './hotspots/facets';
 export { distinctNames } from './format/distinctNames';
 export { fieldScene, type FieldInput } from './layouts/field';
 export {
