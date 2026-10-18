@@ -26,19 +26,23 @@ export class TooltipLayer {
     host.append(this.card);
   }
 
-  /** Shows `id`'s tip beside it, or hides the card (no id, or no tip). */
+  /**
+   * Shows `id`'s tip beside it, or hides the card (no id, or no tip).
+   * Returns whether it's showing, so the mark's own label can step aside:
+   * the card's title already says it.
+   */
   update(
     store: MarkStore,
     view: ViewTransform,
     screen: ScreenSize,
     id: EntityId | null,
-  ): void {
+  ): boolean {
     const i = id ? store.indexOf(id) : -1;
     const tip = i >= 0 ? store.marks[i].tip : undefined;
     if (!id || !tip || tip.length === 0 || store.alpha[i] <= 0) {
       this.card.hidden = true;
       this.shownFor = null;
-      return;
+      return false;
     }
     const text = tip.join('\n');
     if (id !== this.shownFor || text !== this.shownText) {
@@ -69,6 +73,7 @@ export class TooltipLayer {
       Math.max(EDGE, screen.height - h - EDGE),
     );
     this.card.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+    return true;
   }
 
   destroy(): void {

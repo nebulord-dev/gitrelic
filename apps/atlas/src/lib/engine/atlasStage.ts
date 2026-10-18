@@ -337,8 +337,20 @@ export class AtlasStage {
     const pinned = new Set<EntityId>();
     if (this.hovered) pinned.add(this.hovered);
     if (this.selected) pinned.add(this.selected);
-    this.labels.update(this.store, this.view, this.size, pinned);
-    this.tooltip.update(this.store, this.view, this.size, this.hovered);
+    const tipping = this.tooltip.update(
+      this.store,
+      this.view,
+      this.size,
+      this.hovered,
+    );
+    // The tooltip's title is the hovered mark's label; don't draw it twice.
+    this.labels.update(
+      this.store,
+      this.view,
+      this.size,
+      pinned,
+      tipping ? this.hovered : null,
+    );
     this.opts.onFrame?.(this.clock.now() - start);
     // A plan can cut the engine's repaint short, or end before the camera
     // lands; finish either anyway. requestDraw does nothing while the engine

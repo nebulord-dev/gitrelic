@@ -28,12 +28,18 @@ export class LabelLayer {
     view: ViewTransform,
     screen: ScreenSize,
     pinned: ReadonlySet<string>,
+    /** A mark whose label is left out (its tooltip is showing instead). */
+    skip: string | null = null,
   ): string[] {
     const candidates: LabelCandidate[] = [];
     const text = new Map<string, string>();
     for (let i = 0; i < store.count; i++) {
       const mark = store.marks[i];
-      if (!mark.label || store.alpha[i] * store.opacity[i] < MIN_ALPHA)
+      if (
+        !mark.label ||
+        mark.id === skip ||
+        store.alpha[i] * store.opacity[i] < MIN_ALPHA
+      )
         continue;
       const [sx, sy] = worldToScreen(view, store.x[i], store.y[i]);
       const edge = (store.r[i] || store.w[i] / 2) * view.scale;

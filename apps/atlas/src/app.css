@@ -73,6 +73,8 @@ body {
   position: absolute;
   top: 0;
   left: 0;
+  /* Above every label: label spans join the host after the card. */
+  z-index: 1;
   max-width: 280px;
   padding: 8px 10px;
   border: 1px solid var(--control-border);
