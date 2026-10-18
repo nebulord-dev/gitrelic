@@ -43,10 +43,11 @@
       : index.entries.filter((e) => e.kind === 'analyzer'),
   );
 
-  $effect(() => {
-    // Keep the highlight on a real row as the results change.
-    if (active >= results.length) active = Math.max(0, results.length - 1);
-  });
+  // A new query highlights its best match, not whatever row was highlighted.
+  // Clamped at 0 even with no results, so Enter never reads results[-1].
+  function onQueryInput() {
+    active = 0;
+  }
 
   // Set up on every open, however it was opened: the shortcut, or a parent
   // setting `open` (TopBar's Search button).
@@ -84,7 +85,7 @@
   function onInputKey(e: KeyboardEvent) {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      active = Math.min(results.length - 1, active + 1);
+      active = Math.max(0, Math.min(results.length - 1, active + 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       active = Math.max(0, active - 1);
@@ -116,6 +117,7 @@
     <input
       bind:this={input}
       bind:value={query}
+      oninput={onQueryInput}
       onkeydown={onInputKey}
       type="text"
       role="combobox"

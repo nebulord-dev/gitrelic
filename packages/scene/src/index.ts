@@ -109,6 +109,7 @@ export {
   dirFacts,
   fileContributors,
   personFacts,
+  reportNow,
   STRESS_WARNING,
   type FileContributor,
   type PersonFacts,

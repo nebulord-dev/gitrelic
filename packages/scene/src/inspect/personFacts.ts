@@ -22,16 +22,35 @@ const fmt = (n: number) => n.toLocaleString();
 /** Off-hours share at or above which the stress row is flagged. */
 export const STRESS_WARNING = 40;
 
+/**
+ * "Now" for a report's relative dates: its last commit, not the wall clock,
+ * since a saved report can be months old. Older reports backfill
+ * `meta.lastCommit` as '', so fall back to the newest contributor commit;
+ * NaN when there's nothing to go on, and the ages read "—".
+ */
+export function reportNow(report: GitrelicReport): number {
+  const last = Date.parse(report.meta.lastCommit);
+  if (Number.isFinite(last)) return last;
+  let newest = Number.NaN;
+  for (const c of report.contributors.contributors) {
+    const t = Date.parse(c.lastCommit);
+    if (Number.isFinite(t) && !(t <= newest)) newest = t;
+  }
+  return newest;
+}
+
 export function personFacts(
   email: string,
   report: GitrelicReport,
-  now: number = Date.parse(report.meta.lastCommit),
+  now: number = reportNow(report),
 ): PersonFacts | null {
   const c = report.contributors.contributors.find((x) => x.email === email);
   if (!c) return null;
   const daysAgo = (iso: string) => {
     const t = Date.parse(iso);
-    return Number.isFinite(t) ? Math.max(0, Math.round((now - t) / DAY)) : null;
+    return Number.isFinite(t) && Number.isFinite(now)
+      ? Math.max(0, Math.round((now - t) / DAY))
+      : null;
   };
 
   const rows: FileFact[] = [

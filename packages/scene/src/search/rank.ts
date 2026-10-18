@@ -7,7 +7,13 @@ import type { EntityEntry, SearchKind } from '../entities';
 
 const BOUNDARY = /[/._\-\s@:]/;
 
-/** Score of `query` against `text`, or null when it isn't a subsequence. */
+/**
+ * Score of `query` against `text`, or null when it isn't a subsequence.
+ * Greedy: each query character takes its first occurrence, so a better
+ * match later in the text (a word start, a longer run) isn't searched for.
+ * Cheap and good enough for names and paths; a DP over all alignments is
+ * the upgrade if ranking ever needs it.
+ */
 export function fuzzyScore(query: string, text: string): number | null {
   const q = query.toLowerCase();
   if (q.length === 0) return 0;

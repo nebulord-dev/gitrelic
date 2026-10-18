@@ -29,13 +29,14 @@ describe('fuzzyScore', () => {
 
   it('prefers word starts and consecutive runs', () => {
     expect(fuzzyScore('bf', 'Bus Factor')!).toBeGreaterThan(
-      fuzzyScore('bf', 'abfoo')! - 100,
+      fuzzyScore('bf', 'abfoo')!,
     );
     expect(fuzzyScore('bf', 'Bus Factor')!).toBeGreaterThan(
       fuzzyScore('bf', 'obscure fence')!,
     );
+    // A consecutive run beats the same letters at three word starts.
     expect(fuzzyScore('run', 'runner.ts')!).toBeGreaterThan(
-      fuzzyScore('run', 'r_u_n.ts')! - 0,
+      fuzzyScore('run', 'r_u_n.ts')!,
     );
     expect(fuzzyScore('api', 'api.ts')!).toBeGreaterThan(
       fuzzyScore('api', 'rapid.ts')!,

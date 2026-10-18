@@ -49,6 +49,23 @@ describe('CommandPalette', () => {
     button.remove();
   });
 
+  it('highlights the best match after typing, even past an empty result', async () => {
+    const onpick = vi.fn();
+    render(CommandPalette, { index, onpick });
+    const input = await openWithShortcut();
+    await fireEvent.keyDown(input, { key: 'ArrowDown' });
+    await fireEvent.keyDown(input, { key: 'ArrowDown' });
+    await fireEvent.input(input, { target: { value: 'zzzzqqq' } });
+    await fireEvent.keyDown(input, { key: 'ArrowDown' }); // no rows
+    await fireEvent.input(input, { target: { value: 'api' } });
+    expect(screen.getAllByRole('option')[0].getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    await fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onpick).toHaveBeenCalledOnce();
+    expect(onpick.mock.calls[0][0].label).toBe('api.ts');
+  });
+
   it('opens on / unless the viewer is typing in a field', async () => {
     render(CommandPalette, { index, onpick: vi.fn() });
     const field = document.createElement('input');

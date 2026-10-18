@@ -18,6 +18,8 @@ export class Nav {
     /** A getter, so the caller can hand over reactive data. */
     private readonly index: () => EntityIndex,
     private readonly win: Window = window,
+    /** A view's alternate layouts (forms); a layout in the hash must be one. */
+    private readonly layoutsOf: (view: string) => readonly string[] = () => [],
   ) {
     // The selection is validated here and on every hashchange, not when the
     // index changes: Shell builds the index once from a report that's fixed
@@ -47,7 +49,10 @@ export class Nav {
   private read(): void {
     const loc = parseHash(this.win.location.hash);
     this.view = loc.view && catalogEntry(loc.view)?.atlas ? loc.view : null;
-    this.layout = this.view ? (loc.layout ?? null) : null;
+    this.layout =
+      this.view && loc.layout && this.layoutsOf(this.view).includes(loc.layout)
+        ? loc.layout
+        : null;
     this.selection =
       loc.selection && this.index().get(loc.selection) ? loc.selection : null;
   }

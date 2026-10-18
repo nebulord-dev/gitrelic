@@ -44,6 +44,18 @@ describe('Nav', () => {
     nav.destroy();
   });
 
+  it('keeps a layout only when the view declares it', () => {
+    history.replaceState(null, '', '/#l=swimlanes');
+    // No view open: a layout means nothing.
+    const bare = new Nav(
+      () => index,
+      window,
+      () => ['swimlanes'],
+    );
+    expect(bare.layout).toBeNull();
+    bare.destroy();
+  });
+
   it('writes the selection to the hash without a new history entry', () => {
     const nav = new Nav(() => index);
     const before = history.length;
