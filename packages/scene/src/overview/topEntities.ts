@@ -166,15 +166,21 @@ export function lensTopEntities(
 
 /**
  * Two files fanned with the same name (`index.ts`, `package.json`) get their
- * parent folder prepended, so the ring never shows identical labels.
+ * parent folder prepended, and two people with one display name their email,
+ * so the ring never shows identical labels.
  */
 function disambiguate(list: FannedEntity[]): FannedEntity[] {
   const count = new Map<string, number>();
   for (const e of list) count.set(e.label, (count.get(e.label) ?? 0) + 1);
   return list.map((e) => {
-    if ((count.get(e.label) ?? 0) < 2 || !e.id.startsWith('file:')) return e;
-    const path = e.id.slice('file:'.length);
-    const parts = path.split('/');
+    if ((count.get(e.label) ?? 0) < 2) return e;
+    if (e.id.startsWith('person:')) {
+      // Two people under one display name (identity merging kept them
+      // apart): their email tells them apart.
+      return { ...e, label: `${e.label} (${e.id.slice('person:'.length)})` };
+    }
+    if (!e.id.startsWith('file:')) return e;
+    const parts = e.id.slice('file:'.length).split('/');
     return parts.length > 1 ? { ...e, label: parts.slice(-2).join('/') } : e;
   });
 }

@@ -56,7 +56,7 @@
         >Open {entry.label} in classic ↗</a
       >
     {/if}
-    {#if onRing}
+    {#if onRing && entry.atlas}
       <p class="m-0 text-[12px] text-muted">
         Or click the lens again on the ring.
       </p>

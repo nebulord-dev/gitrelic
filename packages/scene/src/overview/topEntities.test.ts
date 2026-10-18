@@ -146,4 +146,24 @@ describe('lensTopEntities', () => {
     expect(silos(80)).toBe(0);
     expect(silos(81)).toBe(1);
   });
+
+  it('tells two people with the same display name apart by email', () => {
+    const base = report.contributors.contributors[0];
+    const twins = {
+      ...report,
+      contributors: {
+        ...report.contributors,
+        contributors: [
+          { ...base, name: 'Sam', email: 'sam@a.dev', commitCount: 9 },
+          { ...base, name: 'Sam', email: 'sam@b.dev', commitCount: 8 },
+        ],
+      },
+    } as GitrelicReport;
+    const labels = lensTopEntities(
+      'contributors',
+      twins,
+      buildEntityIndex(twins),
+    ).map((e) => e.label);
+    expect(labels).toEqual(['Sam (sam@a.dev)', 'Sam (sam@b.dev)']);
+  });
 });

@@ -1,7 +1,6 @@
 <script lang="ts">
   import {
     buildEntityIndex,
-    classicUrl,
     computeOutlierBadges,
     entityKey,
     entityKind,
@@ -24,6 +23,7 @@
   import { Nav } from '../state/nav.svelte';
   import TimeStrip from '../time/TimeStrip.svelte';
   import { nextFanFocus } from '../views/fanFocus';
+  import { stageClick } from '../views/stageClick';
   import CommandPalette from './CommandPalette.svelte';
   import GuideSheet from './GuideSheet.svelte';
   import Inspector from './Inspector.svelte';
@@ -102,7 +102,12 @@
   let fanFocus = $state<EntityId | null>(null);
   $effect(() => {
     const selection = nav.selection;
-    fanFocus = untrack(() => nextFanFocus(fanFocus, selection, report, index));
+    // Only while Overview's ring is open; a lens picked elsewhere doesn't
+    // leave a fan waiting for the next visit.
+    const onRing = nav.lens === 'overview';
+    fanFocus = untrack(() =>
+      onRing ? nextFanFocus(fanFocus, selection, report, index) : null,
+    );
   });
   let layout = $derived.by(() => {
     const view = nav.lens ? VIEWS.get(nav.lens) : undefined;
@@ -121,20 +126,18 @@
       : null,
   );
 
-  // A second click on a lens dot opens that lens: in Atlas if it has a
-  // view, otherwise in classic. Only a second click *on the stage* counts —
-  // a lens picked from the inspector or ⌘K arms nothing, so its first click
-  // on the ring fans it instead of leaving the page.
-  let armed: EntityId | null = null;
+  // A second click on a lens dot opens it (Atlas lenses only; classic is
+  // the inspector's button). The arm belongs to the stage: a selection made
+  // anywhere else clears it.
+  let armed = $state<EntityId | null>(null);
+  $effect(() => {
+    if (nav.selection !== untrack(() => armed)) armed = null;
+  });
   function stageSelect(id: EntityId | null) {
-    if (id && id === armed && id === nav.selection) {
-      armed = null;
-      const preset = id.slice('analyzer:'.length);
-      if (!nav.openLens(preset)) window.location.assign(classicUrl(preset));
-      return;
-    }
-    armed = id?.startsWith('analyzer:') ? id : null;
-    nav.select(id);
+    const click = stageClick(armed, nav.selection, id);
+    armed = click.armed;
+    if (click.open) nav.openLens(click.open);
+    else nav.select(id);
   }
 </script>
 
