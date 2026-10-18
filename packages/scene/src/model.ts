@@ -3,6 +3,7 @@
 // the DOM, or which theme is active.
 
 import type { CommitLike } from './commits/commitLike';
+import type { EntityIndex } from './entities';
 import type { EntityId } from './ids';
 import type { ThemeToken } from './theme/tokens';
 import type { GitrelicReport } from '@gitrelic/core';
@@ -143,6 +144,14 @@ export interface ViewInput {
   report: GitrelicReport;
   /** Loaded on demand; null until a view that needs commits asks for them. */
   commits: CommitLike[] | null;
+  /**
+   * What the viewer has selected, already resolved through the entity index.
+   * A layout may re-form around it (the Overview ring fans out a selected
+   * lens); one that ignores it draws the same scene either way.
+   */
+  focus?: EntityId | null;
+  /** The entity index, for layouts that only draw selectable entities. */
+  index?: EntityIndex;
 }
 
 /** Text with entity chips: a chip selects its entity when clicked. */
