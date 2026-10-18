@@ -26,7 +26,7 @@ Classic has one page per analyzer and a sidebar listing all 23 of them. Atlas do
 
 - **One row of tabs, ever.** The lens bar is the only tab row. Alternate forms are never a second tab row (see [Alternate forms](#alternate-forms)).
 - **Nothing becomes unreachable.** A lens without an Atlas view yet still appears in the lens bar, marked ↗, and opens classic at `/classic/#preset=<id>`.
-- **Other ways in stay:** the Overview canvas (analyzer cards), ⌘K (an empty query lists every analyzer), and the inspector's "Flagged by" links. The rail and lens bar are the discoverable path, not the only one.
+- **Other ways in stay:** the Overview canvas (analyzer cards), ⌘K (an empty query lists every analyzer; picking one with an Atlas view opens its lens), and the inspector's "Flagged by" links. The rail and lens bar are the discoverable path, not the only one.
 - **Badges roll up.** A lens shows its outlier badge in the lens bar; its view's rail icon shows a dot when any of its lenses has one (`computeOutlierBadges`, thresholds in scene `badges.ts` `RULES`).
 
 **Which analyzers are lenses of which view** starts as the catalog's groups (scene `catalog.ts` `PRESET_GROUPS`). A checkpoint may move an analyzer, merge two into one lens, or retire one; record it here and update the catalog.

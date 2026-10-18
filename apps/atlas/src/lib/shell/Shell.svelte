@@ -26,6 +26,7 @@
   import TableDrawer from '../table/TableDrawer.svelte';
   import TimeStrip from '../time/TimeStrip.svelte';
   import { nextFanFocus } from '../views/fanFocus';
+  import { palettePick } from '../views/palettePick';
   import { stageClick } from '../views/stageClick';
   import CommandPalette from './CommandPalette.svelte';
   import GuideSheet from './GuideSheet.svelte';
@@ -95,9 +96,14 @@
     PRESET_GROUPS.find((g) => g.id === nav.view)?.label ?? '',
   );
 
-  // Analyzers are selected too: the inspector explains them and links to the
-  // lens (or to classic, until Atlas has one).
-  const pick = (entry: EntityEntry) => nav.select(entry.id);
+  // An analyzer with an Atlas view opens its lens, with nothing selected so
+  // the inspector shows the lens itself. Anything else is selected: the
+  // inspector explains a classic-only analyzer and links there.
+  function pick(entry: EntityEntry) {
+    const lens = palettePick(entry.id);
+    if (lens && nav.openLens(lens)) nav.select(null);
+    else nav.select(entry.id);
+  }
   const openLens = (id: string) => void nav.openLens(id);
 
   // The stage draws the open lens's view, in its form. Layouts lay out in a
