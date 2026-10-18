@@ -118,7 +118,15 @@ Theme is a viewer preference and stays in localStorage, not the URL.
 
 ## Views
 
-One section per view, added at its design checkpoint. Each records:
+One section per view, added at its design checkpoint.
+
+**How a checkpoint runs, per analyzer:**
+1. Review the classic version: its hero and alternates, its bottom-panel tab, its metrics, run on a real repo (React is the reference).
+2. Read its docs page (`apps/docs/analyzers/<id>.md`) to understand what it computes and what it is meant to teach.
+3. Discuss how to bring it into Atlas, using options on a design canvas (several directions, real data, the Flat theme; a Glow board is optional, since Glow is otherwise checked in the running app).
+4. Record the outcome here, then build.
+
+Each section records:
 
 - the analyzer's docs page (`apps/docs/analyzers/<id>.md`) as input — and, once built, the page updated for the Atlas view, or written if it doesn't exist yet (only some analyzers have one);
 - the lenses it holds, in order;
@@ -160,7 +168,7 @@ One section per view, added at its design checkpoint. Each records:
 
 **Dropped from classic:** the treemap and risk-heatmap alternates (by-package replaces the treemap's question; the risk heatmap belongs to Risk); the signals chips move into the selected file's facets.
 
-*Scope: PR 3.2 builds Overview and Hotspots plus the shared shell (five-view rail, lens bar, time strip). Churn and Cursed Files get their own checkpoints next.*
+*Scope (confirmed 2026-10-18): PR 3.2 builds Overview and Hotspots plus the shared shell (five-view rail, lens bar, time strip, inspector). Churn and Cursed Files get their own checkpoints next.*
 
 ---
 
