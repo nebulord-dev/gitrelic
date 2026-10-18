@@ -112,6 +112,14 @@ describe('fieldScene', () => {
       FIELD_DOT_CAP,
     );
     expect(checkScene(scene)).toEqual([]);
+    // The 50 warm files past the cap are density now, and their cells say
+    // so instead of claiming everything in them scores under 25.
+    const tips = scene.marks
+      .filter((m) => m.id.startsWith('bin:'))
+      .map((m) => m.tip![0]);
+    const warm = tips.map((t) => Number(/, (\d+) at 25\+$/.exec(t)?.[1] ?? 0));
+    expect(warm.reduce((a, b) => a + b, 0)).toBe(50);
+    expect(tips.some((t) => /under 25/.test(t))).toBe(false);
   });
 
   it('copes with no files at all', () => {

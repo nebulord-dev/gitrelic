@@ -183,6 +183,8 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
     i: number;
     j: number;
     n: number;
+    /** Files at 25+ that fell past the dot cap into the density. */
+    warm: number;
     c0: number;
     c1: number;
     l0: number;
@@ -199,13 +201,23 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
     const bin = bins.get(key);
     if (bin) {
       bin.n++;
+      if (p.tier > 0) bin.warm++;
       bin.c0 = Math.min(bin.c0, p.commits);
       bin.c1 = Math.max(bin.c1, p.commits);
       bin.l0 = Math.min(bin.l0, p.lines);
       bin.l1 = Math.max(bin.l1, p.lines);
     } else {
       const { commits: c, lines: l } = p;
-      bins.set(key, { i, j, n: 1, c0: c, c1: c, l0: l, l1: l });
+      bins.set(key, {
+        i,
+        j,
+        n: 1,
+        warm: p.tier > 0 ? 1 : 0,
+        c0: c,
+        c1: c,
+        l0: l,
+        l1: l,
+      });
     }
   }
   let maxBin = 1;
@@ -227,7 +239,10 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
       alpha: 0.05 + 0.35 * Math.sqrt(b.n / maxBin),
       z: -1,
       tip: [
-        `${b.n.toLocaleString('en-US')} file${b.n === 1 ? '' : 's'} scoring under 25`,
+        // Usually all cool; past the dot cap a cell holds warm files too.
+        b.warm === 0
+          ? `${b.n.toLocaleString('en-US')} file${b.n === 1 ? '' : 's'} scoring under 25`
+          : `${b.n.toLocaleString('en-US')} file${b.n === 1 ? '' : 's'}, ${b.warm.toLocaleString('en-US')} at 25+`,
         `${range(b.c0, b.c1)} commits · ${range(b.l0, b.l1)} lines`,
       ],
     });

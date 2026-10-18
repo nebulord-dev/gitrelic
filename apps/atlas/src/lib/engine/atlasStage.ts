@@ -62,7 +62,13 @@ export class AtlasStage {
   private paletteFrom: Palette | null = null;
   private repaintStart = 0;
   private glow: boolean;
-  private hovered: EntityId | null = null;
+  /** The mark under the pointer. */
+  private pointerHover: EntityId | null = null;
+  /** A mark hovered from outside (a table row); wins while it's set. */
+  private rowHover: EntityId | null = null;
+  private get hovered(): EntityId | null {
+    return this.rowHover ?? this.pointerHover;
+  }
   private selected: EntityId | null = null;
   private hits = new HitTester();
   /** Marks moved or the view changed since the grid was built. */
@@ -262,20 +268,20 @@ export class AtlasStage {
 
   /**
    * Hovers `id` from outside the canvas (a detail-table row): its label is
-   * pinned and its tooltip shown, as if the pointer were on it. It shares
-   * one slot with the pointer's hover — the pointer can't be on a row and
-   * a mark at once — but leaves the cursor alone and doesn't report back
-   * through `onHover`, since the caller already knows.
+   * pinned and its tooltip shown, as if the pointer were on it. It has its
+   * own slot, so clearing it (a row losing focus) never erases what the
+   * pointer is on. It leaves the cursor alone and doesn't report back
+   * through `onHover`: the caller already knows.
    */
   hover(id: EntityId | null): void {
-    if (this.destroyed || id === this.hovered) return;
-    this.hovered = id;
+    if (this.destroyed || id === this.rowHover) return;
+    this.rowHover = id;
     this.requestDraw(false);
   }
 
   private setHovered(id: EntityId | null): void {
-    if (id === this.hovered) return;
-    this.hovered = id;
+    if (id === this.pointerHover) return;
+    this.pointerHover = id;
     this.host.style.cursor = id ? 'pointer' : '';
     this.opts.onHover?.(id);
     this.requestDraw(false);

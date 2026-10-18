@@ -557,6 +557,35 @@ describe('AtlasStage', () => {
     expect(label()).toBeTruthy();
   });
 
+  it('a row letting go of its hover leaves the pointer’s alone', async () => {
+    const { stage, fc, host, labelHost } = await setup();
+    stage!.show(
+      scene(
+        dot('file:a.ts', 100, 100, { tip: ['a.ts'] }),
+        dot('file:b.ts', 300, 100, { tip: ['b.ts'] }),
+      ),
+    );
+    settle(fc);
+    const tipText = () => {
+      const t = labelHost.querySelector('.atlas-tip') as HTMLElement;
+      return t.hidden ? null : t.textContent;
+    };
+    stage!.hover('file:a.ts');
+    fc.frame();
+    expect(tipText()).toBe('a.ts');
+    // The pointer moves onto b; then the row blurs and lets go.
+    const [sx, sy] = [
+      300 * stage!.transform.scale + stage!.transform.tx,
+      100 * stage!.transform.scale + stage!.transform.ty,
+    ];
+    host.dispatchEvent(
+      new PointerEvent('pointermove', { clientX: sx, clientY: sy }),
+    );
+    stage!.hover(null);
+    fc.frame();
+    expect(tipText()).toBe('b.ts');
+  });
+
   it('a resize mid-glide frames for the new size, not the old target', async () => {
     const { stage, fc } = await setup();
     stage!.show(scene(dot('person:a', 100, 100)));
