@@ -13,8 +13,9 @@ Deep audit of the analysis engine. Focus on correctness, robustness, and what ge
 
 All git command execution MUST go through `src/utils/git.ts`. See the `exec-discipline` skill for the full rule — this is the architectural invariant that lets core be reasoned about, tested, and mocked.
 
-- Run: `grep -r "from 'execa'" packages/core/src/ --include='*.ts' | grep -v 'utils/git.ts' | grep -v '.test.ts'` — any result is a violation
-- No `child_process` imports outside `utils/git.ts`, either — same rule applies
+- Run: `grep -r "from 'execa'" packages/core/src/ --include='*.ts' | grep -v 'utils/git.ts' | grep -v 'utils/tools.ts' | grep -v '.test.ts'` — any result is a violation
+- No `child_process` imports outside `utils/git.ts` / `utils/tools.ts`, either — same rule applies
+- External tools (`utils/tools.ts`) are optional: missing tool → git-only fallback, recorded in the report; they read the analyzed commit, never the checkout; argument arrays and timeouts, no shell
 - New git commands must be added to `utils/git.ts`, accept `repoPath` as the first argument, and return typed data — never raw stdout. Parsing belongs in the git util, not scattered across analyzers
 
 ### 2. Analyzer Contract

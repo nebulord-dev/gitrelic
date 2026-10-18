@@ -1,13 +1,13 @@
 ---
 name: exec-discipline
-description: "Enforce use of utils/git.ts for all git command execution — never raw execa imports in analyzers or other modules"
+description: "Enforce that processes run only from utils/git.ts (git) and utils/tools.ts (optional external tools) — never raw execa imports in analyzers or other modules"
 ---
 
 # Exec Discipline
 
 ## Rule
 
-All git command execution in `@gitrelic/core` MUST go through `packages/core/src/utils/git.ts`. No other file should import `execa` directly for running git commands.
+All git command execution in `@gitrelic/core` MUST go through `packages/core/src/utils/git.ts`, and every external tool (cloc/scc, git-sizer — optional, see CLAUDE.md › Data source) through `packages/core/src/utils/tools.ts`. No other file imports `execa` or `child_process`. Both modules run processes with argument arrays (never a shell) and timeouts.
 
 ## Why
 
@@ -24,7 +24,7 @@ This is the same pattern the Vite+ team uses with their `vite_command` crate —
 
 ### When writing new analyzers or modifying existing ones:
 
-1. **NEVER** add `import { execa } from 'execa'` in any file outside `utils/git.ts`
+1. **NEVER** add `import { execa } from 'execa'` in any file outside `utils/git.ts` and `utils/tools.ts`
 2. **USE** existing functions from `utils/git.ts`:
    - `getAllCommits(repoPath, options)` — full commit log with numstat
    - `getTrackedFiles(repoPath)` — current tracked files
@@ -46,7 +46,7 @@ This is the same pattern the Vite+ team uses with their `vite_command` crate —
 Run this check to find violations:
 
 ```bash
-grep -r "from 'execa'" packages/core/src/ --include='*.ts' | grep -v 'utils/git.ts' | grep -v '.test.ts'
+grep -r "from 'execa'" packages/core/src/ --include='*.ts' | grep -v 'utils/git.ts' | grep -v 'utils/tools.ts' | grep -v '.test.ts'
 ```
 
 Any results are violations that need refactoring.
@@ -59,7 +59,8 @@ None. (`rename-tracking.ts` used to import execa; it now calls `getRenameLog` fr
 
 Before completing work that touches git command execution:
 
-- [ ] No new `import { execa } from 'execa'` outside `utils/git.ts`
+- [ ] No new `import { execa } from 'execa'` outside `utils/git.ts` / `utils/tools.ts`
+- [ ] A tool call reads the analyzed commit, not the working copy, and falls back to git-only when the tool is missing
 - [ ] Any new git primitives added to `utils/git.ts` with proper typing
 - [ ] New functions accept `repoPath: string` as first parameter
 - [ ] New functions return structured data, not raw stdout
