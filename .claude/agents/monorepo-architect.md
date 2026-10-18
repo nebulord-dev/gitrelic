@@ -49,6 +49,7 @@ Review code changes for architectural violations, misplaced functionality, and b
 | Git analyzers | `core/src/analyzers/` | cli or the dashboards |
 | TypeScript interfaces/types | `core/src/types.ts` | duplicated in cli/web/atlas |
 | Git command primitives | `core/src/utils/git.ts` | anywhere else (see exec-discipline) |
+| Optional external tools (cloc/scc, git-sizer) | `core/src/utils/tools.ts` | anywhere else (see exec-discipline) |
 | Report orchestration | `core/src/runner.ts` | cli or the dashboards |
 | Terminal UI components | `cli/src/components/` | core or web |
 | CLI flags/commands | `cli/src/index.tsx` | core or web |
@@ -64,7 +65,7 @@ Every analyzer in `core/src/analyzers/`:
 - Follows the pattern: `export function analyze*(commits: RawCommit[], trackedFiles: string[], ...): *Report`
 - Takes `RawCommit[]` and/or `trackedFiles: string[]` as input (data from `utils/git.ts`)
 - Returns a structured report type defined in `core/src/types.ts`
-- Must NOT import `execa` directly — git commands belong in `utils/git.ts` (exec-discipline skill)
+- Must NOT import `execa` directly — git commands belong in `utils/git.ts`, external tools in `utils/tools.ts` (exec-discipline skill)
 - Is registered and called in `core/src/runner.ts`
 - Is exported from `core/src/index.ts` if exposed publicly
 
@@ -95,7 +96,7 @@ When reviewing code:
 1. **Map the change** — Which packages were touched? What's the nature of the change?
 2. **Check boundaries** — Run through each boundary rule above. Flag violations with exact file:line references.
 3. **Validate placement** — Is every new file in the right package? Would it be better elsewhere?
-4. **Check exec-discipline** — Any new `import { execa }` outside `utils/git.ts`? That's a violation.
+4. **Check exec-discipline** — Any new `import { execa }` outside `utils/git.ts` / `utils/tools.ts`? That's a violation. A tool call must read the analyzed commit (not the checkout) and fall back to git-only when the tool is missing.
 5. **Check registrations** — New analyzer? Verify it's called in `runner.ts`. New type? Verify it's in `types.ts`. New public API? Verify it's exported from `index.ts`.
 6. **Check browser safety** — Any new imports from `@gitrelic/core` in `apps/web/src`, `apps/atlas/src` or `packages/scene/src`? They MUST be `import type` (and `import type { X }`, not `import { type X }`, in atlas/scene). Any `{@html}`, `innerHTML`, `outerHTML` or `insertAdjacentHTML` in `apps/atlas/src`? `test/noRawHtml.test.ts` fails on them.
 7. **Check the published-asset mirror** — A change to either dashboard's dist layout, or to `apps/web/vite.config.ts`'s `base: './'` (classic must work under `/classic/`), needs `copy-web-dist.mjs` and the CI `install-smoke` probes to still agree.
@@ -106,7 +107,7 @@ Structure your review as:
 
 - **Summary**: What was changed and its architectural health (1-2 sentences)
 - **Boundary Violations**: Must-fix issues where code crosses package boundaries (with file:line)
-- **Exec-Discipline Violations**: Any raw execa usage outside `utils/git.ts`
+- **Exec-Discipline Violations**: Any raw execa usage outside `utils/git.ts` / `utils/tools.ts`
 - **Placement Issues**: Code that works but lives in the wrong package
 - **Registration Gaps**: Missing analyzer wiring, type definitions, or export entries
 - **Clean Patterns**: Acknowledge decisions that correctly follow the architecture
