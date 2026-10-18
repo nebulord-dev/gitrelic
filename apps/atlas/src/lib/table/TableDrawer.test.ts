@@ -85,4 +85,18 @@ describe('TableDrawer', () => {
     expect(heard).not.toHaveBeenCalled();
     window.removeEventListener('keydown', heard);
   });
+
+  it('clears a filter on the first Escape, and closes on the next', async () => {
+    render(TableDrawer, { table, label: 'Hotspots', open: true });
+    const search = screen.getByRole('searchbox') as HTMLInputElement;
+    await fireEvent.input(search, { target: { value: 'api' } });
+    expect(fileButtons()).toEqual(['src/api.ts']);
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    await tick();
+    expect(search.value).toBe('');
+    expect(fileButtons()).toHaveLength(3);
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    await tick();
+    expect(screen.queryByRole('region', { name: 'Hotspots table' })).toBeNull();
+  });
 });

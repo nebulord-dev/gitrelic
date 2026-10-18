@@ -52,7 +52,9 @@
     if (open && e.key === 'Escape' && !modalOpen()) {
       e.preventDefault();
       e.stopPropagation();
-      close();
+      // A filter clears first; the next Escape closes the drawer.
+      if (filter) filter = '';
+      else close();
     }
   }
 
