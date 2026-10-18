@@ -16,7 +16,7 @@
   <TopBar {report} bind:theme />
   <div class="flex min-h-0 flex-1 gap-4">
     <Rail />
-    <Stage />
+    <Stage {theme} />
     <Inspector {report} />
   </div>
 </div>

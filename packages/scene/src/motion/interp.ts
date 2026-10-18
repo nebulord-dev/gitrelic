@@ -1,4 +1,9 @@
-import type { ColorRole, MarkGeom, Paint } from '../model';
+import {
+  COLOR_ROLES,
+  type ColorRole,
+  type MarkGeom,
+  type Paint,
+} from '../model';
 
 export function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
@@ -106,6 +111,15 @@ export function mixColor(a: Rgba, b: Rgba, t: number): Rgba {
 }
 
 export type Palette = Readonly<Record<ColorRole, Rgba>>;
+
+/** Every role mixed from `a` to `b`: a theme switch part-way through. */
+export function mixPalette(a: Palette, b: Palette, t: number): Palette {
+  if (t <= 0) return a;
+  if (t >= 1) return b;
+  const out = {} as Record<ColorRole, Rgba>;
+  for (const role of COLOR_ROLES) out[role] = mixColor(a[role], b[role], t);
+  return out;
+}
 
 export function resolvePaint(paint: Paint, palette: Palette): Rgba {
   if (typeof paint === 'string') return palette[paint];

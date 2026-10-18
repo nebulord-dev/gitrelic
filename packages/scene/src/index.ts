@@ -110,6 +110,7 @@ export {
 
 export {
   checkScene,
+  COLOR_ROLES,
   emptyScene,
   type AnalyzerView,
   type Bounds,
@@ -134,6 +135,7 @@ export {
   lerpArc,
   lerpGeom,
   mixColor,
+  mixPalette,
   parseColor,
   resolvePaint,
   type Palette,
@@ -159,6 +161,7 @@ export {
 
 export { normalizeReport } from './report/normalizeReport';
 
+export { readPalette } from './theme/palette';
 export {
   DEFAULT_THEME,
   isThemeName,
