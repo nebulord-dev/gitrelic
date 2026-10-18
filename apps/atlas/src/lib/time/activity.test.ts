@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { activeWeeks, recentShare, spanLabels } from './activity';
+import { activeWeeks, fitBars, recentShare, spanLabels } from './activity';
 
 const MON = Date.UTC(2026, 2, 2);
 
@@ -24,5 +24,22 @@ describe('activity words', () => {
       '1 of 1 commit in the recent half',
     );
     expect(recentShare({ ...a, hits: [0, 0, 0, 0] })).toBeNull();
+  });
+
+  it('merges weeks into at most maxBars bars, keeping the sums', () => {
+    const totals = Array.from({ length: 600 }, (_, i) => i % 3);
+    const hits = totals.map((n) => (n > 1 ? 1 : 0));
+    const fit = fitBars({ start: MON, totals, hits }, 120);
+    expect(fit.totals.length).toBeLessThanOrEqual(120);
+    expect(fit.weeksPerBar).toBe(5);
+    const sum = (xs: number[]) => xs.reduce((s, n) => s + n, 0);
+    expect(sum(fit.totals)).toBe(sum(totals));
+    expect(sum(fit.hits)).toBe(sum(hits));
+    const short = { start: MON, totals: [1, 2], hits: [0, 1] };
+    expect(fitBars(short, 120)).toEqual({
+      totals: [1, 2],
+      hits: [0, 1],
+      weeksPerBar: 1,
+    });
   });
 });

@@ -44,15 +44,22 @@ export function touchesEntity(
   }
 }
 
-/** A file's earlier paths, oldest first, from rename tracking. */
+/**
+ * A file's earlier paths, oldest first, from rename tracking — minus any
+ * path a tracked file uses today. Rename chains carry no dates, so a reused
+ * name (a.ts → b.ts, then a new a.ts) can't be split by time; dropping
+ * names that are live again keeps the new file's commits out.
+ */
 export function previousNamesOf(
   file: string,
   report: GitrelicReport,
 ): readonly string[] {
-  return (
-    report.renameTracking.chains.find((c) => c.currentPath === file)
-      ?.previousNames ?? []
-  );
+  const names = report.renameTracking.chains.find(
+    (c) => c.currentPath === file,
+  )?.previousNames;
+  if (!names?.length) return [];
+  const tracked = new Set(report.loc.files.map((f) => f.file));
+  return names.filter((n) => !tracked.has(n));
 }
 
 export function weeklyActivity(

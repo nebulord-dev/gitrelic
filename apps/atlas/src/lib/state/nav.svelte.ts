@@ -44,8 +44,11 @@ export class Nav {
   /** Opens a view on its default lens (a new history entry, so Back returns). */
   openView(view: string): void {
     if (!isPresetGroup(view)) return;
+    const lens = defaultLens(view);
+    // Already there: no history entry for a Back that changes nothing.
+    if (view === this.view && lens === this.lens && this.form === null) return;
     this.view = view;
-    this.lens = defaultLens(view);
+    this.lens = lens;
     this.form = null;
     this.write('push');
   }
@@ -57,6 +60,7 @@ export class Nav {
   openLens(id: string): boolean {
     const entry = catalogEntry(id);
     if (!entry?.atlas) return false;
+    if (id === this.lens && this.form === null) return true;
     this.view = entry.group;
     this.lens = id;
     this.form = null;

@@ -33,7 +33,12 @@
 <section aria-label="Time strip" class="flex shrink-0 flex-col gap-1.5">
   {#if activity && activity.totals.length > 0}
     <div role="img" aria-label={caption}>
-      <ActivityStrip {activity} height={40} highlight={selected} />
+      <ActivityStrip
+        {activity}
+        height={40}
+        highlight={selected}
+        maxBars={300}
+      />
     </div>
     <div class="flex justify-between gap-4 text-[12px] text-muted">
       <span>{span[0]}</span>

@@ -38,4 +38,18 @@ describe('TimeStrip', () => {
       }),
     ).toBeTruthy();
   });
+
+  it('fits a long history into its box instead of overflowing', () => {
+    const long = {
+      start: Date.UTC(2014, 0, 6),
+      totals: Array.from({ length: 600 }, () => 2),
+      hits: Array.from({ length: 600 }, () => 0),
+    };
+    const { container } = render(TimeStrip, { activity: long });
+    const bars = container.querySelectorAll('[role="img"] span');
+    expect(bars.length).toBeLessThanOrEqual(300);
+    expect(
+      screen.getByRole('img', { name: '1,200 commits over 600 weeks' }),
+    ).toBeTruthy();
+  });
 });

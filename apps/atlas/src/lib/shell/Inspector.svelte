@@ -124,6 +124,18 @@
         stroke-linecap="round"><path d="M15 6l-6 6 6 6" /></svg
       >
     </button>
+    {#if selection}
+      <!-- Something is selected, whatever its kind: say so, and open on it. -->
+      <button
+        type="button"
+        aria-label={`Show the selected ${kind ?? 'item'}`}
+        title={`Selected ${kind ?? 'item'}`}
+        onclick={() => (collapsed = false)}
+        class="grid size-10 cursor-pointer place-content-center rounded-chip bg-control-border"
+      >
+        <span class="size-2 rounded-full bg-accent" aria-hidden="true"></span>
+      </button>
+    {/if}
     {#if kind === 'file'}
       {#each stripSections as s (s.anchor)}
         <button

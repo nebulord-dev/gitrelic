@@ -22,7 +22,7 @@
 
 <Card eyebrow="Activity" {id}>
   {#if activity && span}
-    <ActivityStrip {activity} height={32} highlight />
+    <ActivityStrip {activity} height={32} highlight maxBars={120} />
     <div class="flex justify-between text-[11px] text-muted">
       <span>{span[0]}</span><span>{span[1]}</span>
     </div>

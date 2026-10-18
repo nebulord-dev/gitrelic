@@ -166,6 +166,9 @@ describe('Inspector', () => {
     expect(
       screen.getByRole('complementary', { name: 'Inspector, collapsed' }),
     ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Show the selected file' }),
+    ).toBeTruthy();
     // A selected file gets shortcuts into its sections.
     expect(
       screen.getByRole('button', { name: 'Open the inspector at People' }),

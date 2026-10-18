@@ -77,6 +77,23 @@ describe('weeklyActivity', () => {
     expect(previousNamesOf('other.ts', r)).toEqual([]);
   });
 
+  it('skips an old name a tracked file uses again', () => {
+    const r = normalizeReport({});
+    r.renameTracking.chains = [
+      {
+        currentPath: 'b.ts',
+        previousNames: ['a.ts', 'old/b.ts'],
+        renameCount: 2,
+      },
+    ];
+    // a.ts was renamed to b.ts, then an unrelated a.ts was created.
+    r.loc.files = [
+      { file: 'a.ts', lines: 10, language: 'TypeScript' },
+      { file: 'b.ts', lines: 20, language: 'TypeScript' },
+    ] as never;
+    expect(previousNamesOf('b.ts', r)).toEqual(['old/b.ts']);
+  });
+
   it('recomputes only the hits over an existing series', () => {
     const { start, totals } = weeklyActivity(commits);
     expect(

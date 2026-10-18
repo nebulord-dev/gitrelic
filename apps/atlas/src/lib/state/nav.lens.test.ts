@@ -69,4 +69,15 @@ describe('Nav lenses and forms', () => {
     expect(nav.form).toBeNull();
     nav.destroy();
   });
+
+  it('adds no history entry when nothing changes', () => {
+    const nav = new Nav(() => index, window, forms);
+    nav.openLens('churn');
+    const before = history.length;
+    nav.openLens('churn');
+    nav.openView('overview');
+    nav.openView('overview');
+    expect(history.length).toBe(before + 1);
+    nav.destroy();
+  });
 });
