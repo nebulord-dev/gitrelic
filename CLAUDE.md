@@ -94,7 +94,9 @@ Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `norm
 
 ### `apps/atlas` — Web Dashboard (Atlas, in progress)
 
-Svelte 5 (runes) + Vite + Tailwind v4. Served by `gitrelic --ui atlas` (implies `--web`) at `/`, with classic under `/classic/`; classic's `useSelection` reads `#preset=<id>` on load, so Atlas can link analyzers it has no view for to `/classic/#preset=<id>` (the rail does that from PR 3.1). Each analyzer view starts with a design checkpoint with a maintainer before it is built.
+Svelte 5 (runes) + Vite + Tailwind v4. Served by `gitrelic --ui atlas` (implies `--web`) at `/`, with classic under `/classic/`; classic's `useSelection` reads `#preset=<id>` on load, so Atlas can link analyzers it has no view for to `/classic/#preset=<id>` (the rail does that from PR 3.1). 
+
+**Read `docs/atlas-views.md` before building or changing a view.** It holds the navigation shape (five group views in the rail, one lens bar of analyzers, corner-toggle forms for the rare alternate picture — never a second tab row), where trend/distribution/leaderboard live (time strip, inspector chart, detail table), the URL fields, and each view's design-checkpoint outcome. Every view starts with a checkpoint with a maintainer, recorded there before it's built.
 
 - `src/App.svelte` — loads `/gitrelic-report.lite.json` via `lib/data/loadReport.ts` (normalized with `normalizeReport`), applies the theme, renders `lib/shell/Shell.svelte` (top bar, collapsible rail, stage, inspector). `loadCommits()` fetches `/gitrelic-commits.json` once, only when a view needs commits.
 - `src/lib/state/hash.ts` + `nav.svelte.ts` — the URL hash `#v=&l=&s=` (view, layout, selected entity id) and the `Nav` runes class that owns it. Everything read from the hash is checked: a view must be one Atlas has (`catalog.atlas`), and a selection must resolve in scene's `buildEntityIndex` — anything else is dropped, never rendered. Selecting replaces the history entry; opening a view pushes one.
