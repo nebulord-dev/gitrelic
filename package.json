@@ -1,5 +1,5 @@
 {
-  "name": "gitrelic",
+  "name": "gitrelic-monorepo",
   "private": true,
   "type": "module",
   "scripts": {
