@@ -14,6 +14,22 @@ export { perAuthorAiMix } from './authors/perAuthorAiMix';
 export { topAiUsers } from './authors/topAiUsers';
 
 export {
+  computeOutlierBadges,
+  RULES as BADGE_RULES,
+  type Badge,
+} from './badges';
+export {
+  CATALOG,
+  catalogEntry,
+  classicUrl,
+  DOCS_BASE,
+  docsUrl,
+  PRESET_GROUPS,
+  type CatalogEntry,
+  type PresetGroup,
+} from './catalog';
+
+export {
   buildAuthorGraph,
   type AuthorGraphLink,
   type AuthorGraphNode,
@@ -81,7 +97,26 @@ export { isTestPath } from './files/isTestPath';
 
 export { formatRelative } from './format/relativeTime';
 
+export {
+  buildEntityIndex,
+  type EntityEntry,
+  type EntityIndex,
+  type SearchKind,
+} from './entities';
 export { fileFacts, type FactTier, type FileFact } from './inspect/fileFacts';
+export { fileMentions } from './inspect/fileMentions';
+export { dirFacts } from './inspect/dirFacts';
+export {
+  fileContributors,
+  type FileContributor,
+} from './inspect/fileContributors';
+export {
+  personFacts,
+  reportNow,
+  STRESS_WARNING,
+  type PersonFacts,
+} from './inspect/personFacts';
+export { fuzzyScore, rankEntities, type Ranked } from './search/rank';
 
 export { topGhostOwners, type TopGhostOwner } from './ownership/ghostOwners';
 export { sortCriticalByImpact } from './ownership/sortBusFactor';

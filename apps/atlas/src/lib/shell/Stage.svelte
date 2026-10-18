@@ -42,6 +42,9 @@
     });
 
     const labelHost = labels;
+    // The theme the stage is built in. If it changes while WebGL starts, the
+    // theme effect sees paintedTheme lag behind and re-applies the new one.
+    const startTheme = theme;
     // Pixi loads on demand: the shell and the no-WebGL fallback stay light.
     import('../engine/pixiStage')
       .then(({ PixiStage }) =>
@@ -52,7 +55,7 @@
           {
             renderer: new PixiStage(),
             readPalette: () => paletteFromDocument(),
-            glow: theme === 'glow',
+            glow: startTheme === 'glow',
             reducedMotion: () => prefersReducedMotion(),
             onSelect: (id) => onselect?.(id),
           },
@@ -68,7 +71,7 @@
           return;
         }
         created = made;
-        paintedTheme = theme;
+        paintedTheme = startTheme;
         stage = made;
         resize.observe(el);
       }, fail);
