@@ -230,4 +230,30 @@ export { lensReadings, type LensReading } from './overview/readings';
 export { lensTopEntities, type FannedEntity } from './overview/topEntities';
 export { ringScene, type RingFocus } from './layouts/ring';
 export { overviewView, ringLayout } from './views/overview';
+export {
+  commitsForScore,
+  HOTSPOT_TIERS,
+  hotspotPoints,
+  hotspotScale,
+  hotspotSummary,
+  hotspotTier,
+  packageOf,
+  type HotspotPoint,
+  type HotspotSummary,
+  type HotspotTier,
+} from './hotspots/points';
+export { distinctNames } from './format/distinctNames';
+export { fieldScene, type FieldInput } from './layouts/field';
+export {
+  PACKAGES_DOT_CAP,
+  PACKAGES_MAX_GROW,
+  packagesScene,
+} from './layouts/packages';
+export {
+  fieldLayout,
+  hotspotFindings,
+  hotspotsView,
+  pointsOf as hotspotPointsOf,
+  packagesLayout,
+} from './views/hotspots';
 export { VIEWS } from './views/index';

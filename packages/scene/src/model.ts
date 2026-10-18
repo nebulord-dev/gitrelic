@@ -4,7 +4,7 @@
 
 import type { CommitLike } from './commits/commitLike';
 import type { EntityIndex } from './entities';
-import type { EntityId } from './ids';
+import type { EntityId, EntityKind } from './ids';
 import type { ThemeToken } from './theme/tokens';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -171,6 +171,17 @@ export interface Finding {
 export interface Layout {
   id: string;
   label: string;
+  /**
+   * One line under the stage: how to read this picture. Plain text, from the
+   * view's design checkpoint.
+   */
+  caption?: string;
+  /**
+   * The entity kinds `build` re-forms around when they're the focus (the
+   * field: a selected `file`). Any other selection gives it no focus, so it
+   * isn't rebuilt (and re-planned) for a click it can't show.
+   */
+  focusKinds?: readonly EntityKind[];
   /** Whether `build` needs `input.commits`. */
   needsCommits: boolean;
   build: (input: ViewInput, viewport: Viewport) => Scene;

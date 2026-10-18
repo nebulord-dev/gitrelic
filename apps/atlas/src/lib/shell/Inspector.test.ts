@@ -264,20 +264,45 @@ describe('Inspector', () => {
 
   it('previews a selected lens: its reading, what it points at, and how to open it', async () => {
     const onselect = vi.fn();
+    const onopen = vi.fn();
     render(Inspector, {
       ...base,
       selection: ids.analyzer('hotspots'),
       onselect,
+      onopen,
     });
     expect(screen.getByRole('heading', { name: 'On the ring' })).toBeTruthy();
-    expect(
-      screen
-        .getByRole('link', { name: /Open Hotspots in classic/ })
-        .getAttribute('href'),
-    ).toBe('/classic/#preset=hotspots');
+    // Hotspots has an Atlas view: the button opens it in place.
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'Open Hotspots' }),
+    );
+    expect(onopen).toHaveBeenCalledWith('hotspots');
     const points = screen.getByRole('heading', { name: 'What it points at' });
     expect(points).toBeTruthy();
     await fireEvent.click(screen.getByRole('button', { name: /api\.ts/ }));
     expect(onselect).toHaveBeenCalledWith('file:src/api.ts');
+  });
+
+  it('explains the Hotspots lens with its own card when nothing is selected', () => {
+    render(Inspector, {
+      ...base,
+      view: 'code-health' as const,
+      lens: 'hotspots',
+    });
+    expect(screen.getByRole('heading', { name: 'About' })).toBeTruthy();
+    expect(
+      screen.getByRole('link', { name: 'Docs ↗' }).getAttribute('href'),
+    ).toMatch(/analyzers\/hotspots$/);
+    expect(screen.getByRole('heading', { name: 'Hotspots' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Top five' })).toBeTruthy();
+  });
+
+  it('links a selected lens without an Atlas view to classic', () => {
+    render(Inspector, { ...base, selection: ids.analyzer('churn') });
+    expect(
+      screen
+        .getByRole('link', { name: /Open Churn in classic/ })
+        .getAttribute('href'),
+    ).toBe('/classic/#preset=churn');
   });
 });

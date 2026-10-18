@@ -15,6 +15,7 @@
   import ExplainCard from '../inspector/ExplainCard.svelte';
   import FileCard from '../inspector/FileCard.svelte';
   import { fileSections, scrollToSection } from '../inspector/fileSections';
+  import HotspotsCard from '../inspector/HotspotsCard.svelte';
   import LensPreviewCard from '../inspector/LensPreviewCard.svelte';
   import PersonCard from '../inspector/PersonCard.svelte';
   import RepoMapCard from '../inspector/RepoMapCard.svelte';
@@ -254,6 +255,9 @@
       {onopen}
       onRing={lens === 'overview'}
     />
+  {:else if lens === 'hotspots' && lensEntry}
+    <ExplainCard entry={lensEntry} />
+    <HotspotsCard {report} {index} {onselect} />
   {:else if lens === 'overview'}
     <RepoMapCard {report} {onselect} />
     {#if lensEntry}<ExplainCard entry={lensEntry} />{/if}

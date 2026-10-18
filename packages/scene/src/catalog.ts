@@ -56,7 +56,8 @@ export const CATALOG: readonly CatalogEntry[] = [
     group: 'code-health',
     explain:
       'Churn × size: large files that change often, where bugs and slow reviews collect.',
-    atlas: false,
+    docsPath: 'analyzers/hotspots',
+    atlas: true,
   },
   {
     id: 'churn',

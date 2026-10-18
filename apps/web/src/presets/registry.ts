@@ -108,6 +108,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       defaultTab: 'hotspots',
       altTabs: ['hotspots'],
     },
+    docsPath: 'analyzers/hotspots',
     metrics: hotspotsMetrics,
   },
   'bus-factor': {

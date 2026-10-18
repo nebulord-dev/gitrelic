@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import reportJson from '../../../../../packages/scene/test/fixtures/report.small.json';
 import DetailTable from './DetailTable.svelte';
 import FindingCard from './FindingCard.svelte';
+import HotspotsCard from './HotspotsCard.svelte';
 import type { GitrelicReport } from '@gitrelic/core';
 
 const index = buildEntityIndex(reportJson as unknown as GitrelicReport);
@@ -76,5 +77,32 @@ describe('DetailTable', () => {
     expect(names()).toEqual(['c.ts', 'b.ts', 'a.ts']);
     await fireEvent.click(screen.getByRole('button', { name: 'File' }));
     expect(names()).toEqual(['a.ts', 'b.ts', 'c.ts']);
+  });
+});
+
+describe('HotspotsCard', () => {
+  const report = reportJson as unknown as GitrelicReport;
+
+  it('leads with the tier counts and the findings, chips selecting files', async () => {
+    const onselect = vi.fn();
+    render(HotspotsCard, { report, index, onselect });
+    expect(
+      screen.getByText(/critical, 2 warning, of 10 scored files/),
+    ).toBeTruthy();
+    await fireEvent.click(screen.getByRole('button', { name: 'helpers.ts' }));
+    expect(onselect).toHaveBeenCalledWith('file:src/helpers.ts');
+  });
+
+  it('lists the tiers and the top five, each selecting its file', async () => {
+    const onselect = vi.fn();
+    render(HotspotsCard, { report, index, onselect });
+    expect(screen.getByRole('heading', { name: 'By tier' })).toBeTruthy();
+    const top = screen.getByRole('heading', {
+      name: 'Top five',
+    }).parentElement!;
+    const rows = top.querySelectorAll('li button');
+    expect(rows).toHaveLength(5);
+    await fireEvent.click(rows[1]);
+    expect(onselect).toHaveBeenCalledWith('file:src/index.ts');
   });
 });

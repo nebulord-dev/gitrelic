@@ -29,6 +29,13 @@ describe('TimeStrip', () => {
       }),
     ).toBeTruthy();
     await rerender({
+      activity: { ...activity, hits: [0, 0, 0, 1] },
+      selected: true,
+    });
+    expect(
+      screen.getByRole('img', { name: /^Selection changed in 1 week · / }),
+    ).toBeTruthy();
+    await rerender({
       activity: { ...activity, hits: [0, 0, 0, 0] },
       selected: true,
     });

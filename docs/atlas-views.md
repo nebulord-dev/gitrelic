@@ -48,7 +48,7 @@ What's left is the occasional genuinely different picture of the same data — C
 Keep it available; use it sparingly.
 
 - **Model:** an `AnalyzerView` (scene `model.ts`) has `layouts: [primary, ...alternates]`. Each `Layout` is a pure `build(input, viewport) → Scene`. A lens with one layout has no toggle.
-- **UI:** with two or more layouts, a compact toggle sits in a corner of the stage (icon buttons with labels, `aria-pressed`), like a map's map/satellite switch. It is never a tab row, and it never moves the lens bar.
+- **UI:** with two or more layouts, a compact toggle sits in a corner of the stage (`FormToggle`: labelled buttons, `aria-pressed`), like a map's map/satellite switch. It is never a tab row, and it never moves the lens bar. Each layout's `caption` sits along the bottom of the stage with the lens's **Docs ↗**.
 - **Motion:** forms share entity ids, so switching form morphs marks between the two layouts like switching lens does. Cross-layout id stability is part of every layout's tests.
 - **URL:** the form is in the hash (below), so a shared link reopens it.
 - **The checkpoint test:** before adding a form, ask whether the time strip, inspector chart or detail table already answers its question. Add the form only if it shows something none of them can — usually a different *structure* (flow vs lanes, radial vs linear), not a different *aggregation*.
@@ -240,6 +240,14 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 **Dropped from classic:** the treemap and risk-heatmap alternates (by-package replaces the treemap's question; the risk heatmap belongs to Risk); the signals chips move into the selected file's facets.
 
 *Scope (confirmed 2026-10-18): PR 3.2 builds Overview and Hotspots plus the shared shell (five-view rail, lens bar, time strip, inspector). Churn and Cursed Files get their own checkpoints next.*
+
+**As built (first Hotspots PR, RELIC-348):**
+
+- **Field.** Commits × lines, log–log. The 25 / 50 / 75 curves come from core's formula (score ≈ commits × log₂(lines) / k, so each curve is commits = S·k / log₂(lines); `hotspotScale` recovers k from the report), so they're exact on any repo up to core's rounding. Files at 25+ are dots (capped at 400, hottest first), the rest density bins; the selected file is drawn as a dot even when it's cool. The top eight are named in a column right of the plot with leaders, ordered by height. The critical region is *not* tinted: the renderer draws no filled shapes, and the 75 curve carries it.
+- **By package.** Packages are faint discs (a ring's stroke scales with its radius) packed tightly, biggest first (d3-hierarchy's `packSiblings`: a thousand packages in a few milliseconds), and a small repo's packing is spread out to fill the stage (up to 3×); files in a sunflower, hottest at the centre. Names ride on label-only cards above each disc, since the label layer skips marks as faint as the disc. Only files at 25+ claim label space.
+- **Inspector (lens mode):** About, then the Hotspots card (critical and warning counts, up to three findings, tiers on log bars, top five).
+- **Findings** (on React): the hottest file (`ReactFizzServer.js`, 33 commits across 6,656 lines); two kinds of heat among files at 25+ (24 large, 7 under 300 lines hot on churn alone); and the package with the largest share of its own files at 25+, set against the biggest package when that runs much cooler (`packages/shared/`: 7 of 22; `compiler/`: 7 of 1,369).
+- **Next PR:** selecting a file fans its facets; the table drawer (`T`); What to do; hover tooltips (the field's dots and density say what they are).
 
 ### Code Health › Churn (checkpoint 2026-10-18)
 

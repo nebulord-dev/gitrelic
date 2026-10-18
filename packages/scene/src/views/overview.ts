@@ -12,6 +12,8 @@ import type { AnalyzerView, Layout } from '../model';
 export const ringLayout: Layout = {
   id: 'ring',
   label: 'Ring',
+  // The shell's fan focus: a lens, and the entities it fans out.
+  focusKinds: ['analyzer', 'file', 'dir', 'person'],
   needsCommits: false,
   build: (input, viewport) => {
     const readings = lensReadings(input.report);

@@ -1,7 +1,9 @@
 <script lang="ts">
   import {
     buildEntityIndex,
+    catalogEntry,
     computeOutlierBadges,
+    docsUrl,
     entityKey,
     entityKind,
     fromCommitIndex,
@@ -109,10 +111,29 @@
       onRing ? nextFanFocus(fanFocus, selection, report, index) : null,
     );
   });
-  let layout = $derived.by(() => {
-    const view = nav.lens ? VIEWS.get(nav.lens) : undefined;
-    if (!view) return undefined;
-    return view.layouts.find((l) => l.id === nav.form) ?? view.layouts[0];
+  let lensView = $derived(nav.lens ? VIEWS.get(nav.lens) : undefined);
+  let layout = $derived(
+    lensView?.layouts.find((l) => l.id === nav.form) ?? lensView?.layouts[0],
+  );
+  let forms = $derived(
+    lensView?.layouts.map((l) => ({ id: l.id, label: l.label })) ?? [],
+  );
+  // The primary form stays out of the URL, like every default.
+  const setForm = (id: string) =>
+    nav.setForm(id === lensView?.layouts[0].id ? null : id);
+  let lensDocs = $derived.by(() => {
+    const entry = nav.lens ? catalogEntry(nav.lens) : undefined;
+    return entry ? (docsUrl(entry) ?? undefined) : undefined;
+  });
+  // The ring fans its focused lens; other layouts re-form around a
+  // selection of a kind they declare (the field draws a selected file even
+  // when it's cool). Anything else gives them no focus, so a click they
+  // can't show doesn't rebuild and re-plan the scene.
+  let layoutFocus = $derived.by(() => {
+    if (!layout?.focusKinds) return null;
+    if (nav.lens === 'overview') return fanFocus;
+    const kind = nav.selection ? entityKind(nav.selection) : null;
+    return kind && layout.focusKinds.includes(kind) ? nav.selection : null;
   });
   // Commits are read only by layouts that need them, so the time strip's
   // fetch doesn't rebuild (and re-plan) a scene that ignores them.
@@ -120,7 +141,12 @@
   let scene = $derived(
     layout && (!layout.needsCommits || layoutCommits)
       ? layout.build(
-          { report, commits: layoutCommits, focus: fanFocus, index },
+          {
+            report,
+            commits: layoutCommits,
+            focus: layoutFocus,
+            index,
+          },
           WORLD,
         )
       : null,
@@ -152,7 +178,18 @@
     <Rail {badges} view={nav.view} onopen={(v) => nav.openView(v)} />
     <div class="flex min-w-0 flex-1 flex-col gap-3">
       <LensBar view={nav.view} lens={nav.lens} {badges} onopen={openLens} />
-      <Stage {theme} {scene} selected={nav.selection} onselect={stageSelect}>
+      <Stage
+        {theme}
+        {scene}
+        selected={nav.selection}
+        onselect={stageSelect}
+        caption={layout?.caption}
+        docs={lensDocs}
+        {forms}
+        form={layout?.id}
+        onform={setForm}
+        frameKey={`${nav.lens ?? ''}:${layout?.id ?? ''}`}
+      >
         {#snippet empty()}
           <p class="m-0 max-w-sm leading-relaxed">
             None of {viewLabel}'s lenses has an Atlas view yet. Each one in the
