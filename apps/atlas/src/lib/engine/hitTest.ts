@@ -18,11 +18,11 @@ export class HitTester {
   build(store: MarkStore): void {
     this.grid.clear();
     for (let i = 0; i < store.count; i++) {
-      const [hw, hh] = halfExtent(store, i);
-      const x0 = Math.floor((store.x[i] - hw) / this.cell);
-      const x1 = Math.floor((store.x[i] + hw) / this.cell);
-      const y0 = Math.floor((store.y[i] - hh) / this.cell);
-      const y1 = Math.floor((store.y[i] + hh) / this.cell);
+      const [bx0, by0, bx1, by1] = bounds(store, i);
+      const x0 = Math.floor(bx0 / this.cell);
+      const x1 = Math.floor(bx1 / this.cell);
+      const y0 = Math.floor(by0 / this.cell);
+      const y1 = Math.floor(by1 / this.cell);
       for (let gx = x0; gx <= x1; gx++) {
         for (let gy = y0; gy <= y1; gy++) {
           const key = `${gx},${gy}`;
@@ -118,16 +118,75 @@ export function segmentDistance(
   return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
 }
 
-function halfExtent(store: MarkStore, i: number): [number, number] {
+/** A mark's world bounding box: x0, y0, x1, y1. */
+function bounds(store: MarkStore, i: number): [number, number, number, number] {
+  const x = store.x[i];
+  const y = store.y[i];
   switch (store.shape[i]) {
     case SHAPE_CODES.dot:
-    case SHAPE_CODES.ring:
-      return [store.r[i], store.r[i]];
+    case SHAPE_CODES.ring: {
+      const r = store.r[i];
+      return [x - r, y - r, x + r, y + r];
+    }
     case SHAPE_CODES.arc:
-      return [store.r[i] + store.h[i], store.r[i] + store.h[i]];
-    default:
-      return [store.w[i] / 2, store.h[i] / 2];
+      return wedgeBounds(
+        x,
+        y,
+        store.r[i],
+        store.r[i] + store.h[i],
+        store.a0[i],
+        store.a1[i],
+      );
+    default: {
+      const hw = store.w[i] / 2;
+      const hh = store.h[i] / 2;
+      return [x - hw, y - hh, x + hw, y + hh];
+    }
   }
+}
+
+/**
+ * The box of a ring wedge, not its whole circle: the four corners plus any
+ * of 12, 3, 6 and 9 o'clock the span passes, on the outer radius. A clock
+ * cell then fills a few grid cells instead of the whole ring's.
+ */
+export function wedgeBounds(
+  cx: number,
+  cy: number,
+  inner: number,
+  outer: number,
+  a0: number,
+  a1: number,
+): [number, number, number, number] {
+  if (a1 - a0 >= TAU) return [cx - outer, cy - outer, cx + outer, cy + outer];
+  // Clockwise from 12 o'clock: x = sin, y = -cos.
+  const xs = [
+    inner * Math.sin(a0),
+    inner * Math.sin(a1),
+    outer * Math.sin(a0),
+    outer * Math.sin(a1),
+  ];
+  const ys = [
+    -inner * Math.cos(a0),
+    -inner * Math.cos(a1),
+    -outer * Math.cos(a0),
+    -outer * Math.cos(a1),
+  ];
+  const start = ((a0 % TAU) + TAU) % TAU;
+  const span = a1 - a0;
+  for (let q = 0; q < 4; q++) {
+    const angle = (q * Math.PI) / 2;
+    if ((((angle - start) % TAU) + TAU) % TAU <= span) {
+      xs.push(outer * Math.sin(angle));
+      ys.push(-outer * Math.cos(angle));
+    }
+  }
+  return [
+    cx + Math.min(...xs),
+    cy + Math.min(...ys),
+    cx + Math.max(...xs),
+    cy + Math.max(...ys),
+  ];
 }
 
 function contains(
@@ -147,7 +206,9 @@ function contains(
       const dist = Math.hypot(dx, dy);
       if (dist < store.r[i] - tol || dist > store.r[i] + store.h[i] + tol)
         return false;
-      // Angles run clockwise from 12 o'clock, like the layouts'.
+      // Angles run clockwise from 12 o'clock, like the layouts'. Tolerance
+      // widens the band radially only: the gaps between clock cells stay
+      // gaps, so slop never picks the neighbouring hour.
       const angle = Math.atan2(dx, -dy);
       const span = store.a1[i] - store.a0[i];
       const into = (((angle - store.a0[i]) % TAU) + TAU) % TAU;

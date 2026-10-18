@@ -68,6 +68,28 @@ describe('attachViewportInput', () => {
     expect(opts.click).toHaveBeenCalledWith(41, 30);
   });
 
+  it('ignores mouse buttons other than the primary one', () => {
+    const { el, opts, view } = setup();
+    const press = (type: string, x: number, button: number) =>
+      el.dispatchEvent(
+        new PointerEvent(type, {
+          pointerId: 1,
+          pointerType: 'mouse',
+          button,
+          clientX: x,
+          clientY: 50,
+        }),
+      );
+    press('pointerdown', 50, 2);
+    press('pointermove', 90, 2);
+    press('pointerup', 90, 2);
+    expect(opts.click).not.toHaveBeenCalled();
+    expect(view().tx).toBe(0);
+    press('pointerdown', 50, 0);
+    press('pointerup', 50, 0);
+    expect(opts.click).toHaveBeenCalledOnce();
+  });
+
   it('never treats a cancelled gesture as a click', () => {
     const { pointer, opts } = setup();
     pointer('pointerdown', 1, 50, 50);

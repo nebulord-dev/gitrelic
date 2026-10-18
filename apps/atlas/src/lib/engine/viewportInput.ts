@@ -49,6 +49,9 @@ export function attachViewportInput(
   };
 
   const onDown = (e: PointerEvent) => {
+    // Primary button only: a right-click opens the context menu, and neither
+    // it nor a middle-click should select or pan.
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     el.setPointerCapture?.(e.pointerId);
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.size === 1) travelled = 0;

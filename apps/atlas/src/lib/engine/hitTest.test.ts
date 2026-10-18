@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { HitTester, hitLink, segmentDistance } from './hitTest';
+import { HitTester, hitLink, segmentDistance, wedgeBounds } from './hitTest';
 import { MarkStore } from './markStore';
 import type { LiveLink, Mark, Rgba } from '@gitrelic/scene';
 
@@ -127,6 +127,33 @@ describe('HitTester', () => {
       mark('analyzer:big', { shape: 'card', x: 0, y: 0, w: 400, h: 400 }),
     );
     expect(hit(s, 190, -190)).toBe('analyzer:big');
+  });
+});
+
+describe('wedgeBounds', () => {
+  // `+ 0` folds -0 into 0, which toEqual tells apart.
+  const round = (b: number[]) => b.map((v) => Math.round(v * 1000) / 1000 + 0);
+
+  it("boxes a quarter ring, including the 12 and 3 o'clock extremes", () => {
+    expect(round(wedgeBounds(0, 0, 100, 120, 0, Math.PI / 2))).toEqual([
+      0, -120, 120, 0,
+    ]);
+  });
+
+  it('keeps a thin wedge small when it passes no cardinal angle', () => {
+    const [x0, y0, x1, y1] = wedgeBounds(0, 0, 100, 120, 0.1, 0.2);
+    expect(x1 - x0).toBeLessThan(15);
+    expect(y1 - y0).toBeLessThan(25);
+  });
+
+  it('reaches the outer radius where the wedge crosses a cardinal', () => {
+    expect(wedgeBounds(0, 0, 100, 120, 1.4, 1.7)[2]).toBeCloseTo(120, 9);
+    // Wrapping through 12 o'clock from a negative start.
+    expect(wedgeBounds(10, 10, 100, 120, -0.1, 0.1)[1]).toBeCloseTo(-110, 9);
+  });
+
+  it('boxes the whole circle for a full ring', () => {
+    expect(wedgeBounds(5, 5, 0, 10, 0, Math.PI * 2)).toEqual([-5, -5, 15, 15]);
   });
 });
 
