@@ -48,6 +48,22 @@ body {
     color 0.4s;
 }
 
+/* Mark labels over the canvas, positioned per frame by engine/labelLayer.ts. */
+.atlas-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--soft);
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.atlas-label--pinned {
+  color: var(--text);
+}
+
 @media (prefers-reduced-motion: reduce) {
   body {
     transition: none;
