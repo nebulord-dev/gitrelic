@@ -1,10 +1,14 @@
 // The renderer's performance gate (PR 2.2): 5,000 marks and 2,000 curved
 // links morphing grid ↔ fan, with a 168-cell arc ring and 300 labels, an
-// interrupt button, and live p50/p95 frame times. Dev-only; see bench.html.
+// interrupt button, and live frame stats. Dev-only; see bench.html.
 //
-// Gate: p95 frame interval ≤ 16.7 ms while morphing, in both themes, and an
-// interrupt that reverses without a jump — on an M2 MacBook Air with Chrome
-// DevTools' 4× CPU slowdown, standing in for a 2020-era Intel laptop.
+// Frame timing comes from the browser's own rAF timestamps (a probe loop),
+// not from when draws finish, so it measures what the display shows.
+//
+// Gate: no dropped frames while morphing (p95 frame interval within the
+// display's refresh, ≤ 16.7 ms at 60 Hz), in both themes, and an interrupt
+// that reverses without a jump — on an M2 MacBook Air with Chrome DevTools'
+// 4× CPU slowdown, standing in for a 2020-era Intel laptop.
 
 import '../app.css';
 import {
@@ -107,19 +111,34 @@ function fanScene(): Scene {
 
 // ── Stats ────────────────────────────────────────────────────────────────────
 
-const intervals: number[] = [];
+/** Every rAF interval, for the display's refresh rate. */
+const vsync: number[] = [];
+/** rAF intervals during frames the stage drew in (i.e. while morphing). */
+const morphing: number[] = [];
 const cpu: number[] = [];
-let lastFrame = 0;
+let drawsSinceTick = 0;
+let draws = 0;
 
 function record(ms: number) {
-  const now = performance.now();
-  // Only consecutive frames count as an interval; idle gaps aren't jank.
-  if (now - lastFrame < 100) intervals.push(now - lastFrame);
-  lastFrame = now;
   cpu.push(ms);
-  if (intervals.length > 600) intervals.shift();
+  drawsSinceTick++;
+  draws++;
   if (cpu.length > 600) cpu.shift();
 }
+
+let lastTick = 0;
+function probe(t: number) {
+  if (lastTick > 0) {
+    const d = t - lastTick;
+    vsync.push(d);
+    if (vsync.length > 240) vsync.shift();
+    if (drawsSinceTick > 0) morphing.push(d);
+  }
+  drawsSinceTick = 0;
+  lastTick = t;
+  requestAnimationFrame(probe);
+}
+requestAnimationFrame(probe);
 
 function percentile(values: number[], p: number): number {
   if (values.length === 0) return 0;
@@ -184,8 +203,9 @@ if (!stage) {
 } else {
   const morph = () => {
     fanned = !fanned;
-    intervals.length = 0;
+    morphing.length = 0;
     cpu.length = 0;
+    draws = 0;
     stage.show(fanned ? fanScene() : gridScene());
   };
   const button = (text: string, onClick: () => void) => {
@@ -224,11 +244,14 @@ if (!stage) {
   if (params.has('morph')) setTimeout(morph, 500);
 
   setInterval(() => {
+    const frame = percentile(vsync, 50);
+    const dropped = morphing.filter((d) => d > frame * 1.5).length;
     stats.textContent =
-      `${MARKS} marks · ${LINKS} links · 168 arcs\n` +
-      `frame interval p50 ${percentile(intervals, 50).toFixed(1)} ms · ` +
-      `p95 ${percentile(intervals, 95).toFixed(1)} ms\n` +
-      `draw CPU      p50 ${percentile(cpu, 50).toFixed(1)} ms · ` +
-      `p95 ${percentile(cpu, 95).toFixed(1)} ms`;
+      `${MARKS} marks · ${LINKS} links · 168 arcs · display ` +
+      `${frame > 0 ? Math.round(1000 / frame) : '?'} Hz (${frame.toFixed(1)} ms)\n` +
+      `last morph: ${morphing.length} frames · ${dropped} dropped · ` +
+      `interval p95 ${percentile(morphing, 95).toFixed(1)} ms · ` +
+      `${morphing.length ? (draws / morphing.length).toFixed(2) : '–'} draws/frame\n` +
+      `draw CPU p50 ${percentile(cpu, 50).toFixed(1)} ms · p95 ${percentile(cpu, 95).toFixed(1)} ms`;
   }, 250);
 }
