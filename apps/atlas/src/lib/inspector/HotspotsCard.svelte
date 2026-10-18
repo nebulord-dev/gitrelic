@@ -17,10 +17,13 @@
     report,
     index,
     onselect,
+    ontable,
   }: {
     report: GitrelicReport;
     index: EntityIndex;
     onselect?: (id: EntityId) => void;
+    /** Opens the full table of scored files. */
+    ontable?: () => void;
   } = $props();
 
   let points = $derived(hotspotPointsOf(report));
@@ -116,5 +119,13 @@
         </li>
       {/each}
     </ul>
+    {#if ontable}
+      <button
+        type="button"
+        onclick={() => ontable?.()}
+        class="cursor-pointer self-start bg-transparent p-0 font-[inherit] text-[13px] text-accent"
+        >All {n(summary.total)} files in the table (T) ▸</button
+      >
+    {/if}
   </Card>
 {/if}

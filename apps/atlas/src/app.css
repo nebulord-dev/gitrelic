@@ -68,6 +68,31 @@ body {
   color: var(--text);
 }
 
+/* The hover tooltip, positioned per frame by engine/tooltipLayer.ts. */
+.atlas-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* Above every label: label spans join the host after the card. */
+  z-index: 1;
+  max-width: 280px;
+  padding: 8px 10px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--card-radius);
+  background: var(--bg);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--soft);
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.atlas-tip__title {
+  color: var(--text);
+  font-weight: 600;
+}
+
 @media (prefers-reduced-motion: reduce) {
   body {
     transition: none;

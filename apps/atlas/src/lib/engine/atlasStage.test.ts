@@ -526,6 +526,114 @@ describe('AtlasStage', () => {
     );
   });
 
+  it('hovers a mark from outside (a table row): label pinned, tooltip shown', async () => {
+    const { stage, fc, labelHost, onHover } = await setup();
+    stage!.show(
+      scene(
+        dot('file:a.ts', 100, 100, {
+          label: 'a.ts',
+          tip: ['a.ts', 'Score 90'],
+        }),
+      ),
+    );
+    settle(fc);
+    const tip = () => labelHost.querySelector('.atlas-tip') as HTMLElement;
+    expect(tip().hidden).toBe(true);
+    stage!.hover('file:a.ts');
+    fc.frame();
+    expect(tip().hidden).toBe(false);
+    expect(tip().textContent).toBe('a.tsScore 90');
+    // Its label stays: the card goes on the other side of the mark.
+    const label = () =>
+      [...labelHost.querySelectorAll<HTMLElement>('.atlas-label')].find(
+        (l) => !l.hidden && l.textContent === 'a.ts',
+      );
+    expect(label()).toBeTruthy();
+    // The stage didn't hover it itself, so it doesn't report it back.
+    expect(onHover).not.toHaveBeenCalled();
+    stage!.hover(null);
+    fc.frame();
+    expect(tip().hidden).toBe(true);
+    expect(label()).toBeTruthy();
+  });
+
+  it('a row letting go of its hover leaves the pointer’s alone', async () => {
+    const { stage, fc, host, labelHost } = await setup();
+    stage!.show(
+      scene(
+        dot('file:a.ts', 100, 100, { tip: ['a.ts'] }),
+        dot('file:b.ts', 300, 100, { tip: ['b.ts'] }),
+      ),
+    );
+    settle(fc);
+    const tipText = () => {
+      const t = labelHost.querySelector('.atlas-tip') as HTMLElement;
+      return t.hidden ? null : t.textContent;
+    };
+    stage!.hover('file:a.ts');
+    fc.frame();
+    expect(tipText()).toBe('a.ts');
+    // The pointer moves onto b; then the row blurs and lets go.
+    const [sx, sy] = [
+      300 * stage!.transform.scale + stage!.transform.tx,
+      100 * stage!.transform.scale + stage!.transform.ty,
+    ];
+    host.dispatchEvent(
+      new PointerEvent('pointermove', { clientX: sx, clientY: sy }),
+    );
+    stage!.hover(null);
+    fc.frame();
+    expect(tipText()).toBe('b.ts');
+  });
+
+  it('the pointer on a mark outranks a focused row', async () => {
+    const { stage, fc, host, labelHost } = await setup();
+    stage!.show(
+      scene(
+        dot('file:a.ts', 100, 100, { tip: ['a.ts'] }),
+        dot('file:b.ts', 300, 100, { tip: ['b.ts'] }),
+      ),
+    );
+    settle(fc);
+    const tipText = () => {
+      const t = labelHost.querySelector('.atlas-tip') as HTMLElement;
+      return t.hidden ? null : t.textContent;
+    };
+    stage!.hover('file:a.ts');
+    const at = (x: number, y: number) =>
+      new PointerEvent('pointermove', {
+        clientX: x * stage!.transform.scale + stage!.transform.tx,
+        clientY: y * stage!.transform.scale + stage!.transform.ty,
+      });
+    host.dispatchEvent(at(300, 100));
+    fc.frame();
+    expect(tipText()).toBe('b.ts');
+    // Off the marks, the row's hover shows again.
+    host.dispatchEvent(at(200, 180));
+    fc.frame();
+    expect(tipText()).toBe('a.ts');
+  });
+
+  it('a row whose entity has no mark lights the mark holding it', async () => {
+    const { stage, fc, labelHost } = await setup();
+    stage!.show({
+      ...scene(
+        dot('bin:0:0', 100, 100, { tip: ['12 files scoring under 25'] }),
+      ),
+      standIns: new Map([['file:cool.ts', 'bin:0:0']]),
+    });
+    settle(fc);
+    const tip = () => labelHost.querySelector('.atlas-tip') as HTMLElement;
+    stage!.hover('file:cool.ts');
+    fc.frame();
+    expect(tip().hidden).toBe(false);
+    expect(tip().textContent).toBe('12 files scoring under 25');
+    // A file the scene neither draws nor holds shows nothing.
+    stage!.hover('file:gone.ts');
+    fc.frame();
+    expect(tip().hidden).toBe(true);
+  });
+
   it('a resize mid-glide frames for the new size, not the old target', async () => {
     const { stage, fc } = await setup();
     stage!.show(scene(dot('person:a', 100, 100)));

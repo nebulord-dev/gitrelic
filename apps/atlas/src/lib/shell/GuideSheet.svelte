@@ -9,7 +9,7 @@
   } from '@gitrelic/scene';
   import { tick } from 'svelte';
 
-  import { pressed } from './shortcut';
+  import { modalOpen, pressed } from './shortcut';
 
   let {
     open = $bindable(false),
@@ -79,8 +79,7 @@
 
   function onWindowKey(e: KeyboardEvent) {
     // Not over another modal (the palette): one dialog at a time.
-    const modalOpen = document.querySelector('[aria-modal="true"]') !== null;
-    if (!open && !modalOpen && pressed(e, '?')) {
+    if (!open && !modalOpen() && pressed(e, '?')) {
       e.preventDefault();
       open = true;
     }

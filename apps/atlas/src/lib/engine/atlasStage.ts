@@ -15,6 +15,7 @@ import {
 import { HitTester } from './hitTest';
 import { LabelLayer } from './labelLayer';
 import { MarkStore } from './markStore';
+import { TooltipLayer } from './tooltipLayer';
 import {
   rafClock,
   REPAINT_MS,
@@ -61,7 +62,23 @@ export class AtlasStage {
   private paletteFrom: Palette | null = null;
   private repaintStart = 0;
   private glow: boolean;
-  private hovered: EntityId | null = null;
+  /** The mark under the pointer; wins while it's on one. */
+  private pointerHover: EntityId | null = null;
+  /** An entity hovered from outside (a table row). */
+  private rowHover: EntityId | null = null;
+  /** The marks holding entities the scene didn't draw (`Scene.standIns`). */
+  private standIns: Scene['standIns'];
+  /**
+   * The pointer's mark first: a row that keeps keyboard focus mustn't
+   * contradict what's under the cursor. A row whose entity has no mark of
+   * its own lights the mark holding it (a density cell).
+   */
+  private get hovered(): EntityId | null {
+    if (this.pointerHover) return this.pointerHover;
+    const id = this.rowHover;
+    if (!id || this.store.indexOf(id) >= 0) return id;
+    return this.standIns?.get(id) ?? id;
+  }
   private selected: EntityId | null = null;
   private hits = new HitTester();
   /** Marks moved or the view changed since the grid was built. */
@@ -87,6 +104,7 @@ export class AtlasStage {
   private constructor(
     private readonly host: HTMLElement,
     private readonly labels: LabelLayer,
+    private readonly tooltip: TooltipLayer,
     private size: ScreenSize,
     private readonly opts: AtlasStageOptions,
   ) {
@@ -129,7 +147,13 @@ export class AtlasStage {
         opts.renderer.destroy();
         return null;
       }
-      return new AtlasStage(host, new LabelLayer(labelHost), size, opts);
+      return new AtlasStage(
+        host,
+        new LabelLayer(labelHost),
+        new TooltipLayer(labelHost),
+        size,
+        opts,
+      );
     } catch (err) {
       // Setup failing after WebGL came up (no 2D canvas for the sprites, a
       // theme token the canvas can't parse): don't leak the GL context.
@@ -175,6 +199,7 @@ export class AtlasStage {
       }
     }
     this.lastEmpty = empty;
+    this.standIns = scene.standIns;
     const plan = planTransition(scene, this.engine.live(), {
       reducedMotion: this.opts.reducedMotion(),
     });
@@ -236,6 +261,7 @@ export class AtlasStage {
     if (this.pending !== null) this.clock.cancel(this.pending);
     this.detachInput();
     this.labels.destroy();
+    this.tooltip.destroy();
     this.opts.renderer.destroy();
   }
 
@@ -251,9 +277,22 @@ export class AtlasStage {
     return this.hits.hitMark(this.store, wx, wy, HIT_SLOP / this.view.scale);
   }
 
+  /**
+   * Hovers `id` from outside the canvas (a detail-table row): its label is
+   * pinned and its tooltip shown, as if the pointer were on it. It has its
+   * own slot, so clearing it (a row losing focus) never erases what the
+   * pointer is on, and the pointer on a mark outranks it. It leaves the cursor alone and doesn't report back
+   * through `onHover`: the caller already knows.
+   */
+  hover(id: EntityId | null): void {
+    if (this.destroyed || id === this.rowHover) return;
+    this.rowHover = id;
+    this.requestDraw(false);
+  }
+
   private setHovered(id: EntityId | null): void {
-    if (id === this.hovered) return;
-    this.hovered = id;
+    if (id === this.pointerHover) return;
+    this.pointerHover = id;
     this.host.style.cursor = id ? 'pointer' : '';
     this.opts.onHover?.(id);
     this.requestDraw(false);
@@ -319,6 +358,7 @@ export class AtlasStage {
     if (this.hovered) pinned.add(this.hovered);
     if (this.selected) pinned.add(this.selected);
     this.labels.update(this.store, this.view, this.size, pinned);
+    this.tooltip.update(this.store, this.view, this.size, this.hovered);
     this.opts.onFrame?.(this.clock.now() - start);
     // A plan can cut the engine's repaint short, or end before the camera
     // lands; finish either anyway. requestDraw does nothing while the engine

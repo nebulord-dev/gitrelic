@@ -14,6 +14,7 @@ import { distinctNames } from '../format/distinctNames';
 import {
   commitsForScore,
   HOTSPOT_TIERS,
+  hotspotTip,
   type HotspotPoint,
 } from '../hotspots/points';
 import { ids, type EntityId } from '../ids';
@@ -52,6 +53,11 @@ function ticks10(max: number): number[] {
   for (let v = 1; v <= max; v *= 10) out.push(v);
   return out;
 }
+
+const range = (lo: number, hi: number) =>
+  lo === hi
+    ? lo.toLocaleString('en-US')
+    : `${lo.toLocaleString('en-US')}–${hi.toLocaleString('en-US')}`;
 
 const lineLabel = (v: number) => (v >= 1000 ? `${v / 1000}k` : String(v));
 
@@ -173,7 +179,19 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
   const calledOut = new Set(callouts.map((p) => p.file));
 
   // Density: the files not drawn as dots, binned in log space.
-  const bins = new Map<string, { i: number; j: number; n: number }>();
+  interface Bin {
+    i: number;
+    j: number;
+    n: number;
+    /** Files at 25+ that fell past the dot cap into the density. */
+    warm: number;
+    c0: number;
+    c1: number;
+    l0: number;
+    l1: number;
+  }
+  const bins = new Map<string, Bin>();
+  const standIns = new Map<EntityId, string>();
   for (const p of points) {
     if (dotted.has(p.file)) continue;
     const fx = (X(p.commits) - left) / (right - left);
@@ -181,9 +199,28 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
     const i = Math.min(BINS_X - 1, Math.floor(fx * BINS_X));
     const j = Math.min(BINS_Y - 1, Math.floor(fy * BINS_Y));
     const key = `${i}:${j}`;
+    standIns.set(ids.file(p.file), `bin:${key}`);
     const bin = bins.get(key);
-    if (bin) bin.n++;
-    else bins.set(key, { i, j, n: 1 });
+    if (bin) {
+      bin.n++;
+      if (p.tier > 0) bin.warm++;
+      bin.c0 = Math.min(bin.c0, p.commits);
+      bin.c1 = Math.max(bin.c1, p.commits);
+      bin.l0 = Math.min(bin.l0, p.lines);
+      bin.l1 = Math.max(bin.l1, p.lines);
+    } else {
+      const { commits: c, lines: l } = p;
+      bins.set(key, {
+        i,
+        j,
+        n: 1,
+        warm: p.tier > 0 ? 1 : 0,
+        c0: c,
+        c1: c,
+        l0: l,
+        l1: l,
+      });
+    }
   }
   let maxBin = 1;
   for (const b of bins.values()) if (b.n > maxBin) maxBin = b.n;
@@ -203,6 +240,13 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
       a1: 0,
       alpha: 0.05 + 0.35 * Math.sqrt(b.n / maxBin),
       z: -1,
+      tip: [
+        // Usually all cool; past the dot cap a cell holds warm files too.
+        b.warm === 0
+          ? `${b.n.toLocaleString('en-US')} file${b.n === 1 ? '' : 's'} scoring under 25`
+          : `${b.n.toLocaleString('en-US')} file${b.n === 1 ? '' : 's'}, ${b.warm.toLocaleString('en-US')} at 25+`,
+        `${range(b.c0, b.c1)} commits · ${range(b.l0, b.l1)} lines`,
+      ],
     });
   }
 
@@ -225,6 +269,7 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
         ? {}
         : { label: nameOf(p.file), labelPriority: p.score }),
       z: p.tier + 1,
+      tip: hotspotTip(p, nameOf(p.file)),
     });
   }
 
@@ -259,6 +304,7 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
     links,
     guides,
     bounds: { x: 0, y: 0, w: viewport.width, h: viewport.height },
+    standIns,
   };
 }
 

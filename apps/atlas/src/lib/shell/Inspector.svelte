@@ -20,7 +20,7 @@
   import PersonCard from '../inspector/PersonCard.svelte';
   import RepoMapCard from '../inspector/RepoMapCard.svelte';
   import RepositoryCard from '../inspector/RepositoryCard.svelte';
-  import { paletteShortcut, pressed } from './shortcut';
+  import { modalOpen, paletteShortcut, pressed } from './shortcut';
   import type { GitrelicReport } from '@gitrelic/core';
 
   let {
@@ -35,6 +35,7 @@
     onselect,
     onopen,
     onguide,
+    ontable,
   }: {
     report: GitrelicReport;
     index: EntityIndex;
@@ -51,6 +52,8 @@
     /** Opens a lens that has an Atlas view. */
     onopen?: (lens: string) => void;
     onguide?: () => void;
+    /** Opens the open lens's detail table. */
+    ontable?: () => void;
   } = $props();
 
   let kind = $derived(selection ? entityKind(selection) : null);
@@ -88,9 +91,6 @@
   // The strip only exists docked (from 1200px); below that, I does nothing.
   const docked = () =>
     globalThis.matchMedia?.('(min-width: 1200px)').matches ?? true;
-  // A modal (the palette, the guide) owns the keyboard while it's open.
-  const modalOpen = () =>
-    document.querySelector('[aria-modal="true"]') !== null;
 
   function onKey(e: KeyboardEvent) {
     if (e.key === 'Escape' && selection && !e.defaultPrevented) {
@@ -257,7 +257,7 @@
     />
   {:else if lens === 'hotspots' && lensEntry}
     <ExplainCard entry={lensEntry} />
-    <HotspotsCard {report} {index} {onselect} />
+    <HotspotsCard {report} {index} {onselect} {ontable} />
   {:else if lens === 'overview'}
     <RepoMapCard {report} {onselect} />
     {#if lensEntry}<ExplainCard entry={lensEntry} />{/if}

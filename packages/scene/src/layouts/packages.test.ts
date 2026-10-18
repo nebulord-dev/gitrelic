@@ -187,6 +187,13 @@ describe('packagesScene', () => {
     expect(
       scene.marks.find((m) => m.id === ids.dir('pkg0'))!.r,
     ).toBeGreaterThan(7 * Math.sqrt(files.length / 30));
+    // A file without a dot is held by its package's disc.
+    for (const p of points) {
+      const id = ids.file(p.file);
+      if (drawn.has(id)) continue;
+      expect(scene.standIns?.get(id)).toBe(ids.dir(p.file.split('/')[0]));
+    }
+    expect(scene.standIns?.size).toBe(points.length - drawn.size);
     expect(checkScene(scene)).toEqual([]);
   });
 
@@ -204,5 +211,20 @@ describe('packagesScene', () => {
       scene.marks.find((m) => m.id === ids.file(f))!.label;
     expect(label('packages/a/src/index.ts')).toBe('a/src/index.ts');
     expect(label('packages/b/src/index.ts')).toBe('b/src/index.ts');
+  });
+
+  it('gives packages and files tooltips', () => {
+    const scene = packagesScene(hotspotPoints(monorepo), viewport);
+    expect(
+      scene.marks.find((m) => m.id === ids.dir('packages/shared'))!.tip,
+    ).toEqual(['packages/shared/', '3 files · 2 at 25+', 'Hottest: a.js (90)']);
+    expect(
+      scene.marks.find((m) => m.id === ids.file('package.json'))!.tip,
+    ).toEqual([
+      'package.json',
+      'Score 15 · low',
+      '5 commits · 40 lines',
+      '(repository root)',
+    ]);
   });
 });

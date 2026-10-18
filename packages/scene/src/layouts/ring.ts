@@ -136,6 +136,7 @@ export function ringScene(
         labelPriority: lens.grade * 10 + (lens.preset === focused ? 50 : 0),
         labelAnchor: anchorFor(x - cx, y - cy),
         z: lens.grade,
+        tip: [lens.label, lens.value, ...(lens.reason ? [lens.reason] : [])],
       });
       links.push({
         id: `spoke:${lens.preset}`,
@@ -180,6 +181,7 @@ export function ringScene(
         labelPriority: 40 - i,
         labelAnchor: anchorFor(fx - lx, fy - ly),
         z: 4,
+        tip: [e.label, e.value],
       });
       links.push({
         id: `fan:${e.id}`,

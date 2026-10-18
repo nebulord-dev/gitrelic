@@ -32,6 +32,14 @@ export function pressed(e: KeyboardEvent, key: string): boolean {
   return !isTyping(e.target);
 }
 
+/**
+ * A modal (the palette, the guide) is open. It owns the keyboard: every other
+ * shortcut and Escape handler stands aside until it closes.
+ */
+export function modalOpen(): boolean {
+  return document.querySelector('[aria-modal="true"]') !== null;
+}
+
 function isTyping(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
   return Boolean(

@@ -3,7 +3,6 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { describe, expect, it, vi } from 'vitest';
 
 import reportJson from '../../../../../packages/scene/test/fixtures/report.small.json';
-import DetailTable from './DetailTable.svelte';
 import FindingCard from './FindingCard.svelte';
 import HotspotsCard from './HotspotsCard.svelte';
 import type { GitrelicReport } from '@gitrelic/core';
@@ -36,50 +35,6 @@ describe('FindingCard', () => {
   });
 });
 
-describe('DetailTable', () => {
-  const rows = [
-    { name: 'b.ts', commits: 3 },
-    { name: 'a.ts', commits: 10 },
-    { name: 'c.ts', commits: 1 },
-  ];
-  const columns = [
-    { key: 'name' as const, label: 'File' },
-    { key: 'commits' as const, label: 'Commits', numeric: true },
-  ];
-  const names = () =>
-    screen
-      .getAllByRole('row')
-      .slice(1)
-      .map((r) => r.querySelector('td')?.textContent);
-
-  it('starts collapsed with a count, in the given order', () => {
-    const { container } = render(DetailTable, {
-      title: 'Files',
-      columns,
-      rows,
-      rowKey: 'name',
-    });
-    expect(container.querySelector('details')?.open).toBe(false);
-    expect(screen.getByText('Files (3)')).toBeTruthy();
-    expect(names()).toEqual(['b.ts', 'a.ts', 'c.ts']);
-  });
-
-  it('sorts numbers high-first, text A–Z, and flips on a second click', async () => {
-    render(DetailTable, { title: 'Files', columns, rows, rowKey: 'name' });
-    await fireEvent.click(screen.getByRole('button', { name: 'Commits' }));
-    expect(names()).toEqual(['a.ts', 'b.ts', 'c.ts']);
-    expect(
-      screen
-        .getByRole('columnheader', { name: /Commits/ })
-        .getAttribute('aria-sort'),
-    ).toBe('descending');
-    await fireEvent.click(screen.getByRole('button', { name: /Commits/ }));
-    expect(names()).toEqual(['c.ts', 'b.ts', 'a.ts']);
-    await fireEvent.click(screen.getByRole('button', { name: 'File' }));
-    expect(names()).toEqual(['a.ts', 'b.ts', 'c.ts']);
-  });
-});
-
 describe('HotspotsCard', () => {
   const report = reportJson as unknown as GitrelicReport;
 
@@ -104,5 +59,17 @@ describe('HotspotsCard', () => {
     expect(rows).toHaveLength(5);
     await fireEvent.click(rows[1]);
     expect(onselect).toHaveBeenCalledWith('file:src/index.ts');
+  });
+
+  it('opens the full table, when there is one to open', async () => {
+    const ontable = vi.fn();
+    const { unmount } = render(HotspotsCard, { report, index, ontable });
+    await fireEvent.click(
+      screen.getByRole('button', { name: /All 10 files in the table/ }),
+    );
+    expect(ontable).toHaveBeenCalled();
+    unmount();
+    render(HotspotsCard, { report, index });
+    expect(screen.queryByRole('button', { name: /in the table/ })).toBeNull();
   });
 });

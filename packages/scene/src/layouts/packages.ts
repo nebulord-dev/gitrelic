@@ -10,7 +10,7 @@
 import { packSiblings } from 'd3-hierarchy';
 
 import { distinctNames } from '../format/distinctNames';
-import { packageOf, type HotspotPoint } from '../hotspots/points';
+import { hotspotTip, packageOf, type HotspotPoint } from '../hotspots/points';
 import { ids, REPO_ID, type EntityId } from '../ids';
 import type { Mark, Scene, Viewport } from '../model';
 
@@ -109,6 +109,8 @@ export function packagesScene(
   );
 
   const marks: Mark[] = [];
+  // A file without a dot is held by its package's disc.
+  const standIns = new Map<EntityId, string>();
   for (const c of circles) {
     const id: EntityId = c.pkg ? ids.dir(c.pkg) : REPO_ID;
     const name = c.pkg ? c.pkg.replace(/^packages\//, '') : '(root files)';
@@ -126,6 +128,11 @@ export function packagesScene(
       a0: 0,
       a1: 0,
       alpha: c.hot > 0 ? 0.1 : 0.06,
+      tip: [
+        c.pkg ? `${c.pkg}/` : '(root files)',
+        `${c.files.length.toLocaleString('en-US')} file${c.files.length === 1 ? '' : 's'} · ${c.hot.toLocaleString('en-US')} at 25+`,
+        `Hottest: ${baseName(c.files[0].file)} (${c.files[0].score})`,
+      ],
     });
     // The name rides on a label-only card above the disc: the label layer
     // skips marks as faint as the disc. `package:` isn't an entity kind, so
@@ -149,6 +156,8 @@ export function packagesScene(
       labelAnchor: 'center',
     });
     const drawn = drawnOf(c);
+    for (const f of c.files.slice(drawn.length))
+      standIns.set(ids.file(f.file), id);
     // Fewer dots than files spread out to fill the same circle.
     const step =
       spacing * Math.sqrt(c.files.length / Math.max(1, drawn.length));
@@ -175,11 +184,18 @@ export function packagesScene(
             }
           : {}),
         z: f.tier + 1,
+        tip: hotspotTip(f, names.get(f.file) ?? baseName(f.file)),
       });
     });
   }
 
-  return { marks, links: [], guides: [], bounds: boundsOf(circles) };
+  return {
+    marks,
+    links: [],
+    guides: [],
+    bounds: boundsOf(circles),
+    standIns,
+  };
 }
 
 /**

@@ -2,6 +2,7 @@
 // alternate form (docs/atlas-views.md › Hotspots).
 
 import {
+  HOTSPOT_TIER_NAMES,
   hotspotPoints,
   hotspotScale,
   packageOf,
@@ -10,7 +11,13 @@ import {
 import { ids } from '../ids';
 import { fieldScene } from '../layouts/field';
 import { packagesScene } from '../layouts/packages';
-import type { AnalyzerView, Finding, Layout, ViewInput } from '../model';
+import type {
+  AnalyzerView,
+  Finding,
+  Layout,
+  LensTable,
+  ViewInput,
+} from '../model';
 import type { GitrelicReport } from '@gitrelic/core';
 
 /** "Large" and "small" for the two kinds of heat, in lines. */
@@ -137,8 +144,36 @@ export function hotspotFindings(input: ViewInput): Finding[] {
   return findings;
 }
 
+/** Every scored file, hottest first. */
+export function hotspotTable(input: ViewInput): LensTable {
+  return {
+    columns: [
+      { id: 'file', label: 'File' },
+      { id: 'score', label: 'Score', numeric: true },
+      { id: 'commits', label: 'Commits', numeric: true },
+      { id: 'lines', label: 'Lines', numeric: true },
+      { id: 'package', label: 'Package' },
+    ],
+    rows: pointsOf(input.report).map((p) => ({
+      id: ids.file(p.file),
+      tier: p.tier,
+      search: p.file.toLowerCase(),
+      cells: {
+        file: p.file,
+        score: p.score,
+        commits: p.commits,
+        lines: p.lines,
+        package: packageOf(p.file) || '(root)',
+      },
+    })),
+    tierNames: HOTSPOT_TIER_NAMES,
+    sort: { column: 'score', descending: true },
+  };
+}
+
 export const hotspotsView: AnalyzerView = {
   id: 'hotspots',
   layouts: [fieldLayout, packagesLayout],
   findings: hotspotFindings,
+  table: hotspotTable,
 };

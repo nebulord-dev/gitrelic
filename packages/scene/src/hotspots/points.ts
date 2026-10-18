@@ -95,6 +95,29 @@ export function packageOf(path: string): string {
   return parts[0];
 }
 
+export const HOTSPOT_TIER_NAMES = [
+  'Low',
+  'Moderate',
+  'Warning',
+  'Critical',
+] as const;
+
+const n = (v: number) => v.toLocaleString('en-US');
+
+/**
+ * A scored file's hover tooltip, the same in every Hotspots form: its name
+ * (as the layout shows it), score and tier, the two inputs, and its folder.
+ */
+export function hotspotTip(p: HotspotPoint, name: string): string[] {
+  const slash = p.file.lastIndexOf('/');
+  return [
+    name,
+    `Score ${p.score} · ${HOTSPOT_TIER_NAMES[p.tier].toLowerCase()}`,
+    `${n(p.commits)} commit${p.commits === 1 ? '' : 's'} · ${n(p.lines)} line${p.lines === 1 ? '' : 's'}`,
+    slash > 0 ? `${p.file.slice(0, slash)}/` : '(repository root)',
+  ];
+}
+
 export interface HotspotSummary {
   /** Files per tier, low to critical. */
   tiers: [number, number, number, number];

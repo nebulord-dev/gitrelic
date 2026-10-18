@@ -36,6 +36,24 @@ describe('fieldScene', () => {
     for (const b of bins) expect(b.z).toBeLessThan(0);
   });
 
+  it('maps every file without a dot to the density cell holding it', () => {
+    const scene = build();
+    const drawn = new Set(scene.marks.map((m) => m.id));
+    for (const p of points) {
+      const id = ids.file(p.file);
+      if (drawn.has(id)) expect(scene.standIns?.has(id)).toBe(false);
+      else expect(scene.standIns?.get(id)).toMatch(/^bin:\d+:\d+$/);
+    }
+    // Each cell holds as many files as its tooltip counts.
+    const held = new Map<string, number>();
+    for (const bin of scene.standIns!.values())
+      held.set(bin, (held.get(bin) ?? 0) + 1);
+    for (const [bin, n] of held) {
+      const tip = scene.marks.find((m) => m.id === bin)!.tip![0];
+      expect(tip.startsWith(`${n} file`)).toBe(true);
+    }
+  });
+
   it('places hotter files further up and to the right', () => {
     const scene = build();
     const at = (file: string) =>
@@ -112,6 +130,14 @@ describe('fieldScene', () => {
       FIELD_DOT_CAP,
     );
     expect(checkScene(scene)).toEqual([]);
+    // The 50 warm files past the cap are density now, and their cells say
+    // so instead of claiming everything in them scores under 25.
+    const tips = scene.marks
+      .filter((m) => m.id.startsWith('bin:'))
+      .map((m) => m.tip![0]);
+    const warm = tips.map((t) => Number(/, (\d+) at 25\+$/.exec(t)?.[1] ?? 0));
+    expect(warm.reduce((a, b) => a + b, 0)).toBe(50);
+    expect(tips.some((t) => /under 25/.test(t))).toBe(false);
   });
 
   it('copes with no files at all', () => {
@@ -136,5 +162,26 @@ describe('fieldScene', () => {
       '100  client/index.ts',
       '90  server/index.ts',
     ]);
+  });
+
+  it('gives every dot and density cell a tooltip', () => {
+    const scene = build();
+    const helpers = scene.marks.find(
+      (m) => m.id === ids.file('src/helpers.ts'),
+    )!;
+    expect(helpers.tip).toEqual([
+      'helpers.ts',
+      'Score 100 · critical',
+      expect.stringMatching(/^\d+ commits? · 24 lines$/),
+      'src/',
+    ]);
+    for (const b of scene.marks.filter((m) => m.id.startsWith('bin:'))) {
+      expect(b.tip?.[0]).toMatch(/^\d+ files? scoring under 25$/);
+      expect(b.tip?.[1]).toMatch(/commits · .* lines$/);
+    }
+    // Scenery has nothing to say.
+    expect(
+      scene.marks.find((m) => m.id.startsWith('tick:'))!.tip,
+    ).toBeUndefined();
   });
 });
