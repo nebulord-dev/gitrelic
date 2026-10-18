@@ -6,6 +6,7 @@ export default defineConfig({
       'packages/core/vitest.config.ts',
       'packages/scene/vitest.config.ts',
       'apps/web/vite.config.ts',
+      'apps/atlas/vite.config.ts',
       'apps/cli/vitest.config.ts',
     ],
   },

@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+@import './styles/tokens.css';
+
+/*
+ * Tailwind sees only the theme roles: the default palette is cleared so a
+ * stray `bg-blue-500` fails to style anything instead of ignoring the theme.
+ * `inline` makes utilities emit var(--token) directly, so switching
+ * data-theme restyles everything without a rebuild.
+ */
+@theme inline {
+  --color-*: initial;
+  --color-bg: var(--bg);
+  --color-text: var(--text);
+  --color-soft: var(--soft);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-person: var(--person);
+  --color-file: var(--file);
+  --color-dir: var(--dir);
+  --color-ghost: var(--ghost);
+  --color-control-border: var(--control-border);
+  --color-panel-border: var(--panel-border);
+  --radius-chip: var(--chip-radius);
+}
+
+@utility panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--panel-radius);
+}
+
+@utility card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  transition:
+    background-color 0.4s,
+    color 0.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    transition: none;
+  }
+}

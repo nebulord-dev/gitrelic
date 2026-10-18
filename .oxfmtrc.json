@@ -4,6 +4,7 @@
   "singleQuote": true,
   "tabWidth": 2,
   "printWidth": 80,
+  "svelte": true,
   "sortImports": {
     "newlinesBetween": false,
     "groups": [

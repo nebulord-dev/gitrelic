@@ -14,11 +14,12 @@ pnpm workspace + Turbo. Strict dependency order:
 @gitrelic/scene       (framework-free browser derivations — private, ships TS source)
     ↓
 gitrelic              (CLI, the only published package; bundles core inline)
-@gitrelic/web         (browser dashboard; served by CLI --web flag)
+@gitrelic/web         (classic browser dashboard; served by CLI --web flag)
+@gitrelic/atlas       (Svelte 5 dashboard replacing web — private, not served by the CLI yet)
 @gitrelic/docs        (VitePress site; deploys separately via .github/workflows/docs.yml)
 ```
 
-Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `@gitrelic/scene`, `gitrelic` (NOT `@gitrelic/cli`), `@gitrelic/web`, `@gitrelic/docs`.
+Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `@gitrelic/scene`, `gitrelic` (NOT `@gitrelic/cli`), `@gitrelic/web`, `@gitrelic/atlas`, `@gitrelic/docs`.
 
 ## Package Breakdown
 
@@ -56,7 +57,7 @@ Workspace names in `pnpm --filter <n>` commands: `@gitrelic/core`, `@gitrelic/sc
 
 ### `packages/scene` — Shared Browser Derivations
 
-Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `normalizeReport`, the `*ByDirectory` aggregations, ownership rankings, AI/bot author classification, `makeFileKind`, `fileFacts` (the file inspector's rows, with semantic tiers rather than colors), `headcountTier`, swimlane/weekly binning, and the co-author graph. The classic web app imports it today; Atlas will too.
+Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `normalizeReport`, the `*ByDirectory` aggregations, ownership rankings, AI/bot author classification, `makeFileKind`, `fileFacts` (the file inspector's rows, with semantic tiers rather than colors), `headcountTier`, swimlane/weekly binning, the co-author graph, and the theme contract (`THEMES`, `THEME_TOKENS`). Both dashboards import it.
 
 - **Commit-based derivations take `CommitLike[]`**, not `RawCommit[]`. Classic adapts `report.commits` with `fromRawCommits`; Atlas adapts the columnar `/gitrelic-commits.json` with `fromCommitIndex`.
 
@@ -64,6 +65,7 @@ Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `norm
 - **No framework, no Node, no DOM.** Its tsconfig has `lib: ES2022` with no `types`, and an oxlint override bans `react`, `svelte` and `node:*` imports.
 - Imports from `@gitrelic/core` are `import type` only, like any browser code.
 - Tests sit next to each file (`*.test.ts`); run with `pnpm --filter @gitrelic/scene test`.
+- `test/fixtures/report.small.json` + `commits.small.json` — the deterministic sample repo's report and commit index, used by scene tests and the Atlas dev server. Regenerate with `node scripts/make-scene-fixtures.mjs` (needs a built core); a scene test fails when the fixture lacks a field `normalizeReport` backfills.
 
 ### `apps/cli` — Terminal Interface (published as `gitrelic` on npm)
 
@@ -74,7 +76,7 @@ Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `norm
 
 ### `apps/web` — Web Dashboard (classic)
 
-> **Migration note:** a new dashboard, **Atlas** (Svelte 5, planned as `apps/atlas` + `packages/scene`), is being built alongside this one and will replace it. Everything in this section and in [Web Styling](#web-styling) applies to the **classic React app only**. Don't carry its React/Tailwind conventions (`cn()`, `classMaps.ts`, `style={{}}` carve-outs, the disabled theme toggle) into Atlas code.
+> **Migration note:** a new dashboard, **Atlas** (Svelte 5, `apps/atlas` + `packages/scene`), is being built alongside this one and will replace it. Everything in this section and in [Web Styling](#web-styling) applies to the **classic React app only**. Don't carry its React/Tailwind conventions (`cn()`, `classMaps.ts`, `style={{}}` carve-outs, the disabled theme toggle) into Atlas code.
 
 - `src/App.tsx` — loads `/gitrelic-report.json`, normalizes missing fields via `normalizeReport` (from `@gitrelic/scene`), then renders `Shell`
 - `src/components/layout/Shell.tsx` — top-level layout (sidebar + top bar + main pane + bottom panel + inspector)
@@ -85,6 +87,17 @@ Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `norm
 - `src/components/tabs/` — 22 deep-dive tabs, one per analyzer
 - Critical rule: only `import type` from `@gitrelic/core` — see [Browser code imports](#browser-code-imports).
 - **Styling:** Tailwind v4 only — see [Web Styling](#web-styling) section below.
+
+### `apps/atlas` — Web Dashboard (Atlas, in progress)
+
+Svelte 5 (runes) + Vite + Tailwind v4. Not served by the CLI yet; `--ui atlas` lands in a later PR. Each analyzer view starts with a design checkpoint with a maintainer before it is built.
+
+- `src/App.svelte` — loads `/gitrelic-report.lite.json` via `lib/data/loadReport.ts` (normalized with `normalizeReport`), applies the theme, renders `lib/shell/Shell.svelte` (top bar, collapsible rail, stage, inspector). `loadCommits()` fetches `/gitrelic-commits.json` once, only when a view needs commits.
+- `src/lib/state/hash.ts` — URL hash `#v=&l=&s=` for view, layout and selected entity id. Parse/serialize only for now; the shell wires it up with the views. The selection is untrusted: resolve it through the entity map, never render it.
+- `dev/devData.ts` — Vite dev plugin serving both JSON endpoints: the scene fixture by default, or a live analysis with `GITRELIC_DEV_REPO=<path>` (`GITRELIC_DEV_SINCE` defaults to `12 months ago` like the CLI, `all` for full history; needs a built core). Node-side, so it may value-import core.
+- Dev port 7778 (`pnpm --filter @gitrelic/atlas dev`); 7777 is classic's and the CLI's.
+- `typecheck` is `svelte-check` for `src` plus `tsc -p tsconfig.node.json` for `vite.config.ts`, `dev/` and `test/`, so browser code never sees Node types.
+- **No raw HTML.** Report data (commit messages, names, paths) is attacker-influenced; `test/noRawHtml.test.ts` fails on `{@html}`, `innerHTML`, `outerHTML` or `insertAdjacentHTML` in `src`.
 
 ### `apps/docs` — VitePress Documentation Site
 
@@ -113,7 +126,7 @@ Add tests to all changes that can benefit from tests.  If a test is deemed not n
 
 ### Browser code imports
 
-Any code that runs in the browser — `apps/web`, `packages/scene`, and `apps/atlas` once it lands — may only `import type` from `@gitrelic/core`. An oxlint `typescript/no-restricted-imports` override in `oxlint.config.ts` enforces it (Vite 8 only warns when it externalizes a Node built-in, so the build alone won't catch it). Value imports bundle Node.js modules (execa, `node:fs`) into the browser build and break Vite. The one sanctioned exception is Node-side build tooling (e.g. a Vite dev plugin in `vite.config.ts` that calls `runGitrelic` to serve dev data), which never reaches the browser bundle.
+Any code that runs in the browser — `apps/web`, `packages/scene` and `apps/atlas` — may only `import type` from `@gitrelic/core`. An oxlint `typescript/no-restricted-imports` override in `oxlint.config.ts` enforces it (Vite 8 only warns when it externalizes a Node built-in, so the build alone won't catch it). Value imports bundle Node.js modules (execa, `node:fs`) into the browser build and break Vite. The one sanctioned exception is Node-side build tooling (e.g. `apps/atlas/dev/devData.ts`, the Vite dev plugin that calls `runGitrelic` to serve dev data), which never reaches the browser bundle. Scene and Atlas compile with `verbatimModuleSyntax`, so oxlint also requires `import type { X }` over `import { type X }` there: the inline form survives as a side-effect import of core.
 
 ### Adding a new analyzer
 
@@ -122,6 +135,7 @@ Any code that runs in the browser — `apps/web`, `packages/scene`, and `apps/at
 3. Add result to `GitrelicReport` in `types.ts`, and an `EMPTY_*` fallback in `runner.ts` for `safeRun`
 4. Call it in `runner.ts` and include in return value
 5. Backfill a default in `packages/scene/src/report/normalizeReport.ts` (with a test) — older saved reports lack the field, and the dashboard crashes on `undefined` sections. The same applies to any new top-level `GitrelicReport` field, not just analyzers.
+6. Regenerate the scene fixture: `node scripts/make-scene-fixtures.mjs` (after `pnpm --filter @gitrelic/core build`).
 
 ### Architectural review
 
@@ -180,15 +194,16 @@ the doc when a polish ticket discovers the spec is wrong or when a new pattern e
 ## Build Commands
 
 ```bash
-pnpm build                          # core + cli + web (apps/docs excluded)
+pnpm build                          # core + cli + web + atlas (apps/docs excluded)
 pnpm --filter @gitrelic/core build
 pnpm --filter gitrelic build        # NOT @gitrelic/cli — published package is unscoped
 pnpm --filter @gitrelic/web build
+pnpm --filter @gitrelic/atlas build
 pnpm docs:build                     # apps/docs (VitePress) — separate from pnpm build
 pnpm dev                            # watch all
 ```
 
-TypeScript 6 throughout (`tsconfig.base.json` + `pnpm-workspace.yaml` catalog). tsdown bundles core and CLI; Vite bundles web; VitePress bundles docs.
+TypeScript 6 throughout (`tsconfig.base.json` + `pnpm-workspace.yaml` catalog). tsdown bundles core and CLI; Vite bundles web and atlas; VitePress bundles docs.
 
 ## Linting & Formatting
 
@@ -201,15 +216,16 @@ pnpm format                         # format all files with oxfmt
 pnpm format:check                   # check formatting without writing
 ```
 
-Pre-commit hook (husky + lint-staged) runs `oxlint --fix` and `oxfmt` on staged files automatically.
+Pre-commit hook (husky + lint-staged) runs `oxlint --fix` and `oxfmt` on staged files automatically, `.svelte` included: oxlint checks their `<script>` blocks, and oxfmt formats them through its bundled `prettier-plugin-svelte` (`"svelte": true` in `.oxfmtrc.json`), which is why `svelte` is a root devDependency.
 
 ## Testing
 
 ```bash
-pnpm test                           # build, then run all tests (core + web + cli)
+pnpm test                           # build, then run all tests (core + scene + web + atlas + cli)
 pnpm test:core                      # core package tests with Vitest UI
 pnpm test:scene                     # scene package tests with Vitest UI
 pnpm test:web                       # web package tests with Vitest UI
+pnpm test:atlas                     # atlas package tests with Vitest UI
 pnpm test:coverage                  # coverage report
 ```
 
@@ -326,9 +342,17 @@ Effect during pre-1.0:
 
 **Do not remove this rule casually.** It exists because a single `chore!:` commit (the gitlore→gitrelic rename) once caused semantic-release to jump straight to `v2.0.0`, which had to be unpublished and reset. Remove it only when intentionally cutting `1.0.0`, and do so in the same PR that marks the 1.0 release.
 
+## Atlas Styling
+
+`apps/atlas` uses Tailwind v4 over a CSS-variable theme. None of the classic rules below (`cn()`, `classMaps.ts`, carve-out lists) apply.
+
+- **Themes:** `src/styles/tokens.css` defines every name in `THEME_TOKENS` (`packages/scene/src/theme/tokens.ts`) under `:root[data-theme='glow']` and `:root[data-theme='flat']`. Adding a token means adding it to the list and to both themes; `test/tokens.test.ts` fails otherwise. Token values are literals (no `color-mix` or `var()` chains) so the canvas renderer can read them with `getComputedStyle`. Flat is the default; the viewer's choice is kept in localStorage, not the URL.
+- **Tailwind sees only theme roles.** `src/app.css` clears the default palette (`--color-*: initial`) and aliases tokens with `@theme inline` (`bg-bg`, `text-muted`, `bg-accent`, `text-accent-ink`, `border-control-border`, `rounded-chip`…). `panel` and `card` are `@utility` classes for the two surface styles.
+- **Conditional classes** use Svelte's built-in array/object `class={[...]}` syntax; there is no `cn()` helper.
+
 ## Web Styling
 
-> Classic dashboard (`apps/web`) only. Atlas styling rules will get their own section when `apps/atlas` lands.
+> Classic dashboard (`apps/web`) only.
 
 `apps/web` uses Tailwind v4 for all styling. Inline `style={{}}` on JSX is reserved for runtime/data-driven values only — static styling lives in className via Tailwind utilities.
 

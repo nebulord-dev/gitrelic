@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Browser code: DOM, no Node types. Node-side files (vite.config.ts,
+    // dev/, test/) are checked by tsconfig.node.json.
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["svelte", "vite/client"],
+    "noEmit": true,
+    // Markup-only components have no <script lang="ts"> and type as JS.
+    "allowJs": true,
+    "checkJs": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true
+  },
+  "include": ["src"]
+}

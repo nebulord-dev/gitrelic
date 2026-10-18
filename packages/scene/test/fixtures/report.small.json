@@ -1,0 +1,2077 @@
+{
+  "timestamp": "2026-05-01T12:00:00.000Z",
+  "repoPath": "/fixtures/sample-repo",
+  "repoName": "sample-repo",
+  "meta": {
+    "totalCommits": 20,
+    "totalFiles": 10,
+    "totalAuthors": 3,
+    "firstCommit": "2026-01-01T09:00:00Z",
+    "lastCommit": "2026-04-05T15:30:00Z",
+    "ageInDays": 94,
+    "primaryLanguage": "TypeScript",
+    "branches": ["main"],
+    "analyzedBranch": "main",
+    "gitrelicVersion": "0.0.0-fixture"
+  },
+  "churn": {
+    "files": [
+      {
+        "file": "src/helpers.ts",
+        "commitCount": 7,
+        "churnScore": 100,
+        "category": "hot"
+      },
+      {
+        "file": "src/index.ts",
+        "commitCount": 5,
+        "churnScore": 71,
+        "category": "warm"
+      },
+      {
+        "file": "src/api.ts",
+        "commitCount": 4,
+        "churnScore": 57,
+        "category": "warm"
+      },
+      {
+        "file": "src/config.ts",
+        "commitCount": 4,
+        "churnScore": 57,
+        "category": "warm"
+      },
+      {
+        "file": "src/auth.ts",
+        "commitCount": 3,
+        "churnScore": 43,
+        "category": "warm"
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "commitCount": 2,
+        "churnScore": 29,
+        "category": "cold"
+      },
+      {
+        "file": "src/types.ts",
+        "commitCount": 2,
+        "churnScore": 29,
+        "category": "cold"
+      },
+      {
+        "file": "docs/USAGE.md",
+        "commitCount": 1,
+        "churnScore": 14,
+        "category": "cold"
+      },
+      {
+        "file": "README.md",
+        "commitCount": 1,
+        "churnScore": 14,
+        "category": "cold"
+      },
+      {
+        "file": "package.json",
+        "commitCount": 1,
+        "churnScore": 14,
+        "category": "cold"
+      }
+    ],
+    "topFiles": [
+      {
+        "file": "src/helpers.ts",
+        "commitCount": 7,
+        "churnScore": 100,
+        "category": "hot"
+      },
+      {
+        "file": "src/index.ts",
+        "commitCount": 5,
+        "churnScore": 71,
+        "category": "warm"
+      },
+      {
+        "file": "src/api.ts",
+        "commitCount": 4,
+        "churnScore": 57,
+        "category": "warm"
+      },
+      {
+        "file": "src/config.ts",
+        "commitCount": 4,
+        "churnScore": 57,
+        "category": "warm"
+      },
+      {
+        "file": "src/auth.ts",
+        "commitCount": 3,
+        "churnScore": 43,
+        "category": "warm"
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "commitCount": 2,
+        "churnScore": 29,
+        "category": "cold"
+      },
+      {
+        "file": "src/types.ts",
+        "commitCount": 2,
+        "churnScore": 29,
+        "category": "cold"
+      },
+      {
+        "file": "docs/USAGE.md",
+        "commitCount": 1,
+        "churnScore": 14,
+        "category": "cold"
+      },
+      {
+        "file": "README.md",
+        "commitCount": 1,
+        "churnScore": 14,
+        "category": "cold"
+      },
+      {
+        "file": "package.json",
+        "commitCount": 1,
+        "churnScore": 14,
+        "category": "cold"
+      }
+    ],
+    "hotspotCount": 1,
+    "summary": "src/helpers.ts has been modified in 35% of all commits"
+  },
+  "busFactors": {
+    "files": [
+      {
+        "file": "src/api.ts",
+        "uniqueAuthors": 1,
+        "authors": ["alice@example.com"],
+        "dominantAuthor": "alice@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "src/index.ts",
+        "uniqueAuthors": 1,
+        "authors": ["alice@example.com"],
+        "dominantAuthor": "alice@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "src/helpers.ts",
+        "uniqueAuthors": 1,
+        "authors": ["alice@example.com"],
+        "dominantAuthor": "alice@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "uniqueAuthors": 1,
+        "authors": ["bob@example.com"],
+        "dominantAuthor": "bob@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "docs/USAGE.md",
+        "uniqueAuthors": 1,
+        "authors": ["bob@example.com"],
+        "dominantAuthor": "bob@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "src/config.ts",
+        "uniqueAuthors": 1,
+        "authors": ["alice@example.com"],
+        "dominantAuthor": "alice@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "src/auth.ts",
+        "uniqueAuthors": 1,
+        "authors": ["charlie@example.com"],
+        "dominantAuthor": "charlie@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "README.md",
+        "uniqueAuthors": 1,
+        "authors": ["alice@example.com"],
+        "dominantAuthor": "alice@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "package.json",
+        "uniqueAuthors": 1,
+        "authors": ["alice@example.com"],
+        "dominantAuthor": "alice@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "src/types.ts",
+        "uniqueAuthors": 2,
+        "authors": ["alice@example.com", "bob@example.com"],
+        "dominantAuthor": "alice@example.com",
+        "dominantAuthorPercent": 50,
+        "risk": "medium"
+      }
+    ],
+    "criticalFiles": [
+      {
+        "file": "src/api.ts",
+        "uniqueAuthors": 1,
+        "authors": ["alice@example.com"],
+        "dominantAuthor": "alice@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "src/index.ts",
+        "uniqueAuthors": 1,
+        "authors": ["alice@example.com"],
+        "dominantAuthor": "alice@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "src/helpers.ts",
+        "uniqueAuthors": 1,
+        "authors": ["alice@example.com"],
+        "dominantAuthor": "alice@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "uniqueAuthors": 1,
+        "authors": ["bob@example.com"],
+        "dominantAuthor": "bob@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "docs/USAGE.md",
+        "uniqueAuthors": 1,
+        "authors": ["bob@example.com"],
+        "dominantAuthor": "bob@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "src/config.ts",
+        "uniqueAuthors": 1,
+        "authors": ["alice@example.com"],
+        "dominantAuthor": "alice@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "src/auth.ts",
+        "uniqueAuthors": 1,
+        "authors": ["charlie@example.com"],
+        "dominantAuthor": "charlie@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "README.md",
+        "uniqueAuthors": 1,
+        "authors": ["alice@example.com"],
+        "dominantAuthor": "alice@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      },
+      {
+        "file": "package.json",
+        "uniqueAuthors": 1,
+        "authors": ["alice@example.com"],
+        "dominantAuthor": "alice@example.com",
+        "dominantAuthorPercent": 100,
+        "risk": "critical"
+      }
+    ],
+    "overallBusFactor": 1,
+    "excluded": { "fixture": 0, "generated": 0 },
+    "summary": "9 files are owned by a single author — src/api.ts is most at risk"
+  },
+  "ageMap": {
+    "files": [
+      {
+        "file": "README.md",
+        "lastCommitDate": "2026-01-01T09:00:00Z",
+        "ageInDays": 120,
+        "status": "ancient"
+      },
+      {
+        "file": "package.json",
+        "lastCommitDate": "2026-01-01T09:00:00Z",
+        "ageInDays": 120,
+        "status": "ancient"
+      },
+      {
+        "file": "src/auth.ts",
+        "lastCommitDate": "2026-02-05T23:15:00Z",
+        "ageInDays": 84,
+        "status": "ancient"
+      },
+      {
+        "file": "src/config.ts",
+        "lastCommitDate": "2026-02-20T08:30:00Z",
+        "ageInDays": 70,
+        "status": "ancient"
+      },
+      {
+        "file": "docs/USAGE.md",
+        "lastCommitDate": "2026-03-05T14:00:00Z",
+        "ageInDays": 56,
+        "status": "stale"
+      },
+      {
+        "file": "src/types.ts",
+        "lastCommitDate": "2026-03-20T11:15:00Z",
+        "ageInDays": 42,
+        "status": "stale"
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "lastCommitDate": "2026-03-25T13:00:00Z",
+        "ageInDays": 36,
+        "status": "stale"
+      },
+      {
+        "file": "src/helpers.ts",
+        "lastCommitDate": "2026-04-01T08:00:00Z",
+        "ageInDays": 30,
+        "status": "aging"
+      },
+      {
+        "file": "src/api.ts",
+        "lastCommitDate": "2026-04-05T15:30:00Z",
+        "ageInDays": 25,
+        "status": "aging"
+      },
+      {
+        "file": "src/index.ts",
+        "lastCommitDate": "2026-04-05T15:30:00Z",
+        "ageInDays": 25,
+        "status": "aging"
+      }
+    ],
+    "staleFiles": [
+      {
+        "file": "docs/USAGE.md",
+        "lastCommitDate": "2026-03-05T14:00:00Z",
+        "ageInDays": 56,
+        "status": "stale"
+      },
+      {
+        "file": "src/types.ts",
+        "lastCommitDate": "2026-03-20T11:15:00Z",
+        "ageInDays": 42,
+        "status": "stale"
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "lastCommitDate": "2026-03-25T13:00:00Z",
+        "ageInDays": 36,
+        "status": "stale"
+      }
+    ],
+    "ancientFiles": [
+      {
+        "file": "README.md",
+        "lastCommitDate": "2026-01-01T09:00:00Z",
+        "ageInDays": 120,
+        "status": "ancient"
+      },
+      {
+        "file": "package.json",
+        "lastCommitDate": "2026-01-01T09:00:00Z",
+        "ageInDays": 120,
+        "status": "ancient"
+      },
+      {
+        "file": "src/auth.ts",
+        "lastCommitDate": "2026-02-05T23:15:00Z",
+        "ageInDays": 84,
+        "status": "ancient"
+      },
+      {
+        "file": "src/config.ts",
+        "lastCommitDate": "2026-02-20T08:30:00Z",
+        "ageInDays": 70,
+        "status": "ancient"
+      }
+    ],
+    "medianAgeDays": 56,
+    "thresholds": { "freshLimit": 8, "agingLimit": 31, "staleLimit": 62 },
+    "summary": "4 files haven't been touched in over 62 days — they may be dead weight or critical infrastructure nobody dares touch"
+  },
+  "contributors": {
+    "contributors": [
+      {
+        "email": "alice@example.com",
+        "name": "Alice",
+        "commitCount": 13,
+        "firstCommit": "2026-01-01T09:00:00Z",
+        "lastCommit": "2026-04-05T15:30:00Z",
+        "filesOwned": 7,
+        "linesChanged": 116,
+        "activeDays": 13,
+        "focusAreas": ["src/helpers.ts", "src/index.ts", "src/api.ts"],
+        "isActive": true,
+        "isGhost": false
+      },
+      {
+        "email": "bob@example.com",
+        "name": "Bob",
+        "commitCount": 4,
+        "firstCommit": "2026-01-15T16:45:00Z",
+        "lastCommit": "2026-03-25T13:00:00Z",
+        "filesOwned": 2,
+        "linesChanged": 18,
+        "activeDays": 4,
+        "focusAreas": ["src/__tests__", "docs/USAGE.md", "src/types.ts"],
+        "isActive": true,
+        "isGhost": false
+      },
+      {
+        "email": "charlie@example.com",
+        "name": "Charlie",
+        "commitCount": 3,
+        "firstCommit": "2026-01-05T14:30:00Z",
+        "lastCommit": "2026-02-05T23:15:00Z",
+        "filesOwned": 1,
+        "linesChanged": 15,
+        "activeDays": 3,
+        "focusAreas": ["src/auth.ts"],
+        "isActive": true,
+        "isGhost": false
+      }
+    ],
+    "activeContributors": [
+      {
+        "email": "alice@example.com",
+        "name": "Alice",
+        "commitCount": 13,
+        "firstCommit": "2026-01-01T09:00:00Z",
+        "lastCommit": "2026-04-05T15:30:00Z",
+        "filesOwned": 7,
+        "linesChanged": 116,
+        "activeDays": 13,
+        "focusAreas": ["src/helpers.ts", "src/index.ts", "src/api.ts"],
+        "isActive": true,
+        "isGhost": false
+      },
+      {
+        "email": "bob@example.com",
+        "name": "Bob",
+        "commitCount": 4,
+        "firstCommit": "2026-01-15T16:45:00Z",
+        "lastCommit": "2026-03-25T13:00:00Z",
+        "filesOwned": 2,
+        "linesChanged": 18,
+        "activeDays": 4,
+        "focusAreas": ["src/__tests__", "docs/USAGE.md", "src/types.ts"],
+        "isActive": true,
+        "isGhost": false
+      },
+      {
+        "email": "charlie@example.com",
+        "name": "Charlie",
+        "commitCount": 3,
+        "firstCommit": "2026-01-05T14:30:00Z",
+        "lastCommit": "2026-02-05T23:15:00Z",
+        "filesOwned": 1,
+        "linesChanged": 15,
+        "activeDays": 3,
+        "focusAreas": ["src/auth.ts"],
+        "isActive": true,
+        "isGhost": false
+      }
+    ],
+    "ghostContributors": [],
+    "topContributor": {
+      "email": "alice@example.com",
+      "name": "Alice",
+      "commitCount": 13,
+      "firstCommit": "2026-01-01T09:00:00Z",
+      "lastCommit": "2026-04-05T15:30:00Z",
+      "filesOwned": 7,
+      "linesChanged": 116,
+      "activeDays": 13,
+      "focusAreas": ["src/helpers.ts", "src/index.ts", "src/api.ts"],
+      "isActive": true,
+      "isGhost": false
+    },
+    "summary": "3 contributors — 3 actively committing",
+    "top3CommitShare": 100,
+    "newcomers90d": 0
+  },
+  "cursedFiles": {
+    "files": [
+      {
+        "file": "src/helpers.ts",
+        "curseScore": 85,
+        "reasons": [
+          "Modified in 35% of all commits",
+          "Single author owns 100% of changes",
+          "4 shame commits detected (\"hack\" appears repeatedly) — this file keeps breaking"
+        ],
+        "churn": 7,
+        "authors": 1,
+        "ageDays": 30,
+        "narrative": "src/helpers.ts has been touched in 35% of all commits by a single author. That person is a single point of failure."
+      },
+      {
+        "file": "src/config.ts",
+        "curseScore": 65,
+        "reasons": [
+          "Frequently modified (4 commits)",
+          "Single author owns 100% of changes",
+          "1 shame commits detected (\"hack\" appears repeatedly) — this file keeps breaking"
+        ],
+        "churn": 4,
+        "authors": 1,
+        "ageDays": 70,
+        "narrative": "src/config.ts has seen 4 commits from 1 author — worth keeping an eye on."
+      },
+      {
+        "file": "src/auth.ts",
+        "curseScore": 65,
+        "reasons": [
+          "Frequently modified (3 commits)",
+          "Single author owns 100% of changes",
+          "2 shame commits detected (\"fix\" appears repeatedly) — this file keeps breaking"
+        ],
+        "churn": 3,
+        "authors": 1,
+        "ageDays": 84,
+        "narrative": "src/auth.ts has seen 3 commits from 1 author — worth keeping an eye on."
+      }
+    ],
+    "excludedBotFiles": [],
+    "summary": "3 cursed files. Worst is src/helpers.ts at 85/100."
+  },
+  "forensics": {
+    "files": [
+      {
+        "file": "src/auth.ts",
+        "shameScore": 100,
+        "rawShamePoints": 5,
+        "shameCommitCount": 2,
+        "topShameCommits": [
+          {
+            "hash": "40b2a15b12d1dd3035838b086795f68cf96299cb",
+            "message": "fix: auth race condition workaround",
+            "date": "2026-02-05T23:15:00Z",
+            "shamePoints": 3,
+            "keywords": ["workaround", "fix"]
+          },
+          {
+            "hash": "c8d9edad781b9e0c732aeddbc201179fbb93ab7e",
+            "message": "fix: auth null token bug",
+            "date": "2026-01-25T20:30:00Z",
+            "shamePoints": 2,
+            "keywords": ["fix", "bug"]
+          }
+        ],
+        "dominantKeywords": ["fix", "workaround", "bug"]
+      },
+      {
+        "file": "src/helpers.ts",
+        "shameScore": 100,
+        "rawShamePoints": 13,
+        "shameCommitCount": 4,
+        "topShameCommits": [
+          {
+            "hash": "801fa4a2ca93986f554511b45ca21937add2da37",
+            "message": "revert: remove name fallback hack",
+            "date": "2026-02-25T17:00:00Z",
+            "shamePoints": 5,
+            "keywords": ["revert", "hack"]
+          },
+          {
+            "hash": "579f9fbd9dfa90acecdec365b093f72dc59e1519",
+            "message": "hack: workaround for empty names",
+            "date": "2026-02-20T08:30:00Z",
+            "shamePoints": 4,
+            "keywords": ["hack", "workaround"]
+          },
+          {
+            "hash": "2ef5cf62314de728e2197d6d06526cb4dc5f0b8f",
+            "message": "hotfix: truncate handles zero length",
+            "date": "2026-03-15T16:45:00Z",
+            "shamePoints": 3,
+            "keywords": ["hotfix"]
+          }
+        ],
+        "dominantKeywords": ["hack", "hotfix", "cleanup"]
+      },
+      {
+        "file": "src/config.ts",
+        "shameScore": 80,
+        "rawShamePoints": 4,
+        "shameCommitCount": 1,
+        "topShameCommits": [
+          {
+            "hash": "579f9fbd9dfa90acecdec365b093f72dc59e1519",
+            "message": "hack: workaround for empty names",
+            "date": "2026-02-20T08:30:00Z",
+            "shamePoints": 4,
+            "keywords": ["hack", "workaround"]
+          }
+        ],
+        "dominantKeywords": ["hack", "workaround"]
+      },
+      {
+        "file": "src/api.ts",
+        "shameScore": 20,
+        "rawShamePoints": 1,
+        "shameCommitCount": 1,
+        "topShameCommits": [
+          {
+            "hash": "9042a1d1428dedc994a95ad5ee536508b918a233",
+            "message": "refactor: cross-module cleanup",
+            "date": "2026-03-01T10:00:00Z",
+            "shamePoints": 1,
+            "keywords": ["cleanup"]
+          }
+        ],
+        "dominantKeywords": ["cleanup"]
+      },
+      {
+        "file": "src/index.ts",
+        "shameScore": 20,
+        "rawShamePoints": 1,
+        "shameCommitCount": 1,
+        "topShameCommits": [
+          {
+            "hash": "9042a1d1428dedc994a95ad5ee536508b918a233",
+            "message": "refactor: cross-module cleanup",
+            "date": "2026-03-01T10:00:00Z",
+            "shamePoints": 1,
+            "keywords": ["cleanup"]
+          }
+        ],
+        "dominantKeywords": ["cleanup"]
+      }
+    ],
+    "shameLeaderboard": [
+      {
+        "file": "src/helpers.ts",
+        "shameScore": 100,
+        "rawShamePoints": 13,
+        "shameCommitCount": 4,
+        "topShameCommits": [
+          {
+            "hash": "801fa4a2ca93986f554511b45ca21937add2da37",
+            "message": "revert: remove name fallback hack",
+            "date": "2026-02-25T17:00:00Z",
+            "shamePoints": 5,
+            "keywords": ["revert", "hack"]
+          },
+          {
+            "hash": "579f9fbd9dfa90acecdec365b093f72dc59e1519",
+            "message": "hack: workaround for empty names",
+            "date": "2026-02-20T08:30:00Z",
+            "shamePoints": 4,
+            "keywords": ["hack", "workaround"]
+          },
+          {
+            "hash": "2ef5cf62314de728e2197d6d06526cb4dc5f0b8f",
+            "message": "hotfix: truncate handles zero length",
+            "date": "2026-03-15T16:45:00Z",
+            "shamePoints": 3,
+            "keywords": ["hotfix"]
+          }
+        ],
+        "dominantKeywords": ["hack", "hotfix", "cleanup"]
+      },
+      {
+        "file": "src/index.ts",
+        "shameScore": 20,
+        "rawShamePoints": 1,
+        "shameCommitCount": 1,
+        "topShameCommits": [
+          {
+            "hash": "9042a1d1428dedc994a95ad5ee536508b918a233",
+            "message": "refactor: cross-module cleanup",
+            "date": "2026-03-01T10:00:00Z",
+            "shamePoints": 1,
+            "keywords": ["cleanup"]
+          }
+        ],
+        "dominantKeywords": ["cleanup"]
+      }
+    ],
+    "totalShameCommits": 6,
+    "keywordTiers": { "critical": 2, "moderate": 2, "mild": 2 },
+    "byMonth": [
+      { "month": "2026-01", "critical": 0, "moderate": 0, "mild": 1 },
+      { "month": "2026-02", "critical": 1, "moderate": 2, "mild": 0 },
+      { "month": "2026-03", "critical": 1, "moderate": 0, "mild": 1 }
+    ],
+    "summary": "src/helpers.ts has the highest shame score (100/100) with 4 flagged commits."
+  },
+  "parallelDev": {
+    "files": [],
+    "hotFiles": [],
+    "totalParallelFiles": 0,
+    "highParallel": 0,
+    "tierMix": { "low": 0, "medium": 0, "high": 0, "critical": 0 },
+    "byMonth": [],
+    "summary": "No significant parallel development detected."
+  },
+  "loc": {
+    "totalFiles": 10,
+    "totalLines": 107,
+    "files": [
+      { "file": "README.md", "lines": 3, "language": "Markdown" },
+      { "file": "docs/USAGE.md", "lines": 3, "language": "Markdown" },
+      { "file": "package.json", "lines": 5, "language": "JSON" },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "lines": 12,
+        "language": "TypeScript"
+      },
+      { "file": "src/api.ts", "lines": 16, "language": "TypeScript" },
+      { "file": "src/auth.ts", "lines": 13, "language": "TypeScript" },
+      { "file": "src/config.ts", "lines": 13, "language": "TypeScript" },
+      { "file": "src/helpers.ts", "lines": 24, "language": "TypeScript" },
+      { "file": "src/index.ts", "lines": 11, "language": "TypeScript" },
+      { "file": "src/types.ts", "lines": 7, "language": "TypeScript" }
+    ],
+    "languages": [
+      { "language": "TypeScript", "files": 7, "lines": 96, "percentage": 89.7 },
+      { "language": "Markdown", "files": 2, "lines": 6, "percentage": 5.6 },
+      { "language": "JSON", "files": 1, "lines": 5, "percentage": 4.7 }
+    ],
+    "summary": "107 lines across 10 files (90% TypeScript, 6% Markdown)"
+  },
+  "hotspots": {
+    "files": [
+      {
+        "file": "src/helpers.ts",
+        "hotspotScore": 100,
+        "churnScore": 100,
+        "loc": 24,
+        "category": "critical"
+      },
+      {
+        "file": "src/index.ts",
+        "hotspotScore": 54,
+        "churnScore": 71,
+        "loc": 11,
+        "category": "warning"
+      },
+      {
+        "file": "src/api.ts",
+        "hotspotScore": 50,
+        "churnScore": 57,
+        "loc": 16,
+        "category": "warning"
+      },
+      {
+        "file": "src/config.ts",
+        "hotspotScore": 46,
+        "churnScore": 57,
+        "loc": 13,
+        "category": "moderate"
+      },
+      {
+        "file": "src/auth.ts",
+        "hotspotScore": 35,
+        "churnScore": 43,
+        "loc": 13,
+        "category": "moderate"
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "hotspotScore": 23,
+        "churnScore": 29,
+        "loc": 12,
+        "category": "low"
+      },
+      {
+        "file": "src/types.ts",
+        "hotspotScore": 18,
+        "churnScore": 29,
+        "loc": 7,
+        "category": "low"
+      },
+      {
+        "file": "package.json",
+        "hotspotScore": 7,
+        "churnScore": 14,
+        "loc": 5,
+        "category": "low"
+      },
+      {
+        "file": "docs/USAGE.md",
+        "hotspotScore": 5,
+        "churnScore": 14,
+        "loc": 3,
+        "category": "low"
+      },
+      {
+        "file": "README.md",
+        "hotspotScore": 5,
+        "churnScore": 14,
+        "loc": 3,
+        "category": "low"
+      }
+    ],
+    "topHotspots": [
+      {
+        "file": "src/helpers.ts",
+        "hotspotScore": 100,
+        "churnScore": 100,
+        "loc": 24,
+        "category": "critical"
+      },
+      {
+        "file": "src/index.ts",
+        "hotspotScore": 54,
+        "churnScore": 71,
+        "loc": 11,
+        "category": "warning"
+      },
+      {
+        "file": "src/api.ts",
+        "hotspotScore": 50,
+        "churnScore": 57,
+        "loc": 16,
+        "category": "warning"
+      },
+      {
+        "file": "src/config.ts",
+        "hotspotScore": 46,
+        "churnScore": 57,
+        "loc": 13,
+        "category": "moderate"
+      },
+      {
+        "file": "src/auth.ts",
+        "hotspotScore": 35,
+        "churnScore": 43,
+        "loc": 13,
+        "category": "moderate"
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "hotspotScore": 23,
+        "churnScore": 29,
+        "loc": 12,
+        "category": "low"
+      },
+      {
+        "file": "src/types.ts",
+        "hotspotScore": 18,
+        "churnScore": 29,
+        "loc": 7,
+        "category": "low"
+      },
+      {
+        "file": "package.json",
+        "hotspotScore": 7,
+        "churnScore": 14,
+        "loc": 5,
+        "category": "low"
+      },
+      {
+        "file": "docs/USAGE.md",
+        "hotspotScore": 5,
+        "churnScore": 14,
+        "loc": 3,
+        "category": "low"
+      },
+      {
+        "file": "README.md",
+        "hotspotScore": 5,
+        "churnScore": 14,
+        "loc": 3,
+        "category": "low"
+      }
+    ],
+    "summary": "1 critical hotspot, 2 warnings across 10 files"
+  },
+  "coupling": {
+    "pairs": [
+      {
+        "fileA": "src/helpers.ts",
+        "fileB": "src/index.ts",
+        "coCommits": 3,
+        "totalCommitsA": 7,
+        "totalCommitsB": 5,
+        "couplingStrength": 60
+      }
+    ],
+    "fileProfiles": [
+      {
+        "file": "src/helpers.ts",
+        "partners": [
+          {
+            "fileA": "src/helpers.ts",
+            "fileB": "src/index.ts",
+            "coCommits": 3,
+            "totalCommitsA": 7,
+            "totalCommitsB": 5,
+            "couplingStrength": 60
+          }
+        ],
+        "topPartner": "src/index.ts",
+        "couplingScore": 60
+      },
+      {
+        "file": "src/index.ts",
+        "partners": [
+          {
+            "fileA": "src/helpers.ts",
+            "fileB": "src/index.ts",
+            "coCommits": 3,
+            "totalCommitsA": 7,
+            "totalCommitsB": 5,
+            "couplingStrength": 60
+          }
+        ],
+        "topPartner": "src/helpers.ts",
+        "couplingScore": 60
+      }
+    ],
+    "topPairs": [
+      {
+        "fileA": "src/helpers.ts",
+        "fileB": "src/index.ts",
+        "coCommits": 3,
+        "totalCommitsA": 7,
+        "totalCommitsB": 5,
+        "couplingStrength": 60
+      }
+    ],
+    "summary": "1 coupled pair found, strongest: src/helpers.ts ↔ src/index.ts (60%)"
+  },
+  "churnVelocity": {
+    "files": [
+      {
+        "file": "src/helpers.ts",
+        "velocityScore": 86,
+        "trend": "accelerating",
+        "recentCommits": 6,
+        "olderCommits": 1,
+        "totalCommits": 7
+      },
+      {
+        "file": "src/index.ts",
+        "velocityScore": 60,
+        "trend": "stable",
+        "recentCommits": 3,
+        "olderCommits": 2,
+        "totalCommits": 5
+      },
+      {
+        "file": "src/api.ts",
+        "velocityScore": 50,
+        "trend": "stable",
+        "recentCommits": 2,
+        "olderCommits": 2,
+        "totalCommits": 4
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "velocityScore": 50,
+        "trend": "stable",
+        "recentCommits": 1,
+        "olderCommits": 1,
+        "totalCommits": 2
+      },
+      {
+        "file": "src/types.ts",
+        "velocityScore": 50,
+        "trend": "stable",
+        "recentCommits": 1,
+        "olderCommits": 1,
+        "totalCommits": 2
+      },
+      {
+        "file": "src/config.ts",
+        "velocityScore": 25,
+        "trend": "decelerating",
+        "recentCommits": 1,
+        "olderCommits": 3,
+        "totalCommits": 4
+      },
+      {
+        "file": "src/auth.ts",
+        "velocityScore": 0,
+        "trend": "decelerating",
+        "recentCommits": 0,
+        "olderCommits": 3,
+        "totalCommits": 3
+      }
+    ],
+    "acceleratingFiles": [
+      {
+        "file": "src/helpers.ts",
+        "velocityScore": 86,
+        "trend": "accelerating",
+        "recentCommits": 6,
+        "olderCommits": 1,
+        "totalCommits": 7
+      }
+    ],
+    "summary": "1 file accelerating, 2 decelerating"
+  },
+  "rewriteRatio": {
+    "files": [
+      {
+        "file": "src/index.ts",
+        "rewriteScore": 11,
+        "totalInsertions": 19,
+        "totalDeletions": 8,
+        "ratio": 0.42
+      },
+      {
+        "file": "src/helpers.ts",
+        "rewriteScore": 8,
+        "totalInsertions": 20,
+        "totalDeletions": 7,
+        "ratio": 0.35
+      },
+      {
+        "file": "src/api.ts",
+        "rewriteScore": 1,
+        "totalInsertions": 18,
+        "totalDeletions": 2,
+        "ratio": 0.11
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "rewriteScore": 0,
+        "totalInsertions": 13,
+        "totalDeletions": 1,
+        "ratio": 0.08
+      },
+      {
+        "file": "src/types.ts",
+        "rewriteScore": 0,
+        "totalInsertions": 7,
+        "totalDeletions": 0,
+        "ratio": 0
+      },
+      {
+        "file": "docs/USAGE.md",
+        "rewriteScore": 0,
+        "totalInsertions": 3,
+        "totalDeletions": 0,
+        "ratio": 0
+      },
+      {
+        "file": "src/config.ts",
+        "rewriteScore": 0,
+        "totalInsertions": 14,
+        "totalDeletions": 1,
+        "ratio": 0.07
+      },
+      {
+        "file": "src/auth.ts",
+        "rewriteScore": 0,
+        "totalInsertions": 14,
+        "totalDeletions": 1,
+        "ratio": 0.07
+      },
+      {
+        "file": "README.md",
+        "rewriteScore": 0,
+        "totalInsertions": 3,
+        "totalDeletions": 0,
+        "ratio": 0
+      },
+      {
+        "file": "package.json",
+        "rewriteScore": 0,
+        "totalInsertions": 5,
+        "totalDeletions": 0,
+        "ratio": 0
+      }
+    ],
+    "topRewriters": [
+      {
+        "file": "src/index.ts",
+        "rewriteScore": 11,
+        "totalInsertions": 19,
+        "totalDeletions": 8,
+        "ratio": 0.42
+      },
+      {
+        "file": "src/helpers.ts",
+        "rewriteScore": 8,
+        "totalInsertions": 20,
+        "totalDeletions": 7,
+        "ratio": 0.35
+      },
+      {
+        "file": "src/api.ts",
+        "rewriteScore": 1,
+        "totalInsertions": 18,
+        "totalDeletions": 2,
+        "ratio": 0.11
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "rewriteScore": 0,
+        "totalInsertions": 13,
+        "totalDeletions": 1,
+        "ratio": 0.08
+      },
+      {
+        "file": "src/types.ts",
+        "rewriteScore": 0,
+        "totalInsertions": 7,
+        "totalDeletions": 0,
+        "ratio": 0
+      },
+      {
+        "file": "docs/USAGE.md",
+        "rewriteScore": 0,
+        "totalInsertions": 3,
+        "totalDeletions": 0,
+        "ratio": 0
+      },
+      {
+        "file": "src/config.ts",
+        "rewriteScore": 0,
+        "totalInsertions": 14,
+        "totalDeletions": 1,
+        "ratio": 0.07
+      },
+      {
+        "file": "src/auth.ts",
+        "rewriteScore": 0,
+        "totalInsertions": 14,
+        "totalDeletions": 1,
+        "ratio": 0.07
+      },
+      {
+        "file": "README.md",
+        "rewriteScore": 0,
+        "totalInsertions": 3,
+        "totalDeletions": 0,
+        "ratio": 0
+      },
+      {
+        "file": "package.json",
+        "rewriteScore": 0,
+        "totalInsertions": 5,
+        "totalDeletions": 0,
+        "ratio": 0
+      }
+    ],
+    "totalInsertions": 116,
+    "totalDeletions": 20,
+    "highRewrite": 0,
+    "summary": "0 files with high rewrite ratio (code that doesn't stick)"
+  },
+  "blastRadius": {
+    "files": [
+      {
+        "file": "README.md",
+        "blastScore": 100,
+        "avgCoChangedFiles": 3,
+        "maxCoChangedFiles": 3,
+        "totalCommits": 1
+      },
+      {
+        "file": "package.json",
+        "blastScore": 100,
+        "avgCoChangedFiles": 3,
+        "maxCoChangedFiles": 3,
+        "totalCommits": 1
+      },
+      {
+        "file": "src/index.ts",
+        "blastScore": 53,
+        "avgCoChangedFiles": 1.6,
+        "maxCoChangedFiles": 3,
+        "totalCommits": 5
+      },
+      {
+        "file": "src/config.ts",
+        "blastScore": 50,
+        "avgCoChangedFiles": 1.5,
+        "maxCoChangedFiles": 3,
+        "totalCommits": 4
+      },
+      {
+        "file": "src/api.ts",
+        "blastScore": 42,
+        "avgCoChangedFiles": 1.3,
+        "maxCoChangedFiles": 2,
+        "totalCommits": 4
+      },
+      {
+        "file": "src/helpers.ts",
+        "blastScore": 24,
+        "avgCoChangedFiles": 0.7,
+        "maxCoChangedFiles": 2,
+        "totalCommits": 7
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "blastScore": 0,
+        "avgCoChangedFiles": 0,
+        "maxCoChangedFiles": 0,
+        "totalCommits": 2
+      },
+      {
+        "file": "src/types.ts",
+        "blastScore": 0,
+        "avgCoChangedFiles": 0,
+        "maxCoChangedFiles": 0,
+        "totalCommits": 2
+      },
+      {
+        "file": "docs/USAGE.md",
+        "blastScore": 0,
+        "avgCoChangedFiles": 0,
+        "maxCoChangedFiles": 0,
+        "totalCommits": 1
+      },
+      {
+        "file": "src/auth.ts",
+        "blastScore": 0,
+        "avgCoChangedFiles": 0,
+        "maxCoChangedFiles": 0,
+        "totalCommits": 3
+      }
+    ],
+    "topBlasters": [
+      {
+        "file": "README.md",
+        "blastScore": 100,
+        "avgCoChangedFiles": 3,
+        "maxCoChangedFiles": 3,
+        "totalCommits": 1
+      },
+      {
+        "file": "package.json",
+        "blastScore": 100,
+        "avgCoChangedFiles": 3,
+        "maxCoChangedFiles": 3,
+        "totalCommits": 1
+      },
+      {
+        "file": "src/index.ts",
+        "blastScore": 53,
+        "avgCoChangedFiles": 1.6,
+        "maxCoChangedFiles": 3,
+        "totalCommits": 5
+      },
+      {
+        "file": "src/config.ts",
+        "blastScore": 50,
+        "avgCoChangedFiles": 1.5,
+        "maxCoChangedFiles": 3,
+        "totalCommits": 4
+      },
+      {
+        "file": "src/api.ts",
+        "blastScore": 42,
+        "avgCoChangedFiles": 1.3,
+        "maxCoChangedFiles": 2,
+        "totalCommits": 4
+      },
+      {
+        "file": "src/helpers.ts",
+        "blastScore": 24,
+        "avgCoChangedFiles": 0.7,
+        "maxCoChangedFiles": 2,
+        "totalCommits": 7
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "blastScore": 0,
+        "avgCoChangedFiles": 0,
+        "maxCoChangedFiles": 0,
+        "totalCommits": 2
+      },
+      {
+        "file": "src/types.ts",
+        "blastScore": 0,
+        "avgCoChangedFiles": 0,
+        "maxCoChangedFiles": 0,
+        "totalCommits": 2
+      },
+      {
+        "file": "docs/USAGE.md",
+        "blastScore": 0,
+        "avgCoChangedFiles": 0,
+        "maxCoChangedFiles": 0,
+        "totalCommits": 1
+      },
+      {
+        "file": "src/auth.ts",
+        "blastScore": 0,
+        "avgCoChangedFiles": 0,
+        "maxCoChangedFiles": 0,
+        "totalCommits": 3
+      }
+    ],
+    "summary": "2 high blast-radius files (architectural load-bearers)"
+  },
+  "deadCode": {
+    "candidates": [],
+    "totalDeadFiles": 0,
+    "totalDeadLines": 0,
+    "summary": "No dead code candidates found"
+  },
+  "testCoverage": {
+    "directories": [
+      {
+        "directory": "src/__tests__",
+        "sourceFiles": 0,
+        "testFiles": 1,
+        "coverageRatio": 0,
+        "hasTests": true
+      },
+      {
+        "directory": "src",
+        "sourceFiles": 6,
+        "testFiles": 0,
+        "coverageRatio": 0,
+        "hasTests": false
+      }
+    ],
+    "uncoveredDirectories": [
+      {
+        "directory": "src",
+        "sourceFiles": 6,
+        "testFiles": 0,
+        "coverageRatio": 0,
+        "hasTests": false
+      }
+    ],
+    "files": [
+      { "file": "src/api.ts", "hasTestSibling": true },
+      { "file": "src/auth.ts", "hasTestSibling": false },
+      { "file": "src/config.ts", "hasTestSibling": false },
+      { "file": "src/helpers.ts", "hasTestSibling": false },
+      { "file": "src/index.ts", "hasTestSibling": false },
+      { "file": "src/types.ts", "hasTestSibling": false }
+    ],
+    "overallRatio": 0.17,
+    "summary": "1 directory with source files but no tests"
+  },
+  "ghostFiles": {
+    "files": [],
+    "totalGhostFiles": 0,
+    "ghostOwners": 0,
+    "ghostLoc": 0,
+    "tierMix": { "trueGhost": 0, "fading": 0 },
+    "summary": "No ghost files detected"
+  },
+  "knowledgeConcentration": {
+    "singleAuthorFiles": 9,
+    "totalFiles": 10,
+    "concentrationIndex": 90,
+    "summary": "90% of files are single-author dominant (9/10)"
+  },
+  "coAuthors": {
+    "pairs": [],
+    "authorStats": [],
+    "totalCoAuthoredCommits": 0,
+    "summary": "No co-authored commits found",
+    "aiAssistedCommits": 0,
+    "humanAuthoredCommits": 20,
+    "aiAdoptionPercent": 0,
+    "aiAdoptionTier": "none",
+    "aiAuthors": [],
+    "humanPairs": [],
+    "filteredBotCommits": 0,
+    "byMonth": [
+      { "month": "2026-01", "aiAssisted": 0, "pureHuman": 6, "total": 6 },
+      { "month": "2026-02", "aiAssisted": 0, "pureHuman": 6, "total": 6 },
+      { "month": "2026-03", "aiAssisted": 0, "pureHuman": 6, "total": 6 },
+      { "month": "2026-04", "aiAssisted": 0, "pureHuman": 2, "total": 2 }
+    ],
+    "perAuthorMix": [
+      {
+        "author": "alice@example.com",
+        "displayName": "Alice",
+        "aiCommits": 0,
+        "soloCommits": 13,
+        "totalCommits": 13,
+        "personalRatio": 0
+      },
+      {
+        "author": "bob@example.com",
+        "displayName": "Bob",
+        "aiCommits": 0,
+        "soloCommits": 4,
+        "totalCommits": 4,
+        "personalRatio": 0
+      },
+      {
+        "author": "charlie@example.com",
+        "displayName": "Charlie",
+        "aiCommits": 0,
+        "soloCommits": 3,
+        "totalCommits": 3,
+        "personalRatio": 0
+      }
+    ]
+  },
+  "hotspotClusters": {
+    "clusters": [
+      {
+        "dimension": "ownership",
+        "label": "alice@example.com (avg 93%)",
+        "members": [
+          { "file": "src/helpers.ts", "hotspotScore": 100 },
+          { "file": "src/index.ts", "hotspotScore": 54 },
+          { "file": "src/api.ts", "hotspotScore": 50 },
+          { "file": "src/config.ts", "hotspotScore": 46 },
+          { "file": "src/types.ts", "hotspotScore": 18 },
+          { "file": "package.json", "hotspotScore": 7 },
+          { "file": "README.md", "hotspotScore": 5 }
+        ],
+        "clusterScore": 280,
+        "narrative": "alice@example.com owns 7 of the top 20 hotspots (avg 93% ownership). Either they're the team's most critical contributor or they're spreading complexity.",
+        "sharedTrait": "alice@example.com"
+      },
+      {
+        "dimension": "ownership",
+        "label": "bob@example.com (avg 100%)",
+        "members": [
+          { "file": "src/__tests__/api.test.ts", "hotspotScore": 23 },
+          { "file": "docs/USAGE.md", "hotspotScore": 5 }
+        ],
+        "clusterScore": 28,
+        "narrative": "bob@example.com owns 2 of the top 20 hotspots (avg 100% ownership). Either they're the team's most critical contributor or they're spreading complexity.",
+        "sharedTrait": "bob@example.com"
+      }
+    ],
+    "multiSignalFiles": [],
+    "summary": "2 root cause clusters found across 1 dimension. `alice@example.com (avg 93%)` (ownership) explains the most hotspots."
+  },
+  "complexityTrend": {
+    "files": [
+      {
+        "file": "src/auth.ts",
+        "buckets": [
+          { "month": "2026-01", "netLines": 8, "cumulative": 8 },
+          { "month": "2026-02", "netLines": 5, "cumulative": 13 }
+        ],
+        "totalNetLines": 13,
+        "recentGrowthRate": 7,
+        "trend": "growing"
+      },
+      {
+        "file": "src/config.ts",
+        "buckets": [
+          { "month": "2026-01", "netLines": 10, "cumulative": 10 },
+          { "month": "2026-02", "netLines": 3, "cumulative": 13 }
+        ],
+        "totalNetLines": 13,
+        "recentGrowthRate": 7,
+        "trend": "growing"
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "buckets": [
+          { "month": "2026-02", "netLines": 7, "cumulative": 7 },
+          { "month": "2026-03", "netLines": 5, "cumulative": 12 }
+        ],
+        "totalNetLines": 12,
+        "recentGrowthRate": 6,
+        "trend": "growing"
+      },
+      {
+        "file": "src/api.ts",
+        "buckets": [
+          { "month": "2026-01", "netLines": 5, "cumulative": 5 },
+          { "month": "2026-02", "netLines": 4, "cumulative": 9 },
+          { "month": "2026-03", "netLines": 6, "cumulative": 15 },
+          { "month": "2026-04", "netLines": 1, "cumulative": 16 }
+        ],
+        "totalNetLines": 16,
+        "recentGrowthRate": 4,
+        "trend": "stable"
+      },
+      {
+        "file": "src/helpers.ts",
+        "buckets": [
+          { "month": "2026-02", "netLines": 0, "cumulative": 0 },
+          { "month": "2026-03", "netLines": 6, "cumulative": 6 },
+          { "month": "2026-04", "netLines": 7, "cumulative": 13 }
+        ],
+        "totalNetLines": 13,
+        "recentGrowthRate": 4,
+        "trend": "stable"
+      },
+      {
+        "file": "src/types.ts",
+        "buckets": [
+          { "month": "2026-01", "netLines": 1, "cumulative": 1 },
+          { "month": "2026-03", "netLines": 6, "cumulative": 7 }
+        ],
+        "totalNetLines": 7,
+        "recentGrowthRate": 4,
+        "trend": "stable"
+      },
+      {
+        "file": "src/index.ts",
+        "buckets": [
+          { "month": "2026-01", "netLines": 7, "cumulative": 7 },
+          { "month": "2026-02", "netLines": 0, "cumulative": 7 },
+          { "month": "2026-03", "netLines": 2, "cumulative": 9 },
+          { "month": "2026-04", "netLines": 2, "cumulative": 11 }
+        ],
+        "totalNetLines": 11,
+        "recentGrowthRate": 1,
+        "trend": "stable"
+      }
+    ],
+    "growingFiles": [
+      {
+        "file": "src/auth.ts",
+        "buckets": [
+          { "month": "2026-01", "netLines": 8, "cumulative": 8 },
+          { "month": "2026-02", "netLines": 5, "cumulative": 13 }
+        ],
+        "totalNetLines": 13,
+        "recentGrowthRate": 7,
+        "trend": "growing"
+      },
+      {
+        "file": "src/config.ts",
+        "buckets": [
+          { "month": "2026-01", "netLines": 10, "cumulative": 10 },
+          { "month": "2026-02", "netLines": 3, "cumulative": 13 }
+        ],
+        "totalNetLines": 13,
+        "recentGrowthRate": 7,
+        "trend": "growing"
+      },
+      {
+        "file": "src/__tests__/api.test.ts",
+        "buckets": [
+          { "month": "2026-02", "netLines": 7, "cumulative": 7 },
+          { "month": "2026-03", "netLines": 5, "cumulative": 12 }
+        ],
+        "totalNetLines": 12,
+        "recentGrowthRate": 6,
+        "trend": "growing"
+      }
+    ],
+    "shrinkingFiles": [],
+    "summary": "3 files growing, 0 shrinking, 4 stable"
+  },
+  "commitTiming": {
+    "files": [
+      {
+        "file": "src/api.ts",
+        "totalCommits": 4,
+        "lateNightPercent": 0,
+        "weekendPercent": 100,
+        "peakHour": 10,
+        "peakDay": 0,
+        "hourDistribution": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0
+        ],
+        "stressScore": 40
+      },
+      {
+        "file": "src/auth.ts",
+        "totalCommits": 3,
+        "lateNightPercent": 33,
+        "weekendPercent": 33,
+        "peakHour": 14,
+        "peakDay": 0,
+        "hourDistribution": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1
+        ],
+        "stressScore": 33
+      },
+      {
+        "file": "src/config.ts",
+        "totalCommits": 4,
+        "lateNightPercent": 0,
+        "weekendPercent": 50,
+        "peakHour": 9,
+        "peakDay": 0,
+        "hourDistribution": [
+          0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ],
+        "stressScore": 20
+      },
+      {
+        "file": "src/index.ts",
+        "totalCommits": 5,
+        "lateNightPercent": 0,
+        "weekendPercent": 40,
+        "peakHour": 9,
+        "peakDay": 0,
+        "hourDistribution": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0
+        ],
+        "stressScore": 16
+      },
+      {
+        "file": "src/helpers.ts",
+        "totalCommits": 7,
+        "lateNightPercent": 0,
+        "weekendPercent": 29,
+        "peakHour": 8,
+        "peakDay": 0,
+        "hourDistribution": [
+          0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0
+        ],
+        "stressScore": 12
+      }
+    ],
+    "stressFiles": [
+      {
+        "file": "src/api.ts",
+        "totalCommits": 4,
+        "lateNightPercent": 0,
+        "weekendPercent": 100,
+        "peakHour": 10,
+        "peakDay": 0,
+        "hourDistribution": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0
+        ],
+        "stressScore": 40
+      },
+      {
+        "file": "src/auth.ts",
+        "totalCommits": 3,
+        "lateNightPercent": 33,
+        "weekendPercent": 33,
+        "peakHour": 14,
+        "peakDay": 0,
+        "hourDistribution": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1
+        ],
+        "stressScore": 33
+      },
+      {
+        "file": "src/config.ts",
+        "totalCommits": 4,
+        "lateNightPercent": 0,
+        "weekendPercent": 50,
+        "peakHour": 9,
+        "peakDay": 0,
+        "hourDistribution": [
+          0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ],
+        "stressScore": 20
+      },
+      {
+        "file": "src/index.ts",
+        "totalCommits": 5,
+        "lateNightPercent": 0,
+        "weekendPercent": 40,
+        "peakHour": 9,
+        "peakDay": 0,
+        "hourDistribution": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0
+        ],
+        "stressScore": 16
+      },
+      {
+        "file": "src/helpers.ts",
+        "totalCommits": 7,
+        "lateNightPercent": 0,
+        "weekendPercent": 29,
+        "peakHour": 8,
+        "peakDay": 0,
+        "hourDistribution": [
+          0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0
+        ],
+        "stressScore": 12
+      }
+    ],
+    "repoLateNightPercent": 5,
+    "repoWeekendPercent": 35,
+    "summary": "5% of commits happen after hours, 35% on weekends",
+    "repoHourDayMatrix": [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 2, 1, 0, 0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    ],
+    "highStress": 0,
+    "tierMix": { "low": 3, "medium": 2, "high": 0, "critical": 0 },
+    "byMonth": [
+      {
+        "month": "2026-01",
+        "weekendLateNight": 0,
+        "singleCriterion": 2,
+        "healthy": 4,
+        "total": 6
+      },
+      {
+        "month": "2026-02",
+        "weekendLateNight": 0,
+        "singleCriterion": 3,
+        "healthy": 3,
+        "total": 6
+      },
+      {
+        "month": "2026-03",
+        "weekendLateNight": 0,
+        "singleCriterion": 2,
+        "healthy": 4,
+        "total": 6
+      },
+      {
+        "month": "2026-04",
+        "weekendLateNight": 0,
+        "singleCriterion": 1,
+        "healthy": 1,
+        "total": 2
+      }
+    ],
+    "authorStress": [
+      {
+        "email": "alice@example.com",
+        "name": "Alice",
+        "totalCommits": 13,
+        "lateNightCommits": 0,
+        "weekendCommits": 5,
+        "lateNightPercent": 0,
+        "weekendPercent": 38,
+        "stressScore": 15
+      }
+    ]
+  },
+  "renameTracking": {
+    "renames": [
+      {
+        "oldPath": "src/utils.ts",
+        "newPath": "src/helpers.ts",
+        "commitHash": "b54aea6fc0164734dffd2755001c4392b3c2b465",
+        "date": "2026-02-10T13:20:00Z"
+      }
+    ],
+    "chains": [
+      {
+        "currentPath": "src/helpers.ts",
+        "previousNames": ["src/utils.ts"],
+        "renameCount": 1
+      }
+    ],
+    "totalRenames": 1,
+    "filesWithRenames": 1,
+    "summary": "1 file has been renamed 1 time total"
+  },
+  "identities": [],
+  "fileClasses": { "src/__tests__/api.test.ts": "test" },
+  "commits": [
+    {
+      "hash": "ba9d2f604340954344bfe462b3471ffba25472fb",
+      "authorEmail": "alice@example.com",
+      "authorName": "Alice",
+      "date": "2026-04-05T15:30:00Z",
+      "message": "refactor: enrich main output",
+      "coAuthors": [],
+      "files": ["src/api.ts", "src/index.ts"],
+      "fileStats": [
+        { "file": "src/api.ts", "insertions": 1, "deletions": 0 },
+        { "file": "src/index.ts", "insertions": 5, "deletions": 3 }
+      ],
+      "insertions": 6,
+      "deletions": 3
+    },
+    {
+      "hash": "efece8d3f9efda46599d0092e049dce37aa7bca4",
+      "authorEmail": "alice@example.com",
+      "authorName": "Alice",
+      "date": "2026-04-01T08:00:00Z",
+      "message": "feat: add repeat helper",
+      "coAuthors": [],
+      "files": ["src/helpers.ts"],
+      "fileStats": [
+        { "file": "src/helpers.ts", "insertions": 8, "deletions": 1 }
+      ],
+      "insertions": 8,
+      "deletions": 1
+    },
+    {
+      "hash": "e32dba3b39b01bf41a01767e8009cfde4cc5b10a",
+      "authorEmail": "bob@example.com",
+      "authorName": "Bob",
+      "date": "2026-03-25T13:00:00Z",
+      "message": "test: cover describeConfig",
+      "coAuthors": [],
+      "files": ["src/__tests__/api.test.ts"],
+      "fileStats": [
+        { "file": "src/__tests__/api.test.ts", "insertions": 6, "deletions": 1 }
+      ],
+      "insertions": 6,
+      "deletions": 1
+    },
+    {
+      "hash": "77a7e2f0b85363deaa2ac5aaeec6b38bba4ce84d",
+      "authorEmail": "alice@example.com",
+      "authorName": "Alice",
+      "date": "2026-03-20T11:15:00Z",
+      "message": "feat: extend shared types",
+      "coAuthors": [],
+      "files": ["src/types.ts"],
+      "fileStats": [
+        { "file": "src/types.ts", "insertions": 6, "deletions": 0 }
+      ],
+      "insertions": 6,
+      "deletions": 0
+    },
+    {
+      "hash": "2ef5cf62314de728e2197d6d06526cb4dc5f0b8f",
+      "authorEmail": "alice@example.com",
+      "authorName": "Alice",
+      "date": "2026-03-15T16:45:00Z",
+      "message": "hotfix: truncate handles zero length",
+      "coAuthors": [],
+      "files": ["src/helpers.ts"],
+      "fileStats": [
+        { "file": "src/helpers.ts", "insertions": 2, "deletions": 1 }
+      ],
+      "insertions": 2,
+      "deletions": 1
+    },
+    {
+      "hash": "f64aa2bb57b2e3a5a8270bc2b095e7ffe77056a4",
+      "authorEmail": "alice@example.com",
+      "authorName": "Alice",
+      "date": "2026-03-10T09:30:00Z",
+      "message": "feat: add truncate helper",
+      "coAuthors": [],
+      "files": ["src/helpers.ts", "src/index.ts"],
+      "fileStats": [
+        { "file": "src/helpers.ts", "insertions": 6, "deletions": 2 },
+        { "file": "src/index.ts", "insertions": 2, "deletions": 2 }
+      ],
+      "insertions": 8,
+      "deletions": 4
+    },
+    {
+      "hash": "2c5bd57fb03b00602bd1a03032c04e740a308205",
+      "authorEmail": "bob@example.com",
+      "authorName": "Bob",
+      "date": "2026-03-05T14:00:00Z",
+      "message": "docs: add usage notes",
+      "coAuthors": [],
+      "files": ["docs/USAGE.md"],
+      "fileStats": [
+        { "file": "docs/USAGE.md", "insertions": 3, "deletions": 0 }
+      ],
+      "insertions": 3,
+      "deletions": 0
+    },
+    {
+      "hash": "9042a1d1428dedc994a95ad5ee536508b918a233",
+      "authorEmail": "alice@example.com",
+      "authorName": "Alice",
+      "date": "2026-03-01T10:00:00Z",
+      "message": "refactor: cross-module cleanup",
+      "coAuthors": [],
+      "files": ["src/api.ts", "src/helpers.ts", "src/index.ts"],
+      "fileStats": [
+        { "file": "src/api.ts", "insertions": 8, "deletions": 2 },
+        { "file": "src/helpers.ts", "insertions": 1, "deletions": 0 },
+        { "file": "src/index.ts", "insertions": 4, "deletions": 2 }
+      ],
+      "insertions": 13,
+      "deletions": 4
+    },
+    {
+      "hash": "801fa4a2ca93986f554511b45ca21937add2da37",
+      "authorEmail": "alice@example.com",
+      "authorName": "Alice",
+      "date": "2026-02-25T17:00:00Z",
+      "message": "revert: remove name fallback hack",
+      "coAuthors": [],
+      "files": ["src/helpers.ts"],
+      "fileStats": [
+        { "file": "src/helpers.ts", "insertions": 1, "deletions": 2 }
+      ],
+      "insertions": 1,
+      "deletions": 2
+    },
+    {
+      "hash": "579f9fbd9dfa90acecdec365b093f72dc59e1519",
+      "authorEmail": "alice@example.com",
+      "authorName": "Alice",
+      "date": "2026-02-20T08:30:00Z",
+      "message": "hack: workaround for empty names",
+      "coAuthors": [],
+      "files": ["src/config.ts", "src/helpers.ts"],
+      "fileStats": [
+        { "file": "src/config.ts", "insertions": 2, "deletions": 0 },
+        { "file": "src/helpers.ts", "insertions": 2, "deletions": 1 }
+      ],
+      "insertions": 4,
+      "deletions": 1
+    },
+    {
+      "hash": "83d4d8bb84675a03428a68d53f67261765559fae",
+      "authorEmail": "bob@example.com",
+      "authorName": "Bob",
+      "date": "2026-02-15T15:00:00Z",
+      "message": "test: add api smoke test",
+      "coAuthors": [],
+      "files": ["src/__tests__/api.test.ts"],
+      "fileStats": [
+        { "file": "src/__tests__/api.test.ts", "insertions": 7, "deletions": 0 }
+      ],
+      "insertions": 7,
+      "deletions": 0
+    },
+    {
+      "hash": "b54aea6fc0164734dffd2755001c4392b3c2b465",
+      "authorEmail": "alice@example.com",
+      "authorName": "Alice",
+      "date": "2026-02-10T13:20:00Z",
+      "message": "refactor: rename utils to helpers",
+      "coAuthors": [],
+      "files": ["src/helpers.ts", "src/index.ts"],
+      "fileStats": [
+        { "file": "src/helpers.ts", "insertions": 0, "deletions": 0 },
+        { "file": "src/index.ts", "insertions": 1, "deletions": 1 }
+      ],
+      "insertions": 1,
+      "deletions": 1
+    },
+    {
+      "hash": "40b2a15b12d1dd3035838b086795f68cf96299cb",
+      "authorEmail": "charlie@example.com",
+      "authorName": "Charlie",
+      "date": "2026-02-05T23:15:00Z",
+      "message": "fix: auth race condition workaround",
+      "coAuthors": [],
+      "files": ["src/auth.ts"],
+      "fileStats": [{ "file": "src/auth.ts", "insertions": 6, "deletions": 1 }],
+      "insertions": 6,
+      "deletions": 1
+    },
+    {
+      "hash": "4a9d1fac3319863d87bd331ba82298134734cb97",
+      "authorEmail": "alice@example.com",
+      "authorName": "Alice",
+      "date": "2026-02-01T09:45:00Z",
+      "message": "feat: extend config with timeout",
+      "coAuthors": [],
+      "files": ["src/api.ts", "src/config.ts"],
+      "fileStats": [
+        { "file": "src/api.ts", "insertions": 4, "deletions": 0 },
+        { "file": "src/config.ts", "insertions": 2, "deletions": 1 }
+      ],
+      "insertions": 6,
+      "deletions": 1
+    },
+    {
+      "hash": "c8d9edad781b9e0c732aeddbc201179fbb93ab7e",
+      "authorEmail": "charlie@example.com",
+      "authorName": "Charlie",
+      "date": "2026-01-25T20:30:00Z",
+      "message": "fix: auth null token bug",
+      "coAuthors": [],
+      "files": ["src/auth.ts"],
+      "fileStats": [{ "file": "src/auth.ts", "insertions": 1, "deletions": 0 }],
+      "insertions": 1,
+      "deletions": 0
+    },
+    {
+      "hash": "bc4b7dbb63e7efc3b8baf0063b9ed8fe434cddda",
+      "authorEmail": "alice@example.com",
+      "authorName": "Alice",
+      "date": "2026-01-20T11:00:00Z",
+      "message": "fix: typo in greeting",
+      "coAuthors": [],
+      "files": ["src/utils.ts"],
+      "fileStats": [
+        { "file": "src/utils.ts", "insertions": 5, "deletions": 1 }
+      ],
+      "insertions": 5,
+      "deletions": 1
+    },
+    {
+      "hash": "fa3f50bb691d9c91bcb3bdf84b6f9ed4538a8781",
+      "authorEmail": "bob@example.com",
+      "authorName": "Bob",
+      "date": "2026-01-15T16:45:00Z",
+      "message": "feat: add shared Result type",
+      "coAuthors": [],
+      "files": ["src/types.ts"],
+      "fileStats": [
+        { "file": "src/types.ts", "insertions": 1, "deletions": 0 }
+      ],
+      "insertions": 1,
+      "deletions": 0
+    },
+    {
+      "hash": "31f9299fd7a97470ca7579a775baaeabb30fe63d",
+      "authorEmail": "alice@example.com",
+      "authorName": "Alice",
+      "date": "2026-01-10T10:15:00Z",
+      "message": "feat: add api with config dependency",
+      "coAuthors": [],
+      "files": ["src/api.ts", "src/config.ts"],
+      "fileStats": [
+        { "file": "src/api.ts", "insertions": 5, "deletions": 0 },
+        { "file": "src/config.ts", "insertions": 2, "deletions": 0 }
+      ],
+      "insertions": 7,
+      "deletions": 0
+    },
+    {
+      "hash": "10e2ce9c42603432adbdd9b8a23602f50acf4fd7",
+      "authorEmail": "charlie@example.com",
+      "authorName": "Charlie",
+      "date": "2026-01-05T14:30:00Z",
+      "message": "feat: add auth module",
+      "coAuthors": [],
+      "files": ["src/auth.ts"],
+      "fileStats": [{ "file": "src/auth.ts", "insertions": 7, "deletions": 0 }],
+      "insertions": 7,
+      "deletions": 0
+    },
+    {
+      "hash": "891b650bf0200209954ccf92d8ff224a4ccbacb0",
+      "authorEmail": "alice@example.com",
+      "authorName": "Alice",
+      "date": "2026-01-01T09:00:00Z",
+      "message": "feat: initial project scaffold",
+      "coAuthors": [],
+      "files": [
+        "README.md",
+        "package.json",
+        "src/config.ts",
+        "src/index.ts",
+        "src/utils.ts"
+      ],
+      "fileStats": [
+        { "file": "README.md", "insertions": 3, "deletions": 0 },
+        { "file": "package.json", "insertions": 5, "deletions": 0 },
+        { "file": "src/config.ts", "insertions": 8, "deletions": 0 },
+        { "file": "src/index.ts", "insertions": 7, "deletions": 0 },
+        { "file": "src/utils.ts", "insertions": 7, "deletions": 0 }
+      ],
+      "insertions": 30,
+      "deletions": 0
+    }
+  ]
+}

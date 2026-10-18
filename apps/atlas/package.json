@@ -1,0 +1,33 @@
+{
+  "name": "@gitrelic/atlas",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings && tsc -p tsconfig.node.json",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@fontsource/barlow": "^5.3.0",
+    "@fontsource/sora": "^5.3.0",
+    "@gitrelic/scene": "workspace:*"
+  },
+  "devDependencies": {
+    "@gitrelic/core": "workspace:*",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@tailwindcss/vite": "^4.3.2",
+    "@testing-library/svelte": "^5.4.2",
+    "@types/node": "catalog:",
+    "happy-dom": "^20.10.6",
+    "svelte": "catalog:",
+    "svelte-check": "^4.7.7",
+    "tailwindcss": "^4.3.2",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}
