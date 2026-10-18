@@ -168,7 +168,7 @@ describe('TweenEngine', () => {
     });
   });
 
-  it('draws links in after the marks and retracts them on the way out', () => {
+  it('draws links in as the marks settle and retracts them on the way out', () => {
     const { fc, engine, go } = setup();
     const ab: Link = {
       id: 'ab',
@@ -180,7 +180,7 @@ describe('TweenEngine', () => {
       alpha: 1,
     };
     go(scene([mark('person:a', 0), mark('person:b', 9)], [ab]));
-    fc.advance(TIMING.move);
+    fc.advance(TIMING.drawAfter);
     expect(engine.links.get('ab')?.progress).toBe(0);
     fc.advance(TIMING.draw);
     expect(engine.links.get('ab')?.progress).toBe(1);

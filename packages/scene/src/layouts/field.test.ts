@@ -221,6 +221,8 @@ describe('fieldScene', () => {
       const root = scene.marks.find((m) => m.id === ids.file(top.file))!;
       for (const [i, m] of marks.entries()) {
         expect(m.parent).toBe(root.id);
+        // Clearing the selection folds the fan before the root goes home.
+        expect(m.foldOnExit).toBe(true);
         expect(m.x).toBeGreaterThan(root.x);
         expect(m.r).toBeGreaterThan(0);
         expect(m.label).toBe(`${facets[i].name}  ${facets[i].value}`);

@@ -131,6 +131,32 @@ describe('planTransition: marks', () => {
     expect(t.duration).toBe(TIMING.exit);
   });
 
+  it('folds a fan into its root where it is now, before the root moves', () => {
+    const plan = planTransition(
+      scene([mark('file:root.ts', 10, 10)]),
+      live([
+        mark('file:root.ts', 500, 400),
+        mark('facet:churn', 700, 300, {
+          parent: 'file:root.ts',
+          foldOnExit: true,
+        }),
+      ]),
+    );
+    const fold = track(plan, 'facet:churn');
+    expect(fold).toMatchObject({ delay: 0, duration: TIMING.fold });
+    expect(fold.to).toMatchObject({ x: 500, y: 400, r: 0, alpha: 0 });
+    // The root waits for its fan to close.
+    expect(track(plan, 'file:root.ts').delay).toBe(TIMING.fold);
+  });
+
+  it('starts moving at once when nothing folds or retracts', () => {
+    const plan = planTransition(
+      scene([mark('file:root.ts', 10, 10)]),
+      live([mark('file:root.ts', 500, 400), mark('file:gone.ts', 1, 1)]),
+    );
+    expect(track(plan, 'file:root.ts').delay).toBe(0);
+  });
+
   it('shrinks in place when no ancestor survives', () => {
     const plan = planTransition(scene([]), live([mark('person:a', 30, 40)]));
     expect(track(plan, 'person:a').to).toMatchObject({
@@ -219,7 +245,7 @@ describe('planTransition: links', () => {
     expect(plan.links[0].duration).toBe(TIMING.retract / 2);
   });
 
-  it('draws new links after the move, 40 ms apart, in scene order', () => {
+  it('draws new links as the move settles, 40 ms apart, in scene order', () => {
     const plan = planTransition(
       scene(
         [a, b, c],
@@ -228,8 +254,8 @@ describe('planTransition: links', () => {
       live([a, b, c]),
     );
     expect(plan.links.map((l) => l.delay)).toEqual([
-      TIMING.move,
-      TIMING.move + TIMING.stagger,
+      TIMING.drawAfter,
+      TIMING.drawAfter + TIMING.stagger,
     ]);
     expect(plan.links[0].from.progress).toBe(0);
   });
@@ -332,7 +358,9 @@ describe('planTransition: duration', () => {
       scene([a, b], [link('person:a', 'person:b')]),
       live([a, b], [{ ...link('person:b', 'person:a'), progress: 1 }]),
     );
-    expect(plan.duration).toBe(TIMING.retract + TIMING.move + TIMING.draw);
+    expect(plan.duration).toBe(
+      TIMING.retract + Math.max(TIMING.move, TIMING.drawAfter + TIMING.draw),
+    );
   });
 
   it('is 0 for an empty scene over an empty screen', () => {

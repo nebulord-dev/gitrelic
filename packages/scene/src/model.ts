@@ -67,6 +67,12 @@ export interface Mark extends MarkGeom {
   paint: Paint;
   /** Overrides `parentOf(id)` for enter/exit motion. */
   parent?: EntityId;
+  /**
+   * Leaving, fold into its ancestor where that is now, before anything moves
+   * (a fan closing into its root), instead of into the ancestor's place in
+   * the next scene.
+   */
+  foldOnExit?: boolean;
   label?: string;
   /** Higher labels win when they collide. Defaults to 0. */
   labelPriority?: number;

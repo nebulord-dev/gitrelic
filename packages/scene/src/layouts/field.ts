@@ -384,6 +384,7 @@ function fanOut(
     r: DOT_R[p.tier] + 3,
     alpha: 0.6,
     parent: root,
+    foldOnExit: true,
     z: 5,
   });
   links.push({
@@ -413,6 +414,7 @@ function fanOut(
       r: FACET_R,
       alpha: 1,
       parent: root,
+      foldOnExit: true,
       label: `${f.name}  ${f.value}`,
       labelPriority: 2000 + facets.length - i,
       labelAnchor: 'right',
