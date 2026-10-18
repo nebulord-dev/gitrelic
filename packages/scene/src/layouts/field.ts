@@ -403,9 +403,10 @@ function fanOut(
   facets.forEach((f, i) => {
     const t = facets.length === 1 ? 0 : i / (facets.length - 1) - 0.5;
     const a = t * span;
-    // Keyed by the file too, so picking another file folds this fan into its
-    // root and grows the new one, rather than reusing these marks.
-    const id = `facet:${p.file}:${f.id}`;
+    // Keyed by facet, not by file, on purpose: picking another file while
+    // the fan is out keeps the spokes in place and only their readings
+    // change. Re-folding and re-growing the whole fan per pick felt needless.
+    const id = `facet:${f.id}`;
     marks.push({
       id,
       shape: 'dot',
@@ -424,7 +425,7 @@ function fanOut(
       tip: [f.name, f.value, f.hint],
     });
     links.push({
-      id: `facet-link:${p.file}:${f.id}`,
+      id: `facet-link:${f.id}`,
       source: root,
       target: id,
       curve: 'arc',

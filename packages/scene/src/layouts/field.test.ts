@@ -5,8 +5,7 @@ import { hotspotReport } from '../../test/hotspotReport';
 import { fileFacets } from '../hotspots/facets';
 import { hotspotPoints, hotspotScale } from '../hotspots/points';
 import { ids } from '../ids';
-import { checkScene, type Scene } from '../model';
-import { planTransition, type LiveState } from '../motion/plan';
+import { checkScene } from '../model';
 import { FIELD_CALLOUTS, FIELD_DOT_CAP, fieldScene } from './field';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -217,7 +216,7 @@ describe('fieldScene', () => {
       const scene = fanned();
       const marks = scene.marks.filter((m) => m.id.startsWith('facet:'));
       expect(marks.map((m) => m.id)).toEqual(
-        facets.map((f) => `facet:${top.file}:${f.id}`),
+        facets.map((f) => `facet:${f.id}`),
       );
       const root = scene.marks.find((m) => m.id === ids.file(top.file))!;
       for (const [i, m] of marks.entries()) {
@@ -259,45 +258,6 @@ describe('fieldScene', () => {
         viewport,
       );
       expect(unknown.marks.some((m) => m.id.startsWith('facet:'))).toBe(false);
-    });
-
-    it('folds the old fan and grows a new one when another file is picked', () => {
-      const other = points[1];
-      const b = fieldScene(
-        {
-          points,
-          scale,
-          focus: ids.file(other.file),
-          facets: fileFacets(other, report),
-        },
-        viewport,
-      );
-      const a = fanned();
-      const onScreen = (s: Scene): LiveState => ({
-        marks: new Map(s.marks.map((m) => [m.id, m])),
-        links: new Map(s.links.map((l) => [l.id, { ...l, progress: 1 }])),
-        guides: new Map(s.guides.map((g) => [g.id, g])),
-      });
-      const plan = planTransition(b, onScreen(a));
-      const facetTracks = plan.marks.filter((t) => t.id.startsWith('facet:'));
-      const aFacets = facetTracks.filter((t) =>
-        t.id.startsWith(`facet:${top.file}:`),
-      );
-      expect(aFacets.length).toBeGreaterThan(0);
-      for (const t of aFacets) {
-        expect(t.phase).toBe('exit');
-        expect(t.mark.foldOnExit).toBe(true);
-      }
-      for (const t of facetTracks.filter(
-        (t) => !t.id.startsWith(`facet:${top.file}:`),
-      ))
-        expect(t.phase).toBe('enter');
-      // No facet link is reused: A's retract, B's draw in.
-      const facetLinks = plan.links.filter((l) =>
-        l.id.startsWith('facet-link:'),
-      );
-      expect(facetLinks.length).toBeGreaterThan(0);
-      for (const l of facetLinks) expect(l.phase).not.toBe('update');
     });
   });
 });
