@@ -27,7 +27,7 @@
       <span>{span[0]}</span><span>{span[1]}</span>
     </div>
     <p class="m-0 text-[13px] text-soft">
-      {share ?? 'No commits in the window.'}
+      {share ?? 'No commits touch this selection.'}
     </p>
   {:else}
     <p class="m-0 text-[13px] text-muted">

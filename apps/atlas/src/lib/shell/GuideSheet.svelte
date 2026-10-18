@@ -78,7 +78,9 @@
   }
 
   function onWindowKey(e: KeyboardEvent) {
-    if (!open && pressed(e, '?')) {
+    // Not over another modal (the palette): one dialog at a time.
+    const modalOpen = document.querySelector('[aria-modal="true"]') !== null;
+    if (!open && !modalOpen && pressed(e, '?')) {
       e.preventDefault();
       open = true;
     }

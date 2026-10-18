@@ -217,7 +217,9 @@ export {
 
 export { startOfUtcWeek, WEEK_MS } from './time/week';
 export {
+  previousNamesOf,
   touchesEntity,
   weeklyActivity,
+  weeklyHits,
   type WeeklyActivity,
 } from './time/activity';

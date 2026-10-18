@@ -59,4 +59,14 @@ describe('GuideSheet', () => {
     await fireEvent.keyDown(focusable[0], { key: 'Tab', shiftKey: true });
     expect(document.activeElement).toBe(last);
   });
+
+  it('does not open over another modal', async () => {
+    const palette = document.createElement('div');
+    palette.setAttribute('aria-modal', 'true');
+    document.body.append(palette);
+    render(GuideSheet, {});
+    await fireEvent.keyDown(document.body, { key: '?', shiftKey: true });
+    expect(screen.queryByRole('dialog', { name: 'Guide' })).toBeNull();
+    palette.remove();
+  });
 });

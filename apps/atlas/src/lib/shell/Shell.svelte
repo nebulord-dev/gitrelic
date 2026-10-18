@@ -2,10 +2,14 @@
   import {
     buildEntityIndex,
     computeOutlierBadges,
+    entityKey,
+    entityKind,
     fromCommitIndex,
     PRESET_GROUPS,
+    previousNamesOf,
     touchesEntity,
     weeklyActivity,
+    weeklyHits,
     type CommitLike,
     type EntityEntry,
     type ThemeName,
@@ -50,8 +54,29 @@
       () => (historyFailed = true),
     );
   });
-  let touches = $derived(nav.selection ? touchesEntity(nav.selection) : null);
-  let activity = $derived(commits ? weeklyActivity(commits, touches) : null);
+  let touches = $derived.by(() => {
+    const id = nav.selection;
+    if (!id) return null;
+    // A renamed file keeps the history it made under its old paths.
+    const before =
+      entityKind(id) === 'file' ? previousNamesOf(entityKey(id), report) : [];
+    return touchesEntity(id, before);
+  });
+  // Weekly totals once; a selection change recomputes only its own weeks.
+  let series = $derived(commits ? weeklyActivity(commits) : null);
+  let activity = $derived(
+    commits && series
+      ? {
+          ...series,
+          hits: weeklyHits(
+            commits,
+            series.start,
+            series.totals.length,
+            touches,
+          ),
+        }
+      : null,
+  );
 
   let viewLabel = $derived(
     PRESET_GROUPS.find((g) => g.id === nav.view)?.label ?? '',

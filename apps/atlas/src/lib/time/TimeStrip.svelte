@@ -25,7 +25,7 @@
     const share = recentShare(activity);
     return share
       ? `Selection changed in ${activeWeeks(activity)} weeks · ${share}`
-      : 'The selection has no commits in this window';
+      : 'No commits touch this selection';
   });
 </script>
 
@@ -46,7 +46,7 @@
       {failed
         ? 'Commit history unavailable.'
         : activity
-          ? 'No commits in this window.'
+          ? 'No commits in this history.'
           : 'Loading history…'}
     </div>
   {/if}

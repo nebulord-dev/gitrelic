@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { ids } from '../ids';
-import { touchesEntity, weeklyActivity } from './activity';
+import { normalizeReport } from '../report/normalizeReport';
+import {
+  previousNamesOf,
+  touchesEntity,
+  weeklyActivity,
+  weeklyHits,
+} from './activity';
 import type { CommitLike } from '../commits/commitLike';
 
 // 2026-03-02 is a Monday.
@@ -51,5 +57,36 @@ describe('weeklyActivity', () => {
 
   it('is empty without commits', () => {
     expect(weeklyActivity([])).toEqual({ start: 0, totals: [], hits: [] });
+  });
+
+  it("follows a renamed file's history under its old paths", () => {
+    const r = normalizeReport({});
+    r.renameTracking.chains = [
+      {
+        currentPath: 'src/a.ts',
+        previousNames: ['lib/old-a.ts'],
+        renameCount: 1,
+      },
+    ];
+    const renamed = [commit(0, 'ann@x', ['lib/old-a.ts']), ...commits];
+    const names = previousNamesOf('src/a.ts', r);
+    expect(names).toEqual(['lib/old-a.ts']);
+    expect(
+      weeklyActivity(renamed, touchesEntity(ids.file('src/a.ts'), names)).hits,
+    ).toEqual([2, 0, 1]);
+    expect(previousNamesOf('other.ts', r)).toEqual([]);
+  });
+
+  it('recomputes only the hits over an existing series', () => {
+    const { start, totals } = weeklyActivity(commits);
+    expect(
+      weeklyHits(
+        commits,
+        start,
+        totals.length,
+        touchesEntity(ids.person('ann@x')),
+      ),
+    ).toEqual([1, 0, 1]);
+    expect(weeklyHits(commits, start, totals.length, null)).toEqual([0, 0, 0]);
   });
 });

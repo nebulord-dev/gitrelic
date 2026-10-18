@@ -51,7 +51,7 @@
 {#if sorted.length > 0}
   <Card eyebrow="Flagged by" {id}>
     <ul class="m-0 flex list-none flex-col p-0 text-[14px]">
-      {#each sorted as { row, entry } (row.label)}
+      {#each sorted as { row, entry } (`${row.label}:${row.lens ?? ''}`)}
         {@const value = row.tier ? TIER_CLASS[row.tier] : 'text-text'}
         <li class="border-t border-panel-border first:border-t-0">
           {#if entry?.atlas}

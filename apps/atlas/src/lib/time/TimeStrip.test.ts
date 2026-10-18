@@ -34,7 +34,7 @@ describe('TimeStrip', () => {
     });
     expect(
       screen.getByRole('img', {
-        name: 'The selection has no commits in this window',
+        name: 'No commits touch this selection',
       }),
     ).toBeTruthy();
   });
