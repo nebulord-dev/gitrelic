@@ -37,8 +37,15 @@ export class Nav {
   }
 
   /** Selects an entity, or clears the selection (replaces the history entry). */
+  /**
+   * Selects `id`, or clears with null. An id the index doesn't know is
+   * ignored and the current selection kept: a click on something not
+   * selectable (a bot's row, a cell:/week:/commit: mark until those kinds
+   * are indexed) must not throw away what the viewer had selected.
+   */
   select(id: EntityId | null): void {
-    this.selection = id !== null && this.index().get(id) ? id : null;
+    if (id !== null && !this.index().get(id)) return;
+    this.selection = id;
     this.write('replace');
   }
 

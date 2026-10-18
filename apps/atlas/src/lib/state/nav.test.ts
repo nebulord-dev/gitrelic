@@ -67,10 +67,14 @@ describe('Nav', () => {
     nav.destroy();
   });
 
-  it('refuses to select an unknown entity', () => {
+  it('refuses to select an unknown entity, keeping the current one', () => {
     const nav = new Nav(() => index);
     nav.select('person:mallory@evil.example');
     expect(nav.selection).toBeNull();
+    nav.select(ids.file('src/api.ts'));
+    nav.select('cell:2:14');
+    expect(nav.selection).toBe('file:src/api.ts');
+    expect(location.hash).toBe('#s=file%3Asrc%2Fapi.ts');
     nav.destroy();
   });
 

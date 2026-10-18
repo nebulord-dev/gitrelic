@@ -66,6 +66,28 @@ describe('Inspector', () => {
     expect(onselect).toHaveBeenCalledWith('person:alice@example.com');
   });
 
+  it('lists authors the index lacks as text, not buttons', () => {
+    const withBot = {
+      ...report,
+      busFactors: {
+        ...report.busFactors,
+        files: report.busFactors.files.map((f) =>
+          f.file === 'src/api.ts'
+            ? { ...f, authors: [...f.authors, 'ci-bot@example.com'] }
+            : f,
+        ),
+      },
+    } as GitrelicReport;
+    render(Inspector, {
+      report: withBot,
+      index: buildEntityIndex(withBot),
+      selection: ids.file('src/api.ts'),
+    });
+    expect(screen.getByText('ci-bot')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /ci-bot/ })).toBeNull();
+    expect(screen.getByRole('button', { name: /Alice/ })).toBeTruthy();
+  });
+
   it('shows a person, with focus areas that select what they name', async () => {
     const onselect = vi.fn();
     render(Inspector, {

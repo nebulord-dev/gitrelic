@@ -43,7 +43,7 @@ export const RULES: readonly Rule[] = [
     share: 0.05,
     min: 3,
     reason: (c, of) =>
-      `${c} critical hotspots (${pct(c, of)} of changed files)`,
+      `${c} critical hotspots (${pct(c, of)} of tracked files that changed)`,
   },
   {
     preset: 'cursed-files',

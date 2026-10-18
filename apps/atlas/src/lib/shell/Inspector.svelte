@@ -75,7 +75,7 @@
   {/if}
 
   {#if kind === 'file'}
-    <FileCard file={key} {report} {onselect} {onopen} />
+    <FileCard file={key} {report} {index} {onselect} {onopen} />
   {:else if kind === 'person'}
     <PersonCard email={key} {report} {index} {onselect} />
   {:else if kind === 'dir'}

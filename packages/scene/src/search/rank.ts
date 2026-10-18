@@ -15,7 +15,9 @@ const BOUNDARY = /[/._\-\s@:]/;
  * the upgrade if ranking ever needs it.
  */
 export function fuzzyScore(query: string, text: string): number | null {
-  const q = query.toLowerCase();
+  // Per character, keeping each one's first unit, like the text side below:
+  // 'İ' lowercases to 'i̇', whose combining dot could never match.
+  const q = [...query].map((c) => c.toLowerCase()[0]).join('');
   if (q.length === 0) return 0;
   let score = 0;
   let run = 0;
