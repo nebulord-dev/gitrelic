@@ -5,10 +5,15 @@
 // are named in a column beside the plot, with leaders to their dots, because
 // they crowd the top-right corner.
 //
+// Selecting a file fans it out: the plot slides into the left of the stage,
+// the file travels to a root beside it (a faint ring keeps its place in the
+// plot) and its facets fan out on an arc to the right, so the field stays
+// there to pick the next file from.
+//
 // Ticks, axis names, curve names and callouts are label-only card marks (the
 // canvas draws no text). Their ids — `tick:`, `axis:`, `curve-label:`, `callout:`,
-// `bin:` — aren't entity kinds, so the index never resolves them and clicking
-// one selects nothing.
+// `bin:`, and the fan's `facet:` and `home:` — aren't entity kinds, so the
+// index never resolves them and clicking one selects nothing.
 
 import { distinctNames } from '../format/distinctNames';
 import {
@@ -18,6 +23,7 @@ import {
   type HotspotPoint,
 } from '../hotspots/points';
 import { ids, type EntityId } from '../ids';
+import type { FileFacet } from '../hotspots/facets';
 import type { Guide, Link, Mark, Scene, Viewport } from '../model';
 
 const RAMP = ['--risk-0', '--risk-1', '--risk-2', '--risk-3'] as const;
@@ -25,6 +31,11 @@ const DOT_R = [2.5, 4, 5.5, 7.5] as const;
 /** Most files drawn as dots; the rest join the density. */
 export const FIELD_DOT_CAP = 400;
 export const FIELD_CALLOUTS = 8;
+/** The plot's right edge, as a share of the width: alone, and beside a fan. */
+const PLOT_RIGHT = 0.7;
+const PLOT_RIGHT_FANNED = 0.36;
+const ROOT_R = 12;
+const FACET_R = 5;
 const BINS_X = 24;
 const BINS_Y = 16;
 
@@ -67,13 +78,22 @@ export interface FieldInput {
   scale: number | null;
   /** Drawn as a dot even when it scores under 25. */
   focus?: EntityId | null;
+  /** The focused file's facets (fileFacets): given, the file fans them out. */
+  facets?: readonly FileFacet[];
 }
 
 export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
   const { points, scale } = input;
+  const focusFile = input.focus?.startsWith('file:')
+    ? input.focus.slice(5)
+    : null;
+  const focusPoint = focusFile
+    ? points.find((p) => p.file === focusFile)
+    : undefined;
+  const fan = focusPoint && input.facets?.length ? input.facets : null;
   const left = 80;
   const top = 48;
-  const right = viewport.width * 0.7;
+  const right = viewport.width * (fan ? PLOT_RIGHT_FANNED : PLOT_RIGHT);
   const bottom = viewport.height - 64;
   const colX = right + 40;
 
@@ -163,19 +183,18 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
   }
 
   // Dots: everything 25+ (hottest first, capped), plus the focused file.
-  const focusFile = input.focus?.startsWith('file:')
-    ? input.focus.slice(5)
-    : null;
   const dotted = new Set<string>();
   for (const p of points) {
     if (p.tier === 0 || dotted.size >= FIELD_DOT_CAP) break;
     dotted.add(p.file);
   }
-  if (focusFile && points.some((p) => p.file === focusFile))
-    dotted.add(focusFile);
+  if (focusPoint) dotted.add(focusPoint.file);
   const names = distinctNames([...dotted]);
   const nameOf = (file: string) => names.get(file) ?? baseName(file);
-  const callouts = points.filter((p) => p.tier > 0).slice(0, FIELD_CALLOUTS);
+  // Beside a fan the plot is too narrow for the column.
+  const callouts = fan
+    ? []
+    : points.filter((p) => p.tier > 0).slice(0, FIELD_CALLOUTS);
   const calledOut = new Set(callouts.map((p) => p.file));
 
   // Density: the files not drawn as dots, binned in log space.
@@ -251,7 +270,7 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
   }
 
   for (const p of points) {
-    if (!dotted.has(p.file)) continue;
+    if (!dotted.has(p.file) || (fan && p === focusPoint)) continue;
     marks.push({
       id: ids.file(p.file),
       shape: 'dot',
@@ -299,6 +318,19 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
     });
   });
 
+  if (fan && focusPoint) {
+    fanOut(
+      focusPoint,
+      fan,
+      nameOf(focusPoint.file),
+      X,
+      Y,
+      viewport,
+      marks,
+      links,
+    );
+  }
+
   return {
     marks,
     links,
@@ -306,6 +338,97 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
     bounds: { x: 0, y: 0, w: viewport.width, h: viewport.height },
     standIns,
   };
+}
+
+/**
+ * The fan: the file at a root right of the plot, a faint ring and a leader
+ * back to where it sits in the plot, and its facets on an arc beyond the
+ * root, growing out of it.
+ */
+function fanOut(
+  p: HotspotPoint,
+  facets: readonly FileFacet[],
+  name: string,
+  X: (c: number) => number,
+  Y: (l: number) => number,
+  viewport: Viewport,
+  marks: Mark[],
+  links: Link[],
+): void {
+  const root = ids.file(p.file);
+  const rx = viewport.width * 0.47;
+  const ry = viewport.height / 2;
+  marks.push({
+    id: root,
+    shape: 'dot',
+    paint: RAMP[p.tier],
+    x: rx,
+    y: ry,
+    ...zero,
+    r: ROOT_R,
+    alpha: 1,
+    label: name,
+    labelPriority: 3000,
+    labelAnchor: 'above',
+    z: 6,
+    tip: hotspotTip(p, name),
+  });
+  const home = `home:${p.file}`;
+  marks.push({
+    id: home,
+    shape: 'ring',
+    paint: RAMP[p.tier],
+    x: X(p.commits),
+    y: Y(p.lines),
+    ...zero,
+    r: DOT_R[p.tier] + 3,
+    alpha: 0.6,
+    parent: root,
+    z: 5,
+  });
+  links.push({
+    id: `home-leader:${p.file}`,
+    source: root,
+    target: home,
+    curve: 'straight',
+    width: 1,
+    paint: '--link',
+    alpha: 0.5,
+  });
+
+  // Pointing right, spread wider the more facets there are.
+  const radius = Math.min(viewport.width, viewport.height) * 0.32;
+  const span = Math.min(Math.PI * 0.8, 0.3 * (facets.length - 1));
+  facets.forEach((f, i) => {
+    const t = facets.length === 1 ? 0 : i / (facets.length - 1) - 0.5;
+    const a = t * span;
+    const id = `facet:${f.id}`;
+    marks.push({
+      id,
+      shape: 'dot',
+      paint: f.hot ? '--accent' : '--soft',
+      x: rx + radius * Math.cos(a),
+      y: ry + radius * Math.sin(a),
+      ...zero,
+      r: FACET_R,
+      alpha: 1,
+      parent: root,
+      label: `${f.name}  ${f.value}`,
+      labelPriority: 2000 + facets.length - i,
+      labelAnchor: 'right',
+      z: 5,
+      tip: [f.name, f.value, f.hint],
+    });
+    links.push({
+      id: `facet-link:${f.id}`,
+      source: root,
+      target: id,
+      curve: 'arc',
+      width: 1.2,
+      paint: f.hot ? '--link-hot' : '--link',
+      alpha: 0.7,
+    });
+  });
 }
 
 function card(

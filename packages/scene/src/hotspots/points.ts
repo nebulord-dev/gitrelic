@@ -13,6 +13,10 @@ import type { GitrelicReport } from '@gitrelic/core';
 export const HOTSPOT_TIERS = [25, 50, 75] as const;
 export type HotspotTier = 0 | 1 | 2 | 3;
 
+/** "Large" and "small" for the two kinds of heat, in lines. */
+export const LARGE_FILE = 1000;
+export const SMALL_FILE = 300;
+
 export interface HotspotPoint {
   file: string;
   commits: number;

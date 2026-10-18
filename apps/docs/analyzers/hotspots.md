@@ -14,6 +14,7 @@ The idea comes from Adam Tornhill's *Your Code as a Crime Scene*: change frequen
 - **The field** (Atlas) — every file placed by commits (across) and lines (up), both on log scales. The coloured curves are equal-score lines at 25, 50 and 75, so anything past the 75 curve is critical. The hottest files are named in a column beside the plot.
 - **By package** (Atlas, corner toggle) — each package is a circle, each dot one of its files, hottest at the centre. It answers *where* heat concentrates.
 - **The inspector** — with nothing selected, the headline counts, the findings, how files spread across the tiers, and the top five. Click any dot for that file's full profile.
+- **Selecting a file** (Atlas) — the field slides left and the file travels out of it to fan out its facets: churn, size, owners, what it changes with, trend, blast radius, rewrite ratio, root-cause clusters and when it was last touched. The ones worth a second look are drawn in the accent. A faint ring marks where it sits in the field, and any other dot is still a click away.
 
 ## How the score is computed
 
@@ -54,6 +55,24 @@ The field puts the two inputs on the axes instead of hiding them inside one numb
 Because `score ≈ commits × log₂(lines) ÷ k`, a file scoring S sits on the curve `commits = S × k ÷ log₂(lines)`. Those are the coloured curves. They bend because a bigger file needs fewer commits to reach the same score.
 
 On React (12 months to `eb8feb7109`), the field separates two kinds of heat. `ReactFizzServer.js` (33 commits, 6,656 lines), `renderer.js` and `ReactFiberConfigDOM.js` are large engine files that keep changing. `ReactFeatureFlags.js` scores 56 on 282 lines, because it changed in 29 commits along with its six forks.
+
+### A selected file's facets
+
+Each facet is another analyzer's reading of the same file, shown only when that analyzer reports it. A facet is drawn in the accent when:
+
+| Facet | Hot when |
+|---|---|
+| Size | 1,000 lines or more |
+| Owners | bus factor rates it critical |
+| Changes with | its top partner shares at least half of the rarer file's commits |
+| Trend | churn is accelerating |
+| Blast radius | blast score over 50 |
+| Rewrite ratio | rewrite score 70 or more (core's "high rewrite") |
+| Root causes | it sits in two or more hotspot clusters |
+
+Churn and last touched are never drawn hot: the file's score already says how busy it is.
+
+On React, `ReactFizzServer.js` fans out hot on size (6,656 lines), on what it changes with (`ReactDOMFizzServer-test.js`, 14 shared commits), on trend (accelerating, 21 of its 33 commits in the recent half) and on root causes (in 11 of 37 clusters).
 
 ## By package
 

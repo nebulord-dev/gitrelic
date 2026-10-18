@@ -40,6 +40,15 @@ describe('hotspotsView', () => {
     for (const m of field.marks.filter((m) => m.id.startsWith('file:')))
       expect(inPkgs.has(m.id)).toBe(true);
   });
+
+  it('fans out a selected file in the field', () => {
+    const focus = ids.file('src/helpers.ts');
+    const field = fieldLayout.build({ report, commits: null, focus }, viewport);
+    expect(field.marks.some((m) => m.id === 'facet:churn')).toBe(true);
+    // A person (or nothing) selected fans nothing.
+    const plain = fieldLayout.build({ report, commits: null }, viewport);
+    expect(plain.marks.some((m) => m.id.startsWith('facet:'))).toBe(false);
+  });
 });
 
 describe('hotspotFindings', () => {
