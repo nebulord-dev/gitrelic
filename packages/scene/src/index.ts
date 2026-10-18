@@ -105,13 +105,15 @@ export {
 } from './entities';
 export { fileFacts, type FactTier, type FileFact } from './inspect/fileFacts';
 export { fileMentions } from './inspect/fileMentions';
+export { dirFacts } from './inspect/dirFacts';
 export {
-  dirFacts,
   fileContributors,
+  type FileContributor,
+} from './inspect/fileContributors';
+export {
   personFacts,
   reportNow,
   STRESS_WARNING,
-  type FileContributor,
   type PersonFacts,
 } from './inspect/personFacts';
 export { fuzzyScore, rankEntities, type Ranked } from './search/rank';

@@ -1,12 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import reportJson from '../../test/fixtures/report.small.json';
-import {
-  dirFacts,
-  fileContributors,
-  personFacts,
-  reportNow,
-} from './personFacts';
+import { personFacts, reportNow } from './personFacts';
 import type { GitrelicReport } from '@gitrelic/core';
 
 const report = reportJson as unknown as GitrelicReport;
@@ -97,25 +92,5 @@ describe('personFacts', () => {
 
   it('returns null for someone not in the report', () => {
     expect(personFacts('nobody@example.com', report)).toBeNull();
-  });
-});
-
-describe('fileContributors', () => {
-  it('lists authors with the dominant share', () => {
-    expect(fileContributors('src/api.ts', report)).toEqual([
-      { email: 'alice@example.com', name: 'Alice', percent: 100 },
-    ]);
-    expect(fileContributors('nope.ts', report)).toEqual([]);
-  });
-});
-
-describe('dirFacts', () => {
-  it('sums a directory without counting lookalike siblings', () => {
-    const rows = Object.fromEntries(
-      dirFacts('src', report).map((r) => [r.label, r.value]),
-    );
-    expect(rows.Files).toBe('7');
-    const lookalike = dirFacts('sr', report);
-    expect(lookalike.find((r) => r.label === 'Files')?.value).toBe('0');
   });
 });
