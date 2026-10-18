@@ -18,6 +18,9 @@ export class TooltipLayer {
   private card: HTMLDivElement;
   private shownFor: EntityId | null = null;
   private shownText = '';
+  /** The card's size, measured once per change of text: reading it every
+   * frame would force a layout after the labels' writes, mid-animation. */
+  private size: { w: number; h: number } | null = null;
 
   constructor(host: HTMLElement) {
     this.card = document.createElement('div');
@@ -56,8 +59,11 @@ export class TooltipLayer {
       );
       this.shownFor = id;
       this.shownText = text;
+      this.size = null;
     }
     this.card.hidden = false;
+    // Measured visible: a hidden card has no size.
+    this.size ??= { w: this.card.offsetWidth, h: this.card.offsetHeight };
 
     const [sx, sy] = worldToScreen(view, store.x[i], store.y[i]);
     const edge = (store.r[i] || store.w[i] / 2) * view.scale;
@@ -66,8 +72,8 @@ export class TooltipLayer {
       sx,
       sy,
       edge,
-      this.card.offsetWidth,
-      this.card.offsetHeight,
+      this.size.w,
+      this.size.h,
       screen,
     );
     this.card.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;

@@ -81,4 +81,23 @@ describe('TooltipLayer', () => {
     const [, y] = placeTip('above', 400, 580, 10, 200, 60, scr);
     expect(y).toBeLessThanOrEqual(600 - 60 - 8);
   });
+
+  it('measures the card once per change of text, not every frame', () => {
+    const host = document.createElement('div');
+    const layer = new TooltipLayer(host);
+    const store = new MarkStore();
+    put(store, mark('file:a.ts', ['a.ts']));
+    const card = host.querySelector('.atlas-tip') as HTMLElement;
+    let reads = 0;
+    Object.defineProperty(card, 'offsetWidth', {
+      get: () => (reads++, 120),
+    });
+    layer.update(store, IDENTITY, screen, 'file:a.ts');
+    layer.update(store, IDENTITY, screen, 'file:a.ts');
+    layer.update(store, { ...IDENTITY, tx: 30 }, screen, 'file:a.ts');
+    expect(reads).toBe(1);
+    put(store, mark('file:a.ts', ['a.ts', 'new line']));
+    layer.update(store, IDENTITY, screen, 'file:a.ts');
+    expect(reads).toBe(2);
+  });
 });

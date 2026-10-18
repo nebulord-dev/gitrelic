@@ -262,7 +262,10 @@ export class AtlasStage {
 
   /**
    * Hovers `id` from outside the canvas (a detail-table row): its label is
-   * pinned and its tooltip shown, as if the pointer were on it.
+   * pinned and its tooltip shown, as if the pointer were on it. It shares
+   * one slot with the pointer's hover — the pointer can't be on a row and
+   * a mark at once — but leaves the cursor alone and doesn't report back
+   * through `onHover`, since the caller already knows.
    */
   hover(id: EntityId | null): void {
     if (this.destroyed || id === this.hovered) return;

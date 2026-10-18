@@ -164,6 +164,16 @@
   );
   // A table row under the pointer lights its mark on the stage.
   let rowHover = $state<EntityId | null>(null);
+  // However the drawer goes away (T, a lens without a table), its rows go
+  // with it, and an unmounted row never fires mouseleave: let go of the
+  // highlight here. A lens without a table also closes it, so coming back
+  // doesn't reopen it unasked.
+  $effect(() => {
+    if (!lensView?.table) tableOpen = false;
+  });
+  $effect(() => {
+    if (!lensTable) rowHover = null;
+  });
   function onKey(e: KeyboardEvent) {
     // A modal (the palette, the guide) owns the keyboard while it's open.
     if (document.querySelector('[aria-modal="true"]')) return;
