@@ -403,7 +403,9 @@ function fanOut(
   facets.forEach((f, i) => {
     const t = facets.length === 1 ? 0 : i / (facets.length - 1) - 0.5;
     const a = t * span;
-    const id = `facet:${f.id}`;
+    // Keyed by the file too, so picking another file folds this fan into its
+    // root and grows the new one, rather than reusing these marks.
+    const id = `facet:${p.file}:${f.id}`;
     marks.push({
       id,
       shape: 'dot',
@@ -422,7 +424,7 @@ function fanOut(
       tip: [f.name, f.value, f.hint],
     });
     links.push({
-      id: `facet-link:${f.id}`,
+      id: `facet-link:${p.file}:${f.id}`,
       source: root,
       target: id,
       curve: 'arc',
