@@ -304,16 +304,18 @@ jobs:
         # literal strings — no untrusted event data is interpolated.
         run: |
           cd /tmp/smoke
-          if [ ! -f node_modules/gitrelic/dist/web/index.html ]; then
-            echo "dist/web/index.html is missing from the installed tarball"
-            exit 1
-          fi
-          echo "OK: dist/web/index.html present"
+          for ui in web atlas; do
+            if [ ! -f "node_modules/gitrelic/dist/$ui/index.html" ]; then
+              echo "dist/$ui/index.html is missing from the installed tarball"
+              exit 1
+            fi
+            echo "OK: dist/$ui/index.html present"
+          done
 
           ./node_modules/.bin/gitrelic \
             --path "$GITHUB_WORKSPACE" \
             --since "1 month ago" \
-            --web > web.log 2>&1 &
+            --web --no-open > web.log 2>&1 &
           CLI_PID=$!
 
           # Wait for the server to come up and extract the port from the
@@ -361,3 +363,50 @@ jobs:
             exit 1
           fi
           echo "OK: --web served dashboard HTML + valid report JSON"
+
+      - name: Verify --ui atlas serves both dashboards from the installed tarball
+        # Atlas at / and classic under /classic/, from the same server. The
+        # classic check fetches one of its scripts through the relative base,
+        # which is what breaks if apps/web stops building with base: './'.
+        # No untrusted event data is interpolated.
+        run: |
+          cd /tmp/smoke
+          ./node_modules/.bin/gitrelic \
+            --path "$GITHUB_WORKSPACE" \
+            --since "1 month ago" \
+            --ui atlas --no-open > atlas.log 2>&1 &
+          CLI_PID=$!
+
+          PORT=""
+          for i in $(seq 1 30); do
+            PORT=$(grep -oP 'GITRELIC_PORT=\K[0-9]+' atlas.log | head -1)
+            if [ -n "$PORT" ] && curl -sf -o /dev/null "http://localhost:$PORT/"; then
+              break
+            fi
+            PORT=""
+            sleep 1
+          done
+          if [ -z "$PORT" ]; then
+            echo "❌ --ui atlas never came up"
+            cat atlas.log
+            kill "$CLI_PID" 2>/dev/null || true
+            exit 1
+          fi
+
+          fail() { echo "❌ $1"; cat atlas.log; kill "$CLI_PID" 2>/dev/null || true; exit 1; }
+          curl -sf "http://localhost:$PORT/" | grep -q "<title>Gitrelic Atlas</title>" \
+            || fail "GET / is not the Atlas shell"
+          curl -sf "http://localhost:$PORT/classic/" > /tmp/classic.html \
+            || fail "GET /classic/ failed"
+          SCRIPT=$(grep -oP 'src="\./\Kassets/[^"]+\.js' /tmp/classic.html | head -1)
+          [ -n "$SCRIPT" ] || fail "classic index has no relative script tag"
+          curl -sf -o /dev/null "http://localhost:$PORT/classic/$SCRIPT" \
+            || fail "classic script /classic/$SCRIPT did not load"
+          curl -sf "http://localhost:$PORT/gitrelic-report.lite.json" \
+            | node -e 'const r=JSON.parse(require("fs").readFileSync(0,"utf8")); if (r.commits.length) process.exit(1)' \
+            || fail "lite report missing or has commits"
+          curl -sf -o /dev/null "http://localhost:$PORT/gitrelic-commits.json" \
+            || fail "commit index missing"
+
+          kill "$CLI_PID" 2>/dev/null || true
+          echo "OK: --ui atlas served Atlas, classic and both data endpoints"

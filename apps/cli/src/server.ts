@@ -50,10 +50,20 @@ const BASE_HEADERS = {
   'Referrer-Policy': 'no-referrer',
 };
 
+export interface DashboardMount {
+  /** URL prefix the dashboard is served under: `/` or `/<name>/`. */
+  prefix: string;
+  /** Absolute path to the built dashboard (contains index.html). */
+  dist: string;
+}
+
 export interface DashboardServerOptions {
   report: GitrelicReport;
-  /** Absolute path to the built dashboard (contains index.html). */
-  webDist: string;
+  /**
+   * Dashboards by URL prefix; the longest matching prefix serves a request.
+   * The JSON endpoints sit at the root whatever the mounts are.
+   */
+  mounts: DashboardMount[];
 }
 
 /** Only requests addressed to this machine's loopback, on our port, are served. */
@@ -64,12 +74,12 @@ export function isAllowedHost(host: string | undefined, port: number): boolean {
 }
 
 /**
- * Maps a URL pathname to a file under `webDist`, or null when the path can't
+ * Maps a URL pathname to a file under `dist`, or null when the path can't
  * be safely served. Each segment is decoded and must be a plain filename, so
  * encoded traversal (`%2e%2e`, `%2f`) and null bytes never reach the fs.
  */
 export function resolveStaticPath(
-  webDist: string,
+  dist: string,
   pathname: string,
 ): string | null {
   let segments: string[];
@@ -92,10 +102,10 @@ export function resolveStaticPath(
       return null;
     }
   }
-  const candidate = path.join(webDist, ...segments);
+  const candidate = path.join(dist, ...segments);
   // Defense in depth: the checks above should make this unreachable.
-  const boundary = webDist.endsWith(path.sep) ? webDist : webDist + path.sep;
-  if (candidate !== webDist && !candidate.startsWith(boundary)) return null;
+  const boundary = dist.endsWith(path.sep) ? dist : dist + path.sep;
+  if (candidate !== dist && !candidate.startsWith(boundary)) return null;
   return candidate;
 }
 
@@ -147,12 +157,33 @@ function acceptsGzip(req: IncomingMessage): boolean {
   return /\bgzip\b/.test(String(req.headers['accept-encoding'] ?? ''));
 }
 
+/** The mount serving `pathname`, by longest prefix. */
+export function findMount(
+  mounts: DashboardMount[],
+  pathname: string,
+): DashboardMount | undefined {
+  let best: DashboardMount | undefined;
+  for (const mount of mounts) {
+    if (
+      pathname.startsWith(mount.prefix) &&
+      mount.prefix.length > (best?.prefix.length ?? -1)
+    ) {
+      best = mount;
+    }
+  }
+  return best;
+}
+
 export function createDashboardHandler({
   report,
-  webDist,
+  mounts,
 }: DashboardServerOptions) {
+  for (const { prefix } of mounts) {
+    if (!prefix.startsWith('/') || !prefix.endsWith('/')) {
+      throw new Error(`mount prefix must start and end with "/": ${prefix}`);
+    }
+  }
   const jsonFor = jsonEndpoints(report);
-  const indexPath = path.join(webDist, 'index.html');
 
   return (req: IncomingMessage, res: ServerResponse): void => {
     try {
@@ -194,7 +225,29 @@ export function createDashboardHandler({
         return;
       }
 
-      const candidate = resolveStaticPath(webDist, pathname);
+      // `/classic` without its slash would resolve the dashboard's relative
+      // asset URLs against `/`. Send the browser to the real mount point.
+      const bare = mounts.find((m) => m.prefix === `${pathname}/`);
+      if (bare && bare.prefix !== '/') {
+        send(req, res, 308, { Location: bare.prefix });
+        return;
+      }
+
+      const mount = findMount(mounts, pathname);
+      if (!mount) {
+        send(
+          req,
+          res,
+          404,
+          { 'Content-Type': 'text/plain; charset=utf-8' },
+          'Not found',
+        );
+        return;
+      }
+      const candidate = resolveStaticPath(
+        mount.dist,
+        pathname.slice(mount.prefix.length),
+      );
       if (candidate === null) {
         send(req, res, 400, {});
         return;
@@ -226,7 +279,7 @@ export function createDashboardHandler({
         res,
         200,
         { 'Content-Type': MIME_TYPES['.html'] },
-        readFileSync(indexPath),
+        readFileSync(path.join(mount.dist, 'index.html')),
       );
     } catch (err) {
       process.stderr.write(

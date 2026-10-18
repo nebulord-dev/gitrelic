@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   COMMITS_PATH,
   createDashboardServer,
+  findMount,
   LITE_REPORT_PATH,
   isAllowedHost,
   listenOnFreePort,
@@ -110,7 +111,10 @@ beforeAll(async () => {
   writeFileSync(path.join(webDist, 'assets', 'mod.mjs'), 'export {}');
   writeFileSync(path.join(webDist, 'favicon.ico'), 'ico');
 
-  server = createDashboardServer({ report, webDist });
+  server = createDashboardServer({
+    report,
+    mounts: [{ prefix: '/', dist: webDist }],
+  });
   port = await listenOnFreePort(server, 0);
 });
 
@@ -246,6 +250,114 @@ describe('data endpoints', () => {
   it('keeps the classic report complete', async () => {
     const full = JSON.parse((await hit(port, REPORT_PATH)).body);
     expect(full.commits).toHaveLength(2);
+  });
+});
+
+// --ui atlas: Atlas at the root, classic under /classic/.
+describe('two dashboards', () => {
+  let atlasDist = '';
+  let classicDist = '';
+  let dual: Server;
+  let dualPort = 0;
+
+  beforeAll(async () => {
+    atlasDist = mkdtempSync(path.join(tmpdir(), 'gitrelic-atlas-'));
+    writeFileSync(path.join(atlasDist, 'index.html'), '<p>atlas</p>');
+    mkdirSync(path.join(atlasDist, 'assets'));
+    writeFileSync(path.join(atlasDist, 'assets', 'atlas.js'), 'atlas()');
+    classicDist = mkdtempSync(path.join(tmpdir(), 'gitrelic-classic-'));
+    writeFileSync(path.join(classicDist, 'index.html'), '<p>classic</p>');
+    mkdirSync(path.join(classicDist, 'assets'));
+    writeFileSync(path.join(classicDist, 'assets', 'app.js'), 'classic()');
+
+    dual = createDashboardServer({
+      report,
+      mounts: [
+        { prefix: '/', dist: atlasDist },
+        { prefix: '/classic/', dist: classicDist },
+      ],
+    });
+    dualPort = await listenOnFreePort(dual, 0);
+  });
+
+  afterAll(async () => {
+    await new Promise<void>((r) => dual.close(() => r()));
+    rmSync(atlasDist, { recursive: true, force: true });
+    rmSync(classicDist, { recursive: true, force: true });
+  });
+
+  it('serves Atlas at the root and classic under /classic/', async () => {
+    expect((await hit(dualPort, '/')).body).toBe('<p>atlas</p>');
+    expect((await hit(dualPort, '/assets/atlas.js')).body).toBe('atlas()');
+    expect((await hit(dualPort, '/classic/')).body).toBe('<p>classic</p>');
+    expect((await hit(dualPort, '/classic/assets/app.js')).body).toBe(
+      'classic()',
+    );
+  });
+
+  it('keeps each dashboard to its own files', async () => {
+    expect((await hit(dualPort, '/assets/app.js')).status).toBe(404);
+    expect((await hit(dualPort, '/classic/assets/atlas.js')).status).toBe(404);
+  });
+
+  it('redirects /classic to /classic/ so relative assets resolve', async () => {
+    const res = await hit(dualPort, '/classic?x=1');
+    expect(res.status).toBe(308);
+    expect(res.headers.location).toBe('/classic/');
+  });
+
+  it("falls back to each mount's own shell", async () => {
+    expect((await hit(dualPort, '/some/route')).body).toBe('<p>atlas</p>');
+    expect((await hit(dualPort, '/classic/some/route')).body).toBe(
+      '<p>classic</p>',
+    );
+  });
+
+  it('serves the JSON endpoints at the root for both', async () => {
+    for (const p of [REPORT_PATH, LITE_REPORT_PATH, COMMITS_PATH]) {
+      expect((await hit(dualPort, p)).status).toBe(200);
+    }
+  });
+
+  it('never serves files outside a mount', async () => {
+    // Encoded separators survive URL parsing and are refused per segment.
+    for (const p of ['/classic/..%2fassets%2fatlas.js', '/classic/%2e%2e%2f']) {
+      expect((await hit(dualPort, p)).status).toBe(400);
+    }
+    // Whole `%2e%2e` segments are collapsed by the URL parser before routing,
+    // so this is just `/etc/passwd`: a client route on the root mount.
+    const dotted = await hit(dualPort, '/classic/%2e%2e/%2e%2e/etc/passwd');
+    expect(dotted.body).toBe('<p>atlas</p>');
+  });
+});
+
+describe('findMount', () => {
+  const mounts = [
+    { prefix: '/', dist: 'a' },
+    { prefix: '/classic/', dist: 'c' },
+  ];
+
+  it('picks the longest matching prefix, whatever the order', () => {
+    expect(findMount(mounts, '/classic/x.js')?.dist).toBe('c');
+    expect(findMount([...mounts].reverse(), '/classic/x.js')?.dist).toBe('c');
+    expect(findMount(mounts, '/classical')?.dist).toBe('a');
+  });
+
+  it('finds nothing when no prefix matches', () => {
+    expect(
+      findMount([{ prefix: '/classic/', dist: 'c' }], '/'),
+    ).toBeUndefined();
+  });
+});
+
+describe('createDashboardServer', () => {
+  it('rejects a mount prefix without both slashes', () => {
+    expect(() =>
+      createDashboardServer({
+        report,
+        mounts: [{ prefix: '/classic', dist: 'c' }],
+      }),
+    ).toThrow(/must start and end/);
   });
 });
 

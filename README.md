@@ -56,6 +56,12 @@ gitrelic --path ~/projects/my-app
 # Open web dashboard
 gitrelic --path ~/projects/my-app --web
 
+# Serve the dashboard without opening a browser (SSH, containers)
+gitrelic --path ~/projects/my-app --web --no-open
+
+# Preview the new Atlas dashboard (work in progress; classic stays at /classic/)
+gitrelic --path ~/projects/my-app --ui atlas
+
 # Analyze only the last 6 months
 gitrelic --path ~/projects/my-app --since "6 months ago"
 

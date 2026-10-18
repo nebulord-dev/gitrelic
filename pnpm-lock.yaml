@@ -162,6 +162,9 @@ importers:
         specifier: ^19.2.5
         version: 19.2.5
     devDependencies:
+      '@gitrelic/atlas':
+        specifier: workspace:*
+        version: link:../atlas
       '@gitrelic/core':
         specifier: workspace:*
         version: link:../../packages/core
