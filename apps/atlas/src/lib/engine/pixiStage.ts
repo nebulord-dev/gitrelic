@@ -1,7 +1,8 @@
 // The WebGL renderer. Never rebuilds per-mark display objects per frame:
 // marks are particles in one ParticleContainer (one texture atlas, so one
 // draw call), links are one mesh with per-vertex colour, and arcs and
-// guides are a Graphics each, re-tessellated only on frames marked dirty.
+// guides are a Graphics each, re-tessellated only on frames marked dirty
+// (guides also on zoom, to stay hairlines).
 // Cards and text are DOM overlays, not drawn here.
 
 import { resolvePaint, type Rgba } from '@gitrelic/scene';
@@ -146,9 +147,9 @@ export class PixiStage implements StageRenderer {
 
     if (frame.dirty) {
       this.drawArcs(store);
-      this.drawGuides(frame);
       this.drawLinks(frame);
     }
+    if (frame.dirty || frame.guidesDirty) this.drawGuides(frame);
     app.render();
   }
 

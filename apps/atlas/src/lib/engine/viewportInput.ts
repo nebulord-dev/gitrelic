@@ -89,6 +89,12 @@ export function attachViewportInput(
       opts.click?.(...local(e));
   };
 
+  // The browser took the gesture (or the pointer vanished): forget it, and
+  // never treat it as a click on something the user didn't tap.
+  const onCancel = (e: PointerEvent) => {
+    pointers.delete(e.pointerId);
+  };
+
   const onLeave = () => {
     if (pointers.size === 0) opts.leave?.();
   };
@@ -113,7 +119,7 @@ export function attachViewportInput(
   el.addEventListener('pointerdown', onDown);
   el.addEventListener('pointermove', onMove);
   el.addEventListener('pointerup', onUp);
-  el.addEventListener('pointercancel', onUp);
+  el.addEventListener('pointercancel', onCancel);
   el.addEventListener('pointerleave', onLeave);
   el.addEventListener('dblclick', onDblClick);
   el.addEventListener('keydown', onKey);
@@ -122,7 +128,7 @@ export function attachViewportInput(
     el.removeEventListener('pointerdown', onDown);
     el.removeEventListener('pointermove', onMove);
     el.removeEventListener('pointerup', onUp);
-    el.removeEventListener('pointercancel', onUp);
+    el.removeEventListener('pointercancel', onCancel);
     el.removeEventListener('pointerleave', onLeave);
     el.removeEventListener('dblclick', onDblClick);
     el.removeEventListener('keydown', onKey);

@@ -180,10 +180,11 @@ export class TweenEngine {
       if (run?.exit) continue;
       const to = resolvePaint(store.marks[i].paint, palette);
       if (run) {
-        // Mid-transition: retarget the running colour tween instead.
+        // Mid-transition: the plan stops tweening this mark's colour and a
+        // repaint run takes over from the colour shown right now, so there's
+        // no jump. Its geometry carries on with the plan.
+        run.recolor = false;
         run.toColor = to;
-        run.recolor = !sameColor(run.fromColor, to);
-        continue;
       }
       this.colors.push({ id: store.marks[i].id, from: store.color(i), to });
     }

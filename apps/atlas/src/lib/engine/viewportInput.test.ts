@@ -68,6 +68,14 @@ describe('attachViewportInput', () => {
     expect(opts.click).toHaveBeenCalledWith(41, 30);
   });
 
+  it('never treats a cancelled gesture as a click', () => {
+    const { pointer, opts } = setup();
+    pointer('pointerdown', 1, 50, 50);
+    pointer('pointercancel', 1, 50, 50);
+    pointer('pointerup', 1, 50, 50);
+    expect(opts.click).not.toHaveBeenCalled();
+  });
+
   it('pinches to zoom with two pointers', () => {
     const { pointer, view, opts } = setup();
     pointer('pointerdown', 1, 100, 100);

@@ -18,6 +18,11 @@ export interface StageFrame {
    * false, arcs, links and guides keep their last tessellation.
    */
   dirty: boolean;
+  /**
+   * Guides are drawn as screen hairlines (width 1 / scale), so they also
+   * rebuild whenever the zoom changes, even when nothing else did.
+   */
+  guidesDirty: boolean;
 }
 
 export interface StageRenderer {

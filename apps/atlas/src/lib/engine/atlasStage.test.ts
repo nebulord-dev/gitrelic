@@ -9,6 +9,7 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AtlasStage } from './atlasStage';
+import { HitTester } from './hitTest';
 import type { StageFrame, StageRenderer } from './stageRenderer';
 import type { FrameClock } from './tweenEngine';
 
@@ -236,6 +237,106 @@ describe('AtlasStage', () => {
     settle(fc);
     expect(stage!.store.color(0)).toEqual(red);
     expect(frames.at(-1)?.glow).toBe(true);
+  });
+
+  it('rebuilds guides on zoom (they are hairlines) but not on pan', async () => {
+    const { stage, fc, frames, host } = await setup();
+    stage!.show(scene(dot('person:a', 100, 100)));
+    settle(fc);
+    host.dispatchEvent(
+      new PointerEvent('pointerdown', { pointerId: 1, clientX: 0, clientY: 0 }),
+    );
+    host.dispatchEvent(
+      new PointerEvent('pointermove', {
+        pointerId: 1,
+        clientX: 30,
+        clientY: 0,
+      }),
+    );
+    host.dispatchEvent(
+      new PointerEvent('pointerup', { pointerId: 1, clientX: 30, clientY: 0 }),
+    );
+    fc.frame();
+    expect(frames.at(-1)).toMatchObject({ dirty: false, guidesDirty: false });
+    host.dispatchEvent(new KeyboardEvent('keydown', { key: '+' }));
+    fc.frame();
+    expect(frames.at(-1)).toMatchObject({ dirty: false, guidesDirty: true });
+  });
+
+  it('refits on resize until the viewer pans or zooms', async () => {
+    const { stage, fc, host } = await setup();
+    stage!.show({ ...scene(), bounds: { x: 0, y: 0, w: 800, h: 400 } });
+    settle(fc);
+    stage!.resize({ width: 1000, height: 600 });
+    expect(stage!.transform.scale).toBeCloseTo(
+      Math.min(952 / 800, 552 / 400, 1),
+      9,
+    );
+    host.dispatchEvent(new KeyboardEvent('keydown', { key: '+' }));
+    const zoomed = stage!.transform;
+    stage!.resize({ width: 400, height: 200 });
+    expect(stage!.transform).toEqual(zoomed);
+    stage!.fitView();
+    stage!.resize({ width: 1000, height: 600 });
+    expect(stage!.transform.scale).toBeCloseTo(1, 9);
+  });
+
+  it('rebuilds the hit grid at most once per frame while marks move', async () => {
+    const { stage, fc, host } = await setup();
+    stage!.show(scene(dot('person:a', 100, 100)));
+    fc.frame();
+    const build = vi.spyOn(HitTester.prototype, 'build');
+    for (let i = 0; i < 5; i++) {
+      host.dispatchEvent(
+        new PointerEvent('pointermove', {
+          pointerId: 1,
+          clientX: 10 + i,
+          clientY: 10,
+        }),
+      );
+    }
+    expect(build).toHaveBeenCalledTimes(1);
+    fc.frame();
+    host.dispatchEvent(
+      new PointerEvent('pointermove', {
+        pointerId: 1,
+        clientX: 20,
+        clientY: 10,
+      }),
+    );
+    expect(build).toHaveBeenCalledTimes(2);
+    build.mockRestore();
+  });
+
+  it('destroys the renderer if it cannot finish starting', async () => {
+    const { renderer } = fakeRenderer();
+    await expect(
+      AtlasStage.create(
+        document.createElement('div'),
+        document.createElement('div'),
+        { width: 1, height: 1 },
+        {
+          renderer,
+          readPalette: () => {
+            throw new Error('bad token');
+          },
+          glow: false,
+          reducedMotion: () => false,
+        },
+      ),
+    ).rejects.toThrow('bad token');
+    expect(renderer.destroy).toHaveBeenCalled();
+  });
+
+  it('ignores calls after it has been destroyed', async () => {
+    const { stage, fc, frames } = await setup();
+    stage!.destroy();
+    const drawn = frames.length;
+    stage!.show(scene(dot('person:a', 1, 1)));
+    stage!.setTheme(palette, true);
+    stage!.resize({ width: 10, height: 10 });
+    settle(fc);
+    expect(frames.length).toBe(drawn);
   });
 
   it('tears everything down', async () => {

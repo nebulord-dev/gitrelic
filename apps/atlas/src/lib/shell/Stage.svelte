@@ -24,6 +24,11 @@
   // A class instance, so Svelte doesn't proxy it; only the reference is reactive.
   let stage = $state<AtlasStage | null>(null);
   let noWebgl = $state(false);
+  let failure = $state<string | null>(null);
+
+  function fail(err: unknown) {
+    failure = err instanceof Error ? err.message : String(err);
+  }
 
   onMount(() => {
     if (!host || !labels) return;
@@ -58,7 +63,7 @@
       created = made;
       stage = made;
       resize.observe(el);
-    });
+    }, fail);
 
     return () => {
       disposed = true;
@@ -76,7 +81,9 @@
     const current = stage;
     if (!current) return;
     // App applies data-theme in its own effect; read the tokens after it.
-    void tick().then(() => current.setTheme(paletteFromDocument(), glow));
+    tick()
+      .then(() => current.setTheme(paletteFromDocument(), glow))
+      .catch(fail);
   });
 
   $effect(() => {
@@ -90,7 +97,7 @@
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <div
     bind:this={host}
-    class="absolute inset-0 outline-none"
+    class="absolute inset-0 touch-none outline-none"
     role="application"
     aria-label="Visualization. Drag to pan, scroll or pinch to zoom, 0 to fit."
     tabindex="0"
@@ -100,7 +107,19 @@
     class="pointer-events-none absolute inset-0 overflow-hidden"
     aria-hidden="true"
   ></div>
-  {#if noWebgl}
+  {#if failure}
+    <div
+      class="absolute inset-0 grid place-content-center gap-2 p-6 text-center text-sm text-muted"
+      role="alert"
+    >
+      <p>The renderer stopped: {failure}</p>
+      <p>
+        <a class="text-accent underline" href="/classic/"
+          >Open the classic dashboard</a
+        >
+      </p>
+    </div>
+  {:else if noWebgl}
     <div
       class="absolute inset-0 grid place-content-center gap-2 p-6 text-center text-sm text-muted"
       role="alert"

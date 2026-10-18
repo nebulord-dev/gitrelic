@@ -206,6 +206,24 @@ describe('TweenEngine', () => {
     expect(engine.running).toBe(false);
   });
 
+  it('repaints mid-morph from the colour on screen, without a jump', () => {
+    const { fc, store, engine, go } = setup();
+    go(scene([mark('person:a', 0)]));
+    fc.advance(TIMING.move);
+    // Morph to a new paint, and switch theme halfway through.
+    go(scene([mark('person:a', 100, { paint: '--person' })]));
+    fc.advance(TIMING.move / 2);
+    const before = store.color(0);
+    engine.repaint(paletteOf(rgba(0, 1, 0), rgba(1, 1, 0)));
+    const after = store.color(0);
+    expect(after.r).toBeCloseTo(before.r, 5);
+    expect(after.g).toBeCloseTo(before.g, 5);
+    expect(after.b).toBeCloseTo(before.b, 5);
+    fc.advance(TIMING.move);
+    expect(store.color(0)).toEqual(rgba(1, 1, 0));
+    expect(store.x[0]).toBe(100);
+  });
+
   it('renders once per frame and stops asking for frames when idle', () => {
     const { fc, go, frames } = setup();
     go(scene([mark('person:a', 0)]), { reducedMotion: true });
