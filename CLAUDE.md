@@ -370,7 +370,7 @@ Effect during pre-1.0:
 `apps/atlas` uses Tailwind v4 over a CSS-variable theme. None of the classic rules below (`cn()`, `classMaps.ts`, carve-out lists) apply.
 
 - **Themes:** `src/styles/tokens.css` defines every name in `THEME_TOKENS` (`packages/scene/src/theme/tokens.ts`) under `:root[data-theme='glow']` and `:root[data-theme='flat']`. Adding a token means adding it to the list and to both themes; `test/tokens.test.ts` fails otherwise. Token values are literals (no `color-mix` or `var()` chains) so the canvas renderer can read them with `getComputedStyle`. Flat is the default; the viewer's choice is kept in localStorage, not the URL.
-- **Tailwind sees only theme roles.** `src/app.css` clears the default palette (`--color-*: initial`) and aliases tokens with `@theme inline` (`bg-bg`, `text-muted`, `bg-accent`, `text-accent-ink`, `border-control-border`, `rounded-chip`…). `panel` and `card` are `@utility` classes for the two surface styles.
+- **Tailwind sees only theme roles.** `src/app.css` clears the default palette (`--color-*: initial`) and aliases tokens with `@theme inline` (`bg-bg`, `text-muted`, `bg-accent`, `text-accent-ink`, `border-control-border`, `rounded-chip`…). `panel` and `card` are `@utility` classes for the two surface styles, and `modal` the solid one for dialogs over the stage (Glow's glass surfaces would let the canvas show through).
 - **Conditional classes** use Svelte's built-in array/object `class={[...]}` syntax; there is no `cn()` helper.
 
 ## Web Styling

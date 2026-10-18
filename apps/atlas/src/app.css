@@ -41,6 +41,17 @@
   box-shadow: var(--card-shadow);
 }
 
+/*
+ * A dialog over the stage (the palette, the Guide). Glow's panel and card
+ * surfaces are translucent glass, fine on the page but unreadable over the
+ * canvas and its labels, so dialogs take the solid --modal-bg.
+ */
+@utility modal {
+  background: var(--modal-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
 body {
   margin: 0;
   background: var(--bg);

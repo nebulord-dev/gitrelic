@@ -138,7 +138,7 @@
     aria-label="Guide"
     tabindex="-1"
     onkeydown={trapFocus}
-    class="panel fixed top-0 right-0 bottom-0 z-50 flex w-[min(480px,100vw)] flex-col"
+    class="modal fixed top-0 right-0 bottom-0 z-50 rounded-[var(--panel-radius)] flex w-[min(480px,100vw)] flex-col"
   >
     <div class="flex flex-col gap-3.5 border-b border-panel-border p-6 pb-4">
       <div class="flex items-center justify-between">

@@ -130,7 +130,7 @@
         input?.focus();
       }
     }}
-    class="card fixed top-[14vh] left-1/2 z-50 flex max-h-[70vh] w-[min(560px,calc(100vw-32px))] -translate-x-1/2 flex-col overflow-hidden"
+    class="modal fixed top-[14vh] rounded-[var(--card-radius)] left-1/2 z-50 flex max-h-[70vh] w-[min(560px,calc(100vw-32px))] -translate-x-1/2 flex-col overflow-hidden"
   >
     <input
       bind:this={input}
