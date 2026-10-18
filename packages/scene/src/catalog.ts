@@ -228,6 +228,22 @@ export function catalogEntry(id: string): CatalogEntry | undefined {
   return BY_ID.get(id);
 }
 
+const GROUP_IDS = new Set<string>(PRESET_GROUPS.map((g) => g.id));
+
+export function isPresetGroup(id: string): id is PresetGroup {
+  return GROUP_IDS.has(id);
+}
+
+/** A view's lenses, in lens-bar order (Atlas views and classic links alike). */
+export function lensesOf(group: PresetGroup): readonly CatalogEntry[] {
+  return CATALOG.filter((e) => e.group === group);
+}
+
+/** The lens a view opens on: its first with an Atlas view, else none. */
+export function defaultLens(group: PresetGroup): string | null {
+  return lensesOf(group).find((e) => e.atlas)?.id ?? null;
+}
+
 export const DOCS_BASE = 'https://nebulord-dev.github.io/gitrelic/';
 
 /** The docs page for an entry, or null when it has none. */

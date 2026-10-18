@@ -22,8 +22,11 @@ export {
   CATALOG,
   catalogEntry,
   classicUrl,
+  defaultLens,
   DOCS_BASE,
   docsUrl,
+  isPresetGroup,
+  lensesOf,
   PRESET_GROUPS,
   type CatalogEntry,
   type PresetGroup,
@@ -213,3 +216,8 @@ export {
 } from './tiers/headcount';
 
 export { startOfUtcWeek, WEEK_MS } from './time/week';
+export {
+  touchesEntity,
+  weeklyActivity,
+  type WeeklyActivity,
+} from './time/activity';

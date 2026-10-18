@@ -41,19 +41,43 @@ function reportWith(file: string): GitrelicReport {
 describe('fileFacts', () => {
   it('lists every analyzer verdict in inspector order', () => {
     expect(fileFacts(F, reportWith(F))).toEqual([
-      { label: 'Hotspot Score', value: '88', tier: 'critical' },
-      { label: 'Churn (commits)', value: (1234).toLocaleString() },
+      {
+        label: 'Hotspot Score',
+        value: '88',
+        tier: 'critical',
+        lens: 'hotspots',
+      },
+      {
+        label: 'Churn (commits)',
+        value: (1234).toLocaleString(),
+        lens: 'churn',
+      },
       { label: 'Lines of Code', value: (5120).toLocaleString() },
-      { label: 'Language', value: 'TypeScript' },
-      { label: 'Bus Factor', value: '1 (ann: 97%)', tier: 'critical' },
-      { label: 'Age', value: '400 days (stale)' },
-      { label: 'Blast Radius', value: '7.3 avg files', tier: 'warning' },
-      { label: 'Coupled With', value: 'scheduler.ts (73%)' },
-      { label: 'Curse Score', value: '64', tier: 'critical' },
-      { label: 'Rewrite Ratio', value: '1.46' },
-      { label: 'Shame Score', value: '40', tier: 'warning' },
+      { label: 'Language', value: 'TypeScript', lens: 'languages' },
+      {
+        label: 'Bus Factor',
+        value: '1 (ann: 97%)',
+        tier: 'critical',
+        lens: 'bus-factor',
+      },
+      { label: 'Age', value: '400 days (stale)', lens: 'age-map' },
+      {
+        label: 'Blast Radius',
+        value: '7.3 avg files',
+        tier: 'warning',
+        lens: 'blast-radius',
+      },
+      { label: 'Coupled With', value: 'scheduler.ts (73%)', lens: 'coupling' },
+      {
+        label: 'Curse Score',
+        value: '64',
+        tier: 'critical',
+        lens: 'cursed-files',
+      },
+      { label: 'Rewrite Ratio', value: '1.46', lens: 'rewrite-ratio' },
+      { label: 'Shame Score', value: '40', tier: 'warning', lens: 'shame' },
       { label: 'Churn Trend', value: 'accelerating' },
-      { label: 'Renames', value: '2 times' },
+      { label: 'Renames', value: '2 times', lens: 'renames' },
     ]);
   });
 
