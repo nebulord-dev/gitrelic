@@ -168,8 +168,8 @@
     // A modal (the palette, the guide) owns the keyboard while it's open.
     if (document.querySelector('[aria-modal="true"]')) return;
     if (pressed(e, 't') && lensView?.table) {
-      // Opening focuses the filter before the browser inserts the key's
-      // character, which would land there as a stray "t".
+      // Opening doesn't move focus, so T closes it again; the key's
+      // character has nowhere useful to go either way.
       e.preventDefault();
       tableOpen = !tableOpen;
     }

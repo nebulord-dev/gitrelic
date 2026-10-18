@@ -27,22 +27,22 @@ export class TooltipLayer {
   }
 
   /**
-   * Shows `id`'s tip beside it, or hides the card (no id, or no tip).
-   * Returns whether it's showing, so the mark's own label can step aside:
-   * the card's title already says it.
+   * Shows `id`'s tip beside it, or hides the card (no id, or no tip). The
+   * card goes on the side opposite the mark's label, so the label it was
+   * hovered by stays put.
    */
   update(
     store: MarkStore,
     view: ViewTransform,
     screen: ScreenSize,
     id: EntityId | null,
-  ): boolean {
+  ): void {
     const i = id ? store.indexOf(id) : -1;
     const tip = i >= 0 ? store.marks[i].tip : undefined;
     if (!id || !tip || tip.length === 0 || store.alpha[i] <= 0) {
       this.card.hidden = true;
       this.shownFor = null;
-      return false;
+      return;
     }
     const text = tip.join('\n');
     if (id !== this.shownFor || text !== this.shownText) {
@@ -61,22 +61,79 @@ export class TooltipLayer {
 
     const [sx, sy] = worldToScreen(view, store.x[i], store.y[i]);
     const edge = (store.r[i] || store.w[i] / 2) * view.scale;
-    const w = this.card.offsetWidth;
-    const h = this.card.offsetHeight;
-    // Right of the mark, or left of it when that would run off the stage;
-    // vertically centred on it, kept inside.
-    let x = sx + edge + GAP;
-    if (x + w > screen.width - EDGE) x = sx - edge - GAP - w;
-    x = Math.max(EDGE, x);
-    const y = Math.min(
-      Math.max(EDGE, sy - h / 2),
-      Math.max(EDGE, screen.height - h - EDGE),
+    const [x, y] = placeTip(
+      store.marks[i].label ? (store.marks[i].labelAnchor ?? 'right') : null,
+      sx,
+      sy,
+      edge,
+      this.card.offsetWidth,
+      this.card.offsetHeight,
+      screen,
     );
     this.card.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
-    return true;
   }
 
   destroy(): void {
     this.card.remove();
   }
+}
+
+type Anchor = 'right' | 'left' | 'above' | 'below' | 'center';
+
+/** The side across the mark from its label (a centred label: below). */
+const ACROSS: Record<Anchor, 'right' | 'left' | 'above' | 'below'> = {
+  right: 'left',
+  left: 'right',
+  above: 'below',
+  below: 'above',
+  center: 'below',
+};
+
+/**
+ * Where the card's top-left goes: across the mark from its label (a label on
+ * the right puts the card on the left, one above puts it below), flipping if
+ * that side runs off the stage, and kept inside it. A mark without a label
+ * gets the card on its right.
+ */
+export function placeTip(
+  label: Anchor | null,
+  sx: number,
+  sy: number,
+  edge: number,
+  w: number,
+  h: number,
+  screen: ScreenSize,
+): [number, number] {
+  const side = label ? ACROSS[label] : 'right';
+  let x: number;
+  let y: number;
+  if (side === 'left' || side === 'right') {
+    const right = sx + edge + GAP;
+    const left = sx - edge - GAP - w;
+    x =
+      side === 'right'
+        ? right + w > screen.width - EDGE
+          ? left
+          : right
+        : left < EDGE
+          ? right
+          : left;
+    y = sy - h / 2;
+  } else {
+    const below = sy + edge + GAP;
+    const above = sy - edge - GAP - h;
+    y =
+      side === 'below'
+        ? below + h > screen.height - EDGE
+          ? above
+          : below
+        : above < EDGE
+          ? below
+          : above;
+    x = sx - w / 2;
+  }
+  return [
+    Math.min(Math.max(EDGE, x), Math.max(EDGE, screen.width - w - EDGE)),
+    Math.min(Math.max(EDGE, y), Math.max(EDGE, screen.height - h - EDGE)),
+  ];
 }

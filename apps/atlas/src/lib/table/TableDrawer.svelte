@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { tick } from 'svelte';
-
   import { nextSort, visibleRows, type TableView } from './tableRows';
   import type { EntityId, LensTable } from '@gitrelic/scene';
 
@@ -41,12 +39,6 @@
     tiers = next;
   }
 
-  let search = $state<HTMLInputElement>();
-  $effect(() => {
-    // Opening puts the cursor in the filter, ready to narrow.
-    if (open) tick().then(() => search?.focus());
-  });
-
   function close() {
     open = false;
     onhover?.(null);
@@ -85,7 +77,6 @@
         >
       </h2>
       <input
-        bind:this={search}
         bind:value={filter}
         type="search"
         placeholder="Filter by path…"

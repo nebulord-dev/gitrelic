@@ -33,13 +33,14 @@ const fileButtons = () =>
     .map((b) => b.textContent?.trim());
 
 describe('TableDrawer', () => {
-  it('lists every row in the lens’s default sort, and focuses the filter', async () => {
+  it('lists every row in the lens’s default sort, leaving focus where it was', async () => {
     render(TableDrawer, { table, label: 'Hotspots', open: true });
     await tick();
     await tick();
     expect(screen.getByRole('region', { name: 'Hotspots table' })).toBeTruthy();
     expect(fileButtons()).toEqual(['src/api.ts', 'src/util.ts', 'README.md']);
-    expect(document.activeElement).toBe(screen.getByRole('searchbox'));
+    // Not the filter: T, which opened it, must close it again too.
+    expect(document.activeElement).not.toBe(screen.getByRole('searchbox'));
   });
 
   it('filters by text and tier, and re-sorts from a header', async () => {

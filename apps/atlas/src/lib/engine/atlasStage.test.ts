@@ -543,12 +543,12 @@ describe('AtlasStage', () => {
     fc.frame();
     expect(tip().hidden).toBe(false);
     expect(tip().textContent).toBe('a.tsScore 90');
-    // Its label steps aside while the tooltip, titled the same, is up.
+    // Its label stays: the card goes on the other side of the mark.
     const label = () =>
       [...labelHost.querySelectorAll<HTMLElement>('.atlas-label')].find(
         (l) => !l.hidden && l.textContent === 'a.ts',
       );
-    expect(label()).toBeUndefined();
+    expect(label()).toBeTruthy();
     // The stage didn't hover it itself, so it doesn't report it back.
     expect(onHover).not.toHaveBeenCalled();
     stage!.hover(null);
