@@ -101,7 +101,9 @@ export function ringScene(
       ry * 0.58,
     );
     // The view's name: a label-only mark (cards draw nothing on the canvas),
-    // since the canvas draws no text and labels are DOM.
+    // since the canvas draws no text and labels are DOM. `group:` isn't an
+    // entity kind: parentOf sends it to the repo, the index never resolves
+    // it (so selecting it is ignored), and a 0×0 card can't be hit.
     marks.push({
       id: `group:${group.id}`,
       shape: 'card',

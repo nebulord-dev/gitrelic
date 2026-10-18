@@ -246,12 +246,20 @@ describe('Inspector', () => {
     wide.mockRestore();
   });
 
-  it('describes the Repo map lens: how many lenses are loud, and which', async () => {
+  it('describes the Repo map lens, and its loud signals fan their lens', async () => {
+    // The fixture is a 10-file repo; force one loud lens so the list exists.
+    const loud = {
+      ...report,
+      ghostFiles: { ...report.ghostFiles, totalGhostFiles: 3 },
+    } as GitrelicReport;
     const onselect = vi.fn();
-    render(Inspector, { ...base, lens: 'overview', onselect });
+    render(Inspector, { ...base, report: loud, lens: 'overview', onselect });
     expect(screen.getByText(/lenses read well outside normal/)).toBeTruthy();
-    const loud = screen.queryAllByRole('button', { name: /.+/ });
-    expect(loud.length).toBeGreaterThan(0);
+    expect(
+      screen.getByRole('heading', { name: 'Loudest signals' }),
+    ).toBeTruthy();
+    await fireEvent.click(screen.getByRole('button', { name: /Ghost Files/ }));
+    expect(onselect).toHaveBeenCalledWith('analyzer:ghost-files');
   });
 
   it('previews a selected lens: its reading, what it points at, and how to open it', async () => {

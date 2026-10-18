@@ -190,6 +190,8 @@ export class AtlasStage {
     this.size = size;
     this.opts.renderer.resize(size);
     if (!this.userMoved && this.bounds) {
+      // A glide in flight was aiming at a framing for the old size.
+      this.camera = null;
       this.view = fit(this.bounds, this.size);
       this.hitsStale = true;
     }
@@ -199,6 +201,7 @@ export class AtlasStage {
   fitView(): void {
     if (!this.bounds) return;
     this.userMoved = false;
+    this.camera = null;
     this.view = fit(this.bounds, this.size);
     this.hitsStale = true;
     this.requestDraw(false);

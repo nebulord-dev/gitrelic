@@ -148,5 +148,20 @@ export function lensTopEntities(
     out.push(c);
     if (out.length === limit) break;
   }
-  return out;
+  return disambiguate(out);
+}
+
+/**
+ * Two files fanned with the same name (`index.ts`, `package.json`) get their
+ * parent folder prepended, so the ring never shows identical labels.
+ */
+function disambiguate(list: FannedEntity[]): FannedEntity[] {
+  const count = new Map<string, number>();
+  for (const e of list) count.set(e.label, (count.get(e.label) ?? 0) + 1);
+  return list.map((e) => {
+    if ((count.get(e.label) ?? 0) < 2 || !e.id.startsWith('file:')) return e;
+    const path = e.id.slice('file:'.length);
+    const parts = path.split('/');
+    return parts.length > 1 ? { ...e, label: parts.slice(-2).join('/') } : e;
+  });
 }

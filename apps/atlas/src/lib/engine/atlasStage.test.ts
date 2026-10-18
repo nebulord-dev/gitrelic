@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AtlasStage } from './atlasStage';
 import { HitTester } from './hitTest';
 import { REPAINT_MS, type FrameClock } from './tweenEngine';
-import { worldToScreen } from './viewport';
+import { fit, worldToScreen } from './viewport';
 import type { StageFrame, StageRenderer } from './stageRenderer';
 
 const grey: Rgba = { r: 0.5, g: 0.5, b: 0.5, a: 1 };
@@ -489,5 +489,22 @@ describe('AtlasStage', () => {
     stage!.show({ ...grown, bounds: { x: 0, y: 0, w: 400, h: 200 } });
     settle(fc);
     expect(stage!.transform).toEqual(zoomed);
+  });
+
+  it('a resize mid-glide frames for the new size, not the old target', async () => {
+    const { stage, fc } = await setup();
+    stage!.show(scene(dot('person:a', 100, 100)));
+    settle(fc);
+    const grown = {
+      ...scene(dot('person:a', 100, 100)),
+      bounds: { x: 0, y: 0, w: 1600, h: 800 },
+    };
+    stage!.show(grown);
+    fc.frame(TIMING.move / 4);
+    stage!.resize({ width: 1000, height: 600 });
+    settle(fc);
+    expect(stage!.transform).toEqual(
+      fit(grown.bounds, { width: 1000, height: 600 }),
+    );
   });
 });

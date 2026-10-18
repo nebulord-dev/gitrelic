@@ -75,4 +75,29 @@ describe('lensTopEntities', () => {
     const [dir] = lensTopEntities('test-coverage', r, index);
     expect(dir).toMatchObject({ id: 'dir:src', label: 'src/' });
   });
+
+  it('prepends the folder when two fanned files share a name', () => {
+    const twins = {
+      ...report,
+      churn: {
+        ...report.churn,
+        topFiles: [
+          { file: 'src/api.ts', commitCount: 9 },
+          { file: 'src/__tests__/api.ts', commitCount: 8 },
+        ],
+      },
+    } as GitrelicReport;
+    const idx = buildEntityIndex({
+      ...twins,
+      loc: {
+        ...twins.loc,
+        files: [
+          ...twins.loc.files,
+          { file: 'src/__tests__/api.ts', lines: 5, language: 'TypeScript' },
+        ],
+      },
+    } as GitrelicReport);
+    const labels = lensTopEntities('churn', twins, idx).map((e) => e.label);
+    expect(labels).toEqual(['src/api.ts', '__tests__/api.ts']);
+  });
 });

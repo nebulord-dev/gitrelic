@@ -109,9 +109,15 @@
     if (!view) return undefined;
     return view.layouts.find((l) => l.id === nav.form) ?? view.layouts[0];
   });
+  // Commits are read only by layouts that need them, so the time strip's
+  // fetch doesn't rebuild (and re-plan) a scene that ignores them.
+  let layoutCommits = $derived(layout?.needsCommits ? commits : null);
   let scene = $derived(
-    layout && (!layout.needsCommits || commits)
-      ? layout.build({ report, commits, focus: fanFocus, index }, WORLD)
+    layout && (!layout.needsCommits || layoutCommits)
+      ? layout.build(
+          { report, commits: layoutCommits, focus: fanFocus, index },
+          WORLD,
+        )
       : null,
   );
 
