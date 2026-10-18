@@ -193,6 +193,10 @@ export class TweenEngine {
 
   /** Writes the values for time `now` and schedules the next frame if needed. */
   tick(now: number): void {
+    // play()/repaint() call this directly, possibly with a frame already
+    // queued; drop it so there's only ever one frame loop. From the frame
+    // callback itself, this cancels the frame that is running: a no-op.
+    if (this.handle !== null) this.clock.cancel(this.handle);
     this.handle = null;
     let more = false;
     if (this.planActive) {

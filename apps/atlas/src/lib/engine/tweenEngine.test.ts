@@ -14,31 +14,38 @@ import { describe, expect, it } from 'vitest';
 import { MarkStore } from './markStore';
 import { REPAINT_MS, TweenEngine, type FrameClock } from './tweenEngine';
 
-/** A clock the test advances by hand; frames run only when asked. */
+/**
+ * A clock the test advances by hand; frames run only when asked. Like the
+ * browser, it keeps every outstanding request, so a second frame loop shows.
+ */
 function fakeClock() {
   let time = 0;
-  let pending: ((t: number) => void) | null = null;
+  let next = 1;
+  const queue = new Map<number, (t: number) => void>();
   const clock: FrameClock = {
     now: () => time,
     request: (cb) => {
-      pending = cb;
-      return 1;
+      queue.set(next, cb);
+      return next++;
     },
-    cancel: () => {
-      pending = null;
+    cancel: (h) => {
+      queue.delete(h);
     },
   };
   return {
     clock,
-    /** Moves time forward and runs the frame that was requested, if any. */
+    /** Moves time forward and runs the frames that were requested. */
     advance(ms: number) {
       time += ms;
-      const cb = pending;
-      pending = null;
-      cb?.(time);
+      const due = [...queue.values()];
+      queue.clear();
+      for (const cb of due) cb(time);
     },
     get scheduled() {
-      return pending !== null;
+      return queue.size > 0;
+    },
+    get outstanding() {
+      return queue.size;
     },
   };
 }
@@ -131,6 +138,19 @@ describe('TweenEngine', () => {
     expect(store.x[0]).toBeCloseTo(midway, 3);
     fc.advance(TIMING.move);
     expect(store.x[0]).toBe(0);
+  });
+
+  it('keeps a single frame loop when re-targeted or repainted mid-flight', () => {
+    const { fc, engine, go, frames } = setup();
+    go(scene([mark('person:a', 0)]));
+    fc.advance(100);
+    go(scene([mark('person:a', 500)]));
+    engine.repaint(PALETTE);
+    expect(fc.outstanding).toBe(1);
+    const before = frames();
+    fc.advance(16);
+    expect(frames() - before).toBe(1);
+    expect(fc.outstanding).toBe(1);
   });
 
   it('brings back a mark that was mid-exit instead of duplicating it', () => {
