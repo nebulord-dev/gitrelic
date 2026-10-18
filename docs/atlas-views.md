@@ -121,6 +121,46 @@ Still to come, with the first lens that fills them (the Hotspots PR): **What to 
 
 ---
 
+## Lens inventory (2026-10-18)
+
+Classic had 23 presets over 22 analyzers. Checked against React's real report, several pairs measure the same thing twice, a few don't measure what they claim, and a few valuable questions go unasked. Atlas carries about 15 sharper lenses instead. Each one still gets its own design checkpoint before it's built; this table decides **what the lenses are**, and the checkpoint decides **how each one looks**.
+
+### Merges (duplicates)
+
+| Merge | Evidence on React (12 months) | Result |
+|---|---|---|
+| Bus Factor + Knowledge Silos | 811 vs 813 of 1,291 files; Silos is computed from bus factor's data | **Ownership**; Silos' 63% becomes its headline |
+| Ghost Files → Ownership | all 100 ghost files are bus-factor critical | a highlight in Ownership: single-owner files whose owner left |
+| Cursed Files + Hotspot Clustering + the Risk and Tech Debt dashboards | all 8 cursed files are among the 20 multi-signal files | **Risk**: one composite that says *why* per file (needs per-reason points, RELIC-343) |
+| Stale Files → Age Map | "stale" is every file untouched in the window (4,644); Age Map already tiers ages | **Age** |
+| Churn Velocity → Churn | velocity is churn over time; the time strip owns "when?" | an "accelerating" marker in **Churn**, plus the strip |
+| Blast Radius → Coupling | blast radius is co-change breadth | node size in **Coupling** |
+
+### Fix or retire
+
+- **Test Coverage — fix.** The proximity proxy is wrong: 40 of React's 311 "untested" directories have a `__tests__` folder full of tests. Replace it with *test co-change*: how often a source change ships with a test change.
+- **Shame — rebuild as Fix rate.** 144 of the 173 files scoring 70+ have three commits or fewer, so the score is mostly small-sample noise. Ask the real question: how often a change to a file is followed by a fix or revert, with commit keywords as one input and a minimum sample.
+- **Renames — retire as a lens.** Rename history is plumbing; it stays as a row in the file inspector.
+- **Commit Timing — keep.** Frame it around the code ("this module changes at 2am"), not around people. Its checkpoint takes care with that.
+
+### New
+
+- **Truck factor** — how many people would have to leave before most of the code has nobody who knows it, for the repo and each directory. The **Ownership** headline.
+- **Cross-owner coupling (Conway's law)** — files that change together but belong to different people: coordination cost. A highlight in **Coupling**.
+- **Release cadence** — how changes cluster around tagged releases (RELIC-265).
+
+### The lenses
+
+| View | Lenses |
+|---|---|
+| Overview | Repo map · Briefing |
+| Code Health | Hotspots · Churn · Risk · Age · Fix rate · *Complexity growth (own lens or a Hotspots facet: decided at its checkpoint)* |
+| Ownership & Risk | Ownership · Coupling |
+| Team & Activity | Contributors · Parallel Dev · Commit Timing · AI & Co-authors · *Release cadence* |
+| Structure | Languages · Tests · *Repo health (git-sizer, RELIC-297)* |
+
+The catalog changes as each view's lenses ship, not all at once, so classic stays reachable for everything until its Atlas replacement exists.
+
 ## Views
 
 One section per view, added at its design checkpoint.
@@ -185,3 +225,11 @@ Each section records:
 - **2026-10-18 — Overview is a ring of every lens, with Briefing as its one alternate.** Clicking a lens fans out its top entities as a preview, and opening it carries those marks into the lens. *Why:* all lenses visible at once beats the mock's one-view-at-a-time fan; the fan survives as the click motion, so it doesn't need to be a form.
 - **2026-10-18 — Hotspots is a churn × size field, with By package as its one alternate.** Selecting a file fans out its facets. *Why:* the field shows every file's score by position; containment answers "where" without a second chart in the inspector.
 - **2026-10-18 — The inspector is one column with two modes.** Lens mode explains the lens; selection mode explains the entity, leading with rule-based What to do and a Flagged by list that navigates across lenses. The table becomes a full-width drawer, the Guide an on-demand sheet. The inspector is 400px, collapses to a strip, and wraps long names rather than truncating them. *Why:* classic's nested tabs hid most of this behind clicks, and a sortable table can't live in a 360px column.
+- **2026-10-18 — About 15 lenses instead of 23 presets.** Duplicates merge, as listed in *Lens inventory*:
+  - Ownership absorbs Silos and Ghost Files.
+  - Risk absorbs Cursed, Clustering and the Risk and Tech Debt dashboards.
+  - Age absorbs Stale.
+  - Churn absorbs Velocity.
+  - Coupling absorbs Blast Radius.
+
+  Test Coverage is rebuilt on test co-change, Shame becomes Fix rate, and Renames leaves the lens bar. Truck factor, cross-owner coupling and release cadence are added. *Why:* measured on React, the merged pairs overlap almost entirely, and the fixed ones were measuring noise or the wrong thing.
