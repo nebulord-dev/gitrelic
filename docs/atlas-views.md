@@ -119,47 +119,52 @@ Still to come, with the first lens that fills them (the Hotspots PR): **What to 
 - **Selecting `cell:`, `week:` and `commit:` marks.** `Nav.select` drops any id the entity index doesn't hold, so today a click on one of those marks clears the selection. The first view that draws them (Commit Timing's clock, Contributors' strips) either adds them to the index or gets its own selection path, with an inspector card for the kind.
 - **Palette cost on huge repos.** `rankEntities` scores every entry and keyword (full paths included) on each keystroke. Fine at this repo's size; if a large monorepo stutters, filter the previous results when the query extends the last one, or debounce.
 
----
-
 ## Lens inventory (2026-10-18)
 
-Classic had 23 presets over 22 analyzers. Checked against React's real report, several pairs measure the same thing twice, a few don't measure what they claim, and a few valuable questions go unasked. Atlas carries about 15 sharper lenses instead. Each one still gets its own design checkpoint before it's built; this table decides **what the lenses are**, and the checkpoint decides **how each one looks**.
+Classic had 23 presets over 22 analyzers. Checked against React's real report, several pairs measure the same thing twice, a few don't measure what they claim, and a few valuable questions go unasked. Atlas carries about 15 sharper lenses instead. Each lens still gets its own design checkpoint before it's built; this table decides **what the lenses are**, and the checkpoint decides **how each one looks**. Rows name catalog preset ids in `code` where one exists; Churn Velocity and Hotspot Clustering are analyzers with no preset of their own.
 
 ### Merges (duplicates)
 
 | Merge | Evidence on React (12 months) | Result |
 |---|---|---|
-| Bus Factor + Knowledge Silos | 811 vs 813 of 1,291 files; Silos is computed from bus factor's data | **Ownership**; Silos' 63% becomes its headline |
-| Ghost Files → Ownership | all 100 ghost files are bus-factor critical | a highlight in Ownership: single-owner files whose owner left |
-| Cursed Files + Hotspot Clustering + the Risk and Tech Debt dashboards | all 8 cursed files are among the 20 multi-signal files | **Risk**: one composite that says *why* per file (needs per-reason points, RELIC-343) |
-| Stale Files → Age Map | "stale" is every file untouched in the window (4,644); Age Map already tiers ages | **Age** |
-| Churn Velocity → Churn | velocity is churn over time; the time strip owns "when?" | an "accelerating" marker in **Churn**, plus the strip |
-| Blast Radius → Coupling | blast radius is co-change breadth | node size in **Coupling** |
+| Bus Factor + Knowledge Silos (`bus-factor`, `knowledge-silos`) | 811 vs 813 of 1,291 files; Silos is computed from bus factor's data | **Ownership**; Silos' 63% single-author share becomes a secondary stat under the Truck factor headline |
+| Ghost Files (`ghost-files`) → Ownership | all 100 ghost files are bus-factor critical | a highlight in Ownership: single-owner files whose owner left |
+| Cursed Files + Hotspot Clustering + the Risk and Tech Debt dashboards (`cursed-files`, `risk`, `tech-debt`) | all 8 cursed files are among the 20 multi-signal files | **Risk**: one composite that says *why* per file (needs per-reason points, RELIC-343) |
+| Stale Files (`dead-code`) → Age Map (`age-map`) | "stale" is every file untouched in the window (4,644); Age Map already tiers ages | **Age** |
+| Churn Velocity → Churn | velocity is churn over time; the time strip owns "when?" | **Churn**'s Rhythm form shows speeding up and slowing down as weekly bars; the velocity score stays out (see the Churn checkpoint) |
+| Rewrite Ratio (`rewrite-ratio`) → Churn | the insertion/deletion balance is how a file churns | **Churn**'s added/deleted bar and character tag (tweaking, rewriting, growing) |
+| Blast Radius (`blast-radius`) → Coupling | blast radius is co-change breadth | node size in **Coupling** |
 
 ### Fix or retire
 
-- **Test Coverage — fix.** The proximity proxy is wrong: 40 of React's 311 "untested" directories have a `__tests__` folder full of tests. Replace it with *test co-change*: how often a source change ships with a test change.
-- **Shame — rebuild as Fix rate.** 144 of the 173 files scoring 70+ have three commits or fewer, so the score is mostly small-sample noise. Ask the real question: how often a change to a file is followed by a fix or revert, with commit keywords as one input and a minimum sample.
-- **Renames — retire as a lens.** Rename history is plumbing; it stays as a row in the file inspector.
-- **Commit Timing — keep.** Frame it around the code ("this module changes at 2am"), not around people. Its checkpoint takes care with that.
+- **Test Coverage (`test-coverage`) — fix (RELIC-360).** The proximity proxy is wrong: 40 of React's 311 "untested" directories have a `__tests__` folder full of tests. Replace it with *test co-change*: how often a source change ships with a test change.
+- **Shame (`shame`) — rebuild as Fix rate (RELIC-359).** 144 of the 173 files scoring 70+ have three commits or fewer, so the score is mostly small-sample noise. Ask the real question: how often a change to a file is followed by a fix or revert, with commit keywords as one input and a minimum sample.
+- **Renames (`renames`) — retire as a lens.** Rename history is plumbing; it stays as a row in the file inspector.
+- **Commit Timing (`commit-timing`) — keep.** Frame it around the code ("this module changes at 2am"), not around people. Its checkpoint takes care with that.
 
 ### New
 
-- **Truck factor** — how many people would have to leave before most of the code has nobody who knows it, for the repo and each directory. The **Ownership** headline.
-- **Cross-owner coupling (Conway's law)** — files that change together but belong to different people: coordination cost. A highlight in **Coupling**.
+- **Truck factor** — how many people would have to leave before most of the code has nobody who knows it, for the repo and each directory. The **Ownership** headline (RELIC-357).
+- **Cross-owner coupling (Conway's law)** — files that change together but belong to different people: coordination cost. A highlight in **Coupling** (RELIC-358).
 - **Release cadence** — how changes cluster around tagged releases (RELIC-265).
+
+Fix rate, test co-change, truck factor and cross-owner coupling are new core work, each following *Adding a new analyzer* in `CLAUDE.md` (types, runner fallback, `normalizeReport` backfill, fixture regen).
 
 ### The lenses
 
 | View | Lenses |
 |---|---|
-| Overview | Repo map · Briefing |
+| Overview | Repo map (form: Briefing) |
 | Code Health | Hotspots · Churn · Risk · Age · Fix rate · *Complexity growth (own lens or a Hotspots facet: decided at its checkpoint)* |
-| Ownership & Risk | Ownership · Coupling |
+| Ownership & Risk *(name revisited when Risk moves; see below)* | Ownership · Coupling |
 | Team & Activity | Contributors · Parallel Dev · Commit Timing · AI & Co-authors · *Release cadence* |
 | Structure | Languages · Tests · *Repo health (git-sizer, RELIC-297)* |
 
+That is 14 confirmed lenses plus three in italics still to be decided. Once Risk moves to Code Health, the Ownership & Risk view holds no Risk lens; its name is settled in the catalog PR that moves it.
+
 The catalog changes as each view's lenses ship, not all at once, so classic stays reachable for everything until its Atlas replacement exists.
+
+---
 
 ## Views
 
@@ -215,6 +220,40 @@ Each section records:
 
 *Scope (confirmed 2026-10-18): PR 3.2 builds Overview and Hotspots plus the shared shell (five-view rail, lens bar, time strip, inspector). Churn and Cursed Files get their own checkpoints next.*
 
+### Code Health › Churn (checkpoint 2026-10-18)
+
+**Input:** `apps/docs/analyzers/churn.md` (its lesson: file rank and directory rank answer different questions; it links to `churn-velocity` and `hotspots` pages that don't exist yet, fixed when this lens ships), classic's churn bar and Churn tab, the Velocity preset this lens absorbs. Canvas: three boards on React's last 12 months.
+
+**What it must communicate:** where change concentrates (by file and by directory at once) and how each file churns: steady tweaks, rewrites or growth, speeding up or slowing down.
+
+**Primary form — Swarm.** One row per directory, one dot per file, placed on a log scale of commits; a grey band holds files with one or two commits. The same total can hide opposite shapes, and the swarm shows both at once: on React, `compiler/` (855 changes) is a wide low cloud with no file past 18, while `shared/` is seven dots stacked near the top (the feature-flag forks). *Carried over from the sunburst board:* each row carries its directory's total as a heat bar behind the dots, and with nothing selected the inspector leads with the hardest-churning directory (changes per file), so the lens still reads at a glance like a landing page.
+
+**Alternate form — Rhythm.** The top files as rows of week-by-week bars, with an added/deleted bar and a character tag (tweaking, rewriting, growing); files that change in lockstep are marked. *Passes the checkpoint test:* it shows each file's shape over time and the add/delete balance, which the shared time strip (one selection at a time) and the detail table (totals) can't. This is where Velocity lives: speeding up and slowing down are read off the bars, not a score.
+
+**Tooltips:** a dot shows the file name, commits, lines added/deleted and its character; a row label shows directory total, file count and files with one or two commits.
+
+**Findings:** the directory that leads on total versus the one that churns hardest per file; lockstep groups ("seven files changing week for week: one change, made seven times").
+
+**Dropped from classic:** the churn bar (a leaderboard, which the detail table covers); Velocity's accelerating/decelerating score. 259 of the 325 files it flags on React have three commits or fewer, so it stays out until core requires a minimum sample. Tests stay out of the swarm, as in classic's Churn tab; the Tests lens covers them.
+
+### Code Health › Risk (checkpoint 2026-10-18)
+
+**Input:** `apps/docs/analyzers/cursed-files.md` (numbers are stale; refreshed when this lens ships), classic's Cursed Files, Hotspot Clustering, and the Risk and Tech Debt dashboards this lens absorbs. Canvas: three boards on React's last 12 months.
+
+**What it must communicate:** which files are risky, *why* (one score is several reasons added up), and what sits upstream of them.
+
+**Primary form — Score stacks.** One row per file: its score split by reason (churn, ownership, many authors, fix commits, parallel edits) as a stacked bar, with the cursed line at 50 drawn in so near misses show. On React all eight cursed files are cursed for the same three reasons, and the two biggest engine files (`ReactFizzServer.js`, `ReactFiberConfigDOM.js`) miss the line by 5. Signals the score doesn't count (hotspot 50+, accelerating) are marked beside the bar.
+
+**Alternate form — Root causes.** Coupling hubs on the left, the risky files they change with on the right. *Passes the checkpoint test:* a different structure (hub → files) that joins coupling and risk, which classic keeps on separate tabs; on React, `ReactTypes.js` changes with nine of the top hotspots, and the two `*-dynamic` flag files each pull along all seven flag files.
+
+**Tooltips:** a bar segment shows the reason, its points and the measurement behind it (e.g. "Many authors · 10 pts · 11 authors"); a hub shows the files it changes with and how often.
+
+**Findings:** the shared reason across the cursed set; near misses and why; the hub with the most risky files downstream.
+
+**Dropped from classic:** the risk heatmap and ownership-sunburst heroes; Tech Debt's growth timeline (Complexity growth decides its own place). The signal constellation (radviz) board was rejected: where a file lands depends on the order of the anchors around the ring, a hidden choice that changes the picture's meaning.
+
+**Before building:** core reports points per reason (RELIC-343), so scene reads the split instead of copying the scoring formula. **Open:** whether size and acceleration should count toward the score (it would put `ReactFizzServer.js` over the line). That is a core change with release notes, decided separately.
+
 ---
 
 ## Decision log
@@ -229,7 +268,10 @@ Each section records:
   - Ownership absorbs Silos and Ghost Files.
   - Risk absorbs Cursed, Clustering and the Risk and Tech Debt dashboards.
   - Age absorbs Stale.
-  - Churn absorbs Velocity.
+  - Churn absorbs Velocity and Rewrite Ratio.
   - Coupling absorbs Blast Radius.
 
   Test Coverage is rebuilt on test co-change, Shame becomes Fix rate, and Renames leaves the lens bar. Truck factor, cross-owner coupling and release cadence are added. *Why:* measured on React, the merged pairs overlap almost entirely, and the fixed ones were measuring noise or the wrong thing.
+- **2026-10-18 — Churn is a per-directory swarm, with Rhythm as its one alternate.** *Why:* the swarm shows file and directory rank in one picture, which is the churn docs' main lesson; Rhythm is the honest home for velocity, whose score is mostly noise.
+- **2026-10-18 — Risk is score stacks, with Root causes as its one alternate.** *Why:* a risk score is only useful when it explains itself; the hubs show what to fix upstream. Needs per-reason points from core (RELIC-343) first.
+- **2026-10-18 — Every lens names its tooltip content at its checkpoint.** Hover shows a small tooltip by the mark (never changing the inspector), and the checkpoint records what it says.
