@@ -12,6 +12,7 @@ import type { AnalyzerView, Layout } from '../model';
 export const ringLayout: Layout = {
   id: 'ring',
   label: 'Ring',
+  usesFocus: true,
   needsCommits: false,
   build: (input, viewport) => {
     const readings = lensReadings(input.report);

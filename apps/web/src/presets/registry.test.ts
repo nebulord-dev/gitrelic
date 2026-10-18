@@ -235,7 +235,6 @@ describe('analyzer docsPath', () => {
     'complexity-trend',
     'coupling',
     'dead-code',
-    'hotspots',
     'knowledge-silos',
     'languages',
     'test-coverage',

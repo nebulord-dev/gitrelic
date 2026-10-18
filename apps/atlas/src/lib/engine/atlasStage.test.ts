@@ -491,6 +491,41 @@ describe('AtlasStage', () => {
     expect(stage!.transform).toEqual(zoomed);
   });
 
+  it('reframes a new picture (another lens or form) even after the viewer zoomed', async () => {
+    const { stage, fc, host } = await setup();
+    const field = {
+      ...scene(dot('person:a', 100, 100)),
+      bounds: { x: 0, y: 0, w: 800, h: 400 },
+    };
+    stage!.show(field);
+    settle(fc);
+    host.dispatchEvent(new KeyboardEvent('keydown', { key: '+' }));
+    host.dispatchEvent(new KeyboardEvent('keydown', { key: '+' }));
+    expect(stage!.transform).not.toEqual(
+      fit(field.bounds, { width: 400, height: 200 }),
+    );
+
+    // A selection re-forming the same picture keeps the zoom…
+    const zoomed = stage!.transform;
+    stage!.show(field);
+    settle(fc);
+    expect(stage!.transform).toEqual(zoomed);
+
+    // …but switching form glides back to fit, even with the same bounds.
+    stage!.show(field, { reframe: true });
+    settle(fc);
+    expect(stage!.transform).toEqual(
+      fit(field.bounds, { width: 400, height: 200 }),
+    );
+
+    // And the camera is the viewer's again afterwards: a grown scene glides.
+    stage!.show({ ...field, bounds: { x: 0, y: 0, w: 1600, h: 800 } });
+    settle(fc);
+    expect(stage!.transform).toEqual(
+      fit({ x: 0, y: 0, w: 1600, h: 800 }, { width: 400, height: 200 }),
+    );
+  });
+
   it('a resize mid-glide frames for the new size, not the old target', async () => {
     const { stage, fc } = await setup();
     stage!.show(scene(dot('person:a', 100, 100)));

@@ -138,13 +138,18 @@ export class AtlasStage {
    * Transitions to `scene`. The first scene with marks frames the view, and
    * so does the next one after an empty spell (a view without an Atlas lens):
    * an empty scene's bounds frame nothing worth keeping.
+   *
+   * `reframe` is for a new picture (another lens or form): it glides to fit
+   * even if the viewer had zoomed, since their zoom belonged to the old one.
+   * Without it (a selection re-forming the same picture) a zoom is kept.
    */
-  show(scene: Scene): void {
+  show(scene: Scene, opts: { reframe?: boolean } = {}): void {
     if (this.destroyed) return;
     const empty = scene.marks.length === 0;
     if (!empty) {
       const frame = this.bounds === null || this.lastEmpty;
-      const moved = !sameBounds(this.bounds, scene.bounds);
+      if (opts.reframe) this.userMoved = false;
+      const moved = !sameBounds(this.bounds, scene.bounds) || !!opts.reframe;
       this.bounds = scene.bounds;
       if (frame) {
         this.view = fit(scene.bounds, this.size);

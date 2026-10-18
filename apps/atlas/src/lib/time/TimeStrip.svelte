@@ -23,8 +23,9 @@
     const base = `${total.toLocaleString()} commits over ${activity.totals.length} weeks`;
     if (!selected) return base;
     const share = recentShare(activity);
+    const weeks = activeWeeks(activity);
     return share
-      ? `Selection changed in ${activeWeeks(activity)} weeks · ${share}`
+      ? `Selection changed in ${weeks} week${weeks === 1 ? '' : 's'} · ${share}`
       : 'No commits touch this selection';
   });
 </script>

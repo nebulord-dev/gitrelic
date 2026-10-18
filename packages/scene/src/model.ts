@@ -171,6 +171,16 @@ export interface Finding {
 export interface Layout {
   id: string;
   label: string;
+  /**
+   * One line under the stage: how to read this picture. Plain text, from the
+   * view's design checkpoint.
+   */
+  caption?: string;
+  /**
+   * Whether `build` reads `input.focus`. A layout that doesn't is given none,
+   * so a selection doesn't rebuild (and re-plan) a picture it can't change.
+   */
+  usesFocus?: boolean;
   /** Whether `build` needs `input.commits`. */
   needsCommits: boolean;
   build: (input: ViewInput, viewport: Viewport) => Scene;

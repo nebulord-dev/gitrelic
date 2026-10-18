@@ -10,6 +10,7 @@
   import { AtlasStage } from '../engine/atlasStage';
   import { prefersReducedMotion } from '../engine/reducedMotion';
   import { paletteFromDocument } from '../engine/themeBridge';
+  import FormToggle from './FormToggle.svelte';
 
   let {
     scene = null,
@@ -17,6 +18,12 @@
     selected = null,
     onselect,
     empty,
+    caption,
+    docs,
+    forms = [],
+    form,
+    onform,
+    frameKey,
   }: {
     scene?: Scene | null;
     theme: ThemeName;
@@ -24,6 +31,20 @@
     onselect?: (id: EntityId | null) => void;
     /** Shown while there's no scene (the lens has no Atlas view yet). */
     empty?: Snippet;
+    /** One line on how to read the picture, under it. */
+    caption?: string;
+    /** The lens's docs page. */
+    docs?: string;
+    /** The lens's forms; with two or more, a toggle sits in the corner. */
+    forms?: readonly { id: string; label: string }[];
+    form?: string;
+    onform?: (id: string) => void;
+    /**
+     * Names the picture (lens and form). When it changes the stage reframes,
+     * even if the viewer had zoomed; a new scene under the same key (a
+     * selection re-forming it) keeps their zoom.
+     */
+    frameKey?: string;
   } = $props();
 
   let host = $state<HTMLDivElement>();
@@ -91,10 +112,15 @@
     };
   });
 
+  // The picture last shown; a different key is a new picture to frame.
+  let shownKey: string | undefined;
   $effect(() => {
     // No scene (a lens without an Atlas view): clear what was drawn, so the
     // last lens's marks don't linger under the empty state.
-    if (stage) stage.show(scene ?? emptyScene({ width: 1, height: 1 }));
+    if (!stage) return;
+    const reframe = frameKey !== shownKey;
+    shownKey = frameKey;
+    stage.show(scene ?? emptyScene({ width: 1, height: 1 }), { reframe });
   });
 
   $effect(() => {
@@ -130,6 +156,46 @@
     class="pointer-events-none absolute inset-0 overflow-hidden"
     aria-hidden="true"
   ></div>
+  {#if scene && !failure && !noWebgl}
+    {#if forms.length > 1}
+      <FormToggle {forms} {form} {onform} />
+    {/if}
+    <button
+      type="button"
+      aria-label="Fit to view (0)"
+      title="Fit to view (0)"
+      onclick={() => stage?.fitView()}
+      class="absolute top-3 left-3 grid size-8 cursor-pointer place-content-center rounded-chip border border-control-border bg-bg text-muted hover:text-text"
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        ><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg
+      >
+    </button>
+    {#if caption || docs}
+      <div
+        class="pointer-events-none absolute right-4 bottom-3 left-4 flex items-baseline gap-4 text-[12px] text-muted"
+      >
+        {#if caption}<p class="m-0 flex-1">{caption}</p>{/if}
+        {#if docs}
+          <a
+            class="pointer-events-auto ml-auto text-accent"
+            href={docs}
+            target="_blank"
+            rel="noopener noreferrer">Docs ↗</a
+          >
+        {/if}
+      </div>
+    {/if}
+  {/if}
   {#if failure}
     <div
       class="absolute inset-0 grid place-content-center gap-2 p-6 text-center text-sm text-muted"

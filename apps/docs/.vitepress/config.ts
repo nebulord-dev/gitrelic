@@ -13,7 +13,6 @@ export default withMermaid(
     // Known future analyzer pages cross-linked from existing docs. Drop entries
     // as their pages land so genuine typos still surface in the build.
     ignoreDeadLinks: [
-      '/analyzers/hotspots',
       '/analyzers/churn-velocity',
       '/analyzers/coupling',
       '/analyzers/knowledge-silos',
@@ -58,6 +57,7 @@ export default withMermaid(
             { text: 'Contributors', link: '/analyzers/contributors' },
             { text: 'Cursed Files', link: '/analyzers/cursed-files' },
             { text: 'Ghost Files', link: '/analyzers/ghost-files' },
+            { text: 'Hotspots', link: '/analyzers/hotspots' },
             { text: 'Parallel Dev', link: '/analyzers/parallel-dev' },
             { text: 'Renames', link: '/analyzers/renames' },
             { text: 'Rewrite Ratio', link: '/analyzers/rewrite-ratio' },

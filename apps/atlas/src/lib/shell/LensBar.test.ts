@@ -10,10 +10,12 @@ describe('LensBar', () => {
     expect(
       screen.getByRole('navigation', { name: 'Code Health lenses' }),
     ).toBeTruthy();
+    // Hotspots has an Atlas view: a tab, not a link.
+    expect(screen.getByRole('button', { name: /^Hotspots/ })).toBeTruthy();
     const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(9);
-    expect(links[0].textContent).toMatch(/^Hotspots/);
-    expect(links[0].getAttribute('href')).toBe('/classic/#preset=hotspots');
+    expect(links).toHaveLength(8);
+    expect(links[0].textContent).toMatch(/^Churn/);
+    expect(links[0].getAttribute('href')).toBe('/classic/#preset=churn');
     expect(links[0].textContent).toContain('opens the classic dashboard');
   });
 
