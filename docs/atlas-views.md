@@ -121,7 +121,7 @@ Still to come, with the first lens that fills them (the Hotspots PR): **What to 
 
 ## Lens inventory (2026-10-18)
 
-Classic had 23 presets over 22 analyzers. Checked against React's real report, several pairs measure the same thing twice, a few don't measure what they claim, and a few valuable questions go unasked. Atlas carries about 15 sharper lenses instead. Each lens still gets its own design checkpoint before it's built; this table decides **what the lenses are**, and the checkpoint decides **how each one looks**. Rows name catalog preset ids in `code` where one exists; Churn Velocity and Hotspot Clustering are analyzers with no preset of their own.
+Classic had 23 presets over 22 analyzers. Checked against React's real report, several pairs measure the same thing twice, a few don't measure what they claim, and a few valuable questions go unasked. Atlas carries about 15 sharper lenses instead. Each lens still gets its own design checkpoint before it's built; this table decides **what the lenses are**, and the checkpoint decides **how each one looks**. Figures come from `gitrelic --json` on React at `eb8feb7109` (2026-08-14) with the CLI's 12-month default window. Rows name catalog preset ids in `code` where one exists; Churn Velocity and Hotspot Clustering are analyzers with no preset of their own.
 
 ### Merges (duplicates)
 
@@ -164,6 +164,14 @@ That is 14 confirmed lenses plus three in italics still to be decided. Once Risk
 
 The catalog changes as each view's lenses ship, not all at once, so classic stays reachable for everything until its Atlas replacement exists.
 
+**Catalog parity as lenses ship.** `catalogParity.test.ts` requires scene's `CATALOG` to hold exactly classic's preset ids, each in classic's group; today its only escape hatch is `ATLAS_RENAMES`. The first catalog PR that merges, moves or adds a lens extends the test with three tables instead of loosening it:
+
+- `ATLAS_MERGES` — a classic preset id → the Atlas lens that absorbs it (`ghost-files → ownership`). The merged id leaves the catalog, and the target must exist in it.
+- `ATLAS_MOVES` — a preset id → its new group (`cursed-files → code-health`). It skips the group check for that id only.
+- `ATLAS_ONLY` — lens ids with no classic preset (`ownership`, `fix-rate`, `truck-factor`, `release-cadence`). They're allowed in the catalog, and they must not appear in classic's registry.
+
+Every classic preset must then be in the catalog, in `ATLAS_MERGES`, or retired in an explicit list, so nothing becomes unreachable by accident.
+
 ---
 
 ## Views
@@ -190,7 +198,7 @@ Each section records:
 
 **Lenses:** Repo map (new; the view's default), then Risk ↗ and Tech debt ↗ until they get checkpoints.
 
-**Primary form — Ring.** The repo at the centre; every analyzer lens on an outer ellipse, grouped into the four other views (sector order: Code Health, Ownership & Risk, Team & Activity, Structure), sized and heated by how far its reading sits outside normal for a repo this size (the same outlier rules as the badges, graded 0–3). Outliers carry their number and name; quiet lenses stay small and grey. It answers "where is this repo unusual?" in one look and doubles as navigation to all ~20 lenses.
+**Primary form — Ring.** The repo at the centre; every analyzer lens on an outer ellipse, grouped into the four other views (sector order: Code Health, Ownership & Risk, Team & Activity, Structure), sized and heated by how far its reading sits outside normal for a repo this size (the same outlier rules as the badges, graded 0–3). Outliers carry their number and name; quiet lenses stay small and grey. It answers "where is this repo unusual?" in one look and doubles as navigation to every lens (about 15; see *Lens inventory*).
 
 **The fan-out (the ring's click behaviour, not a form).** Clicking a lens dims the others and fans its top entities out of its dot on an arc, each labelled (e.g. Bus Factor's most at-risk files with their owners). A second click or Enter opens the lens: the view moves to it and those same marks fly to their places in the lens's layout, because they keep their entity ids. Back reverses it. The preview is the first frame of the real view. This replaces the mock's fan as a separate picture.
 
@@ -234,7 +242,7 @@ Each section records:
 
 **Findings:** the directory that leads on total versus the one that churns hardest per file; lockstep groups ("seven files changing week for week: one change, made seven times").
 
-**Dropped from classic:** the churn bar (a leaderboard, which the detail table covers); Velocity's accelerating/decelerating score. 259 of the 325 files it flags on React have three commits or fewer, so it stays out until core requires a minimum sample. Tests stay out of the swarm, as in classic's Churn tab; the Tests lens covers them.
+**Dropped from classic:** the churn bar (a leaderboard, which the detail table covers); Velocity's accelerating/decelerating score. 259 of the 325 files it flags on React have three commits or fewer, so it stays out until core requires a minimum sample. Tests stay out of the swarm, as in classic's source Churn tab; its tests mode (`ChurnTab mode="tests"`) moves to the Tests lens.
 
 ### Code Health › Risk (checkpoint 2026-10-18)
 
@@ -242,7 +250,7 @@ Each section records:
 
 **What it must communicate:** which files are risky, *why* (one score is several reasons added up), and what sits upstream of them.
 
-**Primary form — Score stacks.** One row per file: its score split by reason (churn, ownership, many authors, fix commits, parallel edits) as a stacked bar, with the cursed line at 50 drawn in so near misses show. On React all eight cursed files are cursed for the same three reasons, and the two biggest engine files (`ReactFizzServer.js`, `ReactFiberConfigDOM.js`) miss the line by 5. Signals the score doesn't count (hotspot 50+, accelerating) are marked beside the bar.
+**Primary form — Score stacks.** One row per file: its score split by reason (churn, ownership or many authors, abandoned hot file, fix commits, parallel edits) as a stacked bar, with the cursed line at 50 drawn in so near misses show. On React all eight cursed files are cursed for the same three reasons, and the two biggest engine files (`ReactFizzServer.js`, `ReactFiberConfigDOM.js`) miss the line by 5. Signals the score doesn't count (hotspot 50+, accelerating) are marked beside the bar. Ownership and many authors are two branches of one check in `cursed-files.ts`, so a file shows one or the other, never both.
 
 **Alternate form — Root causes.** Coupling hubs on the left, the risky files they change with on the right. *Passes the checkpoint test:* a different structure (hub → files) that joins coupling and risk, which classic keeps on separate tabs; on React, `ReactTypes.js` changes with nine of the top hotspots, and the two `*-dynamic` flag files each pull along all seven flag files.
 
@@ -252,7 +260,9 @@ Each section records:
 
 **Dropped from classic:** the risk heatmap and ownership-sunburst heroes; Tech Debt's growth timeline (Complexity growth decides its own place). The signal constellation (radviz) board was rejected: where a file lands depends on the order of the anchors around the ring, a hidden choice that changes the picture's meaning.
 
-**Before building:** core reports points per reason (RELIC-343), so scene reads the split instead of copying the scoring formula. **Open:** whether size and acceleration should count toward the score (it would put `ReactFizzServer.js` over the line). That is a core change with release notes, decided separately.
+**Before building (core, RELIC-343):** report points per reason, every reason including the abandoned-hot-file +10, so scene reads the split instead of copying the scoring formula; and report near misses. Today `analyzeCursedFiles` drops anything under 50, so the files just under the line never reach the report. Emit candidates down to a floor (e.g. 40) with a cap, and check the size cost with `scripts/measure-report.mjs`.
+
+**Size and acceleration stay out of the score (decided 2026-10-18).** Size is already Hotspots' axis (churn × size), so adding it would count churn twice and turn Risk into a second hotspot ranking; files that are top hotspots just under the line are named in the finding instead. Acceleration as a bonus is noise (see Churn). If recency should count, it comes in as time-weighted churn with a minimum sample, not as a separate bonus.
 
 ---
 
