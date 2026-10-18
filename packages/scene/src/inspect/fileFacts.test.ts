@@ -24,6 +24,10 @@ function reportWith(file: string): GitrelicReport {
     } as never,
   ];
   r.ageMap.files = [{ file, ageInDays: 400, status: 'stale' } as never];
+  r.ghostFiles.files = [
+    { file, dominantAuthor: 'bo@corp.com', authorInactiveDays: 210 } as never,
+  ];
+  r.deadCode.candidates = [{ file, ageInDays: 400 } as never];
   r.blastRadius.files = [
     { file, avgCoChangedFiles: 7.25, blastScore: 61 } as never,
   ];
@@ -41,19 +45,55 @@ function reportWith(file: string): GitrelicReport {
 describe('fileFacts', () => {
   it('lists every analyzer verdict in inspector order', () => {
     expect(fileFacts(F, reportWith(F))).toEqual([
-      { label: 'Hotspot Score', value: '88', tier: 'critical' },
-      { label: 'Churn (commits)', value: (1234).toLocaleString() },
+      {
+        label: 'Hotspot Score',
+        value: '88',
+        tier: 'critical',
+        lens: 'hotspots',
+      },
+      {
+        label: 'Churn (commits)',
+        value: (1234).toLocaleString(),
+        lens: 'churn',
+      },
       { label: 'Lines of Code', value: (5120).toLocaleString() },
-      { label: 'Language', value: 'TypeScript' },
-      { label: 'Bus Factor', value: '1 (ann: 97%)', tier: 'critical' },
-      { label: 'Age', value: '400 days (stale)' },
-      { label: 'Blast Radius', value: '7.3 avg files', tier: 'warning' },
-      { label: 'Coupled With', value: 'scheduler.ts (73%)' },
-      { label: 'Curse Score', value: '64', tier: 'critical' },
-      { label: 'Rewrite Ratio', value: '1.46' },
-      { label: 'Shame Score', value: '40', tier: 'warning' },
+      { label: 'Language', value: 'TypeScript', lens: 'languages' },
+      {
+        label: 'Bus Factor',
+        value: '1 (ann: 97%)',
+        tier: 'critical',
+        lens: 'bus-factor',
+      },
+      { label: 'Age', value: '400 days (stale)', lens: 'age-map' },
+      {
+        label: 'Owner Inactive',
+        value: 'bo (210 days)',
+        tier: 'warning',
+        lens: 'ghost-files',
+      },
+      {
+        label: 'Stale',
+        value: 'untouched 400 days',
+        tier: 'moderate',
+        lens: 'dead-code',
+      },
+      {
+        label: 'Blast Radius',
+        value: '7.3 avg files',
+        tier: 'warning',
+        lens: 'blast-radius',
+      },
+      { label: 'Coupled With', value: 'scheduler.ts (73%)', lens: 'coupling' },
+      {
+        label: 'Curse Score',
+        value: '64',
+        tier: 'critical',
+        lens: 'cursed-files',
+      },
+      { label: 'Rewrite Ratio', value: '1.46', lens: 'rewrite-ratio' },
+      { label: 'Shame Score', value: '40', tier: 'warning', lens: 'shame' },
       { label: 'Churn Trend', value: 'accelerating' },
-      { label: 'Renames', value: '2 times' },
+      { label: 'Renames', value: '2 times', lens: 'renames' },
     ]);
   });
 
@@ -90,5 +130,17 @@ describe('fileFacts', () => {
     const r = reportWith(F);
     r.hotspots.topHotspots = [{ file: F, hotspotScore: 10, category } as never];
     expect(fileFacts(F, r)[0].tier).toBe(tier);
+  });
+
+  it('tiers shame against its notable bar of 70', () => {
+    const tierAt = (shameScore: number) => {
+      const r = reportWith(F);
+      r.forensics.files = [{ file: F, shameScore } as never];
+      return fileFacts(F, r).find((f) => f.label === 'Shame Score')?.tier;
+    };
+    expect(tierAt(9)).toBeUndefined();
+    expect(tierAt(25)).toBe('moderate');
+    expect(tierAt(40)).toBe('warning');
+    expect(tierAt(75)).toBe('critical');
   });
 });

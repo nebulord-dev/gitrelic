@@ -8,10 +8,12 @@
     report,
     theme = $bindable(),
     onsearch,
+    onguide,
   }: {
     report: GitrelicReport;
     theme: ThemeName;
     onsearch?: () => void;
+    onguide?: () => void;
   } = $props();
 
   // Empty for the blank dates normalizeReport backfills, or unparseable ones.
@@ -47,6 +49,14 @@
     >
       Search
       <kbd class="text-[11px]">{paletteShortcut()}</kbd>
+    </button>
+    <button
+      type="button"
+      onclick={() => onguide?.()}
+      class="flex cursor-pointer items-center gap-2 rounded-chip border border-control-border bg-transparent px-3 py-1.5 font-[inherit] text-[13px] text-muted hover:text-text"
+    >
+      Guide
+      <kbd class="text-[11px]">?</kbd>
     </button>
     <ThemeSwitch bind:theme />
   </div>

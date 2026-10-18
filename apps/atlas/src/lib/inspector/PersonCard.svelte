@@ -4,8 +4,10 @@
     personFacts,
     type EntityId,
     type EntityIndex,
+    type WeeklyActivity,
   } from '@gitrelic/scene';
 
+  import ActivityCard from './ActivityCard.svelte';
   import Card from './Card.svelte';
   import EntityChip from './EntityChip.svelte';
   import FactRows from './FactRows.svelte';
@@ -15,11 +17,15 @@
     email,
     report,
     index,
+    activity = null,
+    historyFailed = false,
     onselect,
   }: {
     email: string;
     report: GitrelicReport;
     index: EntityIndex;
+    activity?: WeeklyActivity | null;
+    historyFailed?: boolean;
     onselect?: (id: EntityId) => void;
   } = $props();
 
@@ -42,7 +48,9 @@
 {#if person}
   <Card eyebrow="Person">
     <div class="flex items-baseline justify-between gap-3">
-      <span class="text-lg font-semibold text-person">{person.name}</span>
+      <span class="text-lg leading-snug font-semibold text-person"
+        >{person.name}</span
+      >
       <span class={['text-[12px]', STATUS[person.status].class]}>
         {STATUS[person.status].text}
       </span>
@@ -50,6 +58,8 @@
     <div class="text-[12px] break-all text-muted">{person.email}</div>
     <FactRows rows={person.rows} />
   </Card>
+
+  <ActivityCard {activity} failed={historyFailed} />
 
   {#if person.focusAreas.length > 0}
     <Card eyebrow="Focus areas">

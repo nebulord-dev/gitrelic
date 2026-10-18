@@ -22,8 +22,11 @@ export {
   CATALOG,
   catalogEntry,
   classicUrl,
+  defaultLens,
   DOCS_BASE,
   docsUrl,
+  isPresetGroup,
+  lensesOf,
   PRESET_GROUPS,
   type CatalogEntry,
   type PresetGroup,
@@ -104,8 +107,8 @@ export {
   type SearchKind,
 } from './entities';
 export { fileFacts, type FactTier, type FileFact } from './inspect/fileFacts';
-export { fileMentions } from './inspect/fileMentions';
 export { dirFacts } from './inspect/dirFacts';
+export { coupledWith, type CoupledFile } from './inspect/coupledWith';
 export {
   fileContributors,
   type FileContributor,
@@ -213,3 +216,10 @@ export {
 } from './tiers/headcount';
 
 export { startOfUtcWeek, WEEK_MS } from './time/week';
+export {
+  previousNamesOf,
+  touchesEntity,
+  weeklyActivity,
+  weeklyHits,
+  type WeeklyActivity,
+} from './time/activity';

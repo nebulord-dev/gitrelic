@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
+  import { onMount, tick, type Snippet } from 'svelte';
 
   import { AtlasStage } from '../engine/atlasStage';
   import { prefersReducedMotion } from '../engine/reducedMotion';
@@ -11,11 +11,14 @@
     theme,
     selected = null,
     onselect,
+    empty,
   }: {
     scene?: Scene | null;
     theme: ThemeName;
     selected?: EntityId | null;
     onselect?: (id: EntityId | null) => void;
+    /** Shown while there's no scene (the lens has no Atlas view yet). */
+    empty?: Snippet;
   } = $props();
 
   let host = $state<HTMLDivElement>();
@@ -146,9 +149,9 @@
     </div>
   {:else if !scene}
     <div
-      class="pointer-events-none absolute inset-0 grid place-content-center text-sm text-muted"
+      class="absolute inset-0 grid place-content-center p-6 text-center text-sm text-muted"
     >
-      No views yet.
+      {#if empty}{@render empty()}{:else}No views yet.{/if}
     </div>
   {/if}
 </main>

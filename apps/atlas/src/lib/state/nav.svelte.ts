@@ -1,16 +1,29 @@
-// Where the viewer is: the open view, its layout and the selected entity,
-// mirrored in the URL hash so a link reopens the same place. Everything read
-// from the hash is checked: a view must be one Atlas has, and a selection
-// must resolve in the entity index — otherwise it's dropped, never shown.
+// Where the viewer is: the open view and lens, the lens's form, the selected
+// entity and the time window, mirrored in the URL hash so a link reopens the
+// same place (docs/atlas-views.md, URL state). Everything read from the hash
+// is checked — a view must be a rail group, a lens an Atlas view in it, a
+// form one its lens declares, a selection one the entity index resolves —
+// and anything else is dropped, never shown.
 
-import { catalogEntry, type EntityId, type EntityIndex } from '@gitrelic/scene';
+import {
+  catalogEntry,
+  defaultLens,
+  isPresetGroup,
+  type EntityId,
+  type EntityIndex,
+  type PresetGroup,
+} from '@gitrelic/scene';
 
 import { parseHash, serializeHash } from './hash';
 
+const HOME: PresetGroup = 'overview';
+
 export class Nav {
-  view = $state<string | null>(null);
-  layout = $state<string | null>(null);
+  view = $state<PresetGroup>(HOME);
+  lens = $state<string | null>(null);
+  form = $state<string | null>(null);
   selection = $state<EntityId | null>(null);
+  time = $state<string | null>(null);
 
   private readonly onHashChange = () => this.read();
 
@@ -18,8 +31,8 @@ export class Nav {
     /** A getter, so the caller can hand over reactive data. */
     private readonly index: () => EntityIndex,
     private readonly win: Window = window,
-    /** A view's alternate layouts (forms); a layout in the hash must be one. */
-    private readonly layoutsOf: (view: string) => readonly string[] = () => [],
+    /** A lens's alternate forms; a form in the hash must be one of them. */
+    private readonly formsOf: (lens: string) => readonly string[] = () => [],
   ) {
     // The selection is validated here and on every hashchange, not when the
     // index changes: Shell builds the index once from a report that's fixed
@@ -28,20 +41,47 @@ export class Nav {
     win.addEventListener('hashchange', this.onHashChange);
   }
 
-  /** Opens an Atlas view (a new history entry, so Back returns). */
-  open(view: string): void {
-    if (!catalogEntry(view)?.atlas) return;
+  /** Opens a view on its default lens (a new history entry, so Back returns). */
+  openView(view: string): void {
+    if (!isPresetGroup(view)) return;
+    const lens = defaultLens(view);
+    // Already there: no history entry for a Back that changes nothing.
+    if (view === this.view && lens === this.lens && this.form === null) return;
     this.view = view;
-    this.layout = null;
+    this.lens = lens;
+    this.form = null;
+    this.write('push');
+  }
+
+  /**
+   * Opens a lens, and its view with it. Returns false for a lens without an
+   * Atlas view; the caller links to classic instead.
+   */
+  openLens(id: string): boolean {
+    const entry = catalogEntry(id);
+    if (!entry?.atlas) return false;
+    if (id === this.lens && this.form === null) return true;
+    this.view = entry.group;
+    this.lens = id;
+    this.form = null;
+    this.write('push');
+    return true;
+  }
+
+  /** Switches the lens's form; null is its primary. */
+  setForm(form: string | null): void {
+    if (form !== null && !(this.lens && this.formsOf(this.lens).includes(form)))
+      return;
+    this.form = form;
     this.write('push');
   }
 
   /**
    * Selects `id`, or clears with null, replacing the history entry rather
-   * than pushing one. An id the index doesn't know is
-   * ignored and the current selection kept: a click on something not
-   * selectable (a bot's row, a cell:/week:/commit: mark until those kinds
-   * are indexed) must not throw away what the viewer had selected.
+   * than pushing one. An id the index doesn't know is ignored and the
+   * current selection kept: a click on something not selectable (a bot's
+   * row, a cell:/week:/commit: mark until those kinds are indexed) must not
+   * throw away what the viewer had selected.
    */
   select(id: EntityId | null): void {
     if (id !== null && !this.index().get(id)) return;
@@ -55,23 +95,38 @@ export class Nav {
 
   private read(): void {
     const loc = parseHash(this.win.location.hash);
-    this.view = loc.view && catalogEntry(loc.view)?.atlas ? loc.view : null;
-    this.layout =
-      this.view && loc.layout && this.layoutsOf(this.view).includes(loc.layout)
-        ? loc.layout
+    this.view = loc.view && isPresetGroup(loc.view) ? loc.view : HOME;
+    const entry = loc.lens ? catalogEntry(loc.lens) : undefined;
+    this.lens =
+      entry?.atlas && entry.group === this.view
+        ? entry.id
+        : defaultLens(this.view);
+    this.form =
+      this.lens && loc.form && this.formsOf(this.lens).includes(loc.form)
+        ? loc.form
         : null;
     this.selection =
       loc.selection && this.index().get(loc.selection) ? loc.selection : null;
+    // `t` is dropped until the first lens narrows to a window, so a shared
+    // link never promises a filter nothing applies. isTimeWindow (hash.ts)
+    // is ready for it: read `loc.time` through it here when that lands.
+    this.time = null;
     // Rewrite the URL if anything was dropped, so a shared link doesn't
     // carry the junk forward.
     if (this.hash() !== this.win.location.hash) this.write('replace');
   }
 
+  /** Defaults (the home view, a view's default lens) stay out of the URL. */
   private hash(): string {
     return serializeHash({
-      view: this.view ?? undefined,
-      layout: this.layout ?? undefined,
+      view: this.view === HOME ? undefined : this.view,
+      lens:
+        this.lens === defaultLens(this.view)
+          ? undefined
+          : (this.lens ?? undefined),
+      form: this.form ?? undefined,
       selection: this.selection ?? undefined,
+      time: this.time ?? undefined,
     });
   }
 

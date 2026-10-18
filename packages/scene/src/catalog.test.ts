@@ -4,7 +4,10 @@ import {
   CATALOG,
   catalogEntry,
   classicUrl,
+  defaultLens,
   docsUrl,
+  isPresetGroup,
+  lensesOf,
   PRESET_GROUPS,
 } from './catalog';
 
@@ -35,5 +38,24 @@ describe('catalog', () => {
     expect(coupling && docsUrl(coupling)).toBeNull();
     expect(classicUrl('dead-code')).toBe('/classic/#preset=dead-code');
     expect(catalogEntry('nope')).toBeUndefined();
+  });
+
+  it("lists each view's lenses and picks a default only from Atlas views", () => {
+    expect(lensesOf('code-health').map((e) => e.id)).toEqual([
+      'hotspots',
+      'churn',
+      'cursed-files',
+      'dead-code',
+      'blast-radius',
+      'complexity-trend',
+      'age-map',
+      'rewrite-ratio',
+      'shame',
+    ]);
+    // No preset has an Atlas view yet, so no view has a default lens.
+    for (const g of PRESET_GROUPS) expect(defaultLens(g.id)).toBeNull();
+    expect(isPresetGroup('structure')).toBe(true);
+    expect(isPresetGroup('hotspots')).toBe(false);
+    expect(isPresetGroup('__proto__')).toBe(false);
   });
 });

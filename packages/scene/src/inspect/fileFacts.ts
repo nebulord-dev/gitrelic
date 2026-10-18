@@ -7,6 +7,8 @@ export interface FileFact {
   value: string;
   /** Severity to color the value with; absent means neutral. */
   tier?: FactTier;
+  /** The preset (lens) the row comes from, so a dashboard can link to it. */
+  lens?: string;
 }
 
 const fmt = (n: number) => n.toLocaleString();
@@ -14,6 +16,17 @@ const baseName = (path: string) => path.split('/').pop() ?? path;
 
 function hotspotTier(category: HotspotCategory): FactTier {
   return category === 'low' ? 'healthy' : category;
+}
+
+/**
+ * Shame's notable bar is 70 (docs/analyzers/shame.md); a few `fix` commits
+ * score low and stay neutral rather than reading as a warning.
+ */
+function shameTier(score: number): FactTier | undefined {
+  if (score >= 70) return 'critical';
+  if (score >= 40) return 'warning';
+  if (score >= 20) return 'moderate';
+  return undefined;
 }
 
 /**
@@ -30,18 +43,23 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
       label: 'Hotspot Score',
       value: String(hotspot.hotspotScore),
       tier: hotspotTier(hotspot.category),
+      lens: 'hotspots',
     });
   }
 
   const churn = report.churn.files.find((f) => f.file === file);
   if (churn) {
-    facts.push({ label: 'Churn (commits)', value: fmt(churn.commitCount) });
+    facts.push({
+      label: 'Churn (commits)',
+      value: fmt(churn.commitCount),
+      lens: 'churn',
+    });
   }
 
   const loc = report.loc.files.find((f) => f.file === file);
   if (loc) {
     facts.push({ label: 'Lines of Code', value: fmt(loc.lines) });
-    facts.push({ label: 'Language', value: loc.language });
+    facts.push({ label: 'Language', value: loc.language, lens: 'languages' });
   }
 
   const bf = report.busFactors.files.find((f) => f.file === file);
@@ -50,6 +68,7 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
       label: 'Bus Factor',
       value: `${bf.uniqueAuthors} (${bf.dominantAuthor.split('@')[0]}: ${bf.dominantAuthorPercent}%)`,
       tier: bf.risk === 'critical' ? 'critical' : undefined,
+      lens: 'bus-factor',
     });
   }
 
@@ -58,6 +77,27 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
     facts.push({
       label: 'Age',
       value: `${age.ageInDays} days (${age.status})`,
+      lens: 'age-map',
+    });
+  }
+
+  const ghost = report.ghostFiles.files.find((f) => f.file === file);
+  if (ghost) {
+    facts.push({
+      label: 'Owner Inactive',
+      value: `${ghost.dominantAuthor.split('@')[0]} (${ghost.authorInactiveDays} days)`,
+      tier: 'warning',
+      lens: 'ghost-files',
+    });
+  }
+
+  const stale = report.deadCode.candidates.find((f) => f.file === file);
+  if (stale) {
+    facts.push({
+      label: 'Stale',
+      value: `untouched ${stale.ageInDays} days`,
+      tier: 'moderate',
+      lens: 'dead-code',
     });
   }
 
@@ -67,6 +107,7 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
       label: 'Blast Radius',
       value: `${blast.avgCoChangedFiles.toFixed(1)} avg files`,
       tier: blast.blastScore > 50 ? 'warning' : undefined,
+      lens: 'blast-radius',
     });
   }
 
@@ -75,6 +116,7 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
     facts.push({
       label: 'Coupled With',
       value: `${baseName(cp.topPartner)} (${Math.round(cp.couplingScore)}%)`,
+      lens: 'coupling',
     });
   }
 
@@ -84,12 +126,17 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
       label: 'Curse Score',
       value: String(cursed.curseScore),
       tier: 'critical',
+      lens: 'cursed-files',
     });
   }
 
   const rr = report.rewriteRatio.files.find((f) => f.file === file);
   if (rr) {
-    facts.push({ label: 'Rewrite Ratio', value: rr.ratio.toFixed(2) });
+    facts.push({
+      label: 'Rewrite Ratio',
+      value: rr.ratio.toFixed(2),
+      lens: 'rewrite-ratio',
+    });
   }
 
   const sh = report.forensics.files.find((f) => f.file === file);
@@ -97,7 +144,8 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
     facts.push({
       label: 'Shame Score',
       value: String(sh.shameScore),
-      tier: 'warning',
+      tier: shameTier(sh.shameScore),
+      lens: 'shame',
     });
   }
 
@@ -110,7 +158,11 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
     (c) => c.currentPath === file,
   );
   if (rename && rename.renameCount > 0) {
-    facts.push({ label: 'Renames', value: `${rename.renameCount} times` });
+    facts.push({
+      label: 'Renames',
+      value: `${rename.renameCount} times`,
+      lens: 'renames',
+    });
   }
 
   return facts;

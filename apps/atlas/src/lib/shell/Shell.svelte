@@ -2,14 +2,28 @@
   import {
     buildEntityIndex,
     computeOutlierBadges,
+    entityKey,
+    entityKind,
+    fromCommitIndex,
+    PRESET_GROUPS,
+    previousNamesOf,
+    touchesEntity,
+    weeklyActivity,
+    weeklyHits,
+    type CommitLike,
     type EntityEntry,
     type ThemeName,
   } from '@gitrelic/scene';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
 
+  import { loadCommits } from '../data/loadReport';
+  import { initialCollapsed, rememberCollapsed } from '../state/inspectorPref';
   import { Nav } from '../state/nav.svelte';
+  import TimeStrip from '../time/TimeStrip.svelte';
   import CommandPalette from './CommandPalette.svelte';
+  import GuideSheet from './GuideSheet.svelte';
   import Inspector from './Inspector.svelte';
+  import LensBar from './LensBar.svelte';
   import Rail from './Rail.svelte';
   import Stage from './Stage.svelte';
   import TopBar from './TopBar.svelte';
@@ -26,26 +40,94 @@
   onDestroy(() => nav.destroy());
 
   let paletteOpen = $state(false);
+  let guideOpen = $state(false);
+  let collapsed = $state(initialCollapsed());
+  $effect(() => rememberCollapsed(collapsed));
+
+  // The time strip and the inspector's activity read the commit history,
+  // fetched once; until it arrives (or if it fails) both say so.
+  let commits = $state.raw<CommitLike[] | null>(null);
+  let historyFailed = $state(false);
+  onMount(() => {
+    loadCommits().then(
+      (idx) => (commits = fromCommitIndex(idx)),
+      () => (historyFailed = true),
+    );
+  });
+  let touches = $derived.by(() => {
+    const id = nav.selection;
+    if (!id) return null;
+    // A renamed file keeps the history it made under its old paths.
+    const before =
+      entityKind(id) === 'file' ? previousNamesOf(entityKey(id), report) : [];
+    return touchesEntity(id, before);
+  });
+  // Weekly totals once; a selection change recomputes only its own weeks.
+  let series = $derived(commits ? weeklyActivity(commits) : null);
+  let activity = $derived(
+    commits && series
+      ? {
+          ...series,
+          hits: weeklyHits(
+            commits,
+            series.start,
+            series.totals.length,
+            touches,
+          ),
+        }
+      : null,
+  );
+
+  let viewLabel = $derived(
+    PRESET_GROUPS.find((g) => g.id === nav.view)?.label ?? '',
+  );
 
   // Analyzers are selected too: the inspector explains them and links to the
-  // view (or to classic, until Atlas has one).
+  // lens (or to classic, until Atlas has one).
   const pick = (entry: EntityEntry) => nav.select(entry.id);
+  const openLens = (id: string) => void nav.openLens(id);
 </script>
 
 <div class="flex h-screen flex-col gap-4 p-4">
-  <TopBar {report} bind:theme onsearch={() => (paletteOpen = true)} />
+  <TopBar
+    {report}
+    bind:theme
+    onsearch={() => (paletteOpen = true)}
+    onguide={() => (guideOpen = true)}
+  />
   <div class="flex min-h-0 flex-1 gap-4">
-    <Rail {badges} view={nav.view} onopen={(id) => nav.open(id)} />
-    <Stage {theme} selected={nav.selection} onselect={(id) => nav.select(id)} />
+    <Rail {badges} view={nav.view} onopen={(v) => nav.openView(v)} />
+    <div class="flex min-w-0 flex-1 flex-col gap-3">
+      <LensBar view={nav.view} lens={nav.lens} {badges} onopen={openLens} />
+      <Stage {theme} selected={nav.selection} onselect={(id) => nav.select(id)}>
+        {#snippet empty()}
+          <p class="m-0 max-w-sm leading-relaxed">
+            None of {viewLabel}'s lenses has an Atlas view yet. Each one in the
+            bar above opens in the classic dashboard.
+          </p>
+        {/snippet}
+      </Stage>
+      <TimeStrip
+        {activity}
+        selected={touches !== null}
+        failed={historyFailed}
+      />
+    </div>
     <Inspector
       {report}
       {index}
-      selection={nav.selection}
       view={nav.view}
+      lens={nav.lens}
+      selection={nav.selection}
+      activity={touches ? activity : null}
+      {historyFailed}
+      bind:collapsed
       onselect={(id) => nav.select(id)}
-      onopen={(id) => nav.open(id)}
+      onopen={openLens}
+      onguide={() => (guideOpen = true)}
     />
   </div>
 </div>
 
 <CommandPalette {index} bind:open={paletteOpen} onpick={pick} />
+<GuideSheet bind:open={guideOpen} lens={nav.lens} onopen={openLens} />
