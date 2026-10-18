@@ -88,7 +88,7 @@ export function hotspotFindings(input: ViewInput): Finding[] {
       id: 'two-kinds',
       tone: 'neutral',
       segments: [
-        `Two kinds of heat: ${n(large.length)} large file${large.length === 1 ? '' : 's'} that keep changing, and ${n(small.length)} under ${SMALL_FILE} lines hot on churn alone, like `,
+        `Two kinds of heat: ${n(large.length)} large file${large.length === 1 ? ' that keeps' : 's that keep'} changing, and ${n(small.length)} under ${SMALL_FILE} lines hot on churn alone, like `,
         { ref: ids.file(s.file), text: baseName(s.file) },
         ` (${n(s.commits)} commits, ${n(s.lines)} lines).`,
       ],

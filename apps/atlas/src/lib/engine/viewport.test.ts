@@ -64,6 +64,21 @@ describe('viewport', () => {
     expect(worldToScreen(v, 60, 60)).toEqual([500, 400]);
   });
 
+  it('keeps a fitted scene clear of controls along the top and bottom', () => {
+    const screen = { width: 1000, height: 600 };
+    const bounds = { x: 0, y: 0, w: 1000, h: 600 };
+    const plain = fit(bounds, screen, 24);
+    const inset = fit(bounds, screen, 24, { top: 44, bottom: 28 });
+    // Shrinks to the band between the controls…
+    expect(inset.scale).toBeLessThan(plain.scale);
+    expect(inset.scale).toBeCloseTo((600 - 48 - 72) / 600, 9);
+    // …and sits in it: the top edge is below the top inset plus padding.
+    const [, top] = worldToScreen(inset, 0, 0);
+    const [, bottom] = worldToScreen(inset, 0, 600);
+    expect(top).toBeGreaterThanOrEqual(44 + 24 - 1e-9);
+    expect(bottom).toBeLessThanOrEqual(600 - 28 - 24 + 1e-9);
+  });
+
   it('survives an empty scene', () => {
     const v = fit({ x: 0, y: 0, w: 0, h: 0 }, { width: 100, height: 100 });
     expect(Object.values(v).every(Number.isFinite)).toBe(true);

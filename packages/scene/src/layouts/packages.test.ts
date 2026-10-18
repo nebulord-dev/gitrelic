@@ -5,7 +5,7 @@ import { hotspotReport } from '../../test/hotspotReport';
 import { hotspotPoints } from '../hotspots/points';
 import { ids, REPO_ID } from '../ids';
 import { checkScene } from '../model';
-import { PACKAGES_MAX_GROW, packagesScene } from './packages';
+import { PACKAGES_DOT_CAP, PACKAGES_MAX_GROW, packagesScene } from './packages';
 
 const viewport = { width: 1200, height: 800 };
 import type { GitrelicReport } from '@gitrelic/core';
@@ -167,5 +167,42 @@ describe('packagesScene', () => {
     expect(scene.marks.filter((m) => m.id.startsWith('package:'))).toHaveLength(
       1000,
     );
+  });
+
+  it('caps the dots on a huge repo, keeping every warm file', () => {
+    const files = Array.from({ length: PACKAGES_DOT_CAP * 3 }, (_, i) => ({
+      file: `pkg${i % 30}/f${i}.ts`,
+      commits: 1 + (i % 9),
+      loc: 50 + i,
+      score: i % 500 === 0 ? 60 : 5,
+    }));
+    const points = hotspotPoints(hotspotReport(files));
+    const scene = packagesScene(points, viewport);
+    const dots = scene.marks.filter((m) => m.id.startsWith('file:'));
+    expect(dots.length).toBeLessThanOrEqual(PACKAGES_DOT_CAP + 30);
+    const drawn = new Set(dots.map((m) => m.id));
+    for (const p of points.filter((p) => p.tier > 0))
+      expect(drawn.has(ids.file(p.file))).toBe(true);
+    // Circles keep their true size: same packing as with every dot drawn.
+    expect(
+      scene.marks.find((m) => m.id === ids.dir('pkg0'))!.r,
+    ).toBeGreaterThan(7 * Math.sqrt(files.length / 30));
+    expect(checkScene(scene)).toEqual([]);
+  });
+
+  it('tells two warm files with one basename apart', () => {
+    const scene = packagesScene(
+      hotspotPoints(
+        hotspotReport([
+          { file: 'packages/a/src/index.ts', commits: 9, loc: 900, score: 80 },
+          { file: 'packages/b/src/index.ts', commits: 8, loc: 900, score: 70 },
+        ]),
+      ),
+      viewport,
+    );
+    const label = (f: string) =>
+      scene.marks.find((m) => m.id === ids.file(f))!.label;
+    expect(label('packages/a/src/index.ts')).toBe('a/src/index.ts');
+    expect(label('packages/b/src/index.ts')).toBe('b/src/index.ts');
   });
 });

@@ -10,6 +10,7 @@
 // `bin:` — aren't entity kinds, so the index never resolves them and clicking
 // one selects nothing.
 
+import { distinctNames } from '../format/distinctNames';
 import {
   commitsForScore,
   HOTSPOT_TIERS,
@@ -166,6 +167,8 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
   }
   if (focusFile && points.some((p) => p.file === focusFile))
     dotted.add(focusFile);
+  const names = distinctNames([...dotted]);
+  const nameOf = (file: string) => names.get(file) ?? baseName(file);
   const callouts = points.filter((p) => p.tier > 0).slice(0, FIELD_CALLOUTS);
   const calledOut = new Set(callouts.map((p) => p.file));
 
@@ -220,7 +223,7 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
       // Called-out files are named in the column instead.
       ...(calledOut.has(p.file)
         ? {}
-        : { label: baseName(p.file), labelPriority: p.score }),
+        : { label: nameOf(p.file), labelPriority: p.score }),
       z: p.tier + 1,
     });
   }
@@ -235,7 +238,7 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
         id,
         colX,
         top + 12 + i * step,
-        `${p.score}  ${baseName(p.file)}`,
+        `${p.score}  ${nameOf(p.file)}`,
         'right',
         200 - i,
       ),

@@ -119,4 +119,22 @@ describe('fieldScene', () => {
     expect(checkScene(scene)).toEqual([]);
     expect(scene.marks.some((m) => m.id.startsWith('file:'))).toBe(false);
   });
+
+  it('names two hot files with one basename by their folders', () => {
+    const r = hotspotReport([
+      { file: 'client/index.ts', commits: 30, loc: 3000, score: 100 },
+      { file: 'server/index.ts', commits: 28, loc: 2800, score: 90 },
+    ]);
+    const scene = fieldScene(
+      { points: hotspotPoints(r), scale: hotspotScale(r) },
+      viewport,
+    );
+    const callouts = scene.marks
+      .filter((m) => m.id.startsWith('callout:'))
+      .map((m) => m.label);
+    expect(callouts.sort()).toEqual([
+      '100  client/index.ts',
+      '90  server/index.ts',
+    ]);
+  });
 });

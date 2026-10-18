@@ -242,8 +242,13 @@ export {
   type HotspotSummary,
   type HotspotTier,
 } from './hotspots/points';
+export { distinctNames } from './format/distinctNames';
 export { fieldScene, type FieldInput } from './layouts/field';
-export { packagesScene } from './layouts/packages';
+export {
+  PACKAGES_DOT_CAP,
+  PACKAGES_MAX_GROW,
+  packagesScene,
+} from './layouts/packages';
 export {
   fieldLayout,
   hotspotFindings,

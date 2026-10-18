@@ -23,8 +23,10 @@ import {
 } from './tweenEngine';
 import {
   fit,
+  FIT_PADDING,
   IDENTITY,
   screenToWorld,
+  type Insets,
   type ScreenSize,
   type ViewTransform,
 } from './viewport';
@@ -41,6 +43,8 @@ export interface AtlasStageOptions {
   glow: boolean;
   reducedMotion: () => boolean;
   clock?: FrameClock;
+  /** Room the stage's own controls take along its top and bottom edges. */
+  insets?: Insets;
   onHover?: (id: EntityId | null) => void;
   onSelect?: (id: EntityId | null) => void;
   /** Each drawn frame's CPU cost, ms (the bench reads this). */
@@ -152,7 +156,7 @@ export class AtlasStage {
       const moved = !sameBounds(this.bounds, scene.bounds) || !!opts.reframe;
       this.bounds = scene.bounds;
       if (frame) {
-        this.view = fit(scene.bounds, this.size);
+        this.view = this.framing(scene.bounds);
         this.camera = null;
         this.userMoved = false;
       } else if (moved && !this.userMoved) {
@@ -160,7 +164,7 @@ export class AtlasStage {
         // taken the camera: glide to frame it, alongside the marks — or,
         // with reduced motion, cut straight to it (zooming is exactly the
         // motion that preference asks to stop).
-        const to = fit(scene.bounds, this.size);
+        const to = this.framing(scene.bounds);
         if (this.opts.reducedMotion()) {
           this.view = to;
           this.camera = null;
@@ -202,17 +206,22 @@ export class AtlasStage {
     if (!this.userMoved && this.bounds) {
       // A glide in flight was aiming at a framing for the old size.
       this.camera = null;
-      this.view = fit(this.bounds, this.size);
+      this.view = this.framing(this.bounds);
       this.hitsStale = true;
     }
     this.requestDraw(true);
+  }
+
+  /** `bounds` fitted to the stage, clear of its controls. */
+  private framing(bounds: Scene['bounds']): ViewTransform {
+    return fit(bounds, this.size, FIT_PADDING, this.opts.insets);
   }
 
   fitView(): void {
     if (!this.bounds) return;
     this.userMoved = false;
     this.camera = null;
-    this.view = fit(this.bounds, this.size);
+    this.view = this.framing(this.bounds);
     this.hitsStale = true;
     this.requestDraw(false);
   }

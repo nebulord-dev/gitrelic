@@ -74,6 +74,15 @@ describe('hotspotFindings', () => {
       { file: 'b.js', commits: 25, loc: 4000, score: 80 },
     ]);
     expect(refs(onlyBig, 'two-kinds')).toBeUndefined();
+    // One large file: "keeps", not "keep".
+    const one = hotspotReport([
+      { file: 'big.js', commits: 30, loc: 5000, score: 100 },
+      { file: 'flags.js', commits: 25, loc: 100, score: 40 },
+    ]);
+    const text = findings(one).find((f) => f.id === 'two-kinds')!.segments[0];
+    expect(text).toMatch(
+      /^Two kinds of heat: 1 large file that keeps changing/,
+    );
   });
 
   it('names the package where heat is densest, against a big cool one', () => {

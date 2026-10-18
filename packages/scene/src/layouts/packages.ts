@@ -9,6 +9,7 @@
 
 import { packSiblings } from 'd3-hierarchy';
 
+import { distinctNames } from '../format/distinctNames';
 import { packageOf, type HotspotPoint } from '../hotspots/points';
 import { ids, REPO_ID, type EntityId } from '../ids';
 import type { Mark, Scene, Viewport } from '../model';
@@ -28,6 +29,12 @@ const GOLDEN = Math.PI * (3 - Math.sqrt(5));
  * itself; dots grow only by the square root, so they stay dots.
  */
 export const PACKAGES_MAX_GROW = 3;
+/**
+ * Most file dots drawn. Past it, every package keeps its warm files and a
+ * proportional share of its hottest cool files; circles
+ * stay sized by the true count, so the picture's proportions don't change.
+ */
+export const PACKAGES_DOT_CAP = 3000;
 
 const baseName = (path: string) => path.slice(path.lastIndexOf('/') + 1);
 
@@ -84,6 +91,23 @@ export function packagesScene(
   const spacing = SPACING * grow;
   const dotGrow = Math.sqrt(grow);
 
+  // Which files get a dot: all of them, or under the cap every warm file
+  // and the same share of each package's cool ones.
+  const warmTotal = points.filter((p) => p.tier > 0).length;
+  const coolTotal = points.length - warmTotal;
+  const coolShare =
+    points.length <= PACKAGES_DOT_CAP || coolTotal === 0
+      ? 1
+      : Math.max(0, (PACKAGES_DOT_CAP - warmTotal) / coolTotal);
+  const drawnOf = (c: Circle) => {
+    const cool = c.files.length - c.hot;
+    // Files are hottest first, so the warm ones lead the list.
+    return c.files.slice(0, c.hot + Math.ceil(cool * coolShare));
+  };
+  const names = distinctNames(
+    points.filter((p) => p.tier > 0).map((p) => p.file),
+  );
+
   const marks: Mark[] = [];
   for (const c of circles) {
     const id: EntityId = c.pkg ? ids.dir(c.pkg) : REPO_ID;
@@ -124,8 +148,12 @@ export function packagesScene(
       labelPriority: 500 + c.hot * 10 + Math.log2(c.files.length),
       labelAnchor: 'center',
     });
-    c.files.forEach((f, k) => {
-      const d = spacing * Math.sqrt(k);
+    const drawn = drawnOf(c);
+    // Fewer dots than files spread out to fill the same circle.
+    const step =
+      spacing * Math.sqrt(c.files.length / Math.max(1, drawn.length));
+    drawn.forEach((f, k) => {
+      const d = step * Math.sqrt(k);
       const a = k * GOLDEN;
       marks.push({
         id: ids.file(f.file),
@@ -141,7 +169,10 @@ export function packagesScene(
         alpha: f.tier > 0 ? 1 : 0.55,
         // Only warm files claim label space; the package names come first.
         ...(f.tier > 0
-          ? { label: baseName(f.file), labelPriority: f.score }
+          ? {
+              label: names.get(f.file) ?? baseName(f.file),
+              labelPriority: f.score,
+            }
           : {}),
         z: f.tier + 1,
       });

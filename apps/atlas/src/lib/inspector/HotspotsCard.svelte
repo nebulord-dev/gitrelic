@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+    distinctNames,
     hotspotFindings,
     hotspotPointsOf,
     hotspotSummary,
@@ -26,6 +27,8 @@
   let summary = $derived(hotspotSummary(points));
   let findings = $derived(hotspotFindings({ report, commits: null }));
   let top = $derived(points.slice(0, 5));
+  // Two index.ts in the top five read as their folders, not twice the same.
+  let names = $derived(distinctNames(top.map((p) => p.file)));
 
   const TIERS = [
     { name: 'Critical', floor: '75+', tier: 3, bar: 'bg-risk-3' },
@@ -104,7 +107,7 @@
               >{p.score}</span
             >
             <span class="min-w-0 [overflow-wrap:anywhere]"
-              >{baseName(p.file)}</span
+              >{names.get(p.file) ?? baseName(p.file)}</span
             >
             <span class="font-mono text-[12px] text-muted"
               >{n(p.commits)} × {n(p.lines)}</span

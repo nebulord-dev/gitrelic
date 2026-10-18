@@ -56,25 +56,37 @@ export function pan(v: ViewTransform, dx: number, dy: number): ViewTransform {
   return { scale: v.scale, tx: v.tx + dx, ty: v.ty + dy };
 }
 
+/** Screen pixels at the top and bottom that controls cover (the stage's). */
+export interface Insets {
+  top: number;
+  bottom: number;
+}
+
 /**
  * Frames `bounds` in the middle of the screen, as large as fits with
  * `padding` to spare — but never past 1:1, so a tiny scene isn't blown up.
+ * `insets` keep it clear of controls along the top and bottom edges.
  */
 export function fit(
   bounds: Bounds,
   screen: ScreenSize,
   padding = FIT_PADDING,
+  insets: Insets = { top: 0, bottom: 0 },
 ): ViewTransform {
   const availW = Math.max(1, screen.width - padding * 2);
-  const availH = Math.max(1, screen.height - padding * 2);
+  const availH = Math.max(
+    1,
+    screen.height - padding * 2 - insets.top - insets.bottom,
+  );
   const scale =
     bounds.w > 0 && bounds.h > 0
       ? clampScale(Math.min(1, availW / bounds.w, availH / bounds.h))
       : 1;
+  const midY = insets.top + (screen.height - insets.top - insets.bottom) / 2;
   return {
     scale,
     tx: screen.width / 2 - (bounds.x + bounds.w / 2) * scale,
-    ty: screen.height / 2 - (bounds.y + bounds.h / 2) * scale,
+    ty: midY - (bounds.y + bounds.h / 2) * scale,
   };
 }
 

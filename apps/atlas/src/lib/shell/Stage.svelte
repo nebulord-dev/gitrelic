@@ -47,6 +47,10 @@
     frameKey?: string;
   } = $props();
 
+  // Screen pixels the overlays take: 12px offset + a 32px control on top,
+  // the caption line along the bottom. Fitting keeps the picture clear.
+  const STAGE_INSETS = { top: 44, bottom: 28 };
+
   let host = $state<HTMLDivElement>();
   let labels = $state<HTMLDivElement>();
   // A class instance, so Svelte doesn't proxy it; only the reference is reactive.
@@ -86,6 +90,8 @@
             readPalette: () => paletteFromDocument(),
             glow: startTheme === 'glow',
             reducedMotion: () => prefersReducedMotion(),
+            // The corner controls (fit, form toggle) and the caption row.
+            insets: STAGE_INSETS,
             onSelect: (id) => onselect?.(id),
           },
         ),
