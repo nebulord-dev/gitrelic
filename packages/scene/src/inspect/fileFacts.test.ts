@@ -24,6 +24,10 @@ function reportWith(file: string): GitrelicReport {
     } as never,
   ];
   r.ageMap.files = [{ file, ageInDays: 400, status: 'stale' } as never];
+  r.ghostFiles.files = [
+    { file, dominantAuthor: 'bo@corp.com', authorInactiveDays: 210 } as never,
+  ];
+  r.deadCode.candidates = [{ file, ageInDays: 400 } as never];
   r.blastRadius.files = [
     { file, avgCoChangedFiles: 7.25, blastScore: 61 } as never,
   ];
@@ -61,6 +65,18 @@ describe('fileFacts', () => {
         lens: 'bus-factor',
       },
       { label: 'Age', value: '400 days (stale)', lens: 'age-map' },
+      {
+        label: 'Owner Inactive',
+        value: 'bo (210 days)',
+        tier: 'warning',
+        lens: 'ghost-files',
+      },
+      {
+        label: 'Stale',
+        value: 'untouched 400 days',
+        tier: 'moderate',
+        lens: 'dead-code',
+      },
       {
         label: 'Blast Radius',
         value: '7.3 avg files',
@@ -114,5 +130,17 @@ describe('fileFacts', () => {
     const r = reportWith(F);
     r.hotspots.topHotspots = [{ file: F, hotspotScore: 10, category } as never];
     expect(fileFacts(F, r)[0].tier).toBe(tier);
+  });
+
+  it('tiers shame against its notable bar of 70', () => {
+    const tierAt = (shameScore: number) => {
+      const r = reportWith(F);
+      r.forensics.files = [{ file: F, shameScore } as never];
+      return fileFacts(F, r).find((f) => f.label === 'Shame Score')?.tier;
+    };
+    expect(tierAt(9)).toBeUndefined();
+    expect(tierAt(25)).toBe('moderate');
+    expect(tierAt(40)).toBe('warning');
+    expect(tierAt(75)).toBe('critical');
   });
 });

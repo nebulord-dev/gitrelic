@@ -19,6 +19,17 @@ function hotspotTier(category: HotspotCategory): FactTier {
 }
 
 /**
+ * Shame's notable bar is 70 (docs/analyzers/shame.md); a few `fix` commits
+ * score low and stay neutral rather than reading as a warning.
+ */
+function shameTier(score: number): FactTier | undefined {
+  if (score >= 70) return 'critical';
+  if (score >= 40) return 'warning';
+  if (score >= 20) return 'moderate';
+  return undefined;
+}
+
+/**
  * Every analyzer's verdict on one file, in inspector order. Rows appear only
  * for analyzers that report the file. Tiers are semantic; each dashboard maps
  * them to its own colors.
@@ -70,6 +81,26 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
     });
   }
 
+  const ghost = report.ghostFiles.files.find((f) => f.file === file);
+  if (ghost) {
+    facts.push({
+      label: 'Owner Inactive',
+      value: `${ghost.dominantAuthor.split('@')[0]} (${ghost.authorInactiveDays} days)`,
+      tier: 'warning',
+      lens: 'ghost-files',
+    });
+  }
+
+  const stale = report.deadCode.candidates.find((f) => f.file === file);
+  if (stale) {
+    facts.push({
+      label: 'Stale',
+      value: `untouched ${stale.ageInDays} days`,
+      tier: 'moderate',
+      lens: 'dead-code',
+    });
+  }
+
   const blast = report.blastRadius.files.find((f) => f.file === file);
   if (blast) {
     facts.push({
@@ -113,7 +144,7 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
     facts.push({
       label: 'Shame Score',
       value: String(sh.shameScore),
-      tier: 'warning',
+      tier: shameTier(sh.shameScore),
       lens: 'shame',
     });
   }

@@ -107,8 +107,8 @@ export {
   type SearchKind,
 } from './entities';
 export { fileFacts, type FactTier, type FileFact } from './inspect/fileFacts';
-export { fileMentions } from './inspect/fileMentions';
 export { dirFacts } from './inspect/dirFacts';
+export { coupledWith, type CoupledFile } from './inspect/coupledWith';
 export {
   fileContributors,
   type FileContributor,
