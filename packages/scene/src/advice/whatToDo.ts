@@ -8,7 +8,6 @@
 import { COUPLING_HOT, REWRITE_HOT } from '../hotspots/facets';
 import { LARGE_FILE } from '../hotspots/points';
 import { coupledWith } from '../inspect/coupledWith';
-import { fileContributors } from '../inspect/fileContributors';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export const ADVICE_LIMIT = 3;
@@ -48,10 +47,11 @@ const times = (k: number, one: string) => `${n(k)} ${one}${k === 1 ? '' : 's'}`;
 
 function folderHasTests(file: string, report: GitrelicReport): boolean {
   const dir = file.includes('/') ? file.slice(0, file.lastIndexOf('/')) : '.';
+  // Core names folders by path.dirname: the root is '.', and its
+  // __tests__ is plain '__tests__'.
+  const tests = dir === '.' ? '__tests__' : `${dir}/__tests__`;
   return report.testCoverage.directories.some(
-    (d) =>
-      d.testFiles > 0 &&
-      (d.directory === dir || d.directory === `${dir}/__tests__`),
+    (d) => d.testFiles > 0 && (d.directory === dir || d.directory === tests),
   );
 }
 
@@ -65,7 +65,6 @@ function signalsOf(file: string, report: GitrelicReport) {
     lines:
       report.loc.files.find((l) => l.file === file)?.lines ?? hotspot?.loc ?? 0,
     owner: report.busFactors.files.find((b) => b.file === file),
-    topAuthor: fileContributors(file, report)[0],
     ghost: report.ghostFiles.files.find((g) => g.file === file),
     shame: report.forensics.files.find((f) => f.file === file),
     velocity: report.churnVelocity.files.find((v) => v.file === file),
@@ -77,7 +76,11 @@ function signalsOf(file: string, report: GitrelicReport) {
         false &&
       !report.fileClasses[file] &&
       !folderHasTests(file, report),
-    partner: coupledWith(file, report, 1)[0],
+    // The first partner strong enough to act on, not just the one with the
+    // most shared commits: 6 commits at 90% matters more than 10 at 20%.
+    partner: coupledWith(file, report, Infinity).find(
+      (p) => p.strength >= COUPLING_HOT && p.coCommits >= COUPLING_MIN_COMMITS,
+    ),
     rewrite: report.rewriteRatio.files.find((r) => r.file === file),
     nameOf: (email: string) =>
       report.contributors.contributors.find((c) => c.email === email)?.name ??
@@ -102,12 +105,12 @@ const RULES: readonly ((s: Signals) => Advice | null)[] = [
   // Hot, and one person writes most of it (unless that person already left:
   // the rule above says so).
   (s) =>
-    s.hot && s.owner?.risk === 'critical' && !s.ghost && s.topAuthor
+    s.hot && s.owner?.risk === 'critical' && !s.ghost
       ? {
           id: 'pair',
           action:
             'Pair on it, or split it, before only one person can change it.',
-          evidence: `${times(s.commits, 'commit')}; ${s.topAuthor.name} wrote ${Math.round(s.owner.dominantAuthorPercent)}%.`,
+          evidence: `${times(s.commits, 'commit')}; ${s.nameOf(s.owner.dominantAuthor)} wrote ${Math.round(s.owner.dominantAuthorPercent)}%.`,
           section: 'people',
         }
       : null,
@@ -140,9 +143,7 @@ const RULES: readonly ((s: Signals) => Advice | null)[] = [
         }
       : null,
   (s) =>
-    s.partner &&
-    s.partner.strength >= COUPLING_HOT &&
-    s.partner.coCommits >= COUPLING_MIN_COMMITS
+    s.partner
       ? {
           id: 'change-together',
           action: `Change it with ${baseName(s.partner.file)} open.`,

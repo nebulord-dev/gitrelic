@@ -171,4 +171,69 @@ describe('whatToDo', () => {
       }),
     );
   });
+
+  it('finds a strong partner behind a busier, weaker one', () => {
+    const pair = (
+      fileB: string,
+      coCommits: number,
+      couplingStrength: number,
+    ) => ({
+      fileA: 'src/types.ts',
+      fileB,
+      coCommits,
+      totalCommitsA: 12,
+      totalCommitsB: 7,
+      couplingStrength,
+    });
+    const coupled: GitrelicReport = {
+      ...report,
+      coupling: {
+        ...report.coupling,
+        pairs: [pair('src/a.ts', 10, 20), pair('src/b.ts', 6, 90)],
+      },
+    };
+    expect(whatToDo('src/types.ts', coupled)).toContainEqual(
+      expect.objectContaining({
+        id: 'change-together',
+        action: 'Change it with b.ts open.',
+      }),
+    );
+  });
+
+  it('counts a top-level __tests__ folder for a root file', () => {
+    // A hot root file; core names the top-level test folder plain '__tests__'.
+    const rooted = (directory: string): GitrelicReport => ({
+      ...report,
+      hotspots: {
+        ...report.hotspots,
+        files: [
+          ...report.hotspots.files,
+          {
+            file: 'main.ts',
+            hotspotScore: 90,
+            churnScore: 90,
+            loc: 40,
+            category: 'critical',
+          },
+        ],
+      },
+      testCoverage: {
+        ...report.testCoverage,
+        files: [{ file: 'main.ts', hasTestSibling: false }],
+        directories: [
+          {
+            directory,
+            sourceFiles: 0,
+            testFiles: 1,
+            coverageRatio: 0,
+            hasTests: true,
+          },
+        ],
+      },
+    });
+    expect(idsOf('main.ts', rooted('__tests__'))).not.toContain('add-tests');
+    expect(idsOf('main.ts', rooted('elsewhere/__tests__'))).toContain(
+      'add-tests',
+    );
+  });
 });
