@@ -4,6 +4,7 @@
     fileContributors,
     fileFacts,
     ids,
+    whatToDo,
     type EntityId,
     type EntityIndex,
     type WeeklyActivity,
@@ -14,6 +15,7 @@
   import { fileSections, scrollToSection } from './fileSections';
   import FlaggedBy from './FlaggedBy.svelte';
   import PathText from './PathText.svelte';
+  import WhatToDoCard from './WhatToDoCard.svelte';
   import type { GitrelicReport } from '@gitrelic/core';
 
   let {
@@ -55,6 +57,8 @@
   });
 
   let sections = $derived(fileSections(file, report));
+  let advice = $derived(whatToDo(file, report));
+  let anchors = $derived(new Set(sections.map((s) => s.anchor)));
 </script>
 
 <Card eyebrow="File">
@@ -94,6 +98,10 @@
     {/each}
   </nav>
 </Card>
+
+{#if advice.length > 0}
+  <WhatToDoCard {advice} sections={anchors} />
+{/if}
 
 <FlaggedBy {rows} id="insp-flagged" {onopen} />
 

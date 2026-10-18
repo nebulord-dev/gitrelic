@@ -165,7 +165,7 @@
     <div class="flex flex-1 flex-col gap-4 overflow-y-auto px-6 py-4">
       {#if pinned && !query.trim()}
         <article
-          class="flex flex-col gap-2 rounded-chip border border-accent bg-control-border p-4"
+          class="flex flex-col gap-2 border border-accent bg-control-border p-4"
         >
           <span class="text-[11px] tracking-[0.16em] text-accent uppercase"
             >You're here</span

@@ -257,6 +257,15 @@ export {
   type FacetId,
   type FileFacet,
 } from './hotspots/facets';
+export {
+  ADVICE_LIMIT,
+  COUPLING_MIN_COMMITS,
+  SHAME_ACT,
+  whatToDo,
+  type Advice,
+  type AdviceId,
+  type AdviceSection,
+} from './advice/whatToDo';
 export { distinctNames } from './format/distinctNames';
 export { fieldScene, type FieldInput } from './layouts/field';
 export {

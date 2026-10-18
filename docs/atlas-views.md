@@ -68,6 +68,19 @@ Decided at the 3.2 checkpoint (2026-10-18). It is one scrolling column, never a 
     - Changes with;
     - Docs and classic links.
 - **What to do** comes from rules on the signals, not a model. It is a scene table, like the badge rules, with each action keyed to signal combinations from the analyzers' docs (`cursed-files.md` "What action it suggests" is the seed). Every action states the evidence behind it and links to the section that shows it. At most a few actions, and the section is absent when no rule applies.
+- **What to do, as built** (`advice/whatToDo.ts`, agreed with the maintainer 2026-10-18). Rules in priority order, at most three per file; every file, whatever the lens, except generated ones (`fileClasses`), which get none: nobody edits them by hand. The card (`WhatToDoCard`) sits under the file card, and each action's evidence links to its section when that section renders.
+
+  | Rule | When | Action | Evidence (section) |
+  |---|---|---|---|
+  | new-owner | its main author has gone quiet (ghost file) | Find it a new owner. | who wrote how much, and how long they've been quiet (People) |
+  | pair | hot (50+), bus factor critical, owner still active | Pair on it, or split it, before only one person can change it. | commits, and the top author's share (People) |
+  | read-log | shame 40+ | Read its commit log before the code. | how many commits say its top shame words (Activity) |
+  | split | 1,000+ lines and accelerating | Split it before it grows further. | lines, recent commits of all (Flagged by) |
+  | add-tests | hot source file, no test beside it and none in its folder or its `__tests__` | Add tests before the next change. | no tests in its folder, commits (Flagged by) |
+  | change-together | a partner shares 50%+ of the rarer file's commits, 3+ shared | Change it with X open. | shared commits (Changes with) |
+  | settle-design | rewrite score 70+ | Settle the design first: code here doesn't stick. | lines deleted for lines added (Flagged by) |
+
+  The folder check on add-tests is stricter than test coverage's sibling check on purpose: React tests `ReactFizzServer.js` from react-dom's `__tests__`, which the sibling check misses. Wording is cheap to change; the thresholds are named constants beside the rules.
 - **Explaining every lens is a pattern, not per-view work.** Each lens has:
   - a one-line caption on the stage, with *How to read* and **Docs ↗** in a corner;
   - the measure sentence and *how to read it* note in lens mode;
@@ -110,7 +123,7 @@ Shipped in the navigation shell PR (the first of 3.2's three):
 - **Inspector:** lens mode and selection mode, Flagged by (scene `fileFacts` rows, each naming its lens), Activity, Changes with, the collapse strip (`I`), 400px and wrapped names (see [The inspector](#the-inspector-right-sidebar)).
 - **Guide** (`GuideSheet.svelte`, `?`).
 
-Still to come, with the first lens that fills them (the Hotspots PR): **What to do** (rules in scene) and the **table drawer** (`T`).
+Both shipped with Hotspots (RELIC-348): the **table drawer** (`T`) and **What to do** (rules in scene, see [The inspector](#the-inspector-right-sidebar)).
 - **Catalog:** gains the view → lens mapping if a checkpoint diverges from `PRESET_GROUPS`.
 - **Kept as is:** catalog, badges, entity index, ⌘K palette, inspector cards, `AnalyzerView` / `Layout` model.
 
@@ -253,7 +266,7 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 - **Tooltips:** a file (in either form) shows its name, score and tier, commits and lines, and its folder; a density cell shows how many files it holds and their range of commits and lines; a package shows its file count, how many are at 25+, and its hottest file. Ticks, callouts and names say nothing.
 - **Table:** every scored file: path, score, commits, lines, package; hottest first.
 - **Selecting a file (second Hotspots PR).** The field squeezes into the left 36% of the stage (every dot tweens there) and drops the callout column; the file travels to a root right of it, with a faint ring and leader back to where it sits in the plot, and its facets (`hotspots/facets.ts` `fileFacets`) fan out on an arc to the right, growing from the root. Other dots stay clickable, so picking another file sends the old root home and the new one out. Hot facets (thresholds in the docs page) are accent dots with hot links. Facet and ring ids (`facet:`, `home:`) aren't entity kinds, so clicking one selects nothing. By package doesn't fan.
-- **Next PR:** What to do.
+- **What to do (third Hotspots PR).** The inspector's rule-based actions (see The inspector). On `ReactFizzServer.js`: split it (6,656 lines, 21 of 33 commits recent), change it with `ReactDOMFizzServer-test.js` open (14 shared commits), and settle the design first (847 lines deleted for 1,084 added).
 
 ### Code Health › Churn (checkpoint 2026-10-18)
 

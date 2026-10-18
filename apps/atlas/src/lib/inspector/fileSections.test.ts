@@ -11,6 +11,11 @@ describe('fileSections', () => {
     expect(fileSections('src/api.ts', report).map((s) => s.anchor)).toContain(
       'insp-people',
     );
+    // A file with advice leads with it.
+    expect(fileSections('src/helpers.ts', report)[0]).toEqual({
+      anchor: 'insp-todo',
+      label: 'What to do',
+    });
     expect(fileSections('nope.ts', report)).toEqual([
       { anchor: 'insp-activity', label: 'Activity' },
     ]);
