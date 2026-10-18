@@ -84,6 +84,7 @@ Theme is a viewer preference and stays in localStorage, not the URL.
 
 One section per view, added at its design checkpoint. Each records:
 
+- the analyzer's docs page (`apps/docs/analyzers/<id>.md`) as input — and, once built, the page updated for the Atlas view, or written if it doesn't exist yet (only some analyzers have one);
 - the lenses it holds, in order;
 - for each lens: what it must communicate (from `docs/polish-pattern.md`), the chosen form, and any alternate forms with the reason they passed the checkpoint test;
 - its findings (the one-line takeaways the inspector shows);
