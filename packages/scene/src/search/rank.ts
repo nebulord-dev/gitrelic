@@ -15,24 +15,25 @@ const BOUNDARY = /[/._\-\s@:]/;
  * the upgrade if ranking ever needs it.
  */
 export function fuzzyScore(query: string, text: string): number | null {
-  // Per character, keeping each one's first unit, like the text side below:
-  // 'İ' lowercases to 'i̇', whose combining dot could never match.
-  const q = [...query].map((c) => c.toLowerCase()[0]).join('');
+  // Both sides go code point by code point, each lowercased to its first
+  // code point: 'İ' lowercases to 'i̇' (a combining dot follows that could
+  // never match), and an emoji is two UTF-16 units that must match whole.
+  const q = [...query].map(fold);
   if (q.length === 0) return 0;
+  const chars = [...text];
   let score = 0;
   let run = 0;
   let qi = 0;
   let last = -1;
-  // Walk the original text, lowercasing one unit at a time: some characters
-  // grow when lowercased ('İ' → 'i̇'), so indices into text.toLowerCase()
-  // don't line up with text. A unit that grows matches on its first char.
-  for (let ti = 0; ti < text.length && qi < q.length; ti++) {
-    const lower = text[ti].toLowerCase();
-    if (lower[0] !== q[qi]) continue;
+  for (let ti = 0; ti < chars.length && qi < q.length; ti++) {
+    const ch = chars[ti];
+    const lower = fold(ch);
+    if (lower !== q[qi]) continue;
+    const prev = chars[ti - 1];
     const atStart =
       ti === 0 ||
-      BOUNDARY.test(text[ti - 1]) ||
-      (text[ti] !== lower && text[ti - 1] === text[ti - 1].toLowerCase());
+      BOUNDARY.test(prev) ||
+      (ch !== lower && prev === prev.toLowerCase());
     run = ti === last + 1 ? run + 1 : 1;
     score += 1 + (atStart ? 4 : 0) + (run > 1 ? 3 * (run - 1) : 0);
     if (last >= 0) score -= Math.min(3, (ti - last - 1) * 0.1);
@@ -40,7 +41,12 @@ export function fuzzyScore(query: string, text: string): number | null {
     qi++;
   }
   if (qi < q.length) return null;
-  return score - text.length * 0.01;
+  return score - chars.length * 0.01;
+}
+
+/** One code point, lowercased, cut back to a single code point. */
+function fold(ch: string): string {
+  return String.fromCodePoint(ch.toLowerCase().codePointAt(0) ?? 0);
 }
 
 const KIND_ORDER: Record<SearchKind, number> = {

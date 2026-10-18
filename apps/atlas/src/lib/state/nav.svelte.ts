@@ -36,9 +36,9 @@ export class Nav {
     this.write('push');
   }
 
-  /** Selects an entity, or clears the selection (replaces the history entry). */
   /**
-   * Selects `id`, or clears with null. An id the index doesn't know is
+   * Selects `id`, or clears with null, replacing the history entry rather
+   * than pushing one. An id the index doesn't know is
    * ignored and the current selection kept: a click on something not
    * selectable (a bot's row, a cell:/week:/commit: mark until those kinds
    * are indexed) must not throw away what the viewer had selected.

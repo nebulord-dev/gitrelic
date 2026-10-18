@@ -26,4 +26,12 @@ describe('palette shortcut', () => {
     ).toBe(false);
     expect(opensPalette(key({ key: 'k' }))).toBe(false);
   });
+
+  it('opens on the physical K key under non-Latin layouts', () => {
+    // Russian layout: the K key types 'л'.
+    expect(opensPalette(key({ key: 'л', code: 'KeyK', metaKey: true }))).toBe(
+      true,
+    );
+    expect(opensPalette(key({ key: 'л', code: 'KeyK' }))).toBe(false);
+  });
 });

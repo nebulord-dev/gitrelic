@@ -12,7 +12,13 @@ export function paletteShortcut(platform?: string): string {
 
 /** ⌘K / Ctrl+K anywhere, or `/` when not typing into a field. */
 export function opensPalette(e: KeyboardEvent): boolean {
-  if ((e.metaKey || e.ctrlKey) && !e.altKey && e.key.toLowerCase() === 'k')
+  // e.code too: on a Cyrillic or Greek layout e.key isn't 'k', but the
+  // physical key is still KeyK.
+  if (
+    (e.metaKey || e.ctrlKey) &&
+    !e.altKey &&
+    (e.key.toLowerCase() === 'k' || e.code === 'KeyK')
+  )
     return true;
   if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return false;
   const target = e.target as HTMLElement | null;

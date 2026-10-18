@@ -18,6 +18,9 @@ describe('fuzzyScore', () => {
     expect(fuzzyScore('s', 'aİİİİs')).not.toBeNull();
     expect(fuzzyScore('ix', 'İx.ts')).not.toBeNull();
     expect(fuzzyScore('q', 'İx.ts')).toBeNull();
+    // Astral characters (two UTF-16 units) match whole, not by half.
+    expect(fuzzyScore('😀', 'ship 😎 it')).toBeNull();
+    expect(fuzzyScore('😀', 'ship 😀 it')).not.toBeNull();
     // And on the query side: 'İ' searches like 'i'.
     expect(fuzzyScore('İx', 'İx.ts')).not.toBeNull();
     expect(fuzzyScore('İnd', 'index.ts')).not.toBeNull();
