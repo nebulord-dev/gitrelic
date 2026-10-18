@@ -75,6 +75,27 @@ describe('TableDrawer', () => {
     expect(onselect).toHaveBeenCalledWith('file:src/api.ts');
   });
 
+  it('lets go of a hovered row that a filter hides', async () => {
+    const onhover = vi.fn();
+    render(TableDrawer, { table, label: 'Hotspots', open: true, onhover });
+    const api = screen.getByRole('button', { name: 'src/api.ts' });
+    await fireEvent.mouseEnter(api.closest('tr')!);
+    expect(onhover).toHaveBeenLastCalledWith('file:src/api.ts');
+    // A filter that keeps the row keeps the hover.
+    await fireEvent.input(screen.getByRole('searchbox'), {
+      target: { value: 'src' },
+    });
+    await tick();
+    expect(onhover).toHaveBeenLastCalledWith('file:src/api.ts');
+    // The row unmounts without a mouseleave; the drawer clears it itself.
+    await fireEvent.input(screen.getByRole('searchbox'), {
+      target: { value: 'util' },
+    });
+    await tick();
+    expect(fileButtons()).toEqual(['src/util.ts']);
+    expect(onhover).toHaveBeenLastCalledWith(null);
+  });
+
   it('closes on Escape before anything else hears it', async () => {
     const heard = vi.fn();
     window.addEventListener('keydown', heard);

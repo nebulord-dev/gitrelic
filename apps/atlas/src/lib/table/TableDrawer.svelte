@@ -30,6 +30,22 @@
   });
   let view = $derived(visibleRows(table, { filter, tiers, sort }));
 
+  // The row last reported to `onhover`. Plain, not $state: the effect below
+  // must rerun when the rows change, not when the hover does.
+  let hoveredRow: EntityId | null = null;
+  function hover(id: EntityId | null) {
+    hoveredRow = id;
+    onhover?.(id);
+  }
+  // A filter or tier toggle can unmount the hovered row, and an unmounted
+  // row never fires mouseleave or blur: let go of its mark here instead.
+  $effect(() => {
+    const rows = view.rows;
+    if (hoveredRow !== null && !rows.some((r) => r.id === hoveredRow)) {
+      hover(null);
+    }
+  });
+
   const TIER_DOT = ['bg-risk-0', 'bg-risk-1', 'bg-risk-2', 'bg-risk-3'];
   const n = (v: number) => v.toLocaleString('en-US');
 
@@ -42,7 +58,7 @@
 
   function close() {
     open = false;
-    onhover?.(null);
+    hover(null);
   }
 
   // Capture phase, so Escape closes the drawer before the inspector reads
@@ -152,8 +168,8 @@
                   ? 'bg-control-border'
                   : 'hover:bg-panel-border',
               ]}
-              onmouseenter={() => onhover?.(row.id)}
-              onmouseleave={() => onhover?.(null)}
+              onmouseenter={() => hover(row.id)}
+              onmouseleave={() => hover(null)}
             >
               {#each table.columns as column, c (column.id)}
                 <td
@@ -168,8 +184,8 @@
                     <button
                       type="button"
                       onclick={() => onselect?.(row.id)}
-                      onfocus={() => onhover?.(row.id)}
-                      onblur={() => onhover?.(null)}
+                      onfocus={() => hover(row.id)}
+                      onblur={() => hover(null)}
                       class="flex cursor-pointer items-center gap-2 bg-transparent p-0 text-left font-[inherit] text-inherit [overflow-wrap:anywhere] hover:text-accent"
                     >
                       <span
