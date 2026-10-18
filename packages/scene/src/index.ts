@@ -90,6 +90,73 @@ export {
   type DominantOwnerRow,
 } from './ownership/topDominantOwners';
 
+export {
+  ENTITY_KINDS,
+  entityKey,
+  entityKind,
+  ids,
+  parentOf,
+  REPO_ID,
+  type EntityId,
+  type EntityKind,
+} from './ids';
+
+export {
+  DEFAULT_LABEL_CAP,
+  planLabels,
+  type LabelCandidate,
+  type LabelOptions,
+} from './labels/plan';
+
+export {
+  checkScene,
+  emptyScene,
+  type AnalyzerView,
+  type Bounds,
+  type ColorRole,
+  type Finding,
+  type FindingSegment,
+  type Guide,
+  type Layout,
+  type Link,
+  type Mark,
+  type MarkGeom,
+  type MarkShape,
+  type Paint,
+  type Scene,
+  type ViewInput,
+  type Viewport,
+} from './model';
+
+export { clamp01, easeOutCubic, linear, trackProgress } from './motion/ease';
+export {
+  lerp,
+  lerpArc,
+  lerpGeom,
+  mixColor,
+  parseColor,
+  resolvePaint,
+  type Palette,
+  type Rgba,
+} from './motion/interp';
+export {
+  EMPTY_LIVE,
+  geomOf,
+  planTransition,
+  TIMING,
+  type EaseName,
+  type GuideTrack,
+  type LinkTrack,
+  type LiveGuide,
+  type LiveLink,
+  type LiveMark,
+  type LiveState,
+  type MarkTrack,
+  type Phase,
+  type PlanOptions,
+  type TransitionPlan,
+} from './motion/plan';
+
 export { normalizeReport } from './report/normalizeReport';
 
 export {
