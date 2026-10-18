@@ -308,7 +308,20 @@ describe('planTransition: guides', () => {
       phase: 'exit',
       fromAlpha: 0.2,
       toAlpha: 0,
+      from: null,
     });
+    expect(into.guides[0].from).toBeNull();
+  });
+
+  it('moves a guide that stays from where it is drawn now', () => {
+    const now = { ...ring, x: 50, r: 30 };
+    const plan = planTransition(scene([], [], [ring]), live([], [], [now]));
+    expect(plan.guides[0]).toMatchObject({ phase: 'update', from: now });
+    // Under reduced motion it only fades.
+    const still = planTransition(scene([], [], [ring]), live([], [], [now]), {
+      reducedMotion: true,
+    });
+    expect(still.guides[0].from).toBeNull();
   });
 });
 

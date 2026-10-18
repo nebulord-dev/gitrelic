@@ -105,7 +105,10 @@ export interface Link {
   alpha: number;
 }
 
-/** Static scenery — rings, axes, cutoff lines, lane headings. Fades only. */
+/**
+ * Scenery — rings, axes, cutoff lines, lane headings. Fades in and out; one
+ * that stays (same id) moves with the marks.
+ */
 export type Guide =
   | {
       id: string;

@@ -3,6 +3,7 @@ import {
   emptyScene,
   planTransition,
   TIMING,
+  type Guide,
   type Link,
   type Mark,
   type Palette,
@@ -74,10 +75,15 @@ function mark(id: string, x: number, extra: Partial<Mark> = {}): Mark {
   };
 }
 
-const scene = (marks: Mark[], links: Link[] = []): Scene => ({
+const scene = (
+  marks: Mark[],
+  links: Link[] = [],
+  guides: Guide[] = [],
+): Scene => ({
   ...emptyScene({ width: 1000, height: 1000 }),
   marks,
   links,
+  guides,
 });
 
 function setup() {
@@ -190,6 +196,30 @@ describe('TweenEngine', () => {
     expect(engine.links.get('ab')?.progress).toBe(0);
     fc.advance(TIMING.move);
     expect(engine.links.has('ab')).toBe(false);
+  });
+
+  it('moves a guide that stays with the marks, not ahead of them', () => {
+    const { fc, engine, go } = setup();
+    const grid: Guide = {
+      id: 'grid',
+      kind: 'line',
+      x1: 0,
+      y1: 0,
+      x2: 0,
+      y2: 100,
+      paint: '--muted',
+      alpha: 0.2,
+    };
+    go(scene([], [], [grid]));
+    fc.advance(TIMING.move);
+    go(scene([], [], [{ ...grid, x1: 400, x2: 400 }]));
+    const line = () => engine.guides.get('grid') as Guide & { x1: number };
+    expect(line().x1).toBe(0);
+    fc.advance(TIMING.move / 2);
+    expect(line().x1).toBeGreaterThan(200); // ease-out, like the marks
+    expect(line().x1).toBeLessThan(400);
+    fc.advance(TIMING.move);
+    expect(line().x1).toBe(400);
   });
 
   it('re-tints on a theme switch without moving anything', () => {

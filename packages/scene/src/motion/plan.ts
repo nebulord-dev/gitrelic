@@ -5,7 +5,7 @@
 // Timeline, in order:
 //   1. links that are going away retract, and marks that fold on exit (a
 //      fan closing) shrink into their ancestor where it is now
-//   2. once those are mostly done, marks move; new marks grow out of their nearest ancestor on screen, and
+//   2. once those are mostly done, marks (and guides that stay) move; new marks grow out of their nearest ancestor on screen, and
 //      other leaving marks shrink into their nearest ancestor in the next scene
 //   3. new links draw in, staggered, starting while the move settles
 //
@@ -58,6 +58,8 @@ export interface GuideTrack {
   id: string;
   phase: Phase;
   guide: Guide;
+  /** Where a staying guide is drawn now, to move it from; null when it only fades. */
+  from: Guide | null;
   fromAlpha: number;
   toAlpha: number;
   delay: number;
@@ -247,13 +249,15 @@ export function planTransition(
     });
   }
 
-  // Guides only ever fade.
+  // Guides fade in and out; those that stay move with the marks, so a plot's
+  // grid shrinks with its dots instead of jumping ahead of them.
   for (const guide of live.guides.values()) {
     if (nextGuides.has(guide.id)) continue;
     guides.push({
       id: guide.id,
       phase: 'exit',
       guide,
+      from: null,
       fromAlpha: guide.alpha,
       toAlpha: 0,
       delay: 0,
@@ -267,6 +271,7 @@ export function planTransition(
       id: guide.id,
       phase: current ? 'update' : 'enter',
       guide,
+      from: current && !reduced && current.kind === guide.kind ? current : null,
       fromAlpha: current?.alpha ?? 0,
       toAlpha: guide.alpha,
       delay: moveAt,

@@ -178,6 +178,7 @@ export {
   lerp,
   lerpArc,
   lerpGeom,
+  lerpGuide,
   mixColor,
   mixPalette,
   parseColor,

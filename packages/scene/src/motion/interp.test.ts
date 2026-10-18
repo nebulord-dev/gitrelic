@@ -5,6 +5,7 @@ import { easeOutCubic, trackProgress } from './ease';
 import {
   lerpArc,
   lerpGeom,
+  lerpGuide,
   mixColor,
   mixPalette,
   parseColor,
@@ -151,5 +152,65 @@ describe('resolvePaint', () => {
     );
     expect(mid.r).toBeCloseTo(mid.b, 6);
     expect(mid.r).toBeGreaterThan(0.5);
+  });
+});
+
+describe('lerpGuide', () => {
+  it('moves a line by its ends and leaves alpha alone', () => {
+    const from = {
+      id: 'g',
+      kind: 'line',
+      x1: 0,
+      y1: 0,
+      x2: 10,
+      y2: 10,
+      paint: '--muted',
+      alpha: 0.2,
+    } as const;
+    const to = { ...from, x1: 100, y2: 30, alpha: 0.8 };
+    const out = { ...to, alpha: 0.5 };
+    lerpGuide(from, to, 0.5, out);
+    expect(out).toMatchObject({ x1: 50, y1: 0, x2: 10, y2: 20, alpha: 0.5 });
+  });
+
+  it('moves a circle by its centre and radius', () => {
+    const from = {
+      id: 'g',
+      kind: 'circle',
+      x: 0,
+      y: 0,
+      r: 10,
+      paint: '--muted',
+      alpha: 1,
+    } as const;
+    const to = { ...from, x: 20, r: 30 };
+    const out = { ...to };
+    lerpGuide(from, to, 0.25, out);
+    expect(out).toMatchObject({ x: 5, y: 0, r: 15 });
+  });
+
+  it('leaves a guide that changed kind where it is going', () => {
+    const from = {
+      id: 'g',
+      kind: 'circle',
+      x: 0,
+      y: 0,
+      r: 10,
+      paint: '--muted',
+      alpha: 1,
+    } as const;
+    const to = {
+      id: 'g',
+      kind: 'line',
+      x1: 1,
+      y1: 2,
+      x2: 3,
+      y2: 4,
+      paint: '--muted',
+      alpha: 1,
+    } as const;
+    const out = { ...to };
+    lerpGuide(from, to, 0.5, out);
+    expect(out).toEqual(to);
   });
 });
