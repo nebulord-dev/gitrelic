@@ -170,7 +170,11 @@ Run these before merging large feature branches or when onboarding to a specific
 
 ### Data source
 
-Everything comes from git: `git log` for history, the analyzed commit's tree for files and LOC. No external tool dependencies — pure git.
+Git is the foundation: `git log` for history, the analyzed commit's tree for files and LOC. External tools are allowed (decided 2026-10-18) where they make an analyzer more robust — e.g. cloc/scc for LOC, git-sizer for repo health — on three conditions:
+
+- **Optional.** gitrelic installs from npm, so a tool may be missing. Detect it, fall back to the git-only behaviour, and say in the report which source was used.
+- **Centralised.** Tool processes run from one module beside `utils/git.ts`, never inside analyzers (the same exec discipline as git).
+- **Published-safe.** Any new runtime dep in core is mirrored in `apps/cli/package.json` (see Publishing invariants).
 
 ### Publishing invariants
 
