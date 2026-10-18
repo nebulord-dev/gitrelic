@@ -55,4 +55,24 @@ describe('lensTopEntities', () => {
       expect(Array.isArray(fanned)).toBe(true);
     }
   });
+
+  it('labels directories by their last two segments', () => {
+    const r = {
+      ...report,
+      testCoverage: {
+        ...report.testCoverage,
+        uncoveredDirectories: [
+          {
+            directory: 'src',
+            sourceFiles: 7,
+            testFiles: 0,
+            coverageRatio: 0,
+            hasTests: false,
+          },
+        ],
+      },
+    } as GitrelicReport;
+    const [dir] = lensTopEntities('test-coverage', r, index);
+    expect(dir).toMatchObject({ id: 'dir:src', label: 'src/' });
+  });
 });

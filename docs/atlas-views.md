@@ -155,7 +155,20 @@ Each section records:
 
 **Dropped from classic:** the treemap hero and its six alternate heroes (ownership, coupling, commit-graph, scatter, timeline, swimlanes) — each is, or will be, a lens of its own; the metrics strip, whose five numbers the ring shows in context; the overview's bottom tabs, which open their own lenses.
 
-**Open:** the 0–3 grading needs a scene function shared with `computeOutlierBadges` (one rule table, two outputs). The Stale Files rule fires on mature repos where most files simply didn't change in the window (66% of React) — tune before the ring makes it loud.
+**As built (3.2b):**
+- **Grading:** scene `outlierGrades` grades every badge rule from 0 to 3. A badge is grade 2 and up, so the rail and the ring can't disagree.
+- **Readings:** `lensReadings` gives each lens its short reading.
+- **Fan-out data:** `lensTopEntities` returns the fanned entities, only ones the index resolves.
+- **Layout:** `layouts/ring.ts`:
+  - labels point away from the centre;
+  - view names are label-only marks;
+  - fanned marks are parented to their lens, so they grow out of it.
+- **Clicks:** a second click on a lens opens it, in Atlas if it has a view, otherwise in classic.
+- **Camera:** when a scene's extent changes (a fan opens) and the viewer hasn't panned or zoomed, the stage glides to frame it, alongside the marks.
+
+Stale Files has no outlier rule: its count is every file untouched in the window, which measures the window, not decay. Its checkpoint defines a real one.
+
+**Next:** Briefing, the alternate form, ships in its own PR with its findings engine.
 
 ### Code Health › Hotspots (checkpoint 2026-10-18, PR 3.2)
 

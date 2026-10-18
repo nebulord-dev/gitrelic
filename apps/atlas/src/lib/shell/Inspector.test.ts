@@ -245,4 +245,31 @@ describe('Inspector', () => {
     modal.remove();
     wide.mockRestore();
   });
+
+  it('describes the Repo map lens: how many lenses are loud, and which', async () => {
+    const onselect = vi.fn();
+    render(Inspector, { ...base, lens: 'overview', onselect });
+    expect(screen.getByText(/lenses read well outside normal/)).toBeTruthy();
+    const loud = screen.queryAllByRole('button', { name: /.+/ });
+    expect(loud.length).toBeGreaterThan(0);
+  });
+
+  it('previews a selected lens: its reading, what it points at, and how to open it', async () => {
+    const onselect = vi.fn();
+    render(Inspector, {
+      ...base,
+      selection: ids.analyzer('hotspots'),
+      onselect,
+    });
+    expect(screen.getByRole('heading', { name: 'On the ring' })).toBeTruthy();
+    expect(
+      screen
+        .getByRole('link', { name: /Open Hotspots in classic/ })
+        .getAttribute('href'),
+    ).toBe('/classic/#preset=hotspots');
+    const points = screen.getByRole('heading', { name: 'What it points at' });
+    expect(points).toBeTruthy();
+    await fireEvent.click(screen.getByRole('button', { name: /api\.ts/ }));
+    expect(onselect).toHaveBeenCalledWith('file:src/api.ts');
+  });
 });

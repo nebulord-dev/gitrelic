@@ -15,6 +15,8 @@ export interface FannedEntity {
 
 const n = (x: number) => x.toLocaleString();
 const base = (path: string) => path.slice(path.lastIndexOf('/') + 1);
+/** A directory's last two segments: enough to tell `react-server/src/` apart. */
+const shortDir = (dir: string) => `${dir.split('/').slice(-2).join('/')}/`;
 
 type Candidate = { id: EntityId; label: string; value: string };
 const file = (path: string, value: string): Candidate => ({
@@ -118,7 +120,7 @@ const SOURCES: Record<string, (r: GitrelicReport) => Candidate[]> = {
     byDesc(r.testCoverage.uncoveredDirectories, (d) => d.sourceFiles).map(
       (d) => ({
         id: ids.dir(d.directory),
-        label: `${d.directory}/`,
+        label: shortDir(d.directory),
         value: `${n(d.sourceFiles)} files, no tests`,
       }),
     ),

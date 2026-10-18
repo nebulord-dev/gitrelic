@@ -17,7 +17,9 @@ describe('GuideSheet', () => {
     expect(
       screen.getByRole('region', { name: 'Ownership & Risk' }),
     ).toBeTruthy();
-    expect(screen.getAllByRole('link', { name: 'Classic ↗' }).length).toBe(23);
+    // Repo map has an Atlas view (Open); every other analyzer links classic.
+    expect(screen.getAllByRole('link', { name: 'Classic ↗' }).length).toBe(22);
+    expect(screen.getByRole('button', { name: 'Open' })).toBeTruthy();
   });
 
   it('filters by label or explanation, and says when nothing matches', async () => {

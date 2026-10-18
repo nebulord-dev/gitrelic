@@ -19,11 +19,24 @@ const DOT_R = [5, 7, 10, 14] as const;
 const RAMP = ['--risk-0', '--risk-1', '--risk-2', '--risk-3'] as const;
 const REPO_R = 44;
 const FAN_DOT = 5;
-/** Room right of the rightmost mark for its DOM label, world units. */
-const LABEL_ROOM = 240;
+/**
+ * Room beside the outermost marks for their DOM labels, world units. Labels
+ * are screen pixels, so at the ~0.65 zoom a 1440px window fits this world at,
+ * a 33-character label needs about 330 units.
+ */
+const LABEL_ROOM = 340;
+const LABEL_ROOM_Y = 36;
 const MARGIN = 32;
 
 const zero = { w: 0, h: 0, a0: 0, a1: 0 };
+
+/** Labels point away from the centre, so they never cross the ring. */
+function anchorFor(dx: number, dy: number): Mark['labelAnchor'] {
+  const len = Math.hypot(dx, dy) || 1;
+  if (dx / len > 0.35) return 'right';
+  if (dx / len < -0.35) return 'left';
+  return dy < 0 ? 'above' : 'below';
+}
 
 function entityPaint(id: EntityId): Paint {
   if (id.startsWith('person:')) return '--person';
@@ -39,7 +52,7 @@ export function ringScene(
 ): Scene {
   const cx = viewport.width / 2;
   const cy = viewport.height / 2;
-  const rx = viewport.width * 0.3;
+  const rx = viewport.width * 0.28;
   const ry = viewport.height * 0.34;
   const at = (deg: number, ex: number, ey: number): [number, number] => {
     const a = (deg * Math.PI) / 180;
@@ -63,6 +76,7 @@ export function ringScene(
     alpha: focused ? 0.5 : 1,
     label: repoName,
     labelPriority: 100,
+    labelAnchor: 'center',
     z: 1,
   });
 
@@ -83,29 +97,23 @@ export function ringScene(
     const start = deg;
     const [gx, gy] = at(
       start + (group.lenses.length * step) / 2,
-      rx * 0.55,
-      ry * 0.55,
+      rx * 0.58,
+      ry * 0.58,
     );
-    guides.push({
+    // The view's name: a label-only mark (cards draw nothing on the canvas),
+    // since the canvas draws no text and labels are DOM.
+    marks.push({
       id: `group:${group.id}`,
-      kind: 'text',
+      shape: 'card',
+      paint: '--muted',
       x: gx,
       y: gy,
-      text: group.label.toUpperCase(),
-      paint: '--muted',
-      alpha: focused ? 0.4 : 1,
-    });
-    const [s1x, s1y] = at(start, rx * 0.68, ry * 0.68);
-    const [s2x, s2y] = at(start, rx * 1.08, ry * 1.08);
-    guides.push({
-      id: `sep:${group.id}`,
-      kind: 'line',
-      x1: s1x,
-      y1: s1y,
-      x2: s2x,
-      y2: s2y,
-      paint: '--link',
-      alpha: 1,
+      r: 0,
+      ...zero,
+      alpha: focused ? 0 : 1,
+      label: group.label.toUpperCase(),
+      labelPriority: 5,
+      labelAnchor: 'center',
     });
 
     group.lenses.forEach((lens, i) => {
@@ -124,6 +132,7 @@ export function ringScene(
         alpha: dim(lens.preset),
         label: `${lens.label} · ${lens.value}`,
         labelPriority: lens.grade * 10 + (lens.preset === focused ? 50 : 0),
+        labelAnchor: anchorFor(x - cx, y - cy),
         z: lens.grade,
       });
       links.push({
@@ -152,18 +161,22 @@ export function ringScene(
       const t =
         focus.entities.length === 1 ? 0 : i / (focus.entities.length - 1) - 0.5;
       const a = outward + t * span;
+      const fx = lx + radius * Math.cos(a);
+      const fy = ly + radius * Math.sin(a);
       marks.push({
         id: e.id,
         shape: 'dot',
         paint: entityPaint(e.id),
-        x: lx + radius * Math.cos(a),
-        y: ly + radius * Math.sin(a),
+        x: fx,
+        y: fy,
         r: FAN_DOT,
         ...zero,
         alpha: 1,
         parent: source,
-        label: `${e.label} · ${e.value}`,
+        // The name only: the inspector lists each one's value beside it.
+        label: e.label,
         labelPriority: 40 - i,
+        labelAnchor: anchorFor(fx - lx, fy - ly),
         z: 4,
       });
       links.push({
@@ -181,7 +194,7 @@ export function ringScene(
   return { marks, links, guides, bounds: boundsOf(marks) };
 }
 
-/** Every mark, plus margin and room for the labels drawn to their right. */
+/** Every mark, plus margin and room for the labels drawn beside them. */
 function boundsOf(marks: readonly Mark[]) {
   let x0 = Infinity;
   let y0 = Infinity;
@@ -195,9 +208,9 @@ function boundsOf(marks: readonly Mark[]) {
   }
   if (!Number.isFinite(x0)) return { x: 0, y: 0, w: 0, h: 0 };
   return {
-    x: x0 - MARGIN,
-    y: y0 - MARGIN,
-    w: x1 - x0 + 2 * MARGIN + LABEL_ROOM,
-    h: y1 - y0 + 2 * MARGIN,
+    x: x0 - MARGIN - LABEL_ROOM,
+    y: y0 - MARGIN - LABEL_ROOM_Y,
+    w: x1 - x0 + 2 * (MARGIN + LABEL_ROOM),
+    h: y1 - y0 + 2 * (MARGIN + LABEL_ROOM_Y),
   };
 }

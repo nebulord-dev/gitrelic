@@ -70,6 +70,11 @@ export interface Mark extends MarkGeom {
   label?: string;
   /** Higher labels win when they collide. Defaults to 0. */
   labelPriority?: number;
+  /**
+   * Which side of the mark its label sits: right (the default), left, above,
+   * below, or centred on it (a label-only mark, like a ring's group name).
+   */
+  labelAnchor?: 'right' | 'left' | 'above' | 'below' | 'center';
   /** Draw order; higher on top. Defaults to 0. */
   z?: number;
 }

@@ -15,7 +15,9 @@
   import ExplainCard from '../inspector/ExplainCard.svelte';
   import FileCard from '../inspector/FileCard.svelte';
   import { fileSections, scrollToSection } from '../inspector/fileSections';
+  import LensPreviewCard from '../inspector/LensPreviewCard.svelte';
   import PersonCard from '../inspector/PersonCard.svelte';
+  import RepoMapCard from '../inspector/RepoMapCard.svelte';
   import RepositoryCard from '../inspector/RepositoryCard.svelte';
   import { paletteShortcut, pressed } from './shortcut';
   import type { GitrelicReport } from '@gitrelic/core';
@@ -244,6 +246,16 @@
     <DirCard dir={key} {report} {activity} {historyFailed} />
   {:else if analyzer}
     <ExplainCard entry={analyzer} />
+    <LensPreviewCard
+      preset={analyzer.id}
+      {report}
+      {index}
+      {onselect}
+      {onopen}
+    />
+  {:else if lens === 'overview'}
+    <RepoMapCard {report} {onselect} />
+    {#if lensEntry}<ExplainCard entry={lensEntry} />{/if}
   {:else if lensEntry}
     <ExplainCard entry={lensEntry} />
     <RepositoryCard {report} />
