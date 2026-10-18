@@ -205,4 +205,19 @@ describe('packagesScene', () => {
     expect(label('packages/a/src/index.ts')).toBe('a/src/index.ts');
     expect(label('packages/b/src/index.ts')).toBe('b/src/index.ts');
   });
+
+  it('gives packages and files tooltips', () => {
+    const scene = packagesScene(hotspotPoints(monorepo), viewport);
+    expect(
+      scene.marks.find((m) => m.id === ids.dir('packages/shared'))!.tip,
+    ).toEqual(['packages/shared/', '3 files · 2 at 25+', 'Hottest: a.js (90)']);
+    expect(
+      scene.marks.find((m) => m.id === ids.file('package.json'))!.tip,
+    ).toEqual([
+      'package.json',
+      'Score 15 · low',
+      '5 commits · 40 lines',
+      '(repository root)',
+    ]);
+  });
 });

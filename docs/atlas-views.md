@@ -74,7 +74,7 @@ Decided at the 3.2 checkpoint (2026-10-18). It is one scrolling column, never a 
   - an entry in the Guide.
   A lens doesn't ship without its docs page.
 - **The Guide** is a sheet on demand (`?`), not a permanent panel. The current lens is pinned at the top with how to read it and its caveats; below it every analyzer is grouped by view, with search and a Docs link each. It reads the catalog's `explain` text, so the Guide, the inspector and ⌘K say the same thing.
-- **The detail table** is a full-width drawer over the bottom of the stage (`T`), not a card in the inspector. It has a filter, tier toggles and sortable columns. Hovering a row lights its mark and clicking selects it; the stage stays live above.
+- **The detail table** is a full-width drawer over the bottom of the stage (`T`, or the stage's Table button, or the lens card's link), not a card in the inspector. It has a filter, tier toggles and sortable columns. Hovering a row lights its mark and shows its tooltip, and clicking selects it; the stage stays live above. Escape closes it before it clears the selection. A lens opts in with `AnalyzerView.table` (scene `LensTable`: columns, rows keyed by entity id with a tier, the lens's tier names and default sort); the drawer draws at most 300 rows and asks for a filter past that.
 - **Width and collapse.** 400px docked (the extra width is for long names). `I` collapses it to a 52px strip that keeps the selection's score in view, with icons that reopen it at a section. The choice is remembered per viewer in the browser. Below 1200px it stays a drawer.
 - **Long names wrap; the inspector never truncates.**
   - File names break at hyphens and dots.
@@ -206,6 +206,8 @@ Each section records:
 
 **Findings** (inspector): the loudest outlier stated in plain language, naming entities as chips. Ring: the loudest group ("who owns the code: 63% of files lean on one author, 39 of 77 contributors went quiet"). Briefing: one card per finding, across lenses.
 
+**Tooltips** (added with the drawer PR): a lens dot shows its name, reading and the reason it's graded; a fanned entity shows its name and its value in that lens.
+
 **Dropped from classic:** the treemap hero and its six alternate heroes (ownership, coupling, commit-graph, scatter, timeline, swimlanes) — each is, or will be, a lens of its own; the metrics strip, whose five numbers the ring shows in context; the overview's bottom tabs, which open their own lenses.
 
 **As built (3.2b):**
@@ -247,7 +249,9 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 - **By package.** Packages are faint discs (a ring's stroke scales with its radius) packed tightly, biggest first (d3-hierarchy's `packSiblings`: a thousand packages in a few milliseconds), and a small repo's packing is spread out to fill the stage (up to 3×); files in a sunflower, hottest at the centre. Names ride on label-only cards above each disc, since the label layer skips marks as faint as the disc. Only files at 25+ claim label space.
 - **Inspector (lens mode):** About, then the Hotspots card (critical and warning counts, up to three findings, tiers on log bars, top five).
 - **Findings** (on React): the hottest file (`ReactFizzServer.js`, 33 commits across 6,656 lines); two kinds of heat among files at 25+ (24 large, 7 under 300 lines hot on churn alone); and the package with the largest share of its own files at 25+, set against the biggest package when that runs much cooler (`packages/shared/`: 7 of 22; `compiler/`: 7 of 1,369).
-- **Next PR:** selecting a file fans its facets; the table drawer (`T`); What to do; hover tooltips (the field's dots and density say what they are).
+- **Tooltips:** a file (in either form) shows its name, score and tier, commits and lines, and its folder; a density cell shows how many files it holds and their range of commits and lines; a package shows its file count, how many are at 25+, and its hottest file. Ticks, callouts and names say nothing.
+- **Table:** every scored file: path, score, commits, lines, package; hottest first.
+- **Next PR:** selecting a file fans its facets; What to do.
 
 ### Code Health › Churn (checkpoint 2026-10-18)
 

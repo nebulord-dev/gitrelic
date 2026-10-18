@@ -96,4 +96,19 @@ describe('ringScene', () => {
       ringScene('repo', readings, null, viewport),
     );
   });
+
+  it('gives lenses and fanned entities tooltips', () => {
+    const entities = lensTopEntities('hotspots', report, index, 3);
+    const scene = ringScene(
+      'repo',
+      readings,
+      { preset: 'hotspots', entities },
+      viewport,
+    );
+    const lens = scene.marks.find((m) => m.id === ids.analyzer('hotspots'))!;
+    const reading = readings.find((r) => r.preset === 'hotspots')!;
+    expect(lens.tip?.slice(0, 2)).toEqual([reading.label, reading.value]);
+    const first = scene.marks.find((m) => m.id === entities[0].id)!;
+    expect(first.tip).toEqual([entities[0].label, entities[0].value]);
+  });
 });

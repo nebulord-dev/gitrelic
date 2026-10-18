@@ -10,7 +10,7 @@
 import { packSiblings } from 'd3-hierarchy';
 
 import { distinctNames } from '../format/distinctNames';
-import { packageOf, type HotspotPoint } from '../hotspots/points';
+import { hotspotTip, packageOf, type HotspotPoint } from '../hotspots/points';
 import { ids, REPO_ID, type EntityId } from '../ids';
 import type { Mark, Scene, Viewport } from '../model';
 
@@ -126,6 +126,11 @@ export function packagesScene(
       a0: 0,
       a1: 0,
       alpha: c.hot > 0 ? 0.1 : 0.06,
+      tip: [
+        c.pkg ? `${c.pkg}/` : '(root files)',
+        `${c.files.length.toLocaleString('en-US')} file${c.files.length === 1 ? '' : 's'} · ${c.hot.toLocaleString('en-US')} at 25+`,
+        `Hottest: ${baseName(c.files[0].file)} (${c.files[0].score})`,
+      ],
     });
     // The name rides on a label-only card above the disc: the label layer
     // skips marks as faint as the disc. `package:` isn't an entity kind, so
@@ -175,6 +180,7 @@ export function packagesScene(
             }
           : {}),
         z: f.tier + 1,
+        tip: hotspotTip(f, names.get(f.file) ?? baseName(f.file)),
       });
     });
   }

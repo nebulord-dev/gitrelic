@@ -77,6 +77,11 @@ export interface Mark extends MarkGeom {
   labelAnchor?: 'right' | 'left' | 'above' | 'below' | 'center';
   /** Draw order; higher on top. Defaults to 0. */
   z?: number;
+  /**
+   * The hover tooltip: plain-text lines, the first one the title. What each
+   * layout says here is decided at its lens's design checkpoint.
+   */
+  tip?: readonly string[];
 }
 
 /**
@@ -187,6 +192,36 @@ export interface Layout {
   build: (input: ViewInput, viewport: Viewport) => Scene;
 }
 
+/** One column of a lens's detail table. */
+export interface TableColumn {
+  id: string;
+  label: string;
+  /** Right-aligned, and sorted largest first on the first click. */
+  numeric?: boolean;
+}
+
+/** A detail-table row is an entity: hovering lights its mark, a click selects it. */
+export interface TableRow {
+  id: EntityId;
+  /** Risk tier, 0 (low) to 3, for the tier toggles and the row's colour. */
+  tier: 0 | 1 | 2 | 3;
+  /** Lower-cased text the filter matches (the full path, a name…). */
+  search: string;
+  cells: Record<string, string | number>;
+}
+
+/**
+ * The lens's "exactly which ones?" (docs/atlas-views.md › Alternate forms):
+ * every entity it scores, sortable, in the full-width table drawer.
+ */
+export interface LensTable {
+  columns: readonly TableColumn[];
+  rows: readonly TableRow[];
+  /** What tiers 0–3 are called in this lens, for the toggles. */
+  tierNames: readonly [string, string, string, string];
+  sort: { column: string; descending: boolean };
+}
+
 /**
  * One analyzer's Atlas view. `layouts[0]` is the primary; the rest are the
  * alternates the view's design checkpoint decided to keep. The inspector panel
@@ -196,6 +231,8 @@ export interface AnalyzerView {
   id: string;
   layouts: [Layout, ...Layout[]];
   findings: (input: ViewInput) => Finding[];
+  /** Its detail table, when it has one (the drawer opens with `T`). */
+  table?: (input: ViewInput) => LensTable;
 }
 
 export function emptyScene(viewport: Viewport): Scene {

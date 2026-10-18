@@ -526,6 +526,30 @@ describe('AtlasStage', () => {
     );
   });
 
+  it('hovers a mark from outside (a table row): label pinned, tooltip shown', async () => {
+    const { stage, fc, labelHost, onHover } = await setup();
+    stage!.show(
+      scene(
+        dot('file:a.ts', 100, 100, {
+          label: 'a.ts',
+          tip: ['a.ts', 'Score 90'],
+        }),
+      ),
+    );
+    settle(fc);
+    const tip = () => labelHost.querySelector('.atlas-tip') as HTMLElement;
+    expect(tip().hidden).toBe(true);
+    stage!.hover('file:a.ts');
+    fc.frame();
+    expect(tip().hidden).toBe(false);
+    expect(tip().textContent).toBe('a.tsScore 90');
+    // The stage didn't hover it itself, so it doesn't report it back.
+    expect(onHover).not.toHaveBeenCalled();
+    stage!.hover(null);
+    fc.frame();
+    expect(tip().hidden).toBe(true);
+  });
+
   it('a resize mid-glide frames for the new size, not the old target', async () => {
     const { stage, fc } = await setup();
     stage!.show(scene(dot('person:a', 100, 100)));

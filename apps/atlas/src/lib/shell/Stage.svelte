@@ -24,6 +24,9 @@
     form,
     onform,
     frameKey,
+    highlight = null,
+    ontable,
+    tableOpen = false,
   }: {
     scene?: Scene | null;
     theme: ThemeName;
@@ -45,6 +48,11 @@
      * selection re-forming it) keeps their zoom.
      */
     frameKey?: string;
+    /** Lit as if hovered: a detail-table row under the pointer. */
+    highlight?: EntityId | null;
+    /** The lens has a detail table: a corner button toggles it. */
+    ontable?: () => void;
+    tableOpen?: boolean;
   } = $props();
 
   // Screen pixels the overlays take: 12px offset + a 32px control on top,
@@ -144,6 +152,10 @@
   $effect(() => {
     stage?.select(selected);
   });
+
+  $effect(() => {
+    stage?.hover(highlight);
+  });
 </script>
 
 <main class="panel relative min-w-0 flex-1 overflow-hidden">
@@ -186,6 +198,20 @@
         ><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg
       >
     </button>
+    {#if ontable}
+      <button
+        type="button"
+        aria-pressed={tableOpen}
+        title="Table (T)"
+        onclick={() => ontable?.()}
+        class={[
+          'absolute top-3 left-13 h-8 cursor-pointer rounded-chip border border-control-border px-2.5 font-[inherit] text-[12px]',
+          tableOpen
+            ? 'bg-control-border text-text'
+            : 'bg-bg text-muted hover:text-text',
+        ]}>Table</button
+      >
+    {/if}
     {#if caption || docs}
       <div
         class="pointer-events-none absolute right-4 bottom-3 left-4 flex items-baseline gap-4 text-[12px] text-muted"

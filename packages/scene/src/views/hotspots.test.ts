@@ -5,6 +5,7 @@ import { hotspotReport } from '../../test/hotspotReport';
 import { ids } from '../ids';
 import {
   fieldLayout,
+  hotspotTable,
   hotspotFindings,
   hotspotsView,
   packagesLayout,
@@ -125,5 +126,31 @@ describe('hotspotFindings', () => {
       })),
     );
     expect(refs(r, 'concentration')).toBeUndefined();
+  });
+});
+
+describe('hotspotTable', () => {
+  it('lists every scored file as a row keyed by its entity id, hottest first', () => {
+    const table = hotspotTable({ report, commits: null });
+    expect(hotspotsView.table).toBe(hotspotTable);
+    expect(table.rows).toHaveLength(report.hotspots.files.length);
+    expect(table.rows[0]).toMatchObject({
+      id: ids.file('src/helpers.ts'),
+      tier: 3,
+      search: 'src/helpers.ts',
+      cells: { file: 'src/helpers.ts', score: 100, lines: 24, package: 'src' },
+    });
+    expect(table.sort).toEqual({ column: 'score', descending: true });
+    expect(table.columns.map((c) => c.id)).toEqual([
+      'file',
+      'score',
+      'commits',
+      'lines',
+      'package',
+    ]);
+    // Root files have a package name too.
+    expect(
+      table.rows.find((r) => r.cells.file === 'package.json')!.cells.package,
+    ).toBe('(root)');
   });
 });

@@ -15,6 +15,7 @@ import {
 import { HitTester } from './hitTest';
 import { LabelLayer } from './labelLayer';
 import { MarkStore } from './markStore';
+import { TooltipLayer } from './tooltipLayer';
 import {
   rafClock,
   REPAINT_MS,
@@ -87,6 +88,7 @@ export class AtlasStage {
   private constructor(
     private readonly host: HTMLElement,
     private readonly labels: LabelLayer,
+    private readonly tooltip: TooltipLayer,
     private size: ScreenSize,
     private readonly opts: AtlasStageOptions,
   ) {
@@ -129,7 +131,13 @@ export class AtlasStage {
         opts.renderer.destroy();
         return null;
       }
-      return new AtlasStage(host, new LabelLayer(labelHost), size, opts);
+      return new AtlasStage(
+        host,
+        new LabelLayer(labelHost),
+        new TooltipLayer(labelHost),
+        size,
+        opts,
+      );
     } catch (err) {
       // Setup failing after WebGL came up (no 2D canvas for the sprites, a
       // theme token the canvas can't parse): don't leak the GL context.
@@ -236,6 +244,7 @@ export class AtlasStage {
     if (this.pending !== null) this.clock.cancel(this.pending);
     this.detachInput();
     this.labels.destroy();
+    this.tooltip.destroy();
     this.opts.renderer.destroy();
   }
 
@@ -249,6 +258,16 @@ export class AtlasStage {
     }
     const [wx, wy] = screenToWorld(this.view, sx, sy);
     return this.hits.hitMark(this.store, wx, wy, HIT_SLOP / this.view.scale);
+  }
+
+  /**
+   * Hovers `id` from outside the canvas (a detail-table row): its label is
+   * pinned and its tooltip shown, as if the pointer were on it.
+   */
+  hover(id: EntityId | null): void {
+    if (this.destroyed || id === this.hovered) return;
+    this.hovered = id;
+    this.requestDraw(false);
   }
 
   private setHovered(id: EntityId | null): void {
@@ -319,6 +338,7 @@ export class AtlasStage {
     if (this.hovered) pinned.add(this.hovered);
     if (this.selected) pinned.add(this.selected);
     this.labels.update(this.store, this.view, this.size, pinned);
+    this.tooltip.update(this.store, this.view, this.size, this.hovered);
     this.opts.onFrame?.(this.clock.now() - start);
     // A plan can cut the engine's repaint short, or end before the camera
     // lands; finish either anyway. requestDraw does nothing while the engine

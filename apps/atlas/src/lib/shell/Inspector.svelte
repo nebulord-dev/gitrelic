@@ -35,6 +35,7 @@
     onselect,
     onopen,
     onguide,
+    ontable,
   }: {
     report: GitrelicReport;
     index: EntityIndex;
@@ -51,6 +52,8 @@
     /** Opens a lens that has an Atlas view. */
     onopen?: (lens: string) => void;
     onguide?: () => void;
+    /** Opens the open lens's detail table. */
+    ontable?: () => void;
   } = $props();
 
   let kind = $derived(selection ? entityKind(selection) : null);
@@ -257,7 +260,7 @@
     />
   {:else if lens === 'hotspots' && lensEntry}
     <ExplainCard entry={lensEntry} />
-    <HotspotsCard {report} {index} {onselect} />
+    <HotspotsCard {report} {index} {onselect} {ontable} />
   {:else if lens === 'overview'}
     <RepoMapCard {report} {onselect} />
     {#if lensEntry}<ExplainCard entry={lensEntry} />{/if}

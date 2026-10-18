@@ -137,4 +137,25 @@ describe('fieldScene', () => {
       '90  server/index.ts',
     ]);
   });
+
+  it('gives every dot and density cell a tooltip', () => {
+    const scene = build();
+    const helpers = scene.marks.find(
+      (m) => m.id === ids.file('src/helpers.ts'),
+    )!;
+    expect(helpers.tip).toEqual([
+      'helpers.ts',
+      'Score 100 · critical',
+      expect.stringMatching(/^\d+ commits? · 24 lines$/),
+      'src/',
+    ]);
+    for (const b of scene.marks.filter((m) => m.id.startsWith('bin:'))) {
+      expect(b.tip?.[0]).toMatch(/^\d+ files? scoring under 25$/);
+      expect(b.tip?.[1]).toMatch(/commits · .* lines$/);
+    }
+    // Scenery has nothing to say.
+    expect(
+      scene.marks.find((m) => m.id.startsWith('tick:'))!.tip,
+    ).toBeUndefined();
+  });
 });
