@@ -187,6 +187,13 @@ describe('packagesScene', () => {
     expect(
       scene.marks.find((m) => m.id === ids.dir('pkg0'))!.r,
     ).toBeGreaterThan(7 * Math.sqrt(files.length / 30));
+    // A file without a dot is held by its package's disc.
+    for (const p of points) {
+      const id = ids.file(p.file);
+      if (drawn.has(id)) continue;
+      expect(scene.standIns?.get(id)).toBe(ids.dir(p.file.split('/')[0]));
+    }
+    expect(scene.standIns?.size).toBe(points.length - drawn.size);
     expect(checkScene(scene)).toEqual([]);
   });
 

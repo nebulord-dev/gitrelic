@@ -191,6 +191,7 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
     l1: number;
   }
   const bins = new Map<string, Bin>();
+  const standIns = new Map<EntityId, string>();
   for (const p of points) {
     if (dotted.has(p.file)) continue;
     const fx = (X(p.commits) - left) / (right - left);
@@ -198,6 +199,7 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
     const i = Math.min(BINS_X - 1, Math.floor(fx * BINS_X));
     const j = Math.min(BINS_Y - 1, Math.floor(fy * BINS_Y));
     const key = `${i}:${j}`;
+    standIns.set(ids.file(p.file), `bin:${key}`);
     const bin = bins.get(key);
     if (bin) {
       bin.n++;
@@ -302,6 +304,7 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
     links,
     guides,
     bounds: { x: 0, y: 0, w: viewport.width, h: viewport.height },
+    standIns,
   };
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { opensPalette, paletteShortcut, pressed } from './shortcut';
+import { modalOpen, opensPalette, paletteShortcut, pressed } from './shortcut';
 
 const key = (init: KeyboardEventInit, target?: HTMLElement) => {
   const e = new KeyboardEvent('keydown', init);
@@ -60,5 +60,18 @@ describe('palette shortcut', () => {
     expect(
       pressed(key({ key: 'i' }, document.createElement('input')), 'i'),
     ).toBe(false);
+  });
+});
+
+describe('modalOpen', () => {
+  it('is true only while an aria-modal dialog is in the document', () => {
+    expect(modalOpen()).toBe(false);
+    const dialog = document.createElement('div');
+    dialog.setAttribute('aria-modal', 'true');
+    document.body.append(dialog);
+    expect(modalOpen()).toBe(true);
+    dialog.setAttribute('aria-modal', 'false');
+    expect(modalOpen()).toBe(false);
+    dialog.remove();
   });
 });

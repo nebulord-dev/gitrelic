@@ -109,6 +109,8 @@ export function packagesScene(
   );
 
   const marks: Mark[] = [];
+  // A file without a dot is held by its package's disc.
+  const standIns = new Map<EntityId, string>();
   for (const c of circles) {
     const id: EntityId = c.pkg ? ids.dir(c.pkg) : REPO_ID;
     const name = c.pkg ? c.pkg.replace(/^packages\//, '') : '(root files)';
@@ -154,6 +156,8 @@ export function packagesScene(
       labelAnchor: 'center',
     });
     const drawn = drawnOf(c);
+    for (const f of c.files.slice(drawn.length))
+      standIns.set(ids.file(f.file), id);
     // Fewer dots than files spread out to fill the same circle.
     const step =
       spacing * Math.sqrt(c.files.length / Math.max(1, drawn.length));
@@ -185,7 +189,13 @@ export function packagesScene(
     });
   }
 
-  return { marks, links: [], guides: [], bounds: boundsOf(circles) };
+  return {
+    marks,
+    links: [],
+    guides: [],
+    bounds: boundsOf(circles),
+    standIns,
+  };
 }
 
 /**

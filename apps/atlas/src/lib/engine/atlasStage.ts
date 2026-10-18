@@ -62,12 +62,22 @@ export class AtlasStage {
   private paletteFrom: Palette | null = null;
   private repaintStart = 0;
   private glow: boolean;
-  /** The mark under the pointer. */
+  /** The mark under the pointer; wins while it's on one. */
   private pointerHover: EntityId | null = null;
-  /** A mark hovered from outside (a table row); wins while it's set. */
+  /** An entity hovered from outside (a table row). */
   private rowHover: EntityId | null = null;
+  /** The marks holding entities the scene didn't draw (`Scene.standIns`). */
+  private standIns: Scene['standIns'];
+  /**
+   * The pointer's mark first: a row that keeps keyboard focus mustn't
+   * contradict what's under the cursor. A row whose entity has no mark of
+   * its own lights the mark holding it (a density cell).
+   */
   private get hovered(): EntityId | null {
-    return this.rowHover ?? this.pointerHover;
+    if (this.pointerHover) return this.pointerHover;
+    const id = this.rowHover;
+    if (!id || this.store.indexOf(id) >= 0) return id;
+    return this.standIns?.get(id) ?? id;
   }
   private selected: EntityId | null = null;
   private hits = new HitTester();
@@ -189,6 +199,7 @@ export class AtlasStage {
       }
     }
     this.lastEmpty = empty;
+    this.standIns = scene.standIns;
     const plan = planTransition(scene, this.engine.live(), {
       reducedMotion: this.opts.reducedMotion(),
     });
@@ -270,7 +281,7 @@ export class AtlasStage {
    * Hovers `id` from outside the canvas (a detail-table row): its label is
    * pinned and its tooltip shown, as if the pointer were on it. It has its
    * own slot, so clearing it (a row losing focus) never erases what the
-   * pointer is on. It leaves the cursor alone and doesn't report back
+   * pointer is on, and the pointer on a mark outranks it. It leaves the cursor alone and doesn't report back
    * through `onHover`: the caller already knows.
    */
   hover(id: EntityId | null): void {

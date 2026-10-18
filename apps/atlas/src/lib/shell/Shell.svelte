@@ -32,7 +32,7 @@
   import Inspector from './Inspector.svelte';
   import LensBar from './LensBar.svelte';
   import Rail from './Rail.svelte';
-  import { pressed } from './shortcut';
+  import { modalOpen, pressed } from './shortcut';
   import Stage from './Stage.svelte';
   import TopBar from './TopBar.svelte';
   import type { GitrelicReport } from '@gitrelic/core';
@@ -176,7 +176,7 @@
   });
   function onKey(e: KeyboardEvent) {
     // A modal (the palette, the guide) owns the keyboard while it's open.
-    if (document.querySelector('[aria-modal="true"]')) return;
+    if (modalOpen()) return;
     if (pressed(e, 't') && lensView?.table) {
       // Opening doesn't move focus, so T closes it again; the key's
       // character has nowhere useful to go either way.

@@ -20,7 +20,7 @@
   import PersonCard from '../inspector/PersonCard.svelte';
   import RepoMapCard from '../inspector/RepoMapCard.svelte';
   import RepositoryCard from '../inspector/RepositoryCard.svelte';
-  import { paletteShortcut, pressed } from './shortcut';
+  import { modalOpen, paletteShortcut, pressed } from './shortcut';
   import type { GitrelicReport } from '@gitrelic/core';
 
   let {
@@ -91,9 +91,6 @@
   // The strip only exists docked (from 1200px); below that, I does nothing.
   const docked = () =>
     globalThis.matchMedia?.('(min-width: 1200px)').matches ?? true;
-  // A modal (the palette, the guide) owns the keyboard while it's open.
-  const modalOpen = () =>
-    document.querySelector('[aria-modal="true"]') !== null;
 
   function onKey(e: KeyboardEvent) {
     if (e.key === 'Escape' && selection && !e.defaultPrevented) {

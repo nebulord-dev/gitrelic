@@ -143,6 +143,12 @@ export interface Scene {
   guides: Guide[];
   /** The area every mark is drawn within; what "fit to screen" frames. */
   bounds: Bounds;
+  /**
+   * Entities the layout scored but didn't draw a mark for, each mapped to the
+   * mark that holds it (a density cell, a package's disc). Hovering one from
+   * outside — a detail-table row — lights its stand-in instead of nothing.
+   */
+  standIns?: ReadonlyMap<EntityId, string>;
 }
 
 export interface Viewport {
@@ -296,6 +302,12 @@ export function checkScene(scene: Scene, slack = 0.5): string[] {
   for (const g of scene.guides) {
     if (guideIds.has(g.id)) problems.push(`duplicate guide id ${g.id}`);
     guideIds.add(g.id);
+  }
+
+  for (const [id, holder] of scene.standIns ?? []) {
+    if (markIds.has(id)) problems.push(`stand-in for ${id}, which is drawn`);
+    if (!markIds.has(holder))
+      problems.push(`stand-in for ${id}: no mark ${holder}`);
   }
   return problems;
 }

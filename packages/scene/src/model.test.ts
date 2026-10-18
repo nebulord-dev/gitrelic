@@ -110,4 +110,21 @@ describe('checkScene', () => {
     );
     expect(problems).toEqual(['link a-x: no mark person:x']);
   });
+
+  it('flags stand-ins that are drawn, or held by no mark', () => {
+    const problems = checkScene(
+      scene({
+        marks: [dot('file:a', 10, 10), dot('bin:0:0', 50, 50)],
+        standIns: new Map([
+          ['file:a', 'bin:0:0'],
+          ['file:b', 'bin:9:9'],
+          ['file:c', 'bin:0:0'],
+        ]),
+      }),
+    );
+    expect(problems).toEqual([
+      'stand-in for file:a, which is drawn',
+      'stand-in for file:b: no mark bin:9:9',
+    ]);
+  });
 });

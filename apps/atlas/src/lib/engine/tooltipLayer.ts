@@ -66,7 +66,12 @@ export class TooltipLayer {
     this.size ??= { w: this.card.offsetWidth, h: this.card.offsetHeight };
 
     const [sx, sy] = worldToScreen(view, store.x[i], store.y[i]);
-    const edge = (store.r[i] || store.w[i] / 2) * view.scale;
+    // A dot's radius, or a box's half-width and half-height.
+    const r = store.r[i];
+    const edge: [number, number] = [
+      (r || store.w[i] / 2) * view.scale,
+      (r || store.h[i] / 2) * view.scale,
+    ];
     const [x, y] = placeTip(
       store.marks[i].label ? (store.marks[i].labelAnchor ?? 'right') : null,
       sx,
@@ -99,13 +104,14 @@ const ACROSS: Record<Anchor, 'right' | 'left' | 'above' | 'below'> = {
  * Where the card's top-left goes: across the mark from its label (a label on
  * the right puts the card on the left, one above puts it below), flipping if
  * that side runs off the stage, and kept inside it. A mark without a label
- * gets the card on its right.
+ * gets the card on its right. `edge` is the mark's half-width and
+ * half-height on screen.
  */
 export function placeTip(
   label: Anchor | null,
   sx: number,
   sy: number,
-  edge: number,
+  edge: readonly [number, number],
   w: number,
   h: number,
   screen: ScreenSize,
@@ -114,8 +120,8 @@ export function placeTip(
   let x: number;
   let y: number;
   if (side === 'left' || side === 'right') {
-    const right = sx + edge + GAP;
-    const left = sx - edge - GAP - w;
+    const right = sx + edge[0] + GAP;
+    const left = sx - edge[0] - GAP - w;
     x =
       side === 'right'
         ? right + w > screen.width - EDGE
@@ -126,8 +132,8 @@ export function placeTip(
           : left;
     y = sy - h / 2;
   } else {
-    const below = sy + edge + GAP;
-    const above = sy - edge - GAP - h;
+    const below = sy + edge[1] + GAP;
+    const above = sy - edge[1] - GAP - h;
     y =
       side === 'below'
         ? below + h > screen.height - EDGE

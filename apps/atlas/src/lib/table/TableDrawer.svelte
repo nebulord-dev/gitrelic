@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { modalOpen } from '../shell/shortcut';
   import { nextSort, visibleRows, type TableView } from './tableRows';
   import type { EntityId, LensTable } from '@gitrelic/scene';
 
@@ -48,8 +49,7 @@
   // it as "clear the selection".
   function onKey(e: KeyboardEvent) {
     // A modal over the drawer (the palette, the guide) closes first.
-    const modal = document.querySelector('[aria-modal="true"]') !== null;
-    if (open && e.key === 'Escape' && !modal) {
+    if (open && e.key === 'Escape' && !modalOpen()) {
       e.preventDefault();
       e.stopPropagation();
       close();

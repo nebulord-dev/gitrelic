@@ -64,7 +64,7 @@ describe('TooltipLayer', () => {
     const scr = { width: 800, height: 600 };
     // Mark at (400, 300), 10px radius, card 200 × 60.
     const at = (label: Parameters<typeof placeTip>[0]) =>
-      placeTip(label, 400, 300, 10, 200, 60, scr);
+      placeTip(label, 400, 300, [10, 10], 200, 60, scr);
     expect(at('right')[0]).toBeLessThan(400 - 200); // card left of the mark
     expect(at('left')[0]).toBeGreaterThan(400); // card right of it
     expect(at(null)[0]).toBeGreaterThan(400);
@@ -76,10 +76,19 @@ describe('TooltipLayer', () => {
   it('flips when its side would run off the stage, and stays inside', () => {
     const scr = { width: 800, height: 600 };
     // Label on the right of a mark near the left edge: no room on the left.
-    const [x] = placeTip('right', 30, 300, 10, 200, 60, scr);
+    const [x] = placeTip('right', 30, 300, [10, 10], 200, 60, scr);
     expect(x).toBeGreaterThan(30);
-    const [, y] = placeTip('above', 400, 580, 10, 200, 60, scr);
+    const [, y] = placeTip('above', 400, 580, [10, 10], 200, 60, scr);
     expect(y).toBeLessThanOrEqual(600 - 60 - 8);
+  });
+
+  it('clears a box by its half-width beside it and half-height above it', () => {
+    const scr = { width: 800, height: 600 };
+    // A 40 × 100 box at (400, 300).
+    const [x] = placeTip(null, 400, 300, [20, 50], 200, 60, scr);
+    expect(x).toBe(400 + 20 + 10);
+    const [, y] = placeTip('above', 400, 300, [20, 50], 200, 60, scr);
+    expect(y).toBe(300 + 50 + 10);
   });
 
   it('measures the card once per change of text, not every frame', () => {
