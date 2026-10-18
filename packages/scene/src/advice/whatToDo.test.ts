@@ -29,6 +29,15 @@ describe('whatToDo', () => {
     expect(advice[1].section).toBe('activity');
   });
 
+  it('says nothing about a generated file, however hot', () => {
+    expect(idsOf('src/helpers.ts')).not.toEqual([]);
+    const generated: GitrelicReport = {
+      ...report,
+      fileClasses: { ...report.fileClasses, 'src/helpers.ts': 'generated' },
+    };
+    expect(whatToDo('src/helpers.ts', generated)).toEqual([]);
+  });
+
   it('says nothing about a file no rule fits', () => {
     expect(whatToDo('nope.ts', report)).toEqual([]);
   });

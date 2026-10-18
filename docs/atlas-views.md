@@ -68,7 +68,7 @@ Decided at the 3.2 checkpoint (2026-10-18). It is one scrolling column, never a 
     - Changes with;
     - Docs and classic links.
 - **What to do** comes from rules on the signals, not a model. It is a scene table, like the badge rules, with each action keyed to signal combinations from the analyzers' docs (`cursed-files.md` "What action it suggests" is the seed). Every action states the evidence behind it and links to the section that shows it. At most a few actions, and the section is absent when no rule applies.
-- **What to do, as built** (`advice/whatToDo.ts`, agreed with the maintainer 2026-10-18). Rules in priority order, at most three per file; every file, whatever the lens. The card (`WhatToDoCard`) sits under the file card, and each action's evidence links to its section when that section renders.
+- **What to do, as built** (`advice/whatToDo.ts`, agreed with the maintainer 2026-10-18). Rules in priority order, at most three per file; every file, whatever the lens, except generated ones (`fileClasses`), which get none: nobody edits them by hand. The card (`WhatToDoCard`) sits under the file card, and each action's evidence links to its section when that section renders.
 
   | Rule | When | Action | Evidence (section) |
   |---|---|---|---|

@@ -163,6 +163,9 @@ const RULES: readonly ((s: Signals) => Advice | null)[] = [
 
 /** Up to ADVICE_LIMIT actions for `file`, most important first. */
 export function whatToDo(file: string, report: GitrelicReport): Advice[] {
+  // Nobody edits generated code by hand, so no action about it applies
+  // (bus factor already skips it; loc, velocity, rewrite and coupling don't).
+  if (report.fileClasses[file] === 'generated') return [];
   const signals = signalsOf(file, report);
   const out: Advice[] = [];
   for (const rule of RULES) {
