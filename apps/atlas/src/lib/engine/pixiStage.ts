@@ -2,7 +2,8 @@
 // marks are particles in one ParticleContainer (one texture atlas, so one
 // draw call), links are one mesh with per-vertex colour, and arcs and
 // guides are a Graphics each, re-tessellated only on frames marked dirty
-// (guides also on zoom, to stay hairlines).
+// (guides also on zoom, to stay hairlines). Particles and arcs are painted in
+// the store's drawOrder, the same order the hit test picks by.
 // Cards and text are DOM overlays, not drawn here.
 
 import { resolvePaint, type Rgba } from '@gitrelic/scene';
@@ -96,6 +97,8 @@ export class PixiStage implements StageRenderer {
     } catch {
       return false;
     }
+    // From here a throw rejects init; AtlasStage.create then calls destroy(),
+    // which needs this.app set to release the GL context.
     this.app = app;
     this.sprites = makeSprites();
 
@@ -158,7 +161,7 @@ export class PixiStage implements StageRenderer {
     this.app = null;
   }
 
-  /** One particle (and one halo) per store slot, in slot order. */
+  /** One particle (and one halo) per mark; which mark is set per frame. */
   private syncParticles(store: MarkStore, sprites: Sprites): void {
     const grow = (container: ParticleContainer<Particle>, texture: Texture) => {
       const list = container.particleChildren;
@@ -179,9 +182,11 @@ export class PixiStage implements StageRenderer {
   ): void {
     const marks = this.marks.particleChildren;
     const halos = this.halos.particleChildren;
-    for (let i = 0; i < store.count; i++) {
-      const p = marks[i];
-      const h = halos[i];
+    const order = store.drawOrder();
+    for (let k = 0; k < store.count; k++) {
+      const i = order[k];
+      const p = marks[k];
+      const h = halos[k];
       const shape = store.shape[i];
       const alpha = store.alpha[i] * store.opacity[i];
       const tint = rgbNumber(store.red[i], store.green[i], store.blue[i]);
@@ -211,7 +216,7 @@ export class PixiStage implements StageRenderer {
 
   private drawArcs(store: MarkStore): void {
     const g = this.arcs.clear();
-    for (let i = 0; i < store.count; i++) {
+    for (const i of store.drawOrder()) {
       if (store.shape[i] !== SHAPE_CODES.arc || store.h[i] <= 0) continue;
       const alpha = store.alpha[i] * store.opacity[i];
       if (alpha <= 0) continue;

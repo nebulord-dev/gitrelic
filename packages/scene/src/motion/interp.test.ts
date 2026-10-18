@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import { COLOR_ROLES } from '../model';
 import { easeOutCubic, trackProgress } from './ease';
 import {
   lerpArc,
   lerpGeom,
   mixColor,
+  mixPalette,
   parseColor,
   resolvePaint,
   type Palette,
@@ -109,6 +111,25 @@ describe('mixColor', () => {
   it('mixes in linear light: the midpoint is brighter than the sRGB average', () => {
     expect(mixColor(black, white, 0.5).r).toBeGreaterThan(0.7);
     expect(mixColor(black, white, 0.5).a).toBe(0.5);
+  });
+});
+
+describe('mixPalette', () => {
+  const solid = (c: Rgba) => new Proxy({} as Palette, { get: () => c });
+  const dark = solid({ r: 0, g: 0, b: 0, a: 1 });
+  const light = solid({ r: 1, g: 1, b: 1, a: 1 });
+
+  it('returns the end palettes themselves outside 0..1', () => {
+    expect(mixPalette(dark, light, 0)).toBe(dark);
+    expect(mixPalette(dark, light, 1.2)).toBe(light);
+  });
+
+  it('mixes every colour role the way mixColor does', () => {
+    const mid = mixPalette(dark, light, 0.5);
+    expect(Object.keys(mid)).toEqual([...COLOR_ROLES]);
+    expect(mid['--accent']).toEqual(
+      mixColor(dark['--accent'], light['--accent'], 0.5),
+    );
   });
 });
 

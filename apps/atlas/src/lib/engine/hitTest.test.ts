@@ -79,18 +79,47 @@ describe('HitTester', () => {
     expect(hit(s, 60, -90)).toBeNull();
   });
 
-  it('prefers higher z, then the later-drawn mark', () => {
-    const under = mark('file:a', { x: 0, y: 0, r: 10, z: 1 });
-    const over = mark('file:b', { x: 2, y: 0, r: 10 });
-    expect(hit(storeOf(under, over), 1, 0)).toBe('file:a');
+  it("picks the mark drawn on top, by the store's draw order", () => {
+    const raised = mark('file:a', { x: 0, y: 0, r: 10, z: 1 });
+    const later = mark('file:b', { x: 2, y: 0, r: 10 });
+    expect(hit(storeOf(raised, later), 1, 0)).toBe('file:a');
     expect(
       hit(storeOf(mark('file:a', { r: 10 }), mark('file:b', { r: 10 })), 0, 0),
     ).toBe('file:b');
+    // Arcs are their own layer under every dot, whatever their z or slot.
+    const arc = mark('cell:0:0', {
+      shape: 'arc',
+      r: 0,
+      h: 20,
+      a0: 0,
+      a1: Math.PI * 2,
+      z: 9,
+    });
+    expect(hit(storeOf(mark('person:a', { r: 10 }), arc), 0, 0)).toBe(
+      'person:a',
+    );
   });
 
-  it('ignores marks that have all but faded out', () => {
-    const s = storeOf(mark('person:a', { r: 10, alpha: 0.01 }));
-    expect(hit(s, 0, 0)).toBeNull();
+  it('agrees with the draw order after marks are removed', () => {
+    const s = storeOf(
+      mark('file:a', { r: 10 }),
+      mark('file:b', { r: 10 }),
+      mark('file:c', { r: 10 }),
+    );
+    s.remove('file:a');
+    const order = s.drawOrder();
+    expect(hit(s, 0, 0)).toBe(s.marks[order[order.length - 1]].id);
+    expect(hit(s, 0, 0)).toBe('file:c');
+  });
+
+  it('ignores marks that have all but faded out, or are painted faint', () => {
+    expect(hit(storeOf(mark('person:a', { r: 10, alpha: 0.01 })), 0, 0)).toBe(
+      null,
+    );
+    const faint = new MarkStore();
+    const m = mark('person:a', { r: 10 });
+    faint.upsert(m, m, { ...grey, a: 0.02 });
+    expect(hit(faint, 0, 0)).toBeNull();
   });
 
   it('finds marks that span several grid cells', () => {

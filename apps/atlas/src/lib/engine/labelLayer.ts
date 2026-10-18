@@ -1,5 +1,6 @@
-// Mark labels as DOM text over the canvas: crisp at any zoom and selectable
-// by assistive tech, which canvas text isn't. Updated imperatively every
+// Mark labels as DOM text over the canvas, crisp at any zoom. The host is
+// aria-hidden: hundreds of shifting spans would only be noise to a screen
+// reader, which gets the inspector and detail table instead. Updated imperatively every
 // frame from the store (no Svelte reactivity per label), with a pool of
 // spans reused across frames. Text goes in through textContent only — labels
 // are commit authors and file paths, never markup.
@@ -14,6 +15,8 @@ const CHAR_PX = 6.5;
 const LABEL_H = 16;
 /** Gap between a mark's edge and its label, px. */
 const OFFSET = 4;
+/** Marks drawn fainter than this (fading, or a faint paint) go unlabelled. */
+const MIN_ALPHA = 0.5;
 
 export class LabelLayer {
   private pool: HTMLSpanElement[] = [];
@@ -30,7 +33,8 @@ export class LabelLayer {
     const text = new Map<string, string>();
     for (let i = 0; i < store.count; i++) {
       const mark = store.marks[i];
-      if (!mark.label || store.alpha[i] < 0.5) continue;
+      if (!mark.label || store.alpha[i] * store.opacity[i] < MIN_ALPHA)
+        continue;
       const [sx, sy] = worldToScreen(view, store.x[i], store.y[i]);
       const edge = (store.r[i] || store.w[i] / 2) * view.scale;
       candidates.push({

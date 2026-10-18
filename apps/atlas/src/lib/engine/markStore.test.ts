@@ -42,19 +42,39 @@ describe('MarkStore', () => {
     expect(s.version).toBe(v);
   });
 
-  it('swap-removes and keeps the id → slot map right', () => {
+  it('removes marks without reordering the rest', () => {
     const s = new MarkStore();
-    for (const id of ['a', 'b', 'c'])
+    for (const id of ['a', 'b', 'c', 'd'])
       s.upsert(mark(id), geom(id.charCodeAt(0)), grey);
-    s.remove('a');
+    const v = s.version;
+    s.removeAll(['a', 'c', 'nope']);
+    expect(s.version).toBe(v + 1);
     expect(s.count).toBe(2);
+    expect(s.marks.map((m) => m.id)).toEqual(['b', 'd']);
     expect(s.indexOf('a')).toBe(-1);
-    expect(s.indexOf('c')).toBe(0);
-    expect(s.x[0]).toBe('c'.charCodeAt(0));
-    expect(s.marks.map((m) => m.id)).toEqual(['c', 'b']);
+    expect(s.indexOf('d')).toBe(1);
+    expect(s.x[1]).toBe('d'.charCodeAt(0));
     s.remove('b');
     s.remove('nope');
-    expect(s.marks.map((m) => m.id)).toEqual(['c']);
+    expect(s.marks.map((m) => m.id)).toEqual(['d']);
+    expect(s.indexOf('d')).toBe(0);
+  });
+
+  it('draws arcs first, then by z, then by slot', () => {
+    const s = new MarkStore();
+    s.upsert({ ...mark('top'), z: 2 }, geom(0), grey);
+    s.upsert(mark('plain'), geom(0), grey);
+    s.upsert({ ...mark('ring'), shape: 'arc', z: 9 }, geom(0), grey);
+    s.upsert(mark('plain2'), geom(0), grey);
+    const ids = () => [...s.drawOrder()].map((i) => s.marks[i].id);
+    expect(ids()).toEqual(['ring', 'plain', 'plain2', 'top']);
+    expect(s.paintRank(s.indexOf('top'))).toBe(3);
+
+    // A z change re-sorts even though no mark was added or removed.
+    s.upsert({ ...mark('plain'), z: 5 }, geom(0), grey);
+    expect(ids()).toEqual(['ring', 'plain2', 'top', 'plain']);
+    s.remove('ring');
+    expect(ids()).toEqual(['plain2', 'top', 'plain']);
   });
 
   it('grows past its initial capacity without losing data', () => {

@@ -7,7 +7,7 @@ import { SHAPE_CODES, type MarkStore } from './markStore';
 import type { EntityId, LiveLink } from '@gitrelic/scene';
 
 const TAU = Math.PI * 2;
-/** Nearly invisible marks (fading out) can't be picked. */
+/** Nearly invisible marks (fading out, or a faint paint) can't be picked. */
 const MIN_ALPHA = 0.05;
 
 export class HitTester {
@@ -35,8 +35,8 @@ export class HitTester {
   }
 
   /**
-   * The topmost mark at (wx, wy): highest `z`, then the later slot (drawn
-   * later). `tolerance` widens every shape, in world units, for touch.
+   * The topmost mark at (wx, wy), by the store's `drawOrder` — the order the
+   * renderer paints in. `tolerance` widens every shape, in world units.
    */
   hitMark(
     store: MarkStore,
@@ -49,16 +49,17 @@ export class HitTester {
     const gy0 = Math.floor((wy - tolerance) / this.cell);
     const gy1 = Math.floor((wy + tolerance) / this.cell);
     let best = -1;
-    let bestZ = -Infinity;
+    let bestRank = -1;
     for (let gx = gx0; gx <= gx1; gx++) {
       for (let gy = gy0; gy <= gy1; gy++) {
         for (const i of this.grid.get(`${gx},${gy}`) ?? []) {
-          if (i >= store.count || store.alpha[i] < MIN_ALPHA) continue;
+          if (i >= store.count) continue;
+          if (store.alpha[i] * store.opacity[i] < MIN_ALPHA) continue;
           if (!contains(store, i, wx, wy, tolerance)) continue;
-          const z = store.marks[i].z ?? 0;
-          if (z > bestZ || (z === bestZ && i > best)) {
+          const rank = store.paintRank(i);
+          if (rank > bestRank) {
             best = i;
-            bestZ = z;
+            bestRank = rank;
           }
         }
       }

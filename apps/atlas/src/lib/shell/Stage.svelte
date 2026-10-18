@@ -25,6 +25,8 @@
   let stage = $state<AtlasStage | null>(null);
   let noWebgl = $state(false);
   let failure = $state<string | null>(null);
+  // The theme the stage's palette was read in; the effect below skips it.
+  let paintedTheme: ThemeName | null = null;
 
   function fail(err: unknown) {
     failure = err instanceof Error ? err.message : String(err);
@@ -61,6 +63,7 @@
         return;
       }
       created = made;
+      paintedTheme = theme;
       stage = made;
       resize.observe(el);
     }, fail);
@@ -77,9 +80,11 @@
   });
 
   $effect(() => {
-    const glow = theme === 'glow';
+    const next = theme;
+    const glow = next === 'glow';
     const current = stage;
-    if (!current) return;
+    if (!current || next === paintedTheme) return;
+    paintedTheme = next;
     // App applies data-theme in its own effect; read the tokens after it.
     tick()
       .then(() => current.setTheme(paletteFromDocument(), glow))

@@ -55,6 +55,14 @@ describe('LabelLayer', () => {
     expect(spans(host).map((s) => s.textContent)).toEqual(['a']);
   });
 
+  it('skips marks whose paint is too faint to see', () => {
+    const host = document.createElement('div');
+    const s = store({ label: 'ghost' });
+    s.opacity[0] = 0.3;
+    new LabelLayer(host).update(s, IDENTITY, screen, new Set());
+    expect(spans(host)).toHaveLength(0);
+  });
+
   it('keeps the higher-priority label when two collide', () => {
     const host = document.createElement('div');
     new LabelLayer(host).update(

@@ -224,6 +224,24 @@ describe('TweenEngine', () => {
     expect(store.x[0]).toBe(100);
   });
 
+  it('settles leaving marks on the new palette when a plan cuts a repaint short', () => {
+    const { fc, store, engine, go } = setup();
+    go(scene([mark('person:a', 0), mark('person:b', 50)]));
+    fc.advance(TIMING.move);
+    const green = paletteOf(rgba(0, 1, 0), rgba(0, 0, 1));
+    engine.repaint(green);
+    fc.advance(REPAINT_MS / 3);
+    // person:b leaves; the new plan replaces the repaint runs.
+    engine.play(
+      planTransition(scene([mark('person:a', 0)]), engine.live()),
+      green,
+    );
+    fc.advance(TIMING.exit * 0.9);
+    const b = store.indexOf('person:b');
+    expect(b).not.toBe(-1);
+    expect(store.green[b]).toBeGreaterThan(0.9);
+  });
+
   it('renders once per frame and stops asking for frames when idle', () => {
     const { fc, go, frames } = setup();
     go(scene([mark('person:a', 0)]), { reducedMotion: true });

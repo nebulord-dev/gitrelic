@@ -123,8 +123,10 @@ export class TweenEngine {
         from: t.from,
         to: { ...t.to, a0, a1 },
         fromColor,
-        toColor: t.phase === 'exit' ? fromColor : toColor,
-        recolor: t.phase !== 'exit' && !sameColor(fromColor, toColor),
+        // Leaving marks settle on the palette too: a theme switch this plan
+        // cut short mustn't leave them shrinking out half-blended.
+        toColor,
+        recolor: !sameColor(fromColor, toColor),
         delay: t.delay,
         duration: t.duration,
         ease: EASE[t.ease],
@@ -177,7 +179,6 @@ export class TweenEngine {
     const running = new Map(this.marks.map((m) => [m.id, m]));
     for (let i = 0; i < store.count; i++) {
       const run = running.get(store.marks[i].id);
-      if (run?.exit) continue;
       const to = resolvePaint(store.marks[i].paint, palette);
       if (run) {
         // Mid-transition: the plan stops tweening this mark's colour and a
@@ -248,7 +249,7 @@ export class TweenEngine {
   }
 
   private finishPlan(): void {
-    for (const run of this.marks) if (run.exit) this.store.remove(run.id);
+    this.store.removeAll(this.marks.filter((r) => r.exit).map((r) => r.id));
     for (const run of this.linkRuns)
       if (run.exit) this.links.delete(run.item.id);
     for (const run of this.guideRuns)

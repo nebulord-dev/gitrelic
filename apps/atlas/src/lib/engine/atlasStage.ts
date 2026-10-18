@@ -3,6 +3,7 @@
 // Stage.svelte and the bench page are thin shells around it.
 
 import {
+  mixPalette,
   planTransition,
   type EntityId,
   type Palette,
@@ -12,7 +13,12 @@ import {
 import { HitTester } from './hitTest';
 import { LabelLayer } from './labelLayer';
 import { MarkStore } from './markStore';
-import { rafClock, TweenEngine, type FrameClock } from './tweenEngine';
+import {
+  rafClock,
+  REPAINT_MS,
+  TweenEngine,
+  type FrameClock,
+} from './tweenEngine';
 import {
   fit,
   IDENTITY,
@@ -45,6 +51,9 @@ export class AtlasStage {
   private view: ViewTransform = IDENTITY;
   private bounds: Scene['bounds'] | null = null;
   private palette: Palette;
+  /** The palette a theme switch is fading from; links and guides blend. */
+  private paletteFrom: Palette | null = null;
+  private repaintStart = 0;
   private glow: boolean;
   private hovered: EntityId | null = null;
   private selected: EntityId | null = null;
@@ -101,11 +110,12 @@ export class AtlasStage {
     size: ScreenSize,
     opts: AtlasStageOptions,
   ): Promise<AtlasStage | null> {
-    if (!(await opts.renderer.init(host, size))) return null;
     try {
+      if (!(await opts.renderer.init(host, size))) return null;
       return new AtlasStage(host, new LabelLayer(labelHost), size, opts);
     } catch (err) {
-      // e.g. a theme token the canvas can't parse: don't leak the renderer.
+      // Setup failing after WebGL came up (no 2D canvas for the sprites, a
+      // theme token the canvas can't parse): don't leak the GL context.
       opts.renderer.destroy();
       throw err;
     }
@@ -127,6 +137,9 @@ export class AtlasStage {
 
   setTheme(palette: Palette, glow: boolean): void {
     if (this.destroyed) return;
+    // Links and guides fade over the same time the engine re-tints marks.
+    this.paletteFrom = this.shownPalette();
+    this.repaintStart = this.clock.now();
     this.palette = palette;
     this.glow = glow;
     this.dirty = true;
@@ -204,15 +217,26 @@ export class AtlasStage {
     });
   }
 
+  /** The palette links and guides are drawn with right now. */
+  private shownPalette(): Palette {
+    if (!this.paletteFrom) return this.palette;
+    const p = (this.clock.now() - this.repaintStart) / REPAINT_MS;
+    if (p >= 1) this.paletteFrom = null;
+    return mixPalette(this.paletteFrom ?? this.palette, this.palette, p);
+  }
+
   private draw(animated: boolean): void {
     if (this.destroyed) return;
     const start = this.clock.now();
-    const dirty = this.dirty || animated;
+    // Read before shownPalette(), which clears it on the fade's last frame.
+    const fading = this.paletteFrom !== null;
+    const palette = this.shownPalette();
+    const dirty = this.dirty || animated || fading;
     this.opts.renderer.render({
       store: this.store,
       links: this.engine.links.values(),
       guides: this.engine.guides.values(),
-      palette: this.palette,
+      palette,
       view: this.view,
       glow: this.glow,
       dirty,
@@ -226,5 +250,7 @@ export class AtlasStage {
     if (this.selected) pinned.add(this.selected);
     this.labels.update(this.store, this.view, this.size, pinned);
     this.opts.onFrame?.(this.clock.now() - start);
+    // A plan can cut the engine's repaint short; finish the fade anyway.
+    if (this.paletteFrom) this.requestDraw(true);
   }
 }

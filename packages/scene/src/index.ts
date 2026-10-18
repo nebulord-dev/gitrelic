@@ -135,6 +135,7 @@ export {
   lerpArc,
   lerpGeom,
   mixColor,
+  mixPalette,
   parseColor,
   resolvePaint,
   type Palette,

@@ -1,6 +1,10 @@
 // Marks as structure-of-arrays: one Float32Array per animated field, indexed
 // by slot. The tween engine writes these every frame and the renderer reads
 // them, without allocating an object per mark per frame.
+//
+// Slots keep insertion order (removal compacts, it never swaps), and
+// `drawOrder` is the one paint order the renderer draws in and the hit test
+// picks by, so what's clicked is always what's on top.
 
 import type {
   EntityId,
@@ -33,6 +37,14 @@ export const SHAPE_CODES: Record<MarkShape, number> = {
 
 const INITIAL_CAPACITY = 256;
 
+/**
+ * The renderer's layers, back to front: arcs are one Graphics under the
+ * particle layer that holds every other shape.
+ */
+export function drawLayer(shape: number): number {
+  return shape === SHAPE_CODES.arc ? 0 : 1;
+}
+
 export class MarkStore {
   count = 0;
   /** Bumped whenever marks are added or removed (not when they move). */
@@ -56,6 +68,9 @@ export class MarkStore {
   /** The mark data per slot: id, paint, label, parent, z. */
   marks: Mark[] = [];
   private readonly slots = new Map<EntityId, number>();
+  private order = new Int32Array(0);
+  private rank = new Int32Array(0);
+  private orderStale = true;
 
   get capacity(): number {
     return this.x.length;
@@ -76,6 +91,9 @@ export class MarkStore {
   upsert(mark: Mark, geom: MarkGeom, color: Rgba): number {
     const existing = this.slots.get(mark.id);
     if (existing !== undefined) {
+      const before = this.marks[existing];
+      if ((before.z ?? 0) !== (mark.z ?? 0) || before.shape !== mark.shape)
+        this.orderStale = true;
       this.marks[existing] = mark;
       this.shape[existing] = SHAPE_CODES[mark.shape];
       return existing;
@@ -88,27 +106,60 @@ export class MarkStore {
     this.setGeom(i, geom);
     this.setColor(i, color);
     this.version++;
+    this.orderStale = true;
     return i;
   }
 
-  /** Removes a mark by moving the last slot into its place. */
   remove(id: EntityId): void {
-    const i = this.slots.get(id);
-    if (i === undefined) return;
-    const last = --this.count;
-    if (i !== last) {
-      for (const k of GEOM_FIELDS) this[k][i] = this[k][last];
-      this.red[i] = this.red[last];
-      this.green[i] = this.green[last];
-      this.blue[i] = this.blue[last];
-      this.opacity[i] = this.opacity[last];
-      this.shape[i] = this.shape[last];
-      this.marks[i] = this.marks[last];
-      this.slots.set(this.marks[i].id, i);
+    this.removeAll([id]);
+  }
+
+  /**
+   * Removes marks in one compacting pass, keeping the others in order (a
+   * swap would reorder overlapping marks and make them pop).
+   */
+  removeAll(ids: Iterable<EntityId>): void {
+    const gone = new Set<EntityId>();
+    for (const id of ids) if (this.slots.has(id)) gone.add(id);
+    if (gone.size === 0) return;
+    let to = 0;
+    for (let from = 0; from < this.count; from++) {
+      const id = this.marks[from].id;
+      if (gone.has(id)) {
+        this.slots.delete(id);
+        continue;
+      }
+      if (to !== from) {
+        for (const k of GEOM_FIELDS) this[k][to] = this[k][from];
+        this.red[to] = this.red[from];
+        this.green[to] = this.green[from];
+        this.blue[to] = this.blue[from];
+        this.opacity[to] = this.opacity[from];
+        this.shape[to] = this.shape[from];
+        this.marks[to] = this.marks[from];
+        this.slots.set(id, to);
+      }
+      to++;
     }
-    this.marks.length = last;
-    this.slots.delete(id);
+    this.count = to;
+    this.marks.length = to;
     this.version++;
+    this.orderStale = true;
+  }
+
+  /**
+   * Slots back to front: by layer (arcs under the rest), then `z`, then
+   * slot. Cached until marks are added, removed or change `z` or shape.
+   */
+  drawOrder(): Int32Array {
+    if (this.orderStale) this.sortOrder();
+    return this.order;
+  }
+
+  /** Where slot `i` sits in `drawOrder`; higher is drawn later, on top. */
+  paintRank(i: number): number {
+    if (this.orderStale) this.sortOrder();
+    return this.rank[i];
   }
 
   setGeom(i: number, g: MarkGeom): void {
@@ -151,6 +202,22 @@ export class MarkStore {
       out.set(this.marks[i].id, { ...this.marks[i], ...this.geom(i) });
     }
     return out;
+  }
+
+  private sortOrder(): void {
+    const n = this.count;
+    const slots = Array.from({ length: n }, (_, i) => i);
+    const z = (i: number) => this.marks[i].z ?? 0;
+    slots.sort(
+      (a, b) =>
+        drawLayer(this.shape[a]) - drawLayer(this.shape[b]) ||
+        z(a) - z(b) ||
+        a - b,
+    );
+    this.order = Int32Array.from(slots);
+    this.rank = new Int32Array(n);
+    for (let k = 0; k < n; k++) this.rank[this.order[k]] = k;
+    this.orderStale = false;
   }
 
   private grow(): void {

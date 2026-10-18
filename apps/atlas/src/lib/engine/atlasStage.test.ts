@@ -10,8 +10,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AtlasStage } from './atlasStage';
 import { HitTester } from './hitTest';
+import { REPAINT_MS, type FrameClock } from './tweenEngine';
 import type { StageFrame, StageRenderer } from './stageRenderer';
-import type { FrameClock } from './tweenEngine';
 
 const grey: Rgba = { r: 0.5, g: 0.5, b: 0.5, a: 1 };
 const palette = new Proxy({} as Palette, { get: () => grey });
@@ -239,6 +239,23 @@ describe('AtlasStage', () => {
     expect(frames.at(-1)?.glow).toBe(true);
   });
 
+  it('fades links and guides to the new theme alongside the marks', async () => {
+    const { stage, fc, frames } = await setup();
+    stage!.show(scene(dot('person:a', 100, 100)));
+    settle(fc);
+    const red: Rgba = { r: 1, g: 0, b: 0, a: 1 };
+    stage!.setTheme(new Proxy({} as Palette, { get: () => red }), false);
+    fc.frame(REPAINT_MS / 2);
+    const mid = frames.at(-1)!;
+    expect(mid.dirty).toBe(true);
+    expect(mid.palette['--link'].r).toBeGreaterThan(grey.r);
+    expect(mid.palette['--link'].r).toBeLessThan(1);
+    settle(fc);
+    expect(frames.at(-1)!.palette['--link']).toEqual(red);
+    expect(frames.at(-1)!.dirty).toBe(true);
+    expect(fc.waiting).toBe(0);
+  });
+
   it('rebuilds guides on zoom (they are hairlines) but not on pan', async () => {
     const { stage, fc, frames, host } = await setup();
     stage!.show(scene(dot('person:a', 100, 100)));
@@ -306,6 +323,27 @@ describe('AtlasStage', () => {
     );
     expect(build).toHaveBeenCalledTimes(2);
     build.mockRestore();
+  });
+
+  it('destroys the renderer if its own setup throws', async () => {
+    const { renderer } = fakeRenderer();
+    renderer.init = vi.fn(async () => {
+      throw new Error('no 2D canvas');
+    });
+    await expect(
+      AtlasStage.create(
+        document.createElement('div'),
+        document.createElement('div'),
+        { width: 1, height: 1 },
+        {
+          renderer,
+          readPalette: () => palette,
+          glow: false,
+          reducedMotion: () => false,
+        },
+      ),
+    ).rejects.toThrow('no 2D canvas');
+    expect(renderer.destroy).toHaveBeenCalled();
   });
 
   it('destroys the renderer if it cannot finish starting', async () => {
