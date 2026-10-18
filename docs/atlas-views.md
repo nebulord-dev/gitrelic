@@ -39,7 +39,7 @@ Classic gives many analyzers extra hero tabs — *sunburst*, *trend*, *distribut
 |---|---|---|
 | Trend, by month, growth timeline, stress trend, AI adoption | *When?* | The **time strip** along the bottom of the stage: one control for every lens; scrubbing it updates the marks |
 | Distribution, histogram, tier mix | *How many, and how spread?* | A distribution chart in the **inspector**, for the active lens |
-| Leaderboard, top-N, sortable list | *Exactly which ones?* | The **detail table** (collapsed, sortable) under the inspector |
+| Leaderboard, top-N, sortable list | *Exactly which ones?* | The **detail table**: a sortable, full-width drawer over the stage (`T`) |
 
 What's left is the occasional genuinely different picture of the same data — Contributors as a flow versus as swimlanes. That is a **form**.
 
@@ -52,6 +52,37 @@ Keep it available; use it sparingly.
 - **Motion:** forms share entity ids, so switching form morphs marks between the two layouts like switching lens does. Cross-layout id stability is part of every layout's tests.
 - **URL:** the form is in the hash (below), so a shared link reopens it.
 - **The checkpoint test:** before adding a form, ask whether the time strip, inspector chart or detail table already answers its question. Add the form only if it shows something none of them can — usually a different *structure* (flow vs lanes, radial vs linear), not a different *aggregation*.
+
+## The inspector (right sidebar)
+
+Decided at the 3.2 checkpoint (2026-10-18). It is one scrolling column, never a second row of tabs: classic's Inspector / Contributors / Activity tabs become sections with jump links at the top.
+
+- **Two modes.**
+  - **Nothing selected (lens mode)** describes the open lens. It shows what the lens measures (one sentence), an expandable *how to read it* note, **Docs ↗** and **Classic ↗**, then the headline number with its finding, the distribution chart, the top five and *Open the table*.
+  - **Something selected** describes that entity:
+    - identity, chips and score;
+    - **What to do**;
+    - **Flagged by**: every lens that sees it, with its value there; each row opens that lens with the entity still selected;
+    - People;
+    - Activity: the weeks it changed, recent commits and shame;
+    - Changes with;
+    - Docs and classic links.
+- **What to do** comes from rules on the signals, not a model. It is a scene table, like the badge rules, with each action keyed to signal combinations from the analyzers' docs (`cursed-files.md` "What action it suggests" is the seed). Every action states the evidence behind it and links to the section that shows it. At most a few actions, and the section is absent when no rule applies.
+- **Explaining every lens is a pattern, not per-view work.** Each lens has:
+  - a one-line caption on the stage, with *How to read* and **Docs ↗** in a corner;
+  - the measure sentence and *how to read it* note in lens mode;
+  - an entry in the Guide.
+  A lens doesn't ship without its docs page.
+- **The Guide** is a sheet on demand (`?`), not a permanent panel. The current lens is pinned at the top with how to read it and its caveats; below it every analyzer is grouped by view, with search and a Docs link each. It reads the catalog's `explain` text, so the Guide, the inspector and ⌘K say the same thing.
+- **The detail table** is a full-width drawer over the bottom of the stage (`T`), not a card in the inspector. It has a filter, tier toggles and sortable columns. Hovering a row lights its mark and clicking selects it; the stage stays live above.
+- **Width and collapse.** 400px docked (the extra width is for long names). `I` collapses it to a 52px strip that keeps the selection's score in view, with icons that reopen it at a section. The choice is remembered per viewer in the browser. Below 1200px it stays a drawer.
+- **Long names wrap; the inspector never truncates.**
+  - File names break at hyphens and dots.
+  - Folder paths break only after a slash.
+  - People's names wrap at spaces.
+  - Only dense lists (the table, the top five) cut with an ellipsis, and they show the full name on hover.
+- **Hover never changes the inspector.** Hovering a mark shows a small tooltip by the mark; the inspector changes only on select.
+- **Not carried over:** classic's Narrative tab (the Finding card covers it), and the mock's "Ask about this repo" box (that's ⌘K).
 
 ## URL state
 
@@ -74,7 +105,7 @@ Theme is a viewer preference and stays in localStorage, not the URL.
 - **Rail** (`Rail.svelte`): from the 23-item catalog list to five view destinations with badge dots. The expanded 240px state goes away.
 - **Lens bar** (new): the active view's analyzers, with badges and classic ↗ for those without a lens yet.
 - **Time strip** (new, shared): shell work that lands with the first views (PR 3.2), not inside each view.
-- **Inspector:** gains the active lens's distribution chart; the detail table is already built.
+- **Inspector:** two modes, What to do, Flagged by, collapse strip, and 400px (see [The inspector](#the-inspector-right-sidebar)); the detail table moves out of it into a drawer.
 - **Catalog:** gains the view → lens mapping if a checkpoint diverges from `PRESET_GROUPS`.
 - **Kept as is:** catalog, badges, entity index, ⌘K palette, inspector cards, `AnalyzerView` / `Layout` model.
 
@@ -140,3 +171,4 @@ One section per view, added at its design checkpoint. Each records:
 - **2026-10-17 — The forms pattern stays available.** `AnalyzerView.layouts` and the corner toggle are supported for lenses that need a second structure (e.g. Contributors flow vs swimlanes), used sparingly.
 - **2026-10-18 — Overview is a ring of every lens, with Briefing as its one alternate.** Clicking a lens fans out its top entities as a preview, and opening it carries those marks into the lens. *Why:* all lenses visible at once beats the mock's one-view-at-a-time fan; the fan survives as the click motion, so it doesn't need to be a form.
 - **2026-10-18 — Hotspots is a churn × size field, with By package as its one alternate.** Selecting a file fans out its facets. *Why:* the field shows every file's score by position; containment answers "where" without a second chart in the inspector.
+- **2026-10-18 — The inspector is one column with two modes.** Lens mode explains the lens; selection mode explains the entity, leading with rule-based What to do and a Flagged by list that navigates across lenses. The table becomes a full-width drawer, the Guide an on-demand sheet. The inspector is 400px, collapses to a strip, and wraps long names rather than truncating them. *Why:* classic's nested tabs hid most of this behind clicks, and a sortable table can't live in a 360px column.
