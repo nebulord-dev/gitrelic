@@ -2,7 +2,7 @@
 
 Git archaeology — surface churn patterns, bus factor risks, hotspots, and cursed files from your repo's git history.
 
-Built on the methodology from Adam Tornhill's *Your Code as a Crime Scene* and *Software Design X-Rays*. Zero external dependencies — everything comes from `git log` and `git ls-files`.
+Built on the methodology from Adam Tornhill's *Your Code as a Crime Scene* and *Software Design X-Rays*. Zero external dependencies — everything comes from git: `git log` for history, and the analyzed commit's tree (`git ls-tree` / `git cat-file`) for files and line counts.
 
 ## Install
 

@@ -170,13 +170,13 @@ Run these before merging large feature branches or when onboarding to a specific
 
 ### Data source
 
-Git is the foundation: `git log` for history, the analyzed commit's tree for files and LOC. External tools are allowed (decided 2026-10-18) where they make an analyzer more robust — e.g. cloc/scc for LOC, git-sizer for repo health — on three conditions:
+Git is the foundation: `git log` for history, the analyzed commit's tree for files and LOC. External tools are allowed (decided 2026-10-18) where they make an analyzer more robust — e.g. cloc/scc for LOC, git-sizer for repo health. The rules:
 
 - **Optional.** gitrelic installs from npm, so a tool may be missing. Detect it, fall back to the git-only behaviour, and say in the report which source was used. That's a new `GitrelicReport` field, so it gets a `normalizeReport` backfill and a regenerated scene fixture (see Adding a new analyzer, steps 5–6).
-- **Reads the analyzed commit, never the checkout.** Like the git-only path, a tool sees the resolved `--branch` commit — e.g. `cloc <sha>`, or blobs fed from `git archive` / `git cat-file` — so uncommitted edits, untracked files and smudged LFS content never count, and both paths agree on the same repo.
-- **Centralised.** Tool processes run from `packages/core/src/utils/tools.ts`, never inside analyzers (the same exec discipline as `utils/git.ts`, and the exec-discipline skill allows exactly these two modules). Run them with `execa` argument arrays — never a shell — and timeouts: they come from `PATH` and run against untrusted repos.
-- **Never bundled.** Tools are system binaries the user installs; gitrelic doesn't ship or npm-install them. Any npm runtime dep that wraps one still follows the bundled-deps mirror (see Publishing invariants).
-- **Docs move with the first tool.** `apps/cli/README.md` and the docs homepage (`apps/docs/index.md`) still promise "no external wrappers"; the PR that integrates the first tool updates both.
+- **Reads the analyzed commit, never the checkout.** Like the git-only path, a tool sees the resolved `--branch` commit, so uncommitted edits, untracked files and smudged LFS content never count, and both paths agree on the same repo. Only cloc takes a commit directly (`cloc <sha>` runs `git archive` itself); scc needs a materialised tree, e.g. a temporary directory from `git archive <sha>`. git-sizer measures the whole repository, not a commit, and says so in the report.
+- **Centralised.** Tool processes run from `packages/core/src/utils/tools.ts`, never inside analyzers (the same exec discipline as `utils/git.ts`, and the exec-discipline skill allows exactly these two modules). Run them with `execa` argument arrays — never a shell — and timeouts: they come from `PATH` and run against untrusted repos. (`utils/git.ts` doesn't set timeouts today.)
+- **Never bundled or downloaded.** Tools are system binaries the user installs. gitrelic doesn't ship them, and doesn't depend on npm packages that bundle one or download it in `postinstall` — that's shipping it in all but name. A wrapper that only calls a binary already on `PATH` is fine, and as a core runtime dep it follows the bundled-deps mirror (see Publishing invariants).
+- **Docs move with the first tool.** `apps/cli/README.md` (its intro and the "22 Analyzers" section) and the docs homepage (`apps/docs/index.md`, the "Zero Dependencies" card) still promise no external tools; the PR that integrates the first tool updates all three.
 
 ### Publishing invariants
 
