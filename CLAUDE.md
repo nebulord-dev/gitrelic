@@ -91,7 +91,7 @@ Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `norm
 
 ### `apps/atlas` — Web Dashboard (Atlas, in progress)
 
-Svelte 5 (runes) + Vite + Tailwind v4. Served by `gitrelic --ui atlas` (implies `--web`) at `/`, with classic under `/classic/`; analyzers without an Atlas view link to `/classic/#preset=<id>`, which classic's `useSelection` reads on load. Each analyzer view starts with a design checkpoint with a maintainer before it is built.
+Svelte 5 (runes) + Vite + Tailwind v4. Served by `gitrelic --ui atlas` (implies `--web`) at `/`, with classic under `/classic/`; classic's `useSelection` reads `#preset=<id>` on load, so Atlas can link analyzers it has no view for to `/classic/#preset=<id>` (the rail does that from PR 3.1). Each analyzer view starts with a design checkpoint with a maintainer before it is built.
 
 - `src/App.svelte` — loads `/gitrelic-report.lite.json` via `lib/data/loadReport.ts` (normalized with `normalizeReport`), applies the theme, renders `lib/shell/Shell.svelte` (top bar, collapsible rail, stage, inspector). `loadCommits()` fetches `/gitrelic-commits.json` once, only when a view needs commits.
 - `src/lib/state/hash.ts` — URL hash `#v=&l=&s=` for view, layout and selected entity id. Parse/serialize only for now; the shell wires it up with the views. The selection is untrusted: resolve it through the entity map, never render it.

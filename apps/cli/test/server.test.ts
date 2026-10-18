@@ -157,18 +157,24 @@ describe('dashboard server', () => {
 
   it('does not crash on a directory request', async () => {
     // Used to readFileSync a directory → EISDIR thrown in the handler → the
-    // whole CLI died. A directory now falls through to the SPA shell.
+    // whole CLI died. A directory is now just a stray path.
     const res = await hit(port, '/assets');
-    expect(res.status).toBe(200);
-    expect(res.body).toContain('shell');
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/');
     // And the server is still alive afterwards.
     expect((await hit(port, '/')).status).toBe(200);
   });
 
-  it('returns the SPA shell for client-side routes', async () => {
-    const res = await hit(port, '/some/route');
+  it('serves the shell at the root as HTML', async () => {
+    const res = await hit(port, '/');
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/^text\/html/);
+  });
+
+  it('redirects stray paths to the root, where relative assets resolve', async () => {
+    const res = await hit(port, '/some/route');
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/');
   });
 
   it('404s missing asset-looking paths instead of serving HTML', async () => {
@@ -207,7 +213,7 @@ describe('dashboard server', () => {
     ]) {
       const res = await hit(port, p);
       expect(res.body).not.toContain('root:');
-      expect([200, 400, 404]).toContain(res.status);
+      expect([302, 400, 404]).toContain(res.status);
     }
   });
 });
@@ -303,13 +309,13 @@ describe('two dashboards', () => {
   it('redirects /classic to /classic/ so relative assets resolve', async () => {
     const res = await hit(dualPort, '/classic?x=1');
     expect(res.status).toBe(308);
-    expect(res.headers.location).toBe('/classic/');
+    expect(res.headers.location).toBe('/classic/?x=1');
   });
 
-  it("falls back to each mount's own shell", async () => {
-    expect((await hit(dualPort, '/some/route')).body).toBe('<p>atlas</p>');
-    expect((await hit(dualPort, '/classic/some/route')).body).toBe(
-      '<p>classic</p>',
+  it("sends stray paths to their own mount's root", async () => {
+    expect((await hit(dualPort, '/some/route')).headers.location).toBe('/');
+    expect((await hit(dualPort, '/classic/some/route')).headers.location).toBe(
+      '/classic/',
     );
   });
 
@@ -325,9 +331,10 @@ describe('two dashboards', () => {
       expect((await hit(dualPort, p)).status).toBe(400);
     }
     // Whole `%2e%2e` segments are collapsed by the URL parser before routing,
-    // so this is just `/etc/passwd`: a client route on the root mount.
+    // so this is just `/etc/passwd`: a stray path on the root mount.
     const dotted = await hit(dualPort, '/classic/%2e%2e/%2e%2e/etc/passwd');
-    expect(dotted.body).toBe('<p>atlas</p>');
+    expect(dotted.status).toBe(302);
+    expect(dotted.headers.location).toBe('/');
   });
 });
 

@@ -229,7 +229,8 @@ export function createDashboardHandler({
       // asset URLs against `/`. Send the browser to the real mount point.
       const bare = mounts.find((m) => m.prefix === `${pathname}/`);
       if (bare && bare.prefix !== '/') {
-        send(req, res, 308, { Location: bare.prefix });
+        const { search } = new URL(req.url ?? '/', 'http://localhost');
+        send(req, res, 308, { Location: bare.prefix + search });
         return;
       }
 
@@ -262,8 +263,7 @@ export function createDashboardHandler({
       }
 
       // Asset-looking paths (anything with an extension) that don't exist are
-      // real 404s; handing them index.html would mask broken builds. Everything
-      // else is a client-side route and gets the SPA shell.
+      // real 404s; handing them index.html would mask broken builds.
       if (path.extname(pathname) !== '') {
         send(
           req,
@@ -272,6 +272,14 @@ export function createDashboardHandler({
           { 'Content-Type': 'text/plain; charset=utf-8' },
           'Not found',
         );
+        return;
+      }
+      // Neither dashboard routes by path (state lives in the hash), and both
+      // load assets relative to the page, so a shell served at `/a/b` would
+      // look for `/a/assets/…` and render blank. Send stray paths to the
+      // mount root instead; the browser carries the #fragment across.
+      if (pathname !== mount.prefix) {
+        send(req, res, 302, { Location: mount.prefix });
         return;
       }
       send(
