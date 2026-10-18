@@ -11,6 +11,7 @@
 
   import ActivityCard from './ActivityCard.svelte';
   import Card from './Card.svelte';
+  import { fileSections, scrollToSection } from './fileSections';
   import FlaggedBy from './FlaggedBy.svelte';
   import PathText from './PathText.svelte';
   import type { GitrelicReport } from '@gitrelic/core';
@@ -20,6 +21,7 @@
     report,
     index,
     activity = null,
+    historyFailed = false,
     onselect,
     onopen,
   }: {
@@ -28,6 +30,7 @@
     index: EntityIndex;
     /** Weekly commits, with this file's marked; null while history loads. */
     activity?: WeeklyActivity | null;
+    historyFailed?: boolean;
     onselect?: (id: EntityId) => void;
     onopen?: (lens: string) => void;
   } = $props();
@@ -51,12 +54,7 @@
     return out;
   });
 
-  const SECTIONS = [
-    ['insp-flagged', 'Flagged by'],
-    ['insp-people', 'People'],
-    ['insp-activity', 'Activity'],
-    ['insp-coupled', 'Changes with'],
-  ] as const;
+  let sections = $derived(fileSections(file, report));
 </script>
 
 <Card eyebrow="File">
@@ -86,9 +84,12 @@
     aria-label="Sections"
     class="mt-1 flex flex-wrap gap-x-4 gap-y-1 border-t border-panel-border pt-2.5 text-[13px]"
   >
-    {#each SECTIONS as [anchor, label] (anchor)}
-      <a href={`#${anchor}`} class="text-muted no-underline hover:text-text"
-        >{label}</a
+    {#each sections as section (section.anchor)}
+      <button
+        type="button"
+        onclick={() => scrollToSection(section.anchor)}
+        class="cursor-pointer bg-transparent p-0 font-[inherit] text-[13px] text-muted hover:text-text"
+        >{section.label}</button
       >
     {/each}
   </nav>
@@ -130,7 +131,7 @@
   </Card>
 {/if}
 
-<ActivityCard {activity} id="insp-activity" />
+<ActivityCard {activity} failed={historyFailed} id="insp-activity" />
 
 {#if coupled.length > 0}
   <Card eyebrow="Changes with" id="insp-coupled">

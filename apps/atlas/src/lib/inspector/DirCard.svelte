@@ -11,10 +11,12 @@
     dir,
     report,
     activity = null,
+    historyFailed = false,
   }: {
     dir: string;
     report: GitrelicReport;
     activity?: WeeklyActivity | null;
+    historyFailed?: boolean;
   } = $props();
 
   let rows = $derived(dirFacts(dir, report));
@@ -27,4 +29,4 @@
   <FactRows {rows} />
 </Card>
 
-<ActivityCard {activity} />
+<ActivityCard {activity} failed={historyFailed} />

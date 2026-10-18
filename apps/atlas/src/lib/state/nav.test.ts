@@ -68,13 +68,10 @@ describe('Nav', () => {
     nav.destroy();
   });
 
-  it('keeps a well-formed time window', () => {
+  it('drops a time window until something narrows to it', () => {
     history.replaceState(null, '', '/#t=2026-01..2026-03');
     const nav = new Nav(() => index);
-    expect(nav.time).toBe('2026-01..2026-03');
-    nav.setTime('2026-13');
-    expect(nav.time).toBe('2026-01..2026-03');
-    nav.setTime(null);
+    expect(nav.time).toBeNull();
     expect(location.hash).toBe('');
     nav.destroy();
   });

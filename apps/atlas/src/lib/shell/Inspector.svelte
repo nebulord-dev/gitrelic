@@ -14,6 +14,7 @@
   import DirCard from '../inspector/DirCard.svelte';
   import ExplainCard from '../inspector/ExplainCard.svelte';
   import FileCard from '../inspector/FileCard.svelte';
+  import { fileSections, scrollToSection } from '../inspector/fileSections';
   import PersonCard from '../inspector/PersonCard.svelte';
   import RepositoryCard from '../inspector/RepositoryCard.svelte';
   import { paletteShortcut, pressed } from './shortcut';
@@ -26,6 +27,7 @@
     lens = null,
     selection = null,
     activity = null,
+    historyFailed = false,
     collapsed = $bindable(false),
     onselect,
     onopen,
@@ -39,6 +41,7 @@
     selection?: EntityId | null;
     /** Weekly commits with the selection's marked; null while loading. */
     activity?: WeeklyActivity | null;
+    historyFailed?: boolean;
     /** Docked from 1200px: the 52px strip instead of the full column. */
     collapsed?: boolean;
     onselect?: (id: EntityId | null) => void;
@@ -54,35 +57,42 @@
   let viewLabel = $derived(PRESET_GROUPS.find((g) => g.id === view)?.label);
 
   // The strip's shortcuts into a selected file's sections.
-  const FILE_SECTIONS = [
-    {
-      anchor: 'insp-flagged',
-      label: 'Flagged by',
-      d: 'M4 4v16M4 5h11l-2 4 2 4H4',
-    },
-    {
-      anchor: 'insp-people',
-      label: 'People',
-      d: 'M8 11a3 3 0 1 0 0-6a3 3 0 1 0 0 6M3 20c0-3 2.5-5 5-5s5 2 5 5M16 11a3 3 0 1 0 0-6M21 20c0-3-1.5-5-4-5',
-    },
-    { anchor: 'insp-activity', label: 'Activity', d: 'M3 12h4l2-6 4 12 2-6h6' },
-    {
-      anchor: 'insp-coupled',
-      label: 'Changes with',
-      d: 'M9 15l6-6M10 6l1-1a4 4 0 0 1 6 6l-1 1M14 18l-1 1a4 4 0 0 1-6-6l1-1',
-    },
-  ];
+  const ICON: Record<string, string> = {
+    'insp-flagged': 'M4 4v16M4 5h11l-2 4 2 4H4',
+    'insp-people':
+      'M8 11a3 3 0 1 0 0-6a3 3 0 1 0 0 6M3 20c0-3 2.5-5 5-5s5 2 5 5M16 11a3 3 0 1 0 0-6M21 20c0-3-1.5-5-4-5',
+    'insp-activity': 'M3 12h4l2-6 4 12 2-6h6',
+    'insp-coupled':
+      'M9 15l6-6M10 6l1-1a4 4 0 0 1 6 6l-1 1M14 18l-1 1a4 4 0 0 1-6-6l1-1',
+  };
+
+  // Icons for the sections this file actually has.
+  let stripSections = $derived(
+    kind === 'file'
+      ? fileSections(key, report).map((s) => ({
+          ...s,
+          d: ICON[s.anchor] ?? '',
+        }))
+      : [],
+  );
 
   async function openAt(anchor: string) {
     collapsed = false;
     await tick();
-    document.getElementById(anchor)?.scrollIntoView({ block: 'start' });
+    scrollToSection(anchor);
   }
+
+  // The strip only exists docked (from 1200px); below that, I does nothing.
+  const docked = () =>
+    globalThis.matchMedia?.('(min-width: 1200px)').matches ?? true;
+  // A modal (the palette, the guide) owns the keyboard while it's open.
+  const modalOpen = () =>
+    document.querySelector('[aria-modal="true"]') !== null;
 
   function onKey(e: KeyboardEvent) {
     if (e.key === 'Escape' && selection && !e.defaultPrevented) {
       onselect?.(null);
-    } else if (pressed(e, 'i')) {
+    } else if (pressed(e, 'i') && docked() && !modalOpen()) {
       collapsed = !collapsed;
     }
   }
@@ -115,7 +125,7 @@
       >
     </button>
     {#if kind === 'file'}
-      {#each FILE_SECTIONS as s (s.anchor)}
+      {#each stripSections as s (s.anchor)}
         <button
           type="button"
           aria-label={`Open the inspector at ${s.label}`}
@@ -200,11 +210,26 @@
   </div>
 
   {#if kind === 'file'}
-    <FileCard file={key} {report} {index} {activity} {onselect} {onopen} />
+    <FileCard
+      file={key}
+      {report}
+      {index}
+      {activity}
+      {historyFailed}
+      {onselect}
+      {onopen}
+    />
   {:else if kind === 'person'}
-    <PersonCard email={key} {report} {index} {activity} {onselect} />
+    <PersonCard
+      email={key}
+      {report}
+      {index}
+      {activity}
+      {historyFailed}
+      {onselect}
+    />
   {:else if kind === 'dir'}
-    <DirCard dir={key} {report} {activity} />
+    <DirCard dir={key} {report} {activity} {historyFailed} />
   {:else if analyzer}
     <ExplainCard entry={analyzer} />
   {:else if lensEntry}

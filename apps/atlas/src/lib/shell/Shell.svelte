@@ -95,6 +95,7 @@
       lens={nav.lens}
       selection={nav.selection}
       activity={touches ? activity : null}
+      {historyFailed}
       bind:collapsed
       onselect={(id) => nav.select(id)}
       onopen={openLens}

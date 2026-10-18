@@ -18,12 +18,14 @@
     report,
     index,
     activity = null,
+    historyFailed = false,
     onselect,
   }: {
     email: string;
     report: GitrelicReport;
     index: EntityIndex;
     activity?: WeeklyActivity | null;
+    historyFailed?: boolean;
     onselect?: (id: EntityId) => void;
   } = $props();
 
@@ -57,7 +59,7 @@
     <FactRows rows={person.rows} />
   </Card>
 
-  <ActivityCard {activity} />
+  <ActivityCard {activity} failed={historyFailed} />
 
   {#if person.focusAreas.length > 0}
     <Card eyebrow="Focus areas">

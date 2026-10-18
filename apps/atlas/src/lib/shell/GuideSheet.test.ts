@@ -44,4 +44,19 @@ describe('GuideSheet', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(behind).toEqual([true]);
   });
+
+  it('keeps Tab inside the sheet, wrapping at both ends', async () => {
+    render(GuideSheet, { open: true });
+    await tick();
+    const dialog = screen.getByRole('dialog');
+    const focusable = [
+      ...dialog.querySelectorAll<HTMLElement>('a[href], button, input'),
+    ];
+    const last = focusable[focusable.length - 1];
+    last.focus();
+    await fireEvent.keyDown(last, { key: 'Tab' });
+    expect(document.activeElement).toBe(focusable[0]);
+    await fireEvent.keyDown(focusable[0], { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(last);
+  });
 });

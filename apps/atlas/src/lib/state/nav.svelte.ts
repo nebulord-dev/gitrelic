@@ -14,7 +14,7 @@ import {
   type PresetGroup,
 } from '@gitrelic/scene';
 
-import { isTimeWindow, parseHash, serializeHash } from './hash';
+import { parseHash, serializeHash } from './hash';
 
 const HOME: PresetGroup = 'overview';
 
@@ -85,13 +85,6 @@ export class Nav {
     this.write('replace');
   }
 
-  /** Narrows to a time window, or clears it with null. */
-  setTime(time: string | null): void {
-    if (time !== null && !isTimeWindow(time)) return;
-    this.time = time;
-    this.write('replace');
-  }
-
   destroy(): void {
     this.win.removeEventListener('hashchange', this.onHashChange);
   }
@@ -110,7 +103,10 @@ export class Nav {
         : null;
     this.selection =
       loc.selection && this.index().get(loc.selection) ? loc.selection : null;
-    this.time = loc.time && isTimeWindow(loc.time) ? loc.time : null;
+    // `t` is dropped until the first lens narrows to a window, so a shared
+    // link never promises a filter nothing applies. isTimeWindow (hash.ts)
+    // is ready for it: read `loc.time` through it here when that lands.
+    this.time = null;
     // Rewrite the URL if anything was dropped, so a shared link doesn't
     // carry the junk forward.
     if (this.hash() !== this.win.location.hash) this.write('replace');

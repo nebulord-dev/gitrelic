@@ -6,10 +6,13 @@
 
   let {
     activity = null,
+    failed = false,
     id,
   }: {
     /** Weekly commits with the entity's marked; null while history loads. */
     activity?: WeeklyActivity | null;
+    /** The history couldn't be loaded. */
+    failed?: boolean;
     id?: string;
   } = $props();
 
@@ -27,6 +30,8 @@
       {share ?? 'No commits in the window.'}
     </p>
   {:else}
-    <p class="m-0 text-[13px] text-muted">Loading history…</p>
+    <p class="m-0 text-[13px] text-muted">
+      {failed ? 'Commit history unavailable.' : 'Loading history…'}
+    </p>
   {/if}
 </Card>

@@ -57,6 +57,26 @@
     returnFocus = null;
   }
 
+  // aria-modal promises focus stays inside: Tab and Shift+Tab wrap around
+  // the sheet's controls instead of reaching the page behind it.
+  function trapFocus(e: KeyboardEvent) {
+    if (e.key !== 'Tab') return;
+    const sheet = e.currentTarget as HTMLElement;
+    const focusable = [
+      ...sheet.querySelectorAll<HTMLElement>('a[href], button, input'),
+    ];
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
   function onWindowKey(e: KeyboardEvent) {
     if (!open && pressed(e, '?')) {
       e.preventDefault();
@@ -115,6 +135,8 @@
     role="dialog"
     aria-modal="true"
     aria-label="Guide"
+    tabindex="-1"
+    onkeydown={trapFocus}
     class="panel fixed top-0 right-0 bottom-0 z-50 flex w-[min(480px,100vw)] flex-col"
   >
     <div class="flex flex-col gap-3.5 border-b border-panel-border p-6 pb-4">

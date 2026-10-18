@@ -1,5 +1,5 @@
 import { buildEntityIndex, ids } from '@gitrelic/scene';
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { describe, expect, it, vi } from 'vitest';
 
 import reportJson from '../../../../../packages/scene/test/fixtures/report.small.json';
@@ -155,6 +155,10 @@ describe('Inspector', () => {
   });
 
   it('collapses to the strip and back, by button or the I key', async () => {
+    // The strip only exists docked, from 1200px.
+    const wide = vi
+      .spyOn(window, 'matchMedia')
+      .mockReturnValue({ matches: true } as MediaQueryList);
     render(Inspector, { ...base, selection: ids.file('src/api.ts') });
     await fireEvent.click(
       screen.getByRole('button', { name: 'Collapse the inspector (I)' }),
@@ -170,5 +174,72 @@ describe('Inspector', () => {
     expect(
       screen.queryByRole('complementary', { name: 'Inspector, collapsed' }),
     ).toBeNull();
+    wide.mockRestore();
+  });
+
+  it('ignores I below 1200px, where the inspector is a drawer', async () => {
+    const narrow = vi
+      .spyOn(window, 'matchMedia')
+      .mockReturnValue({ matches: false } as MediaQueryList);
+    let collapsed = false;
+    render(Inspector, {
+      ...base,
+      get collapsed() {
+        return collapsed;
+      },
+      set collapsed(v: boolean) {
+        collapsed = v;
+      },
+    });
+    await fireEvent.keyDown(document.body, { key: 'i' });
+    expect(collapsed).toBe(false);
+    narrow.mockRestore();
+  });
+
+  it('jumps to a section without touching the URL (the selection lives there)', async () => {
+    history.replaceState(null, '', '/#s=file%3Asrc%2Fapi.ts');
+    render(Inspector, { ...base, selection: ids.file('src/api.ts') });
+    const sections = screen.getByRole('navigation', { name: 'Sections' });
+    const people = within(sections).getByRole('button', { name: 'People' });
+    await fireEvent.click(people);
+    expect(location.hash).toBe('#s=file%3Asrc%2Fapi.ts');
+    history.replaceState(null, '', '/');
+  });
+
+  it('offers only the sections a file has', () => {
+    render(Inspector, { ...base, selection: ids.file('README.md') });
+    const sections = screen.getByRole('navigation', { name: 'Sections' });
+    const labels = within(sections)
+      .getAllByRole('button')
+      .map((b) => b.textContent?.trim());
+    expect(labels).toContain('Activity');
+    for (const label of labels) {
+      expect(screen.getByRole('heading', { name: label })).toBeTruthy();
+    }
+  });
+
+  it('says when history failed rather than loading forever', () => {
+    render(Inspector, {
+      ...base,
+      selection: ids.file('src/api.ts'),
+      historyFailed: true,
+    });
+    expect(screen.getByText('Commit history unavailable.')).toBeTruthy();
+  });
+
+  it('ignores I while a modal is open', async () => {
+    const modal = document.createElement('div');
+    modal.setAttribute('aria-modal', 'true');
+    document.body.append(modal);
+    const wide = vi
+      .spyOn(window, 'matchMedia')
+      .mockReturnValue({ matches: true } as MediaQueryList);
+    render(Inspector, base);
+    await fireEvent.keyDown(document.body, { key: 'i' });
+    expect(
+      screen.queryByRole('complementary', { name: 'Inspector, collapsed' }),
+    ).toBeNull();
+    modal.remove();
+    wide.mockRestore();
   });
 });
