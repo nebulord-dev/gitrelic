@@ -4,7 +4,7 @@
 
 import type { CommitLike } from './commits/commitLike';
 import type { EntityIndex } from './entities';
-import type { EntityId } from './ids';
+import type { EntityId, EntityKind } from './ids';
 import type { ThemeToken } from './theme/tokens';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -177,10 +177,11 @@ export interface Layout {
    */
   caption?: string;
   /**
-   * Whether `build` reads `input.focus`. A layout that doesn't is given none,
-   * so a selection doesn't rebuild (and re-plan) a picture it can't change.
+   * The entity kinds `build` re-forms around when they're the focus (the
+   * field: a selected `file`). Any other selection gives it no focus, so it
+   * isn't rebuilt (and re-planned) for a click it can't show.
    */
-  usesFocus?: boolean;
+  focusKinds?: readonly EntityKind[];
   /** Whether `build` needs `input.commits`. */
   needsCommits: boolean;
   build: (input: ViewInput, viewport: Viewport) => Scene;

@@ -103,7 +103,9 @@
             <span class={['font-mono text-[13px]', SCORE_TEXT[p.tier]]}
               >{p.score}</span
             >
-            <span class="truncate">{baseName(p.file)}</span>
+            <span class="min-w-0 [overflow-wrap:anywhere]"
+              >{baseName(p.file)}</span
+            >
             <span class="font-mono text-[12px] text-muted"
               >{n(p.commits)} × {n(p.lines)}</span
             >

@@ -35,6 +35,14 @@ describe('hotspotPoints', () => {
     for (const p of points) expect(p.commits).toBe(churn.get(p.file));
   });
 
+  it('takes the tier from core’s category, so it follows core’s thresholds', () => {
+    const r = hotspotReport([
+      { file: 'a.ts', commits: 3, loc: 100, score: 60 },
+    ]);
+    r.hotspots.files[0].category = 'critical';
+    expect(hotspotPoints(r)[0].tier).toBe(3);
+  });
+
   it('skips a scored file with no churn entry', () => {
     const r = hotspotReport([
       { file: 'a.ts', commits: 3, loc: 100, score: 100 },

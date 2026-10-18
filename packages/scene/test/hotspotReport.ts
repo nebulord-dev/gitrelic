@@ -23,7 +23,14 @@ export function hotspotReport(
         hotspotScore: f.score,
         churnScore: Math.round((f.commits / maxCount) * 100),
         loc: f.loc,
-        category: 'low',
+        category:
+          f.score >= 75
+            ? 'critical'
+            : f.score >= 50
+              ? 'warning'
+              : f.score >= 25
+                ? 'moderate'
+                : 'low',
       })),
     },
   } as unknown as GitrelicReport;

@@ -151,4 +151,21 @@ describe('packagesScene', () => {
       packagesScene(points, { width: 1, height: 1 }).bounds,
     );
   });
+
+  it('packs a thousand packages quickly', () => {
+    const files = Array.from({ length: 6000 }, (_, i) => ({
+      file: `packages/p${i % 1000}/f${i}.ts`,
+      commits: 1 + (i % 9),
+      loc: 50 + i,
+      score: i % 100,
+    }));
+    const points = hotspotPoints(hotspotReport(files));
+    const t = Date.now();
+    const scene = packagesScene(points, viewport);
+    // The spiral this replaced took ~20 s here; generous for slow CI.
+    expect(Date.now() - t).toBeLessThan(1000);
+    expect(scene.marks.filter((m) => m.id.startsWith('package:'))).toHaveLength(
+      1000,
+    );
+  });
 });

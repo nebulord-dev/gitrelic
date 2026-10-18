@@ -21,6 +21,13 @@ export interface HotspotPoint {
   tier: HotspotTier;
 }
 
+const CATEGORY_TIER: Record<string, HotspotTier> = {
+  low: 0,
+  moderate: 1,
+  warning: 2,
+  critical: 3,
+};
+
 export function hotspotTier(score: number): HotspotTier {
   if (score >= HOTSPOT_TIERS[2]) return 3;
   if (score >= HOTSPOT_TIERS[1]) return 2;
@@ -42,7 +49,9 @@ export function hotspotPoints(report: GitrelicReport): HotspotPoint[] {
       commits: c,
       lines: h.loc,
       score: h.hotspotScore,
-      tier: hotspotTier(h.hotspotScore),
+      // Core's own category, so the tiers move if its thresholds do; the
+      // score is the fallback for anything unexpected.
+      tier: CATEGORY_TIER[h.category] ?? hotspotTier(h.hotspotScore),
     });
   }
   return points.sort((a, b) => b.score - a.score || (a.file < b.file ? -1 : 1));

@@ -38,7 +38,7 @@ export function pointsOf(report: GitrelicReport): readonly HotspotPoint[] {
 export const fieldLayout: Layout = {
   id: 'field',
   label: 'Field',
-  usesFocus: true,
+  focusKinds: ['file'],
   caption:
     'Each dot is a file: commits across, lines up. Score rises to the top right; the curves mark 25, 50 and 75.',
   needsCommits: false,
@@ -118,7 +118,7 @@ export function hotspotFindings(input: ViewInput): Finding[] {
       { ref: ids.dir(pkg), text: `${pkg}/` },
       `: ${n(e.warm)} of its ${n(e.files)} files score 25 or more`,
     ];
-    const [big] = named.sort(
+    const [big] = [...named].sort(
       ([a, x], [b, y]) => y.files - x.files || (a < b ? -1 : 1),
     );
     if (

@@ -4,8 +4,10 @@
 // of hot files against a big one with none.
 //
 // Packages are the directories `packageOf` names; files at the root gather in
-// the repo's own circle. Circles are packed on a spiral, biggest first, and
+// the repo's own circle. Circles are packed tightly, biggest first, and
 // the scene's bounds wrap whatever that produces (the stage fits it).
+
+import { packSiblings } from 'd3-hierarchy';
 
 import { packageOf, type HotspotPoint } from '../hotspots/points';
 import { ids, REPO_ID, type EntityId } from '../ids';
@@ -150,31 +152,16 @@ export function packagesScene(
 }
 
 /**
- * Places each circle at the first point on an outward spiral where it
- * touches none already placed. Biggest first, so the small ones fill in
- * around them. Deterministic: same input, same picture.
+ * Packs the circles tightly around the origin, biggest first, using the
+ * front-chain algorithm (d3-hierarchy's packSiblings): near-linear, so a
+ * monorepo with a thousand packages packs in milliseconds. Deterministic:
+ * same input, same picture. Each circle is padded by half the gap while it
+ * packs, so neighbours end up GAP apart.
  */
 function pack(circles: Circle[]): void {
-  const placed: Circle[] = [];
-  for (const c of circles) {
-    if (placed.length === 0) {
-      placed.push(c);
-      continue;
-    }
-    for (let t = 0; ; t += 0.04) {
-      const rad = 3 * t;
-      const x = rad * Math.cos(t);
-      const y = rad * Math.sin(t);
-      if (
-        placed.every((p) => Math.hypot(p.x - x, p.y - y) >= p.r + c.r + GAP)
-      ) {
-        c.x = x;
-        c.y = y;
-        placed.push(c);
-        break;
-      }
-    }
-  }
+  for (const c of circles) c.r += GAP / 2;
+  packSiblings(circles);
+  for (const c of circles) c.r -= GAP / 2;
 }
 
 function boundsOf(circles: readonly Circle[]) {
