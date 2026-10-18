@@ -98,7 +98,7 @@ The hash holds what a shared link should reopen. Every field is validated on rea
 
 Theme is a viewer preference and stays in localStorage, not the URL.
 
-> Defaults stay out of the URL: the Overview view and a view's default lens are omitted, so a fresh load has no hash. `t` is parsed and validated (`2026-03` or `2026-01..2026-03`) but nothing narrows to it yet; the first lens that reads a window wires up the strip's brush.
+> Defaults stay out of the URL: the Overview view and a view's default lens are omitted, so a fresh load has no hash. `t` is reserved: `hash.ts` parses it and `isTimeWindow` validates it (`2026-03` or `2026-01..2026-03`), but `Nav` drops it until the first lens narrows to a window. That lens wires up the strip's brush, so a shared link never promises a filter nothing applies.
 
 ## What this changes in the build
 
