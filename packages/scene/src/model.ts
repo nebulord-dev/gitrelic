@@ -8,24 +8,24 @@ import type { ThemeToken } from './theme/tokens';
 import type { GitrelicReport } from '@gitrelic/core';
 
 /** Theme roles a mark, link or guide may be painted with. */
-export type ColorRole = Extract<
-  ThemeToken,
-  | '--accent'
-  | '--text'
-  | '--soft'
-  | '--muted'
-  | '--person'
-  | '--file'
-  | '--dir'
-  | '--ghost'
-  | '--link'
-  | '--link-hot'
-  | '--cell-base'
-  | '--risk-0'
-  | '--risk-1'
-  | '--risk-2'
-  | '--risk-3'
->;
+export const COLOR_ROLES = [
+  '--accent',
+  '--text',
+  '--soft',
+  '--muted',
+  '--person',
+  '--file',
+  '--dir',
+  '--ghost',
+  '--link',
+  '--link-hot',
+  '--cell-base',
+  '--risk-0',
+  '--risk-1',
+  '--risk-2',
+  '--risk-3',
+] as const satisfies readonly ThemeToken[];
+export type ColorRole = (typeof COLOR_ROLES)[number];
 
 /**
  * A role, or a blend of two (`t` = 0 is all `mix[0]`). Resolved to RGB by the

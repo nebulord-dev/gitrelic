@@ -110,6 +110,7 @@ export {
 
 export {
   checkScene,
+  COLOR_ROLES,
   emptyScene,
   type AnalyzerView,
   type Bounds,
@@ -159,6 +160,7 @@ export {
 
 export { normalizeReport } from './report/normalizeReport';
 
+export { readPalette } from './theme/palette';
 export {
   DEFAULT_THEME,
   isThemeName,
