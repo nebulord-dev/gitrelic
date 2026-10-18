@@ -26,37 +26,57 @@ describe('Nav', () => {
     nav.destroy();
   });
 
-  it('drops selections and views it cannot resolve, and from the URL too', () => {
-    history.replaceState(null, '', '/#v=nope&s=file%3A%3Cimg%20onerror%3Dx%3E');
+  it('drops what it cannot resolve, and from the URL too', () => {
+    history.replaceState(
+      null,
+      '',
+      '/#v=nope&l=hotspots&f=x&t=soon&s=file%3A%3Cimg%20onerror%3Dx%3E',
+    );
     const before = history.length;
     const nav = new Nav(() => index);
+    expect(nav.view).toBe('overview');
+    expect(nav.lens).toBeNull();
+    expect(nav.form).toBeNull();
+    expect(nav.time).toBeNull();
     expect(nav.selection).toBeNull();
-    expect(nav.view).toBeNull();
     expect(location.hash).toBe('');
     expect(history.length).toBe(before);
     nav.destroy();
   });
 
-  it('ignores views Atlas does not have yet', () => {
-    history.replaceState(null, '', '/#v=coupling&l=matrix');
+  it('opens views, keeping the home view out of the URL', () => {
+    history.replaceState(null, '', '/#v=structure');
     const nav = new Nav(() => index);
-    expect(nav.view).toBeNull();
-    expect(nav.layout).toBeNull();
-    nav.open('coupling');
-    expect(nav.view).toBeNull();
+    expect(nav.view).toBe('structure');
+    const before = history.length;
+    nav.openView('code-health');
+    expect(nav.view).toBe('code-health');
+    expect(location.hash).toBe('#v=code-health');
+    expect(history.length).toBe(before + 1);
+    nav.openView('overview');
+    expect(location.hash).toBe('');
+    nav.openView('not-a-view');
+    expect(nav.view).toBe('overview');
     nav.destroy();
   });
 
-  it('keeps a layout only when the view declares it', () => {
-    history.replaceState(null, '', '/#l=swimlanes');
-    // No view open: a layout means nothing.
-    const bare = new Nav(
-      () => index,
-      window,
-      () => ['swimlanes'],
-    );
-    expect(bare.layout).toBeNull();
-    bare.destroy();
+  it('refuses lenses Atlas has no view for yet; the caller links classic', () => {
+    const nav = new Nav(() => index);
+    expect(nav.openLens('coupling')).toBe(false);
+    expect(nav.lens).toBeNull();
+    expect(nav.view).toBe('overview');
+    nav.destroy();
+  });
+
+  it('keeps a well-formed time window', () => {
+    history.replaceState(null, '', '/#t=2026-01..2026-03');
+    const nav = new Nav(() => index);
+    expect(nav.time).toBe('2026-01..2026-03');
+    nav.setTime('2026-13');
+    expect(nav.time).toBe('2026-01..2026-03');
+    nav.setTime(null);
+    expect(location.hash).toBe('');
+    nav.destroy();
   });
 
   it('writes the selection to the hash without a new history entry', () => {

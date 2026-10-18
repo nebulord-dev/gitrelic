@@ -8,25 +8,30 @@ import type { GitrelicReport } from '@gitrelic/core';
 
 const report = reportJson as unknown as GitrelicReport;
 const index = buildEntityIndex(report);
+const base = { report, index, view: 'overview' as const };
 
 describe('Inspector', () => {
-  it('shows the repository and a search hint when nothing is selected', () => {
-    render(Inspector, { report, index });
+  it('describes the view when nothing is selected', () => {
+    render(Inspector, base);
     expect(screen.getByText('sample-repo')).toBeTruthy();
+    expect(
+      screen.getByText(/lenses open in the classic dashboard/),
+    ).toBeTruthy();
     expect(screen.getByText(/to find a file, person or analyzer/)).toBeTruthy();
     expect(
       screen.queryByRole('button', { name: /Clear selection/ }),
     ).toBeNull();
   });
 
+  it('explains the open lens, with its docs', () => {
+    render(Inspector, { ...base, view: 'code-health', lens: 'churn' });
+    expect(screen.getByText('Churn')).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Docs/ })).toBeTruthy();
+  });
+
   it('clears the selection on Escape, unless the key was already handled', async () => {
     const onselect = vi.fn();
-    render(Inspector, {
-      report,
-      index,
-      selection: ids.file('src/api.ts'),
-      onselect,
-    });
+    render(Inspector, { ...base, selection: ids.file('src/api.ts'), onselect });
     const handled = new KeyboardEvent('keydown', {
       key: 'Escape',
       cancelable: true,
@@ -41,8 +46,7 @@ describe('Inspector', () => {
   it('closes the narrow-screen drawer from its backdrop', async () => {
     const onselect = vi.fn();
     const { container } = render(Inspector, {
-      report,
-      index,
+      ...base,
       selection: ids.file('src/api.ts'),
       onselect,
     });
@@ -52,18 +56,34 @@ describe('Inspector', () => {
     expect(onselect).toHaveBeenCalledWith(null);
   });
 
-  it('shows a file’s facts and contributors, and selects a contributor', async () => {
+  it('shows a file: name, folder, every lens that flags it, and its people', async () => {
     const onselect = vi.fn();
-    render(Inspector, {
-      report,
-      index,
-      selection: ids.file('src/api.ts'),
-      onselect,
-    });
-    expect(screen.getByText('src/api.ts')).toBeTruthy();
-    expect(screen.getByText('Top contributors')).toBeTruthy();
+    render(Inspector, { ...base, selection: ids.file('src/api.ts'), onselect });
+    expect(screen.getByText('api.ts')).toBeTruthy();
+    expect(screen.getByText('src/')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Flagged by' })).toBeTruthy();
+    // No lens has an Atlas view yet, so each linked row opens classic.
+    const churn = screen.getByRole('link', { name: /Churn \(commits\)/ });
+    expect(churn.getAttribute('href')).toBe('/classic/#preset=churn');
+    expect(screen.getByRole('heading', { name: 'People' })).toBeTruthy();
     await fireEvent.click(screen.getByRole('button', { name: /Alice/ }));
     expect(onselect).toHaveBeenCalledWith('person:alice@example.com');
+  });
+
+  it("shows the selection's activity once history arrives", async () => {
+    const { rerender } = render(Inspector, {
+      ...base,
+      selection: ids.file('src/api.ts'),
+    });
+    expect(screen.getByText('Loading history…')).toBeTruthy();
+    await rerender({
+      activity: {
+        start: Date.UTC(2026, 2, 2),
+        totals: [3, 0, 2, 4],
+        hits: [1, 0, 1, 2],
+      },
+    });
+    expect(screen.getByText('3 of 4 commits in the recent half')).toBeTruthy();
   });
 
   it('lists authors the index lacks as text, not buttons', () => {
@@ -79,6 +99,7 @@ describe('Inspector', () => {
       },
     } as GitrelicReport;
     render(Inspector, {
+      ...base,
       report: withBot,
       index: buildEntityIndex(withBot),
       selection: ids.file('src/api.ts'),
@@ -91,8 +112,7 @@ describe('Inspector', () => {
   it('shows a person, with focus areas that select what they name', async () => {
     const onselect = vi.fn();
     render(Inspector, {
-      report,
-      index,
+      ...base,
       selection: ids.person('alice@example.com'),
       onselect,
     });
@@ -105,17 +125,13 @@ describe('Inspector', () => {
   });
 
   it('shows a directory', () => {
-    render(Inspector, { report, index, selection: ids.dir('src') });
+    render(Inspector, { ...base, selection: ids.dir('src') });
     expect(screen.getByText('src/')).toBeTruthy();
     expect(screen.getByText('Lines of code')).toBeTruthy();
   });
 
   it('explains an analyzer and links to classic and its docs', () => {
-    render(Inspector, {
-      report,
-      index,
-      selection: ids.analyzer('ghost-files'),
-    });
+    render(Inspector, { ...base, selection: ids.analyzer('ghost-files') });
     expect(screen.getByText('Ghost Files')).toBeTruthy();
     expect(
       screen
@@ -131,10 +147,28 @@ describe('Inspector', () => {
 
   it('clears the selection', async () => {
     const onselect = vi.fn();
-    render(Inspector, { report, index, selection: ids.dir('src'), onselect });
+    render(Inspector, { ...base, selection: ids.dir('src'), onselect });
     await fireEvent.click(
       screen.getByRole('button', { name: /Clear selection/ }),
     );
     expect(onselect).toHaveBeenCalledWith(null);
+  });
+
+  it('collapses to the strip and back, by button or the I key', async () => {
+    render(Inspector, { ...base, selection: ids.file('src/api.ts') });
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'Collapse the inspector (I)' }),
+    );
+    expect(
+      screen.getByRole('complementary', { name: 'Inspector, collapsed' }),
+    ).toBeTruthy();
+    // A selected file gets shortcuts into its sections.
+    expect(
+      screen.getByRole('button', { name: 'Open the inspector at People' }),
+    ).toBeTruthy();
+    await fireEvent.keyDown(document.body, { key: 'i' });
+    expect(
+      screen.queryByRole('complementary', { name: 'Inspector, collapsed' }),
+    ).toBeNull();
   });
 });

@@ -19,12 +19,25 @@ export function opensPalette(e: KeyboardEvent): boolean {
   const k = e.key.toLowerCase();
   const isK = k === 'k' || (!/^[a-z]$/.test(k) && e.code === 'KeyK');
   if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && isK) return true;
-  if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return false;
-  const target = e.target as HTMLElement | null;
-  const typing =
-    target?.isContentEditable ||
-    target?.tagName === 'INPUT' ||
-    target?.tagName === 'TEXTAREA' ||
-    target?.tagName === 'SELECT';
-  return !typing;
+  return pressed(e, '/');
+}
+
+/**
+ * A single-key shortcut (`/`, `?`, `i`): no Ctrl, ⌘ or Alt, and never while
+ * the viewer is typing into a field. Letters match either case.
+ */
+export function pressed(e: KeyboardEvent, key: string): boolean {
+  if (e.metaKey || e.ctrlKey || e.altKey) return false;
+  if (e.key.toLowerCase() !== key) return false;
+  return !isTyping(e.target);
+}
+
+function isTyping(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null;
+  return Boolean(
+    el?.isContentEditable ||
+    el?.tagName === 'INPUT' ||
+    el?.tagName === 'TEXTAREA' ||
+    el?.tagName === 'SELECT',
+  );
 }

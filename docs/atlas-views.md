@@ -98,14 +98,19 @@ The hash holds what a shared link should reopen. Every field is validated on rea
 
 Theme is a viewer preference and stays in localStorage, not the URL.
 
-> As built in PR 3.1, `v` holds an analyzer id and `l` a layout. Moving to view/lens/form is part of the navigation change below.
+> Defaults stay out of the URL: the Overview view and a view's default lens are omitted, so a fresh load has no hash. `t` is parsed and validated (`2026-03` or `2026-01..2026-03`) but nothing narrows to it yet; the first lens that reads a window wires up the strip's brush.
 
 ## What this changes in the build
 
-- **Rail** (`Rail.svelte`): from the 23-item catalog list to five view destinations with badge dots. The expanded 240px state goes away.
-- **Lens bar** (new): the active view's analyzers, with badges and classic ↗ for those without a lens yet.
-- **Time strip** (new, shared): shell work that lands with the first views (PR 3.2), not inside each view.
-- **Inspector:** two modes, What to do, Flagged by, collapse strip, and 400px (see [The inspector](#the-inspector-right-sidebar)); the detail table moves out of it into a drawer.
+Shipped in the navigation shell PR (the first of 3.2's three):
+
+- **Rail** (`Rail.svelte`): five view destinations with badge dots that roll up their lenses'. The 23-item list and its 240px expanded state are gone.
+- **Lens bar** (`LensBar.svelte`): the open view's analyzers, with badges and classic ↗ for those without an Atlas view. One row, scrolling sideways with a faded edge when it can't fit.
+- **Time strip** (`TimeStrip.svelte`): commits per week across the window. It lights the selection's weeks.
+- **Inspector:** lens mode and selection mode, Flagged by (scene `fileFacts` rows, each naming its lens), Activity, Changes with, the collapse strip (`I`), 400px and wrapped names (see [The inspector](#the-inspector-right-sidebar)).
+- **Guide** (`GuideSheet.svelte`, `?`).
+
+Still to come, with the first lens that fills them (the Hotspots PR): **What to do** (rules in scene) and the **table drawer** (`T`).
 - **Catalog:** gains the view → lens mapping if a checkpoint diverges from `PRESET_GROUPS`.
 - **Kept as is:** catalog, badges, entity index, ⌘K palette, inspector cards, `AnalyzerView` / `Layout` model.
 

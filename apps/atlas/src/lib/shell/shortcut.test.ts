@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { opensPalette, paletteShortcut } from './shortcut';
+import { opensPalette, paletteShortcut, pressed } from './shortcut';
 
 const key = (init: KeyboardEventInit, target?: HTMLElement) => {
   const e = new KeyboardEvent('keydown', init);
@@ -44,5 +44,21 @@ describe('palette shortcut', () => {
     expect(opensPalette(key({ key: 'K', ctrlKey: true, shiftKey: true }))).toBe(
       false,
     );
+  });
+
+  it('matches single-key shortcuts outside fields, either case', () => {
+    expect(pressed(key({ key: 'I', shiftKey: true }, document.body), 'i')).toBe(
+      true,
+    );
+    expect(pressed(key({ key: 'i' }, document.body), 'i')).toBe(true);
+    expect(pressed(key({ key: '?', shiftKey: true }, document.body), '?')).toBe(
+      true,
+    );
+    expect(pressed(key({ key: 'i', metaKey: true }, document.body), 'i')).toBe(
+      false,
+    );
+    expect(
+      pressed(key({ key: 'i' }, document.createElement('input')), 'i'),
+    ).toBe(false);
   });
 });

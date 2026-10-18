@@ -1,20 +1,30 @@
-// The URL hash holds what a shared link should reopen: the view, its layout
-// and the selected entity. Theme is a viewer preference and lives in
-// localStorage instead (see theme.ts).
+// The URL hash holds what a shared link should reopen: the view, its lens,
+// the lens's form, the selected entity and the time window. Theme is a viewer
+// preference and lives in localStorage instead (see theme.ts).
 
 export interface AtlasLocation {
-  /** Analyzer view id, e.g. `contributors`. */
+  /** View (rail group), e.g. `code-health`. */
   view?: string;
-  /** Alternate layout within the view, e.g. `swimlanes`. */
-  layout?: string;
+  /** Lens (analyzer) within the view, e.g. `hotspots`. */
+  lens?: string;
+  /** Alternate form of the lens, e.g. `by-package`. */
+  form?: string;
   /**
    * Selected entity id, e.g. `person:ann@corp.com`. Untrusted input: resolve
    * it through the entity map, never render it.
    */
   selection?: string;
+  /** Time-strip window: `2026-03` or `2026-01..2026-03`. */
+  time?: string;
 }
 
-const KEYS = { view: 'v', layout: 'l', selection: 's' } as const;
+const KEYS = {
+  view: 'v',
+  lens: 'l',
+  form: 'f',
+  selection: 's',
+  time: 't',
+} as const;
 
 export function parseHash(hash: string): AtlasLocation {
   const params = new URLSearchParams(hash.replace(/^#/, ''));
@@ -34,4 +44,14 @@ export function serializeHash(location: AtlasLocation): string {
   }
   const query = params.toString();
   return query ? `#${query}` : '';
+}
+
+const MONTH = String.raw`\d{4}-(0[1-9]|1[0-2])`;
+const TIME = new RegExp(`^${MONTH}(\\.\\.${MONTH})?$`);
+
+/** A well-formed time window, with the range in order. */
+export function isTimeWindow(value: string): boolean {
+  if (!TIME.test(value)) return false;
+  const [from, to] = value.split('..');
+  return to === undefined || from <= to;
 }

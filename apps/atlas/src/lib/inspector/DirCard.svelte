@@ -1,16 +1,30 @@
 <script lang="ts">
-  import { dirFacts } from '@gitrelic/scene';
+  import { dirFacts, type WeeklyActivity } from '@gitrelic/scene';
 
+  import ActivityCard from './ActivityCard.svelte';
   import Card from './Card.svelte';
   import FactRows from './FactRows.svelte';
+  import PathText from './PathText.svelte';
   import type { GitrelicReport } from '@gitrelic/core';
 
-  let { dir, report }: { dir: string; report: GitrelicReport } = $props();
+  let {
+    dir,
+    report,
+    activity = null,
+  }: {
+    dir: string;
+    report: GitrelicReport;
+    activity?: WeeklyActivity | null;
+  } = $props();
 
   let rows = $derived(dirFacts(dir, report));
 </script>
 
 <Card eyebrow="Directory">
-  <div class="font-mono text-[13px] break-all text-dir">{dir}/</div>
+  <div class="text-[13px] leading-relaxed text-dir">
+    <PathText path={`${dir}/`} />
+  </div>
   <FactRows {rows} />
 </Card>
+
+<ActivityCard {activity} />
