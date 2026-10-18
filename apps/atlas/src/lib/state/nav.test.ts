@@ -26,11 +26,14 @@ describe('Nav', () => {
     nav.destroy();
   });
 
-  it('drops selections and views it cannot resolve', () => {
+  it('drops selections and views it cannot resolve, and from the URL too', () => {
     history.replaceState(null, '', '/#v=nope&s=file%3A%3Cimg%20onerror%3Dx%3E');
+    const before = history.length;
     const nav = new Nav(() => index);
     expect(nav.selection).toBeNull();
     expect(nav.view).toBeNull();
+    expect(location.hash).toBe('');
+    expect(history.length).toBe(before);
     nav.destroy();
   });
 

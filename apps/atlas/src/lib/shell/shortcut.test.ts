@@ -33,5 +33,16 @@ describe('palette shortcut', () => {
       true,
     );
     expect(opensPalette(key({ key: 'л', code: 'KeyK' }))).toBe(false);
+    // Colemak (KeyK types e) and Dvorak (t): the browser keeps Ctrl+E / Ctrl+T.
+    expect(opensPalette(key({ key: 'e', code: 'KeyK', ctrlKey: true }))).toBe(
+      false,
+    );
+    expect(opensPalette(key({ key: 't', code: 'KeyK', metaKey: true }))).toBe(
+      false,
+    );
+    // Firefox's console.
+    expect(opensPalette(key({ key: 'K', ctrlKey: true, shiftKey: true }))).toBe(
+      false,
+    );
   });
 });

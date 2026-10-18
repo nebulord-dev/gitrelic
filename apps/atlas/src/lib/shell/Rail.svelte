@@ -93,9 +93,8 @@
                       title={badge.reason}>{badge.count}</span
                     >
                   {/if}
-                  <span class="text-[11px]" aria-label="classic dashboard"
-                    >↗</span
-                  >
+                  <span class="text-[11px]" aria-hidden="true">↗</span>
+                  <span class="sr-only">(opens the classic dashboard)</span>
                 </a>
               {/if}
             </li>

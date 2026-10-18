@@ -34,6 +34,9 @@
   // Focus areas are files or directories; link whichever the report knows.
   const areaId = (path: string): EntityId =>
     index.get(ids.file(path)) ? ids.file(path) : ids.dir(path);
+  // Core reports files at the top level as the area '.'.
+  const areaText = (path: string) =>
+    path === '.' ? '(repository root)' : path;
 </script>
 
 {#if person}
@@ -52,7 +55,12 @@
     <Card eyebrow="Focus areas">
       <div class="flex flex-wrap gap-1.5">
         {#each person.focusAreas as area (area)}
-          <EntityChip id={areaId(area)} text={area} {index} {onselect} />
+          <EntityChip
+            id={areaId(area)}
+            text={areaText(area)}
+            {index}
+            {onselect}
+          />
         {/each}
       </div>
     </Card>

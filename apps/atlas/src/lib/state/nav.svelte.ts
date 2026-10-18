@@ -62,16 +62,22 @@ export class Nav {
         : null;
     this.selection =
       loc.selection && this.index().get(loc.selection) ? loc.selection : null;
+    // Rewrite the URL if anything was dropped, so a shared link doesn't
+    // carry the junk forward.
+    if (this.hash() !== this.win.location.hash) this.write('replace');
   }
 
-  private write(mode: 'push' | 'replace'): void {
-    const hash = serializeHash({
+  private hash(): string {
+    return serializeHash({
       view: this.view ?? undefined,
       layout: this.layout ?? undefined,
       selection: this.selection ?? undefined,
     });
+  }
+
+  private write(mode: 'push' | 'replace'): void {
     const { pathname, search } = this.win.location;
-    const url = `${pathname}${search}${hash}`;
+    const url = `${pathname}${search}${this.hash()}`;
     if (mode === 'push') this.win.history.pushState(null, '', url);
     else this.win.history.replaceState(null, '', url);
   }

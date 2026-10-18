@@ -20,14 +20,31 @@ export function fuzzyScore(query: string, text: string): number | null {
   // never match), and an emoji is two UTF-16 units that must match whole.
   const q = [...query].map(fold);
   if (q.length === 0) return 0;
+  return scorePrepared(q, prepare(text));
+}
+
+/** A text split into code points and folded once, for scoring many queries. */
+interface Prepared {
+  chars: string[];
+  folded: string[];
+}
+
+function prepare(text: string): Prepared {
   const chars = [...text];
+  return { chars, folded: chars.map(fold) };
+}
+
+function scorePrepared(
+  q: string[],
+  { chars, folded }: Prepared,
+): number | null {
   let score = 0;
   let run = 0;
   let qi = 0;
   let last = -1;
   for (let ti = 0; ti < chars.length && qi < q.length; ti++) {
     const ch = chars[ti];
-    const lower = fold(ch);
+    const lower = folded[ti];
     if (lower !== q[qi]) continue;
     const prev = chars[ti - 1];
     const atStart =
@@ -47,6 +64,20 @@ export function fuzzyScore(query: string, text: string): number | null {
 /** One code point, lowercased, cut back to a single code point. */
 function fold(ch: string): string {
   return String.fromCodePoint(ch.toLowerCase().codePointAt(0) ?? 0);
+}
+
+// Each entry's label and keywords, split and folded on first search and
+// reused for every keystroke after: on a big repo that's tens of thousands
+// of paths, which shouldn't be re-split per key.
+const PREPARED = new WeakMap<EntityEntry, Prepared[]>();
+
+function prepared(entry: EntityEntry): Prepared[] {
+  let p = PREPARED.get(entry);
+  if (!p) {
+    p = [entry.label, ...entry.keywords].map(prepare);
+    PREPARED.set(entry, p);
+  }
+  return p;
 }
 
 const KIND_ORDER: Record<SearchKind, number> = {
@@ -71,13 +102,15 @@ export function rankEntities(
   entries: readonly EntityEntry[],
   limit = 20,
 ): Ranked[] {
-  const q = query.trim();
-  if (!q) return [];
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  const q = [...trimmed].map(fold);
   const out: Ranked[] = [];
   for (const entry of entries) {
-    let best = fuzzyScore(q, entry.label);
-    for (const k of entry.keywords) {
-      const s = fuzzyScore(q, k);
+    const [label, ...keywords] = prepared(entry);
+    let best = scorePrepared(q, label);
+    for (const k of keywords) {
+      const s = scorePrepared(q, k);
       if (s !== null && (best === null || s - 1 > best)) best = s - 1;
     }
     if (best !== null) out.push({ entry, score: best });
