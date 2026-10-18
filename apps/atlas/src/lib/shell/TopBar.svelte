@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { paletteShortcut } from './shortcut';
   import ThemeSwitch from './ThemeSwitch.svelte';
   import type { GitrelicReport } from '@gitrelic/core';
   import type { ThemeName } from '@gitrelic/scene';
@@ -6,7 +7,12 @@
   let {
     report,
     theme = $bindable(),
-  }: { report: GitrelicReport; theme: ThemeName } = $props();
+    onsearch,
+  }: {
+    report: GitrelicReport;
+    theme: ThemeName;
+    onsearch?: () => void;
+  } = $props();
 
   // Empty for the blank dates normalizeReport backfills, or unparseable ones.
   const day = (iso: string) => {
@@ -33,5 +39,15 @@
     <span>{report.meta.analyzedBranch}</span>
     <span class="text-[13px] text-muted">{span}</span>
   </div>
-  <ThemeSwitch bind:theme />
+  <div class="flex items-center gap-3">
+    <button
+      type="button"
+      onclick={() => onsearch?.()}
+      class="flex cursor-pointer items-center gap-3 rounded-chip border border-control-border bg-transparent px-3 py-1.5 font-[inherit] text-[13px] text-muted hover:text-text"
+    >
+      Search
+      <kbd class="text-[11px]">{paletteShortcut()}</kbd>
+    </button>
+    <ThemeSwitch bind:theme />
+  </div>
 </header>

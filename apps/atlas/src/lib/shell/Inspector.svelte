@@ -1,27 +1,81 @@
 <script lang="ts">
+  import {
+    catalogEntry,
+    entityKey,
+    entityKind,
+    type EntityId,
+    type EntityIndex,
+  } from '@gitrelic/scene';
+
+  import DirCard from '../inspector/DirCard.svelte';
+  import ExplainCard from '../inspector/ExplainCard.svelte';
+  import FileCard from '../inspector/FileCard.svelte';
+  import PersonCard from '../inspector/PersonCard.svelte';
+  import RepositoryCard from '../inspector/RepositoryCard.svelte';
+  import { paletteShortcut } from './shortcut';
   import type { GitrelicReport } from '@gitrelic/core';
 
-  let { report }: { report: GitrelicReport } = $props();
+  let {
+    report,
+    index,
+    selection = null,
+    view = null,
+    onselect,
+    onopen,
+  }: {
+    report: GitrelicReport;
+    index: EntityIndex;
+    /** Already resolved through `index` (Nav drops anything unknown). */
+    selection?: EntityId | null;
+    view?: string | null;
+    onselect?: (id: EntityId | null) => void;
+    onopen?: (id: string) => void;
+  } = $props();
 
-  let facts = $derived([
-    ['Commits', report.meta.totalCommits.toLocaleString()],
-    ['Files', report.meta.totalFiles.toLocaleString()],
-    ['Authors', report.meta.totalAuthors.toLocaleString()],
-    ['Language', report.meta.primaryLanguage || '—'],
-  ]);
+  let kind = $derived(selection ? entityKind(selection) : null);
+  let key = $derived(selection ? entityKey(selection) : '');
+  let viewEntry = $derived(view ? catalogEntry(view) : undefined);
+  let analyzer = $derived(kind === 'analyzer' ? catalogEntry(key) : undefined);
 </script>
 
-<!-- Docked from 1200px; the narrow-screen drawer comes with the inspector cards (PR 3.1). -->
+<!--
+  Docked from 1200px (320px, 380px from 1600px). Narrower, it's a drawer that
+  opens over the stage while something is selected.
+-->
 <aside
   aria-label="Inspector"
-  class="card hidden w-80 shrink-0 flex-col gap-3 px-5 py-4.5 min-[1200px]:flex min-[1600px]:w-95"
+  class={[
+    'card w-80 shrink-0 flex-col gap-4 overflow-y-auto px-5 py-4.5 min-[1600px]:w-95',
+    selection
+      ? 'flex max-[1199px]:fixed max-[1199px]:top-16 max-[1199px]:right-4 max-[1199px]:bottom-4 max-[1199px]:z-30'
+      : 'hidden min-[1200px]:flex',
+  ]}
 >
-  <div class="text-[11px] tracking-[0.16em] text-muted">REPOSITORY</div>
-  <div class="text-lg font-semibold">{report.repoName}</div>
-  <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[13px]">
-    {#each facts as [label, value] (label)}
-      <dt class="text-muted">{label}</dt>
-      <dd class="m-0 text-right">{value}</dd>
-    {/each}
-  </dl>
+  {#if selection}
+    <button
+      type="button"
+      class="cursor-pointer self-end bg-transparent p-0 text-[12px] text-muted hover:text-text"
+      onclick={() => onselect?.(null)}>Clear selection ✕</button
+    >
+  {/if}
+
+  {#if kind === 'file'}
+    <FileCard file={key} {report} {onselect} {onopen} />
+  {:else if kind === 'person'}
+    <PersonCard email={key} {report} {index} {onselect} />
+  {:else if kind === 'dir'}
+    <DirCard dir={key} {report} />
+  {:else if analyzer}
+    <ExplainCard entry={analyzer} />
+  {:else}
+    <RepositoryCard {report} />
+    {#if viewEntry}
+      <ExplainCard entry={viewEntry} />
+    {/if}
+    <p class="m-0 text-[13px] text-muted">
+      Press <kbd class="rounded-chip border border-control-border px-1"
+        >{paletteShortcut()}</kbd
+      > to find a file, person or analyzer.
+    </p>
+  {/if}
 </aside>
