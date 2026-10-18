@@ -44,6 +44,22 @@ describe('LabelLayer', () => {
     expect(span.style.transform).toBe('translate(109px, 92px)');
   });
 
+  it.each([
+    ['left', 'translate(68px, 92px)'],
+    ['above', 'translate(88px, 75px)'],
+    ['below', 'translate(88px, 109px)'],
+    ['center', 'translate(88px, 92px)'],
+  ] as const)('anchors a label %s of its mark', (labelAnchor, transform) => {
+    const host = document.createElement('div');
+    new LabelLayer(host).update(
+      store({ label: 'Ann', labelAnchor }),
+      IDENTITY,
+      screen,
+      new Set(),
+    );
+    expect(spans(host)[0].style.transform).toBe(transform);
+  });
+
   it('skips unlabelled and fading marks', () => {
     const host = document.createElement('div');
     new LabelLayer(host).update(

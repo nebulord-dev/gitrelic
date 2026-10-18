@@ -15,8 +15,11 @@ export { topAiUsers } from './authors/topAiUsers';
 
 export {
   computeOutlierBadges,
+  outlierGrades,
   RULES as BADGE_RULES,
   type Badge,
+  type Outlier,
+  type OutlierGrade,
 } from './badges';
 export {
   CATALOG,
@@ -223,3 +226,8 @@ export {
   weeklyHits,
   type WeeklyActivity,
 } from './time/activity';
+export { lensReadings, type LensReading } from './overview/readings';
+export { lensTopEntities, type FannedEntity } from './overview/topEntities';
+export { ringScene, type RingFocus } from './layouts/ring';
+export { overviewView, ringLayout } from './views/overview';
+export { VIEWS } from './views/index';

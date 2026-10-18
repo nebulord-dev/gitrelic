@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import reportJson from '../test/fixtures/report.small.json';
-import { computeOutlierBadges, RULES } from './badges';
+import { computeOutlierBadges, outlierGrades, RULES } from './badges';
 import { CATALOG } from './catalog';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -57,12 +57,6 @@ describe('computeOutlierBadges', () => {
         },
       },
       1,
-    ],
-    [
-      'dead-code',
-      { deadCode: { ...base.deadCode, totalDeadFiles: 9 } },
-      { deadCode: { ...base.deadCode, totalDeadFiles: 10 } },
-      10,
     ],
     [
       'shame',
@@ -167,7 +161,6 @@ describe('computeOutlierBadges', () => {
       'bus-factor',
       'commit-timing',
       'cursed-files',
-      'dead-code',
       'ghost-files',
       'hotspots',
       'knowledge-silos',
@@ -196,13 +189,59 @@ describe('computeOutlierBadges', () => {
 
   it('explains each badge in words', () => {
     const badge = computeOutlierBadges(
-      report({ deadCode: { ...base.deadCode, totalDeadFiles: 25 } }),
-    ).get('dead-code');
-    expect(badge?.reason).toBe('25% of files untouched in the window');
+      report({ ghostFiles: { ...base.ghostFiles, totalGhostFiles: 25 } }),
+    ).get('ghost-files');
+    expect(badge?.reason).toMatch(/^25%/);
+  });
+
+  it('never badges Stale Files: its count measures the window, not decay', () => {
+    const r = report({ deadCode: { ...base.deadCode, totalDeadFiles: 66 } });
+    expect(fires(r, 'dead-code')).toBeNull();
+    expect(outlierGrades(r).has('dead-code')).toBe(false);
   });
 
   it('stays quiet on a small healthy repo', () => {
     // The sample-repo fixture: 10 files, nothing alarming beyond its size.
     expect([...computeOutlierBadges(base).keys()]).not.toContain('hotspots');
+  });
+});
+
+describe('outlierGrades', () => {
+  const ghosts = (n: number) =>
+    report({ ghostFiles: { ...base.ghostFiles, totalGhostFiles: n } });
+  // Ghost Files badges at 5% of 100 files.
+
+  it.each([
+    [0, 0],
+    [2, 0],
+    [3, 1],
+    [5, 2],
+    [9, 2],
+    [10, 3],
+  ])('a share rule: %i of 100 grades %i', (n, grade) => {
+    expect(outlierGrades(ghosts(n)).get('ghost-files')?.grade).toBe(grade);
+  });
+
+  it('an absolute rule grades by count against its minimum', () => {
+    const cursed = (n: number) =>
+      outlierGrades(
+        report({
+          cursedFiles: {
+            ...base.cursedFiles,
+            files: items(n, () => ({ curseScore: 55 })),
+          },
+        }),
+      ).get('cursed-files')?.grade;
+    expect(cursed(0)).toBe(0);
+    expect(cursed(1)).toBe(2);
+    expect(cursed(5)).toBe(3);
+  });
+
+  it('agrees with the badges: grade 2 and up is exactly a badge', () => {
+    for (const n of [0, 3, 5, 12]) {
+      const r = ghosts(n);
+      const graded = (outlierGrades(r).get('ghost-files')?.grade ?? 0) >= 2;
+      expect(computeOutlierBadges(r).has('ghost-files')).toBe(graded);
+    }
   });
 });

@@ -3,8 +3,10 @@
 // Stage.svelte and the bench page are thin shells around it.
 
 import {
+  easeOutCubic,
   mixPalette,
   planTransition,
+  TIMING,
   type EntityId,
   type Palette,
   type Scene,
@@ -65,6 +67,14 @@ export class AtlasStage {
   private guideScale = Number.NaN;
   /** The viewer panned or zoomed, so a resize keeps their view. */
   private userMoved = false;
+  /** The scene showing has no marks; the next one with marks reframes. */
+  private lastEmpty = false;
+  /** A glide to a new framing, eased over the marks' move time. */
+  private camera: {
+    from: ViewTransform;
+    to: ViewTransform;
+    start: number;
+  } | null = null;
   private destroyed = false;
   private pending: number | null = null;
   private readonly clock: FrameClock;
@@ -87,6 +97,7 @@ export class AtlasStage {
       get: () => this.view,
       set: (v) => {
         this.view = v;
+        this.camera = null;
         this.userMoved = true;
         this.hitsStale = true;
         this.requestDraw(false);
@@ -123,12 +134,38 @@ export class AtlasStage {
     }
   }
 
-  /** Transitions to `scene`; the first scene also frames the view. */
+  /**
+   * Transitions to `scene`. The first scene with marks frames the view, and
+   * so does the next one after an empty spell (a view without an Atlas lens):
+   * an empty scene's bounds frame nothing worth keeping.
+   */
   show(scene: Scene): void {
     if (this.destroyed) return;
-    const first = this.bounds === null;
-    this.bounds = scene.bounds;
-    if (first) this.view = fit(scene.bounds, this.size);
+    const empty = scene.marks.length === 0;
+    if (!empty) {
+      const frame = this.bounds === null || this.lastEmpty;
+      const moved = !sameBounds(this.bounds, scene.bounds);
+      this.bounds = scene.bounds;
+      if (frame) {
+        this.view = fit(scene.bounds, this.size);
+        this.camera = null;
+        this.userMoved = false;
+      } else if (moved && !this.userMoved) {
+        // The scene grew or shrank (a fan opened) and the viewer hasn't
+        // taken the camera: glide to frame it, alongside the marks — or,
+        // with reduced motion, cut straight to it (zooming is exactly the
+        // motion that preference asks to stop).
+        const to = fit(scene.bounds, this.size);
+        if (this.opts.reducedMotion()) {
+          this.view = to;
+          this.camera = null;
+          this.hitsStale = true;
+        } else {
+          this.camera = { from: this.view, to, start: this.clock.now() };
+        }
+      }
+    }
+    this.lastEmpty = empty;
     const plan = planTransition(scene, this.engine.live(), {
       reducedMotion: this.opts.reducedMotion(),
     });
@@ -158,6 +195,8 @@ export class AtlasStage {
     this.size = size;
     this.opts.renderer.resize(size);
     if (!this.userMoved && this.bounds) {
+      // A glide in flight was aiming at a framing for the old size.
+      this.camera = null;
       this.view = fit(this.bounds, this.size);
       this.hitsStale = true;
     }
@@ -167,6 +206,7 @@ export class AtlasStage {
   fitView(): void {
     if (!this.bounds) return;
     this.userMoved = false;
+    this.camera = null;
     this.view = fit(this.bounds, this.size);
     this.hitsStale = true;
     this.requestDraw(false);
@@ -230,6 +270,20 @@ export class AtlasStage {
   private draw(animated: boolean): void {
     if (this.destroyed) return;
     const start = this.clock.now();
+    const gliding = this.camera !== null;
+    if (this.camera) {
+      const { from, to } = this.camera;
+      const p = easeOutCubic(
+        Math.min(1, (start - this.camera.start) / TIMING.move),
+      );
+      this.view = {
+        scale: from.scale + (to.scale - from.scale) * p,
+        tx: from.tx + (to.tx - from.tx) * p,
+        ty: from.ty + (to.ty - from.ty) * p,
+      };
+      this.hitsStale = true;
+      if (p >= 1) this.camera = null;
+    }
     // Read before shownPalette(), which clears it on the fade's last frame.
     const fading = this.paletteFrom !== null;
     const palette = this.shownPalette();
@@ -252,8 +306,13 @@ export class AtlasStage {
     if (this.selected) pinned.add(this.selected);
     this.labels.update(this.store, this.view, this.size, pinned);
     this.opts.onFrame?.(this.clock.now() - start);
-    // A plan can cut the engine's repaint short; finish the fade anyway.
-    // requestDraw does nothing while the engine is drawing the next frame.
-    if (this.paletteFrom) this.requestDraw(true);
+    // A plan can cut the engine's repaint short, or end before the camera
+    // lands; finish either anyway. requestDraw does nothing while the engine
+    // is drawing the next frame.
+    if (this.paletteFrom || (gliding && this.camera)) this.requestDraw(true);
   }
+}
+
+function sameBounds(a: Scene['bounds'] | null, b: Scene['bounds']): boolean {
+  return a !== null && a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h;
 }

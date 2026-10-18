@@ -3,6 +3,7 @@
 // the DOM, or which theme is active.
 
 import type { CommitLike } from './commits/commitLike';
+import type { EntityIndex } from './entities';
 import type { EntityId } from './ids';
 import type { ThemeToken } from './theme/tokens';
 import type { GitrelicReport } from '@gitrelic/core';
@@ -69,6 +70,11 @@ export interface Mark extends MarkGeom {
   label?: string;
   /** Higher labels win when they collide. Defaults to 0. */
   labelPriority?: number;
+  /**
+   * Which side of the mark its label sits: right (the default), left, above,
+   * below, or centred on it (a label-only mark, like a ring's group name).
+   */
+  labelAnchor?: 'right' | 'left' | 'above' | 'below' | 'center';
   /** Draw order; higher on top. Defaults to 0. */
   z?: number;
 }
@@ -143,6 +149,14 @@ export interface ViewInput {
   report: GitrelicReport;
   /** Loaded on demand; null until a view that needs commits asks for them. */
   commits: CommitLike[] | null;
+  /**
+   * What the viewer has selected, already resolved through the entity index.
+   * A layout may re-form around it (the Overview ring fans out a selected
+   * lens); one that ignores it draws the same scene either way.
+   */
+  focus?: EntityId | null;
+  /** The entity index, for layouts that only draw selectable entities. */
+  index?: EntityIndex;
 }
 
 /** Text with entity chips: a chip selects its entity when clicked. */

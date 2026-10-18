@@ -52,8 +52,9 @@ describe('catalog', () => {
       'rewrite-ratio',
       'shame',
     ]);
-    // No preset has an Atlas view yet, so no view has a default lens.
-    for (const g of PRESET_GROUPS) expect(defaultLens(g.id)).toBeNull();
+    // Overview's Repo map is the first Atlas lens; views without one have none.
+    expect(defaultLens('overview')).toBe('overview');
+    expect(defaultLens('structure')).toBeNull();
     expect(isPresetGroup('structure')).toBe(true);
     expect(isPresetGroup('hotspots')).toBe(false);
     expect(isPresetGroup('__proto__')).toBe(false);

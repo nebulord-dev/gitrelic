@@ -1,10 +1,15 @@
 <script lang="ts">
+  import {
+    emptyScene,
+    type EntityId,
+    type Scene,
+    type ThemeName,
+  } from '@gitrelic/scene';
   import { onMount, tick, type Snippet } from 'svelte';
 
   import { AtlasStage } from '../engine/atlasStage';
   import { prefersReducedMotion } from '../engine/reducedMotion';
   import { paletteFromDocument } from '../engine/themeBridge';
-  import type { EntityId, Scene, ThemeName } from '@gitrelic/scene';
 
   let {
     scene = null,
@@ -87,7 +92,9 @@
   });
 
   $effect(() => {
-    if (stage && scene) stage.show(scene);
+    // No scene (a lens without an Atlas view): clear what was drawn, so the
+    // last lens's marks don't linger under the empty state.
+    if (stage) stage.show(scene ?? emptyScene({ width: 1, height: 1 }));
   });
 
   $effect(() => {

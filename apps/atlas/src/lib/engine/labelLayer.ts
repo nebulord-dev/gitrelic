@@ -5,7 +5,7 @@
 // spans reused across frames. Text goes in through textContent only — labels
 // are commit authors and file paths, never markup.
 
-import { planLabels, type LabelCandidate } from '@gitrelic/scene';
+import { planLabels, type LabelCandidate, type Mark } from '@gitrelic/scene';
 
 import { worldToScreen, type ScreenSize, type ViewTransform } from './viewport';
 import type { MarkStore } from './markStore';
@@ -37,11 +37,13 @@ export class LabelLayer {
         continue;
       const [sx, sy] = worldToScreen(view, store.x[i], store.y[i]);
       const edge = (store.r[i] || store.w[i] / 2) * view.scale;
+      const w = mark.label.length * CHAR_PX + 4;
+      const [x, y] = place(mark.labelAnchor, sx, sy, edge, w);
       candidates.push({
         id: mark.id,
-        x: sx + edge + OFFSET,
-        y: sy - LABEL_H / 2,
-        w: mark.label.length * CHAR_PX + 4,
+        x,
+        y,
+        w,
         h: LABEL_H,
         priority: mark.labelPriority ?? 0,
       });
@@ -75,5 +77,27 @@ export class LabelLayer {
   destroy(): void {
     for (const span of this.pool) span.remove();
     this.pool = [];
+  }
+}
+
+/** A label's top-left corner, from its mark's screen centre and radius. */
+function place(
+  anchor: Mark['labelAnchor'],
+  sx: number,
+  sy: number,
+  edge: number,
+  w: number,
+): [number, number] {
+  switch (anchor) {
+    case 'left':
+      return [sx - edge - OFFSET - w, sy - LABEL_H / 2];
+    case 'above':
+      return [sx - w / 2, sy - edge - OFFSET - LABEL_H];
+    case 'below':
+      return [sx - w / 2, sy + edge + OFFSET];
+    case 'center':
+      return [sx - w / 2, sy - LABEL_H / 2];
+    default:
+      return [sx + edge + OFFSET, sy - LABEL_H / 2];
   }
 }

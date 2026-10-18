@@ -245,4 +245,39 @@ describe('Inspector', () => {
     modal.remove();
     wide.mockRestore();
   });
+
+  it('describes the Repo map lens, and its loud signals fan their lens', async () => {
+    // The fixture is a 10-file repo; force one loud lens so the list exists.
+    const loud = {
+      ...report,
+      ghostFiles: { ...report.ghostFiles, totalGhostFiles: 3 },
+    } as GitrelicReport;
+    const onselect = vi.fn();
+    render(Inspector, { ...base, report: loud, lens: 'overview', onselect });
+    expect(screen.getByText(/lenses read well outside normal/)).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: 'Loudest signals' }),
+    ).toBeTruthy();
+    await fireEvent.click(screen.getByRole('button', { name: /Ghost Files/ }));
+    expect(onselect).toHaveBeenCalledWith('analyzer:ghost-files');
+  });
+
+  it('previews a selected lens: its reading, what it points at, and how to open it', async () => {
+    const onselect = vi.fn();
+    render(Inspector, {
+      ...base,
+      selection: ids.analyzer('hotspots'),
+      onselect,
+    });
+    expect(screen.getByRole('heading', { name: 'On the ring' })).toBeTruthy();
+    expect(
+      screen
+        .getByRole('link', { name: /Open Hotspots in classic/ })
+        .getAttribute('href'),
+    ).toBe('/classic/#preset=hotspots');
+    const points = screen.getByRole('heading', { name: 'What it points at' });
+    expect(points).toBeTruthy();
+    await fireEvent.click(screen.getByRole('button', { name: /api\.ts/ }));
+    expect(onselect).toHaveBeenCalledWith('file:src/api.ts');
+  });
 });

@@ -28,11 +28,11 @@ export interface CatalogEntry {
 export const CATALOG: readonly CatalogEntry[] = [
   {
     id: 'overview',
-    label: 'Overview',
+    label: 'Repo map',
     group: 'overview',
     explain:
-      'The repository at a glance: where the risk, churn and ownership problems are.',
-    atlas: false,
+      'Every lens around the repository, sized by how far outside normal it reads: where to look first.',
+    atlas: true,
   },
   {
     id: 'risk',

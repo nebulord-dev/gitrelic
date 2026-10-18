@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AtlasStage } from './atlasStage';
 import { HitTester } from './hitTest';
 import { REPAINT_MS, type FrameClock } from './tweenEngine';
-import { worldToScreen } from './viewport';
+import { fit, worldToScreen } from './viewport';
 import type { StageFrame, StageRenderer } from './stageRenderer';
 
 const grey: Rgba = { r: 0.5, g: 0.5, b: 0.5, a: 1 };
@@ -141,7 +141,10 @@ describe('AtlasStage', () => {
 
   it('frames the first scene', async () => {
     const { stage } = await setup();
-    stage!.show({ ...scene(), bounds: { x: 0, y: 0, w: 800, h: 400 } });
+    stage!.show({
+      ...scene(dot('person:a', 100, 100)),
+      bounds: { x: 0, y: 0, w: 800, h: 400 },
+    });
     expect(stage!.transform.scale).toBeCloseTo((200 - 48) / 400, 9);
   });
 
@@ -283,7 +286,10 @@ describe('AtlasStage', () => {
 
   it('refits on resize until the viewer pans or zooms', async () => {
     const { stage, fc, host } = await setup();
-    stage!.show({ ...scene(), bounds: { x: 0, y: 0, w: 800, h: 400 } });
+    stage!.show({
+      ...scene(dot('person:a', 100, 100)),
+      bounds: { x: 0, y: 0, w: 800, h: 400 },
+    });
     settle(fc);
     stage!.resize({ width: 1000, height: 600 });
     expect(stage!.transform.scale).toBeCloseTo(
@@ -446,5 +452,89 @@ describe('AtlasStage', () => {
     stage!.show(scene(dot('person:a', 100, 100)));
     fc.frame(TIMING.fade);
     expect(stage!.store.alpha[0]).toBe(1);
+  });
+
+  it('frames the first scene with marks, not an empty one before it', async () => {
+    const { stage, fc } = await setup();
+    stage!.show(scene());
+    settle(fc);
+    const before = stage!.transform;
+    stage!.show(scene(dot('person:a', 300, 150)));
+    settle(fc);
+    expect(stage!.transform).not.toEqual(before);
+    expect(stage!.transform.scale).toBeLessThan(50);
+  });
+
+  it('glides the camera to frame a scene that grew, unless the viewer moved it', async () => {
+    const { stage, fc, host } = await setup();
+    stage!.show(scene(dot('person:a', 100, 100)));
+    settle(fc);
+    const first = stage!.transform;
+    const grown = {
+      ...scene(dot('person:a', 100, 100)),
+      bounds: { x: 0, y: 0, w: 1600, h: 800 },
+    };
+    stage!.show(grown);
+    fc.frame(TIMING.move / 4);
+    const mid = stage!.transform;
+    settle(fc);
+    const end = stage!.transform;
+    expect(end.scale).toBeLessThan(first.scale);
+    expect(mid.scale).toBeLessThan(first.scale);
+    expect(mid.scale).toBeGreaterThan(end.scale);
+
+    // Once the viewer zooms, the camera is theirs: no more glides.
+    host.dispatchEvent(new KeyboardEvent('keydown', { key: '+' }));
+    const zoomed = stage!.transform;
+    stage!.show({ ...grown, bounds: { x: 0, y: 0, w: 400, h: 200 } });
+    settle(fc);
+    expect(stage!.transform).toEqual(zoomed);
+  });
+
+  it('a resize mid-glide frames for the new size, not the old target', async () => {
+    const { stage, fc } = await setup();
+    stage!.show(scene(dot('person:a', 100, 100)));
+    settle(fc);
+    const grown = {
+      ...scene(dot('person:a', 100, 100)),
+      bounds: { x: 0, y: 0, w: 1600, h: 800 },
+    };
+    stage!.show(grown);
+    fc.frame(TIMING.move / 4);
+    stage!.resize({ width: 1000, height: 600 });
+    settle(fc);
+    expect(stage!.transform).toEqual(
+      fit(grown.bounds, { width: 1000, height: 600 }),
+    );
+  });
+
+  it('cuts the camera straight to a new framing under reduced motion', async () => {
+    const host = document.createElement('div');
+    const labelHost = document.createElement('div');
+    const fc = fakeClock();
+    const { renderer } = fakeRenderer();
+    const stage = await AtlasStage.create(
+      host,
+      labelHost,
+      { width: 400, height: 200 },
+      {
+        renderer,
+        readPalette: () => palette,
+        glow: false,
+        reducedMotion: () => true,
+        clock: fc.clock,
+      },
+    );
+    stage!.show(scene(dot('person:a', 100, 100)));
+    settle(fc);
+    const grown = {
+      ...scene(dot('person:a', 100, 100)),
+      bounds: { x: 0, y: 0, w: 1600, h: 800 },
+    };
+    stage!.show(grown);
+    expect(stage!.transform).toEqual(
+      fit(grown.bounds, { width: 400, height: 200 }),
+    );
+    stage!.destroy();
   });
 });

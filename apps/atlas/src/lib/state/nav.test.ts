@@ -35,7 +35,8 @@ describe('Nav', () => {
     const before = history.length;
     const nav = new Nav(() => index);
     expect(nav.view).toBe('overview');
-    expect(nav.lens).toBeNull();
+    // Overview's default lens, Repo map, which stays out of the URL.
+    expect(nav.lens).toBe('overview');
     expect(nav.form).toBeNull();
     expect(nav.time).toBeNull();
     expect(nav.selection).toBeNull();
@@ -63,7 +64,7 @@ describe('Nav', () => {
   it('refuses lenses Atlas has no view for yet; the caller links classic', () => {
     const nav = new Nav(() => index);
     expect(nav.openLens('coupling')).toBe(false);
-    expect(nav.lens).toBeNull();
+    expect(nav.lens).toBe('overview');
     expect(nav.view).toBe('overview');
     nav.destroy();
   });
