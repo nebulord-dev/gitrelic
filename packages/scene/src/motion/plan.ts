@@ -5,7 +5,7 @@
 // Timeline, in order:
 //   1. links that are going away retract, and marks that fold on exit (a
 //      fan closing) shrink into their ancestor where it is now
-//   2. marks move; new marks grow out of their nearest ancestor on screen, and
+//   2. once those are mostly done, marks move; new marks grow out of their nearest ancestor on screen, and
 //      other leaving marks shrink into their nearest ancestor in the next scene
 //   3. new links draw in, staggered, starting while the move settles
 //
@@ -86,9 +86,16 @@ export const TIMING = {
   /** New links start drawing this far into the move: out-cubic has covered
    * most of the distance, and a pause between arriving and connecting reads
    * as a stall. */
-  drawAfter: 300,
+  drawAfter: 250,
   /** Marks that fold on exit, before anything moves. */
   fold: 300,
+  /**
+   * When the move starts after retracting links, or after a fold. Out-cubic
+   * has done most of either by then; waiting for the tail leaves the stage
+   * still for a beat after the click, which reads as a stall.
+   */
+  retractLead: 80,
+  foldLead: 120,
   /** Gap between successive new links… */
   stagger: 40,
   /** …compressed so the whole cascade never spans more than this. */
@@ -136,10 +143,10 @@ export function planTransition(
   const folding = (m: Mark) => !reduced && m.foldOnExit === true;
   let moveAt = 0;
   if (!reduced) {
-    if (links.length > 0) moveAt = TIMING.retract;
+    if (links.length > 0) moveAt = TIMING.retractLead;
     for (const m of live.marks.values())
       if (!nextMarks.has(m.id) && folding(m)) {
-        moveAt = Math.max(moveAt, TIMING.fold);
+        moveAt = Math.max(moveAt, TIMING.foldLead);
         break;
       }
   }

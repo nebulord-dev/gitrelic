@@ -146,7 +146,7 @@ describe('planTransition: marks', () => {
     expect(fold).toMatchObject({ delay: 0, duration: TIMING.fold });
     expect(fold.to).toMatchObject({ x: 500, y: 400, r: 0, alpha: 0 });
     // The root waits for its fan to close.
-    expect(track(plan, 'file:root.ts').delay).toBe(TIMING.fold);
+    expect(track(plan, 'file:root.ts').delay).toBe(TIMING.foldLead);
   });
 
   it('starts moving at once when nothing folds or retracts', () => {
@@ -229,7 +229,7 @@ describe('planTransition: links', () => {
     const out = plan.links.find((l) => l.phase === 'exit');
     expect(out).toMatchObject({ delay: 0, duration: TIMING.retract });
     expect(out?.to.progress).toBe(0);
-    expect(track(plan, 'person:a').delay).toBe(TIMING.retract);
+    expect(track(plan, 'person:a').delay).toBe(TIMING.retractLead);
   });
 
   it('starts moving at once when nothing retracts', () => {
@@ -359,7 +359,8 @@ describe('planTransition: duration', () => {
       live([a, b], [{ ...link('person:b', 'person:a'), progress: 1 }]),
     );
     expect(plan.duration).toBe(
-      TIMING.retract + Math.max(TIMING.move, TIMING.drawAfter + TIMING.draw),
+      TIMING.retractLead +
+        Math.max(TIMING.move, TIMING.drawAfter + TIMING.draw),
     );
   });
 
