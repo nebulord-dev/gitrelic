@@ -157,8 +157,21 @@ export class PixiStage implements StageRenderer {
   }
 
   destroy(): void {
-    this.app?.destroy(true, { children: true, texture: true });
-    this.app = null;
+    if (this.app) {
+      this.app.destroy(true, { children: true, texture: true });
+      this.app = null;
+      return;
+    }
+    // init never got as far as an Application (no WebGL): the field-made
+    // containers were never parented, so release them one by one.
+    for (const c of [
+      this.world,
+      this.halos,
+      this.marks,
+      this.arcs,
+      this.guides,
+    ])
+      c.destroy();
   }
 
   /** One particle (and one halo) per mark; which mark is set per frame. */

@@ -58,9 +58,8 @@ export class AtlasStage {
   private hovered: EntityId | null = null;
   private selected: EntityId | null = null;
   private hits = new HitTester();
+  /** Marks moved or the view changed since the grid was built. */
   private hitsStale = true;
-  /** The grid was rebuilt during the current frame (marks may be moving). */
-  private hitsFresh = false;
   private dirty = true;
   /** Zoom the guides were last drawn at; they're hairlines in screen space. */
   private guideScale = Number.NaN;
@@ -111,7 +110,10 @@ export class AtlasStage {
     opts: AtlasStageOptions,
   ): Promise<AtlasStage | null> {
     try {
-      if (!(await opts.renderer.init(host, size))) return null;
+      if (!(await opts.renderer.init(host, size))) {
+        opts.renderer.destroy();
+        return null;
+      }
       return new AtlasStage(host, new LabelLayer(labelHost), size, opts);
     } catch (err) {
       // Setup failing after WebGL came up (no 2D canvas for the sprites, a
@@ -185,11 +187,11 @@ export class AtlasStage {
 
   /** The topmost mark under a screen point. */
   pick(sx: number, sy: number): EntityId | null {
-    // While marks move, rebuild at most once per frame, not per pointer event.
-    if (this.hitsStale || (this.engine.running && !this.hitsFresh)) {
+    // Every frame that moves marks marks the grid stale, so while they move
+    // it's rebuilt at most once per frame, and once more after they settle.
+    if (this.hitsStale) {
       this.hits.build(this.store);
       this.hitsStale = false;
-      this.hitsFresh = true;
     }
     const [wx, wy] = screenToWorld(this.view, sx, sy);
     return this.hits.hitMark(this.store, wx, wy, HIT_SLOP / this.view.scale);
@@ -244,13 +246,14 @@ export class AtlasStage {
     });
     this.dirty = false;
     this.guideScale = this.view.scale;
-    this.hitsFresh = false;
+    if (animated) this.hitsStale = true;
     const pinned = new Set<EntityId>();
     if (this.hovered) pinned.add(this.hovered);
     if (this.selected) pinned.add(this.selected);
     this.labels.update(this.store, this.view, this.size, pinned);
     this.opts.onFrame?.(this.clock.now() - start);
     // A plan can cut the engine's repaint short; finish the fade anyway.
+    // requestDraw does nothing while the engine is drawing the next frame.
     if (this.paletteFrom) this.requestDraw(true);
   }
 }

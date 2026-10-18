@@ -216,8 +216,10 @@ export class TweenEngine {
       if (p >= 1) this.colors = [];
       else more = true;
     }
-    this.onFrame();
+    // Schedule before drawing, so `running` inside onFrame says whether the
+    // engine draws the next frame too (the stage relies on that).
     if (more) this.handle = this.clock.request((time) => this.tick(time));
+    this.onFrame();
   }
 
   stop(): void {

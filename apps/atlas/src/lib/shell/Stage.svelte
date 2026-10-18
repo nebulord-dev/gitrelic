@@ -2,7 +2,6 @@
   import { onMount, tick } from 'svelte';
 
   import { AtlasStage } from '../engine/atlasStage';
-  import { PixiStage } from '../engine/pixiStage';
   import { prefersReducedMotion } from '../engine/reducedMotion';
   import { paletteFromDocument } from '../engine/themeBridge';
   import type { EntityId, Scene, ThemeName } from '@gitrelic/scene';
@@ -42,31 +41,37 @@
       created?.resize({ width, height });
     });
 
-    AtlasStage.create(
-      el,
-      labels,
-      { width: el.clientWidth, height: el.clientHeight },
-      {
-        renderer: new PixiStage(),
-        readPalette: () => paletteFromDocument(),
-        glow: theme === 'glow',
-        reducedMotion: () => prefersReducedMotion(),
-        onSelect: (id) => onselect?.(id),
-      },
-    ).then((made) => {
-      if (disposed) {
-        made?.destroy();
-        return;
-      }
-      if (!made) {
-        noWebgl = true;
-        return;
-      }
-      created = made;
-      paintedTheme = theme;
-      stage = made;
-      resize.observe(el);
-    }, fail);
+    const labelHost = labels;
+    // Pixi loads on demand: the shell and the no-WebGL fallback stay light.
+    import('../engine/pixiStage')
+      .then(({ PixiStage }) =>
+        AtlasStage.create(
+          el,
+          labelHost,
+          { width: el.clientWidth, height: el.clientHeight },
+          {
+            renderer: new PixiStage(),
+            readPalette: () => paletteFromDocument(),
+            glow: theme === 'glow',
+            reducedMotion: () => prefersReducedMotion(),
+            onSelect: (id) => onselect?.(id),
+          },
+        ),
+      )
+      .then((made) => {
+        if (disposed) {
+          made?.destroy();
+          return;
+        }
+        if (!made) {
+          noWebgl = true;
+          return;
+        }
+        created = made;
+        paintedTheme = theme;
+        stage = made;
+        resize.observe(el);
+      }, fail);
 
     return () => {
       disposed = true;

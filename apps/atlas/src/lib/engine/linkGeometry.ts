@@ -96,12 +96,13 @@ export function tessellateLinks(
       out.positions[vi * 2 + 1] = py + tx * half;
       out.positions[vi * 2 + 2] = px + ty * half;
       out.positions[vi * 2 + 3] = py - tx * half;
-      for (const j of [vi, vi + 1]) {
-        out.colors[j * 4] = c.r;
-        out.colors[j * 4 + 1] = c.g;
-        out.colors[j * 4 + 2] = c.b;
-        out.colors[j * 4 + 3] = a;
-      }
+      // Both vertices of the pair share the colour; written out, not looped
+      // over an array, so the per-point work allocates nothing.
+      const ci = vi * 4;
+      out.colors[ci] = out.colors[ci + 4] = c.r;
+      out.colors[ci + 1] = out.colors[ci + 5] = c.g;
+      out.colors[ci + 2] = out.colors[ci + 6] = c.b;
+      out.colors[ci + 3] = out.colors[ci + 7] = a;
       out.vertexCount += 2;
     }
     for (let k = 0; k < points - 1; k++) {

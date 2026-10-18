@@ -11,6 +11,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AtlasStage } from './atlasStage';
 import { HitTester } from './hitTest';
 import { REPAINT_MS, type FrameClock } from './tweenEngine';
+import { worldToScreen } from './viewport';
 import type { StageFrame, StageRenderer } from './stageRenderer';
 
 const grey: Rgba = { r: 0.5, g: 0.5, b: 0.5, a: 1 };
@@ -323,6 +324,47 @@ describe('AtlasStage', () => {
     );
     expect(build).toHaveBeenCalledTimes(2);
     build.mockRestore();
+  });
+
+  it('picks marks where they settled after hovering mid-flight', async () => {
+    const { stage, fc, host, onHover } = await setup();
+    stage!.show(scene(dot('person:a', 100, 100), dot('person:gone', 300, 100)));
+    settle(fc);
+    // person:a moves, person:gone leaves (its slot compacts away).
+    stage!.show(scene(dot('person:a', 300, 150)));
+    fc.frame(100);
+    host.dispatchEvent(
+      new PointerEvent('pointermove', { pointerId: 1, clientX: 5, clientY: 5 }),
+    );
+    settle(fc);
+    onHover.mockClear();
+    const [sx, sy] = worldToScreen(stage!.transform, 300, 150);
+    host.dispatchEvent(
+      new PointerEvent('pointermove', {
+        pointerId: 1,
+        clientX: sx,
+        clientY: sy,
+      }),
+    );
+    expect(onHover).toHaveBeenLastCalledWith('person:a');
+  });
+
+  it('draws each frame of a theme fade once', async () => {
+    const { stage, fc, frames } = await setup();
+    stage!.show(scene(dot('person:a', 100, 100)));
+    settle(fc);
+    stage!.setTheme(palette, false);
+    for (let i = 0; i < 5; i++) {
+      const before = frames.length;
+      fc.frame(REPAINT_MS / 10);
+      expect(frames.length - before).toBe(1);
+    }
+  });
+
+  it('releases the renderer when WebGL is missing', async () => {
+    const { renderer, stage } = await setup(false);
+    expect(stage).toBeNull();
+    expect(renderer.destroy).toHaveBeenCalled();
   });
 
   it('destroys the renderer if its own setup throws', async () => {
