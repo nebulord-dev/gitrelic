@@ -100,4 +100,50 @@ describe('lensTopEntities', () => {
     const labels = lensTopEntities('churn', twins, idx).map((e) => e.label);
     expect(labels).toEqual(['src/api.ts', '__tests__/api.ts']);
   });
+
+  it('reads Rewrite Ratio as deletions per insertion, whichever is larger', () => {
+    const rewrite = (totalInsertions: number, totalDeletions: number) =>
+      lensTopEntities(
+        'rewrite-ratio',
+        {
+          ...report,
+          rewriteRatio: {
+            ...report.rewriteRatio,
+            topRewriters: [
+              {
+                file: 'src/api.ts',
+                rewriteScore: 10,
+                ratio: 0.1,
+                totalInsertions,
+                totalDeletions,
+              },
+            ],
+          },
+        } as GitrelicReport,
+        index,
+      )[0].value;
+    // ratio is min/max (0.10 for both), but the files tell opposite stories.
+    expect(rewrite(10, 100)).toBe('10.00 deleted per line added');
+    expect(rewrite(100, 10)).toBe('0.10 deleted per line added');
+    expect(rewrite(0, 5)).toBe('5 deleted, none added');
+  });
+
+  it('counts silos strictly over 80%, as core does', () => {
+    const silos = (pct: number) =>
+      lensTopEntities(
+        'knowledge-silos',
+        {
+          ...report,
+          busFactors: {
+            ...report.busFactors,
+            files: [
+              { ...report.busFactors.files[0], dominantAuthorPercent: pct },
+            ],
+          },
+        } as GitrelicReport,
+        index,
+      ).length;
+    expect(silos(80)).toBe(0);
+    expect(silos(81)).toBe(1);
+  });
 });

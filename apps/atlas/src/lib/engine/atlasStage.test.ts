@@ -507,4 +507,34 @@ describe('AtlasStage', () => {
       fit(grown.bounds, { width: 1000, height: 600 }),
     );
   });
+
+  it('cuts the camera straight to a new framing under reduced motion', async () => {
+    const host = document.createElement('div');
+    const labelHost = document.createElement('div');
+    const fc = fakeClock();
+    const { renderer } = fakeRenderer();
+    const stage = await AtlasStage.create(
+      host,
+      labelHost,
+      { width: 400, height: 200 },
+      {
+        renderer,
+        readPalette: () => palette,
+        glow: false,
+        reducedMotion: () => true,
+        clock: fc.clock,
+      },
+    );
+    stage!.show(scene(dot('person:a', 100, 100)));
+    settle(fc);
+    const grown = {
+      ...scene(dot('person:a', 100, 100)),
+      bounds: { x: 0, y: 0, w: 1600, h: 800 },
+    };
+    stage!.show(grown);
+    expect(stage!.transform).toEqual(
+      fit(grown.bounds, { width: 400, height: 200 }),
+    );
+    stage!.destroy();
+  });
 });

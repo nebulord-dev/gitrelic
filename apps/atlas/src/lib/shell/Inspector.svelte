@@ -252,6 +252,7 @@
       {index}
       {onselect}
       {onopen}
+      onRing={lens === 'overview'}
     />
   {:else if lens === 'overview'}
     <RepoMapCard {report} {onselect} />

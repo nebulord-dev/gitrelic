@@ -17,6 +17,7 @@
     index,
     onselect,
     onopen,
+    onRing = false,
   }: {
     preset: string;
     report: GitrelicReport;
@@ -24,6 +25,8 @@
     onselect?: (id: EntityId) => void;
     /** Opens a lens that has an Atlas view. */
     onopen?: (lens: string) => void;
+    /** The ring is showing, so a second click on the dot opens the lens. */
+    onRing?: boolean;
   } = $props();
 
   let entry = $derived(catalogEntry(preset));
@@ -53,9 +56,11 @@
         >Open {entry.label} in classic ↗</a
       >
     {/if}
-    <p class="m-0 text-[12px] text-muted">
-      Or click the lens again on the ring.
-    </p>
+    {#if onRing}
+      <p class="m-0 text-[12px] text-muted">
+        Or click the lens again on the ring.
+      </p>
+    {/if}
   </Card>
 
   {#if fanned.length > 0}

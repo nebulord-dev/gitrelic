@@ -122,13 +122,18 @@
   );
 
   // A second click on a lens dot opens that lens: in Atlas if it has a
-  // view, otherwise in classic.
+  // view, otherwise in classic. Only a second click *on the stage* counts —
+  // a lens picked from the inspector or ⌘K arms nothing, so its first click
+  // on the ring fans it instead of leaving the page.
+  let armed: EntityId | null = null;
   function stageSelect(id: EntityId | null) {
-    if (id && id === nav.selection && id.startsWith('analyzer:')) {
+    if (id && id === armed && id === nav.selection) {
+      armed = null;
       const preset = id.slice('analyzer:'.length);
       if (!nav.openLens(preset)) window.location.assign(classicUrl(preset));
       return;
     }
+    armed = id?.startsWith('analyzer:') ? id : null;
     nav.select(id);
   }
 </script>

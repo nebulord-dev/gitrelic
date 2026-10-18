@@ -152,12 +152,17 @@ export class AtlasStage {
         this.userMoved = false;
       } else if (moved && !this.userMoved) {
         // The scene grew or shrank (a fan opened) and the viewer hasn't
-        // taken the camera: glide to frame it, alongside the marks.
-        this.camera = {
-          from: this.view,
-          to: fit(scene.bounds, this.size),
-          start: this.clock.now(),
-        };
+        // taken the camera: glide to frame it, alongside the marks — or,
+        // with reduced motion, cut straight to it (zooming is exactly the
+        // motion that preference asks to stop).
+        const to = fit(scene.bounds, this.size);
+        if (this.opts.reducedMotion()) {
+          this.view = to;
+          this.camera = null;
+          this.hitsStale = true;
+        } else {
+          this.camera = { from: this.view, to, start: this.clock.now() };
+        }
       }
     }
     this.lastEmpty = empty;

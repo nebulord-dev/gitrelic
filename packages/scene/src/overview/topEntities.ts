@@ -14,6 +14,19 @@ export interface FannedEntity {
 }
 
 const n = (x: number) => x.toLocaleString();
+
+/**
+ * A file is a silo when one author wrote more than this share. Mirrors core's
+ * SINGLE_AUTHOR_THRESHOLD (analyzers/knowledge-concentration.ts), which the
+ * browser can't import; keep the two equal.
+ */
+const SILO_PERCENT = 80;
+
+/** Lines deleted per line added; `ratio` itself is a 0–1 balance score. */
+function rewriteRate(insertions: number, deletions: number): string {
+  if (insertions === 0) return `${n(deletions)} deleted, none added`;
+  return `${(deletions / insertions).toFixed(2)} deleted per line added`;
+}
 const base = (path: string) => path.slice(path.lastIndexOf('/') + 1);
 /** A directory's last two segments: enough to tell `react-server/src/` apart. */
 const shortDir = (dir: string) => `${dir.split('/').slice(-2).join('/')}/`;
@@ -58,7 +71,7 @@ const SOURCES: Record<string, (r: GitrelicReport) => Candidate[]> = {
     ),
   'rewrite-ratio': (r) =>
     r.rewriteRatio.topRewriters.map((f) =>
-      file(f.file, `${f.ratio.toFixed(2)} deleted per line added`),
+      file(f.file, rewriteRate(f.totalInsertions, f.totalDeletions)),
     ),
   shame: (r) =>
     byDesc(r.forensics.files, (f) => f.shameScore)
@@ -81,7 +94,7 @@ const SOURCES: Record<string, (r: GitrelicReport) => Candidate[]> = {
     ),
   'knowledge-silos': (r) =>
     byDesc(
-      r.busFactors.files.filter((f) => f.dominantAuthorPercent >= 80),
+      r.busFactors.files.filter((f) => f.dominantAuthorPercent > SILO_PERCENT),
       (f) => f.dominantAuthorPercent,
     ).map((f) =>
       file(
