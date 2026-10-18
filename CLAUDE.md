@@ -94,7 +94,7 @@ Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `norm
 
 ### `apps/atlas` — Web Dashboard (Atlas, in progress)
 
-Svelte 5 (runes) + Vite + Tailwind v4. Served by `gitrelic --ui atlas` (implies `--web`) at `/`, with classic under `/classic/`; classic's `useSelection` reads `#preset=<id>` on load, so Atlas can link analyzers it has no view for to `/classic/#preset=<id>` (the rail does that from PR 3.1). 
+Svelte 5 (runes) + Vite + Tailwind v4. Served by `gitrelic --ui atlas` (implies `--web`) at `/`, with classic under `/classic/`; classic's `useSelection` reads `#preset=<id>` on load, so Atlas can link analyzers it has no view for to `/classic/#preset=<id>` (the rail does that from PR 3.1).
 
 **Read `docs/atlas-views.md` before building or changing a view.** It holds the navigation shape (five group views in the rail, one lens bar of analyzers, corner-toggle forms for the rare alternate picture — never a second tab row), where trend/distribution/leaderboard live (time strip, inspector chart, detail table), the URL fields, and each view's design-checkpoint outcome. Every view starts with a checkpoint with a maintainer, recorded there before it's built.
 
