@@ -2,8 +2,9 @@
 // links morphing grid ↔ fan, with a 168-cell arc ring and 300 labels, an
 // interrupt button, and live p50/p95 frame times. Dev-only; see bench.html.
 //
-// Gate: p95 frame interval ≤ 16.7 ms while morphing, and an interrupt that
-// reverses without a jump, on a 2020-era integrated-GPU laptop.
+// Gate: p95 frame interval ≤ 16.7 ms while morphing, in both themes, and an
+// interrupt that reverses without a jump — on an M2 MacBook Air with Chrome
+// DevTools' 4× CPU slowdown, standing in for a 2020-era Intel laptop.
 
 import '../app.css';
 import {
