@@ -22,7 +22,7 @@ import type { GitrelicReport } from '@gitrelic/core';
 
 /** A package needs this many files to lead on changes per file. */
 export const PER_FILE_MIN_FILES = 5;
-/** Lockstep: a pair shares at least this share of its commits… */
+/** Lockstep: a pair shares at least this share of each file's commits… */
 export const LOCKSTEP_STRENGTH = 90;
 /** …over at least this many commits. */
 export const LOCKSTEP_COMMITS = 5;
@@ -56,6 +56,12 @@ export function hardestRow(rows: readonly SwarmRow[]): SwarmRow | undefined {
 /**
  * Groups of source files that change commit for commit: pairs at
  * LOCKSTEP_STRENGTH over LOCKSTEP_COMMITS, joined into groups, biggest first.
+ *
+ * Core's `couplingStrength` divides by the quieter file's commits, so a small
+ * file always shipped with a busy hub scores 100 while the hub moves alone
+ * most of the time. Lockstep measures against the busier file instead: both
+ * files must share LOCKSTEP_STRENGTH of their commits. Reads every pair in
+ * `report.coupling.pairs`; a trimmed list would lose groups.
  */
 export function lockstepGroups(report: GitrelicReport): string[][] {
   const kindOf = makeFileKind(report);
@@ -68,7 +74,8 @@ export function lockstepGroups(report: GitrelicReport): string[][] {
   };
   for (const p of report.coupling.pairs) {
     if (
-      p.couplingStrength < LOCKSTEP_STRENGTH ||
+      p.coCommits * 100 <
+        LOCKSTEP_STRENGTH * Math.max(p.totalCommitsA, p.totalCommitsB) ||
       p.coCommits < LOCKSTEP_COMMITS ||
       kindOf(p.fileA) !== 'source' ||
       kindOf(p.fileB) !== 'source'

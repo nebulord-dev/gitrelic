@@ -49,12 +49,14 @@ const pair = (
   fileB: string,
   coCommits: number,
   couplingStrength: number,
+  totalCommitsA = Math.round((coCommits * 100) / couplingStrength),
+  totalCommitsB = totalCommitsA,
 ) => ({
   fileA,
   fileB,
   coCommits,
-  totalCommitsA: coCommits,
-  totalCommitsB: coCommits,
+  totalCommitsA,
+  totalCommitsB,
   couplingStrength,
 });
 
@@ -107,7 +109,7 @@ describe('churnFindings', () => {
         pairs: [
           pair('src/a.ts', 'src/b.ts', 8, 100),
           pair('src/b.ts', 'src/c.ts', 8, 95),
-          pair('src/c.ts', 'src/d.ts', 8, 90),
+          pair('src/c.ts', 'src/d.ts', 9, 90),
         ],
       },
     };
@@ -146,6 +148,25 @@ describe('lockstepGroups', () => {
       ['y/1.ts', 'y/2.ts', 'y/3.ts', 'y/4.ts'],
       ['x/1.ts', 'x/2.ts', 'x/3.ts'],
     ]);
+  });
+
+  it('ignores small files that only ride along with a busy hub', () => {
+    // Core scores each 100 (6 of the small file's 6 commits), but the hub
+    // changes 300 times: these files don't move commit for commit.
+    expect(
+      groupsOf([
+        pair('src/a.ts', 'src/index.ts', 6, 100, 6, 300),
+        pair('src/b.ts', 'src/index.ts', 6, 100, 6, 300),
+        pair('src/c.ts', 'src/index.ts', 6, 100, 6, 300),
+      ]),
+    ).toEqual([]);
+    // The busier file at 90% still counts.
+    expect(
+      groupsOf([
+        pair('a.ts', 'b.ts', 9, 100, 9, 10),
+        pair('b.ts', 'c.ts', 9, 100, 10, 9),
+      ]),
+    ).toEqual([['a.ts', 'b.ts', 'c.ts']]);
   });
 
   it('ignores weak, thin and test pairs, and groups under three files', () => {
