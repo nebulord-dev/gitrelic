@@ -57,7 +57,7 @@ The detail table lists every source file with its commits, lines added and delet
 
 ### Rhythm
 
-The **Rhythm** toggle in the stage's corner switches to the files with the most commits, one row each, showing their commits week by week. The weeks line up with the commit strip under the stage.
+The **Rhythm** toggle in the stage's corner switches to the files with the most commits, one row each, showing their commits week by week. The weeks line up with the commit strip under the stage. Over a window longer than two years (such as `--since all`), the bars are months instead of weeks.
 
 - **The line down the middle** splits the window in half. A file with most of its bars right of the line is speeding up; one with most left of it is slowing down.
 - **Deleted against added**, to the right of the weeks: lines deleted grow left from the axis and lines added grow right. Then comes the file's character, using the same rules as the swarm.

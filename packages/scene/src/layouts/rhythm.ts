@@ -13,7 +13,6 @@
 
 import { distinctNames } from '../format/distinctNames';
 import { ids } from '../ids';
-import { WEEK_MS } from '../time/week';
 import type { Rhythm, RhythmRow } from '../churn/rhythm';
 import type { Guide, Link, Mark, Scene, Viewport } from '../model';
 
@@ -42,7 +41,8 @@ export function rhythmTip(row: RhythmRow, name: string): string[] {
 }
 
 export function rhythmScene(rhythm: Rhythm, viewport: Viewport): Scene {
-  const { rows, weekCount, start } = rhythm;
+  const { rows, binStarts, unit } = rhythm;
+  const binCount = binStarts.length;
   const left = 250;
   const right = viewport.width - 250;
   const axis = viewport.width - 160;
@@ -57,13 +57,13 @@ export function rhythmScene(rhythm: Rhythm, viewport: Viewport): Scene {
     (viewport.height - 64 - top) / Math.max(1, rows.length),
   );
   const bottom = top + rowH * rows.length;
-  const colW = (right - left) / Math.max(1, weekCount);
+  const colW = (right - left) / Math.max(1, binCount);
   const wx = (w: number) => left + w * colW;
 
   let maxWeek = 1;
   let maxLines = 1;
   for (const row of rows) {
-    for (const v of row.weeks) if (v > maxWeek) maxWeek = v;
+    for (const v of row.bins) if (v > maxWeek) maxWeek = v;
     maxLines = Math.max(maxLines, row.file.insertions, row.file.deletions);
   }
   const lineW = (v: number) => half * Math.sqrt(v / maxLines);
@@ -72,15 +72,16 @@ export function rhythmScene(rhythm: Rhythm, viewport: Viewport): Scene {
   const links: Link[] = [];
   const guides: Guide[] = [];
 
-  // Quarter starts along the bottom, and the line between the halves.
+  // Quarter starts along the bottom (years, when the bins are months), and
+  // the line between the halves.
   let lastMonth = -1;
-  for (let w = 0; w < weekCount; w++) {
-    const d = new Date(start + w * WEEK_MS);
+  for (let w = 0; w < binCount; w++) {
+    const d = new Date(binStarts[w]);
     const month = d.getUTCMonth();
     if (month === lastMonth) continue;
     const first = lastMonth === -1;
     lastMonth = month;
-    if (!first && month % 3 !== 0) continue;
+    if (!first && month % (unit === 'month' ? 12 : 3) !== 0) continue;
     const x = wx(w);
     guides.push({
       id: `grid:w:${w}`,
@@ -103,8 +104,8 @@ export function rhythmScene(rhythm: Rhythm, viewport: Viewport): Scene {
       ),
     );
   }
-  if (weekCount > 1) {
-    const x = wx(Math.floor(weekCount / 2));
+  if (binCount > 1) {
+    const x = wx(Math.floor(binCount / 2));
     guides.push({
       id: 'halves',
       kind: 'line',
@@ -118,7 +119,7 @@ export function rhythmScene(rhythm: Rhythm, viewport: Viewport): Scene {
     marks.push(card('halves-label', x, top - 20, 'recent half', 'right', 2));
   }
   marks.push(
-    card('head:weeks', left, top - 20, 'commits per week', 'right', 1),
+    card('head:weeks', left, top - 20, `commits per ${unit}`, 'right', 1),
     card('head:deleted', axis - 4, top - 20, 'deleted', 'left', 1),
     card('head:added', axis + 4, top - 20, 'added', 'right', 1),
   );
@@ -173,7 +174,7 @@ export function rhythmScene(rhythm: Rhythm, viewport: Viewport): Scene {
 
     const floor = y + (rowH - 4) / 2 - 3;
     const room = rowH - 12;
-    row.weeks.forEach((v, w) => {
+    row.bins.forEach((v, w) => {
       if (v === 0) return;
       const h = Math.max(2, (room * v) / maxWeek);
       marks.push({
@@ -190,7 +191,9 @@ export function rhythmScene(rhythm: Rhythm, viewport: Viewport): Scene {
         z: 1,
         tip: [
           name,
-          `${plural(v, 'commit')} in the week of ${dayLabel(start + w * WEEK_MS)}`,
+          unit === 'week'
+            ? `${plural(v, 'commit')} in the week of ${dayLabel(binStarts[w])}`
+            : `${plural(v, 'commit')} in ${monthLabel(binStarts[w])}`,
         ],
       });
     });
@@ -256,6 +259,11 @@ export function rhythmScene(rhythm: Rhythm, viewport: Viewport): Scene {
     guides,
     bounds: { x: 0, y: 0, w: viewport.width, h: viewport.height },
   };
+}
+
+function monthLabel(ms: number): string {
+  const d = new Date(ms);
+  return `${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
 function dayLabel(ms: number): string {

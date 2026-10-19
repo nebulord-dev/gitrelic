@@ -125,6 +125,34 @@ describe('rhythmScene', () => {
     );
   });
 
+  it('labels years and months when the bins are months', () => {
+    // Nov 2021 through Apr 2024: the opening month, then each January.
+    const months = Array.from({ length: 30 }, (_, k) =>
+      Date.UTC(2021, 10 + k, 1),
+    );
+    const monthly: Rhythm = {
+      unit: 'month',
+      binStarts: months,
+      groups: [],
+      rows: [
+        {
+          ...rhythm.rows[0],
+          bins: months.map((_, k) => (k === 3 ? 2 : 0)),
+        },
+      ],
+    };
+    const scene = sceneOf(monthly);
+    expect(checkScene(scene)).toEqual([]);
+    expect(
+      scene.marks.filter((m) => m.id.startsWith('tick:w:')).map((m) => m.label),
+    ).toEqual(['Nov 21', 'Jan 22', 'Jan 23', 'Jan 24']);
+    expect(mark(scene, 'head:weeks')!.label).toBe('commits per month');
+    expect(mark(scene, 'wk:src/helpers.ts:3')!.tip).toEqual([
+      'helpers.ts',
+      '2 commits in Feb 2022',
+    ]);
+  });
+
   it('draws rows but no weeks without commits', () => {
     const scene = sceneOf(churnRhythm(report, []));
     expect(checkScene(scene)).toEqual([]);
