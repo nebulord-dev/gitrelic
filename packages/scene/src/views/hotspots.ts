@@ -75,9 +75,11 @@ export const packagesLayout: Layout = {
   id: 'packages',
   label: 'By package',
   caption:
-    'Each circle is a package, each dot one of its files, hottest at the centre.',
+    'Each circle is a package, sized by its files; each dot is a file, hottest at the centre.',
   needsCommits: false,
-  build: (input, viewport) => packagesScene(pointsOf(input.report), viewport),
+  focusKinds: ['dir'],
+  build: (input, viewport) =>
+    packagesScene(pointsOf(input.report), viewport, input.focus),
 };
 
 export function hotspotFindings(input: ViewInput): Finding[] {

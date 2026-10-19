@@ -78,6 +78,8 @@ On React, `ReactFizzServer.js` fans out hot on size (6,656 lines), on what it ch
 
 Each top-level package (a `packages/<name>` folder in a monorepo, otherwise the top-level directory) is a circle sized by its file count. Its files are dots in a sunflower, hottest at the centre.
 
+The ten largest packages are drawn, along with any smaller package that has three or more files at 25+. Each one is headed by its name, its file count and how many of its files score 25 or more. The remaining packages are summed up in a note under the picture, which names any critical files among them. Their files are still in the table (`T`). Click a circle to select its package; the selected one is outlined.
+
 The point is concentration. On React, `packages/shared` has 7 of its 22 files at 25 or more, while `compiler/` has 7 of 1,369. The same count of warm files means opposite things.
 
 ## Findings

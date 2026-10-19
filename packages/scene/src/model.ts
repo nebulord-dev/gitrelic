@@ -74,6 +74,11 @@ export interface Mark extends MarkGeom {
    */
   foldOnExit?: boolean;
   label?: string;
+  /**
+   * A quieter second line under the label (a package's file count under its
+   * name). Laid out with the label, so the two are shown or culled together.
+   */
+  labelSub?: string;
   /** Higher labels win when they collide. Defaults to 0. */
   labelPriority?: number;
   /**

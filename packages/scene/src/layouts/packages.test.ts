@@ -5,7 +5,13 @@ import { hotspotReport } from '../../test/hotspotReport';
 import { hotspotPoints } from '../hotspots/points';
 import { ids, REPO_ID } from '../ids';
 import { checkScene } from '../model';
-import { PACKAGES_DOT_CAP, PACKAGES_MAX_GROW, packagesScene } from './packages';
+import {
+  PACKAGES_DOT_CAP,
+  PACKAGES_HOT_MIN,
+  PACKAGES_MAX_GROW,
+  PACKAGES_SHOWN,
+  packagesScene,
+} from './packages';
 
 const viewport = { width: 1200, height: 800 };
 import type { GitrelicReport } from '@gitrelic/core';
@@ -64,18 +70,80 @@ describe('packagesScene', () => {
     );
   });
 
-  it('names how many files run hot, and greys packages with none', () => {
+  it('heads each circle with its name, then its files and how many run hot', () => {
     const scene = packagesScene(hotspotPoints(monorepo), viewport);
-    const name = (pkg: string) =>
-      scene.marks.find((m) => m.id === `package:${pkg}`)!;
-    expect(name('packages/shared').label).toBe('shared · 2 of 3 at 25+');
-    expect(name('compiler').label).toBe('compiler');
-    expect(name('').label).toBe('(root files)');
-    // The name sits above its disc, and the disc carries no label of its own.
-    const disc = scene.marks.find((m) => m.id === ids.dir('compiler'))!;
-    expect(name('compiler').y).toBeLessThan(disc.y - disc.r);
+    const card = (id: string) => scene.marks.find((m) => m.id === id)!;
+    expect(card('package:packages/shared')).toMatchObject({
+      label: 'shared',
+      labelSub: '3 files · 2 at 25+',
+      labelAnchor: 'above',
+    });
+    expect(card('package:compiler').labelSub).toBe('3 files · none at 25+');
+    expect(card('package:').label).toBe('(root files)');
+    // The heading sits above its disc; the disc carries no label of its own.
+    const disc = card(ids.dir('compiler'));
+    expect(card('package:compiler').y).toBeLessThan(disc.y - disc.r);
     expect(disc.label).toBeUndefined();
     expect(disc.paint).toBe('--ghost');
+    // Headings outrank every file name, so they're never the label culled.
+    const fileTop = Math.max(
+      ...scene.marks
+        .filter((m) => m.id.startsWith('file:'))
+        .map((m) => m.labelPriority ?? 0),
+    );
+    expect(card('package:compiler').labelPriority).toBeGreaterThan(fileTop);
+  });
+
+  it('draws the biggest packages and the hot small ones, noting the rest', () => {
+    // pkg0 is biggest … pkg13 smallest; tiny/ is smallest of all but hot.
+    const files = [];
+    for (let k = 0; k < 14; k++)
+      for (let i = 0; i < 40 - k; i++)
+        files.push({
+          file: `pkg${k}/f${i}.ts`,
+          commits: 2,
+          loc: 100,
+          score: k === 12 && i === 0 ? 80 : 5,
+        });
+    for (let i = 0; i < PACKAGES_HOT_MIN; i++)
+      files.push({ file: `tiny/h${i}.ts`, commits: 9, loc: 100, score: 60 });
+    const scene = packagesScene(hotspotPoints(hotspotReport(files)), viewport);
+    const discs = scene.marks
+      .filter((m) => m.id.startsWith('dir:'))
+      .map((m) => m.id);
+    expect(discs).toHaveLength(PACKAGES_SHOWN + 1);
+    expect(discs).toContain('dir:tiny');
+    expect(discs).not.toContain('dir:pkg10');
+    // Hidden packages draw no files, and the note names their critical ones.
+    expect(scene.marks.some((m) => m.id.startsWith('file:pkg12/'))).toBe(false);
+    expect(scene.marks.find((m) => m.id === 'package-more')!.label).toBe(
+      '+4 more packages · 114 files · 1 critical (pkg12) · in the table (T)',
+    );
+    expect(checkScene(scene)).toEqual([]);
+    // Every package fits: no note.
+    expect(
+      packagesScene(hotspotPoints(monorepo), viewport).marks.some(
+        (m) => m.id === 'package-more',
+      ),
+    ).toBe(false);
+  });
+
+  it('outlines the selected package', () => {
+    const points = hotspotPoints(monorepo);
+    const scene = packagesScene(points, viewport, ids.dir('packages/shared'));
+    const disc = scene.marks.find((m) => m.id === ids.dir('packages/shared'))!;
+    expect(scene.guides).toEqual([
+      expect.objectContaining({
+        id: 'selected:packages/shared',
+        kind: 'circle',
+        x: disc.x,
+        y: disc.y,
+        paint: '--accent',
+      }),
+    ]);
+    expect(
+      packagesScene(points, viewport, ids.file('compiler/x.ts')).guides,
+    ).toEqual([]);
   });
 
   it('labels only the files scoring 25+', () => {
@@ -147,8 +215,9 @@ describe('packagesScene', () => {
       score: i % 100,
     }));
     const points = hotspotPoints(hotspotReport(files));
+    // Only the stage's shape steers the columns, never its size.
     expect(packagesScene(points, viewport).bounds).toEqual(
-      packagesScene(points, { width: 1, height: 1 }).bounds,
+      packagesScene(points, { width: 3, height: 2 }).bounds,
     );
   });
 
@@ -164,14 +233,18 @@ describe('packagesScene', () => {
     const scene = packagesScene(points, viewport);
     // The spiral this replaced took ~20 s here; generous for slow CI.
     expect(Date.now() - t).toBeLessThan(1000);
+    // Most of these run hot, so far more than PACKAGES_SHOWN are drawn,
+    // each with its heading.
+    const discs = scene.marks.filter((m) => m.id.startsWith('dir:')).length;
+    expect(discs).toBeGreaterThan(PACKAGES_SHOWN);
     expect(scene.marks.filter((m) => m.id.startsWith('package:'))).toHaveLength(
-      1000,
+      discs,
     );
   });
 
   it('caps the dots on a huge repo, keeping every warm file', () => {
     const files = Array.from({ length: PACKAGES_DOT_CAP * 3 }, (_, i) => ({
-      file: `pkg${i % 30}/f${i}.ts`,
+      file: `pkg${i % PACKAGES_SHOWN}/f${i}.ts`,
       commits: 1 + (i % 9),
       loc: 50 + i,
       score: i % 500 === 0 ? 60 : 5,
@@ -186,7 +259,7 @@ describe('packagesScene', () => {
     // Circles keep their true size: same packing as with every dot drawn.
     expect(
       scene.marks.find((m) => m.id === ids.dir('pkg0'))!.r,
-    ).toBeGreaterThan(7 * Math.sqrt(files.length / 30));
+    ).toBeGreaterThan(7 * Math.sqrt(files.length / PACKAGES_SHOWN));
     // A file without a dot is held by its package's disc.
     for (const p of points) {
       const id = ids.file(p.file);

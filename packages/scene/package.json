@@ -13,12 +13,8 @@
     "test:ui": "vitest --ui --coverage",
     "test:coverage": "vitest run --coverage"
   },
-  "dependencies": {
-    "d3-hierarchy": "^3.1.2"
-  },
   "devDependencies": {
     "@gitrelic/core": "workspace:*",
-    "@types/d3-hierarchy": "^3.1.7",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
     "typescript": "catalog:",

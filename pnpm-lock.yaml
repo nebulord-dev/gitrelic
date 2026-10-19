@@ -316,17 +316,10 @@ importers:
         version: 4.1.12(@types/node@25.6.0)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(happy-dom@20.10.6)(jsdom@29.1.0)(vite@8.1.2(@types/node@25.6.0)(jiti@2.7.0)(yaml@2.8.3))
 
   packages/scene:
-    dependencies:
-      d3-hierarchy:
-        specifier: ^3.1.2
-        version: 3.1.2
     devDependencies:
       '@gitrelic/core':
         specifier: workspace:*
         version: link:../core
-      '@types/d3-hierarchy':
-        specifier: ^3.1.7
-        version: 3.1.7
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.12(vitest@4.1.12)
