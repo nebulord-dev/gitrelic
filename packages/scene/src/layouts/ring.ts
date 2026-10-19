@@ -7,7 +7,7 @@
 import { PRESET_GROUPS } from '../catalog';
 import { ids, REPO_ID, type EntityId } from '../ids';
 import type { Guide, Link, Mark, Paint, Scene, Viewport } from '../model';
-import type { LensReading } from '../overview/readings';
+import type { LensReading, RepoReading } from '../overview/readings';
 import type { FannedEntity } from '../overview/topEntities';
 
 export interface RingFocus {
@@ -17,20 +17,42 @@ export interface RingFocus {
 
 const DOT_R = [5, 7, 10, 14] as const;
 const RAMP = ['--risk-0', '--risk-1', '--risk-2', '--risk-3'] as const;
-const REPO_R = 44;
+/** Lenses graded 2+ (the ones that badge) get a label the CSS can heat. */
+const LABEL_CLASS = [
+  undefined,
+  undefined,
+  'atlas-label--hot',
+  'atlas-label--hot',
+] as const;
+/** Wide enough to hold the repo's name and size at the usual zoom. */
+const REPO_R = 96;
 const FAN_DOT = 5;
 /**
  * Room beside the outermost marks for their DOM labels, world units. Labels
  * are screen pixels, so at the ~0.65 zoom a 1440px window fits this world at,
- * a 33-character label needs about 330 units.
+ * a two-line label 20 characters wide needs about 220 units across and 55
+ * down.
  */
-const LABEL_ROOM = 340;
-const LABEL_ROOM_Y = 36;
+const LABEL_ROOM = 240;
+const LABEL_ROOM_Y = 64;
 const MARGIN = 32;
 
 const zero = { w: 0, h: 0, a0: 0, a1: 0 };
 
+/**
+ * How far a side label leans away from the ring's horizontal axis, as a
+ * fraction of its height at the very top or bottom. Near there the ellipse
+ * stacks neighbouring lenses closer than a two-line label is tall.
+ */
+const LEAN = 0.5;
+
 /** Labels point away from the centre, so they never cross the ring. */
+function leanFor(dx: number, dy: number): number | undefined {
+  const anchor = anchorFor(dx, dy);
+  if (anchor !== 'left' && anchor !== 'right') return undefined;
+  return (dy / (Math.hypot(dx, dy) || 1)) * LEAN;
+}
+
 function anchorFor(dx: number, dy: number): Mark['labelAnchor'] {
   const len = Math.hypot(dx, dy) || 1;
   if (dx / len > 0.35) return 'right';
@@ -45,7 +67,7 @@ function entityPaint(id: EntityId): Paint {
 }
 
 export function ringScene(
-  repoName: string,
+  repo: RepoReading,
   readings: readonly LensReading[],
   focus: RingFocus | null,
   viewport: Viewport,
@@ -67,14 +89,16 @@ export function ringScene(
 
   marks.push({
     id: REPO_ID,
-    shape: 'ring',
+    shape: 'outline',
     paint: '--accent',
     x: cx,
     y: cy,
     r: REPO_R,
     ...zero,
     alpha: focused ? 0.5 : 1,
-    label: repoName,
+    label: repo.label,
+    labelSub: repo.sub,
+    labelClass: 'atlas-label--repo',
     labelPriority: 100,
     labelAnchor: 'center',
     z: 1,
@@ -132,9 +156,12 @@ export function ringScene(
         r: DOT_R[lens.grade],
         ...zero,
         alpha: dim(lens.preset),
-        label: `${lens.label} · ${lens.value}`,
+        label: lens.label,
+        labelSub: lens.value,
+        labelClass: LABEL_CLASS[lens.grade],
         labelPriority: lens.grade * 10 + (lens.preset === focused ? 50 : 0),
         labelAnchor: anchorFor(x - cx, y - cy),
+        labelLean: leanFor(x - cx, y - cy),
         z: lens.grade,
         tip: [lens.label, lens.value, ...(lens.reason ? [lens.reason] : [])],
       });

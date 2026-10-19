@@ -13,12 +13,21 @@ const report = reportJson as unknown as GitrelicReport;
 const index = buildEntityIndex(report);
 const viewport = { width: 1200, height: 800 };
 const readings = lensReadings(report);
+const repo = { label: 'repo', sub: '3 files' };
 
 describe('ringScene', () => {
   it('draws the repo and every lens, soundly', () => {
-    const scene = ringScene('sample-repo', readings, null, viewport);
+    const scene = ringScene(repo, readings, null, viewport);
     expect(checkScene(scene)).toEqual([]);
     expect(scene.marks[0].id).toBe(REPO_ID);
+    // The centre: a thin outline holding the repo's name over its size.
+    expect(scene.marks[0]).toMatchObject({
+      shape: 'outline',
+      label: repo.label,
+      labelSub: repo.sub,
+      labelClass: 'atlas-label--repo',
+      labelAnchor: 'center',
+    });
     const lensIds = scene.marks.filter((m) => m.id.startsWith('analyzer:'));
     expect(lensIds.map((m) => m.id)).toEqual(
       readings.map((r) => ids.analyzer(r.preset)),
@@ -32,7 +41,7 @@ describe('ringScene', () => {
       ...r,
       grade: i === 0 ? 3 : 0,
     }));
-    const scene = ringScene('repo', graded, null, viewport);
+    const scene = ringScene(repo, graded, null, viewport);
     const loud = scene.marks.find(
       (m) => m.id === ids.analyzer(graded[0].preset),
     )!;
@@ -44,10 +53,37 @@ describe('ringScene', () => {
     expect(loud.labelPriority).toBeGreaterThan(quiet.labelPriority ?? 0);
   });
 
+  it('leans side labels apart toward the top and bottom, not across the middle', () => {
+    const scene = ringScene(repo, readings, null, viewport);
+    const lenses = scene.marks.filter((m) => m.id.startsWith('analyzer:'));
+    const cy = viewport.height / 2;
+    for (const m of lenses) {
+      if (m.labelAnchor === 'above' || m.labelAnchor === 'below')
+        expect(m.labelLean).toBeUndefined();
+      else expect(Math.sign(m.labelLean ?? 0)).toBe(Math.sign(m.y - cy));
+    }
+    expect(lenses.some((m) => (m.labelLean ?? 0) < -0.4)).toBe(true);
+  });
+
+  it('puts the lens name over its reading, with a hot class when it badges', () => {
+    const graded: LensReading[] = readings.map((r, i) => ({
+      ...r,
+      grade: i === 0 ? 2 : 1,
+    }));
+    const scene = ringScene(repo, graded, null, viewport);
+    const [hot, mild] = [0, 1].map((i) =>
+      scene.marks.find((m) => m.id === ids.analyzer(graded[i].preset))!,
+    );
+    expect(hot.label).toBe(graded[0].label);
+    expect(hot.labelSub).toBe(graded[0].value);
+    expect(hot.labelClass).toBe('atlas-label--hot');
+    expect(mild.labelClass).toBeUndefined();
+  });
+
   it('fans a focused lens out beyond the ring, from the lens, dimming the rest', () => {
     const entities = lensTopEntities('hotspots', report, index, 5);
     const scene = ringScene(
-      'repo',
+      repo,
       readings,
       { preset: 'hotspots', entities },
       viewport,
@@ -72,7 +108,7 @@ describe('ringScene', () => {
   it('keeps entity ids, so a fanned file is the same mark in the lens view', () => {
     const entities = lensTopEntities('hotspots', report, index, 3);
     const scene = ringScene(
-      'repo',
+      repo,
       readings,
       { preset: 'hotspots', entities },
       viewport,
@@ -83,7 +119,7 @@ describe('ringScene', () => {
 
   it('ignores a focus on a lens it does not draw', () => {
     const scene = ringScene(
-      'repo',
+      repo,
       readings,
       { preset: 'nope', entities: lensTopEntities('hotspots', report, index) },
       viewport,
@@ -92,15 +128,15 @@ describe('ringScene', () => {
   });
 
   it('is deterministic', () => {
-    expect(ringScene('repo', readings, null, viewport)).toEqual(
-      ringScene('repo', readings, null, viewport),
+    expect(ringScene(repo, readings, null, viewport)).toEqual(
+      ringScene(repo, readings, null, viewport),
     );
   });
 
   it('gives lenses and fanned entities tooltips', () => {
     const entities = lensTopEntities('hotspots', report, index, 3);
     const scene = ringScene(
-      'repo',
+      repo,
       readings,
       { preset: 'hotspots', entities },
       viewport,

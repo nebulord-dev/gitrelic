@@ -60,6 +60,27 @@ const VALUE: Record<string, (r: GitrelicReport) => string> = {
   renames: (r) => `${n(r.renameTracking.totalRenames)} renames`,
 };
 
+export interface RepoReading {
+  /** The repo's name (not the branch: a feature branch won't fit the ring). */
+  label: string;
+  /** Its size: "7,009 files · 999K lines". */
+  sub: string;
+}
+
+const compact = new Intl.NumberFormat('en', { notation: 'compact' });
+
+/** What the ring's centre says about the repo itself. */
+export function repoReading(report: GitrelicReport): RepoReading {
+  const lines = report.loc.totalLines;
+  return {
+    label: report.repoName,
+    sub: [
+      `${n(report.meta.totalFiles)} files`,
+      ...(lines > 0 ? [`${compact.format(lines)} lines`] : []),
+    ].join(' · '),
+  };
+}
+
 /** Every lens outside the Overview view, in catalog (lens-bar) order. */
 export function lensReadings(report: GitrelicReport): LensReading[] {
   const grades = outlierGrades(report);

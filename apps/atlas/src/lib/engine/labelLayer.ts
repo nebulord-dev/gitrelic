@@ -15,7 +15,11 @@ const CHAR_PX = 6.5;
 const LABEL_H = 16;
 /** A heading's first line (a label with a second line): larger and bolder. */
 const HEAD_CHAR_PX = 7.8;
-const HEAD_H = 18;
+const HEAD_H = 16;
+/** A heading's second line. */
+const SUB_H = 14;
+/** How much of its mark's width a centred label may wrap within. */
+const INSIDE = 0.8;
 /** Gap between a mark's edge and its label, px. */
 const OFFSET = 4;
 /** Marks drawn fainter than this (fading, or a faint paint) go unlabelled. */
@@ -27,6 +31,20 @@ interface LabelSpan {
   main: Text;
   /** Made the first time this span shows a second line. */
   sub: HTMLSpanElement | null;
+  /** The mark's `labelClass` it carries now, removed when the span moves on. */
+  cls: string;
+}
+
+/** What a shown label draws: its lines, its class and which way it reads. */
+interface LabelText {
+  label: string;
+  sub: string;
+  cls: string;
+  anchor: Mark['labelAnchor'];
+  /** A centred label's mark centre, screen px: CSS centres the real box on it. */
+  centre: [number, number] | null;
+  /** Px a centred label wraps within, from its mark's size; 0 for none. */
+  maxWidth: number;
 }
 
 export class LabelLayer {
@@ -41,11 +59,13 @@ export class LabelLayer {
     pinned: ReadonlySet<string>,
   ): string[] {
     const candidates: LabelCandidate[] = [];
-    const text = new Map<string, [string, string]>();
-    // Labels centred on their mark get the width they were placed with, so
-    // the text centres in it: the width is an estimate, and a shrink-wrapped
-    // span would sit left of centre wherever the text runs narrower.
-    const centred = new Set<string>();
+    const text = new Map<string, LabelText>();
+    // Labels above, below or left of their mark get the width they were
+    // placed with, so the text centres (or right-aligns) in it: the width is
+    // an estimate, and a shrink-wrapped span would drift off its mark
+    // wherever the text runs narrower. Centred labels shrink-wrap and CSS
+    // centres them.
+    const sized = new Set<string>();
     for (let i = 0; i < store.count; i++) {
       const mark = store.marks[i];
       if (!mark.label || store.alpha[i] * store.opacity[i] < MIN_ALPHA)
@@ -58,8 +78,9 @@ export class LabelLayer {
       const w = sub
         ? Math.max(mark.label.length * HEAD_CHAR_PX, sub.length * CHAR_PX) + 4
         : mark.label.length * CHAR_PX + 4;
-      const h = sub ? HEAD_H + LABEL_H : LABEL_H;
-      const [x, y] = place(mark.labelAnchor, sx, sy, edge, w, h);
+      const h = sub ? HEAD_H + SUB_H : LABEL_H;
+      const [x, placedY] = place(mark.labelAnchor, sx, sy, edge, w, h);
+      const y = placedY + (mark.labelLean ?? 0) * h;
       candidates.push({
         id: mark.id,
         x,
@@ -68,13 +89,21 @@ export class LabelLayer {
         h,
         priority: mark.labelPriority ?? 0,
       });
-      text.set(mark.id, [mark.label, sub]);
+      text.set(mark.id, {
+        label: mark.label,
+        sub,
+        cls: mark.labelClass ?? '',
+        anchor: mark.labelAnchor,
+        centre: mark.labelAnchor === 'center' ? [sx, sy] : null,
+        maxWidth:
+          mark.labelAnchor === 'center' ? Math.round(2 * edge * INSIDE) : 0,
+      });
       if (
+        mark.labelAnchor === 'left' ||
         mark.labelAnchor === 'above' ||
-        mark.labelAnchor === 'below' ||
-        mark.labelAnchor === 'center'
+        mark.labelAnchor === 'below'
       )
-        centred.add(mark.id);
+        sized.add(mark.id);
     }
     const shown = planLabels(candidates, { pinned, view: screen });
     const byId = new Map(candidates.map((c) => [c.id, c]));
@@ -85,14 +114,16 @@ export class LabelLayer {
       const main = document.createTextNode('');
       span.append(main);
       this.host.append(span);
-      this.pool.push({ span, main, sub: null });
+      this.pool.push({ span, main, sub: null, cls: '' });
     }
     shown.forEach((id, k) => {
       const entry = this.pool[k];
       const { span, main } = entry;
       const c = byId.get(id);
       if (!c) return;
-      const [label, second] = text.get(id) ?? ['', ''];
+      const t = text.get(id);
+      if (!t) return;
+      const { label, sub: second, cls, anchor, centre, maxWidth } = t;
       if (main.data !== label) main.data = label;
       if (second && !entry.sub) {
         entry.sub = document.createElement('span');
@@ -104,11 +135,29 @@ export class LabelLayer {
         entry.sub.hidden = !second;
       }
       span.classList.toggle('atlas-label--heading', !!second);
-      const width = centred.has(id) ? `${Math.round(c.w)}px` : '';
+      // Two lines read toward their mark: flush right left of it, flush left
+      // right of it (above, below and centred stay centred).
+      span.classList.toggle('atlas-label--left', anchor === 'left');
+      // Centred on its mark by CSS, at its real size: a label class may set
+      // a larger font than the estimate the culling placed it with.
+      span.classList.toggle('atlas-label--center', anchor === 'center');
+      span.classList.toggle(
+        'atlas-label--right',
+        !!second && (anchor ?? 'right') === 'right',
+      );
+      if (entry.cls !== cls) {
+        if (entry.cls) span.classList.remove(entry.cls);
+        if (cls) span.classList.add(cls);
+        entry.cls = cls;
+      }
+      const max = maxWidth > 0 ? `${maxWidth}px` : '';
+      if (span.style.maxWidth !== max) span.style.maxWidth = max;
+      const width = sized.has(id) ? `${Math.round(c.w)}px` : '';
       if (span.style.width !== width) span.style.width = width;
       span.dataset.id = id;
       span.classList.toggle('atlas-label--pinned', pinned.has(id));
-      span.style.transform = `translate(${Math.round(c.x)}px, ${Math.round(c.y)}px)`;
+      const [x, y] = centre ?? [c.x, c.y];
+      span.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
       span.hidden = false;
     });
     for (let k = shown.length; k < this.pool.length; k++)

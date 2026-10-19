@@ -5,7 +5,7 @@
 import { buildEntityIndex } from '../entities';
 import { entityKey, entityKind } from '../ids';
 import { ringScene } from '../layouts/ring';
-import { lensReadings } from '../overview/readings';
+import { lensReadings, repoReading } from '../overview/readings';
 import { lensTopEntities } from '../overview/topEntities';
 import type { AnalyzerView, Layout } from '../model';
 
@@ -31,7 +31,7 @@ export const ringLayout: Layout = {
             ),
           }
         : null;
-    return ringScene(input.report.repoName, readings, fanned, viewport);
+    return ringScene(repoReading(input.report), readings, fanned, viewport);
   },
 };
 

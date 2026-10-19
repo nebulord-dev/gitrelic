@@ -33,6 +33,7 @@ export const SHAPE_CODES: Record<MarkShape, number> = {
   arc: 2,
   bar: 3,
   card: 4,
+  outline: 5,
 };
 
 const INITIAL_CAPACITY = 256;

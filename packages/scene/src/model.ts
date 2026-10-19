@@ -36,7 +36,11 @@ export type Paint =
   | ColorRole
   | { mix: readonly [ColorRole, ColorRole]; t: number };
 
-export type MarkShape = 'dot' | 'ring' | 'arc' | 'bar' | 'card';
+/**
+ * `ring`'s stroke scales with its radius (a small marker ring); `outline` is
+ * the same circle with a thin stroke, for a large one (the Overview's repo).
+ */
+export type MarkShape = 'dot' | 'ring' | 'outline' | 'arc' | 'bar' | 'card';
 
 /**
  * Every animatable number a mark has. One flat record for all shapes, so the
@@ -79,6 +83,16 @@ export interface Mark extends MarkGeom {
    * name). Laid out with the label, so the two are shown or culled together.
    */
   labelSub?: string;
+  /**
+   * A class for the label's element, naming a role the dashboard's CSS styles
+   * (the ring's flagged lenses), never a colour.
+   */
+  labelClass?: string;
+  /**
+   * Shifts a label down by this fraction of its height (negative: up), so
+   * crowded side labels can lean apart (the ring's, near its top and bottom).
+   */
+  labelLean?: number;
   /** Higher labels win when they collide. Defaults to 0. */
   labelPriority?: number;
   /**
@@ -331,6 +345,7 @@ function extent(m: Mark): [number, number] {
   switch (m.shape) {
     case 'dot':
     case 'ring':
+    case 'outline':
       return [m.r, m.r];
     case 'arc':
       return [m.r + m.h, m.r + m.h];

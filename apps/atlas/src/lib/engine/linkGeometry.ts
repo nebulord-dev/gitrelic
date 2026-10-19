@@ -34,7 +34,9 @@ export class LinkBuffers {
 
 /**
  * Fills `out` with the drawn part (`progress`) of every link whose endpoints
- * are in the store. Returns `out`, with `vertexCount`/`indexCount` set.
+ * are in the store, from the source mark's edge to the target's, so a link
+ * never shows through a hollow mark (the Overview's repo ring). Returns
+ * `out`, with `vertexCount`/`indexCount` set.
  */
 export function tessellateLinks(
   links: Iterable<LiveLink>,
@@ -56,6 +58,12 @@ export function tessellateLinks(
     const y2 = store.y[t];
     const len = Math.hypot(x2 - x1, y2 - y1);
     if (len === 0) continue;
+    // Where the curve leaves the source's edge and meets the target's, as
+    // curve parameters: radius over chord length, which a bowed curve's
+    // slightly longer path overshoots by a hair, never into the mark.
+    const u0 = store.r[s] / len;
+    const u1 = 1 - store.r[t] / len;
+    if (u1 <= u0) continue;
 
     const points = link.curve === 'straight' ? 2 : CURVE_SEGMENTS + 1;
     out.reserve(
@@ -76,7 +84,7 @@ export function tessellateLinks(
     const base = out.vertexCount;
 
     for (let k = 0; k < points; k++) {
-      const u = (k / (points - 1)) * link.progress;
+      const u = u0 + (k / (points - 1)) * link.progress * (u1 - u0);
       const v = 1 - u;
       const px = v * v * x1 + 2 * v * u * cx + u * u * x2;
       const py = v * v * y1 + 2 * v * u * cy + u * u * y2;

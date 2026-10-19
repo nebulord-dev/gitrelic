@@ -53,9 +53,9 @@ describe('LabelLayer', () => {
     const sub = span.querySelector('.atlas-label__sub')!;
     expect(span.firstChild!.textContent).toBe('shared');
     expect(sub.textContent).toBe('22 files · 7 at 25+');
-    // A heading: 34px tall, as wide as the longer line (19 × 6.5 + 4).
+    // A heading: 30px tall, as wide as the longer line (19 × 6.5 + 4).
     expect(span.classList.contains('atlas-label--heading')).toBe(true);
-    expect(span.style.transform).toBe('translate(36px, 57px)');
+    expect(span.style.transform).toBe('translate(36px, 61px)');
     // Reused for a one-line label, the second line hides.
     layer.update(store({ label: 'Ann' }), IDENTITY, screen, new Set());
     expect(spans(host)[0].textContent).toBe('Ann');
@@ -65,6 +65,77 @@ describe('LabelLayer', () => {
     expect(
       (spans(host)[0].querySelector('.atlas-label__sub') as HTMLElement).hidden,
     ).toBe(true);
+  });
+
+  it("adds a mark's labelClass, and drops it when the span is reused", () => {
+    const host = document.createElement('div');
+    const layer = new LabelLayer(host);
+    layer.update(
+      store({ label: 'Bus Factor', labelClass: 'atlas-label--hot' }),
+      IDENTITY,
+      screen,
+      new Set(),
+    );
+    expect(spans(host)[0].classList.contains('atlas-label--hot')).toBe(true);
+    layer.update(store({ label: 'Coupling' }), IDENTITY, screen, new Set());
+    expect(spans(host)[0].classList.contains('atlas-label--hot')).toBe(false);
+  });
+
+  it('wraps a centred label within its mark, and only then', () => {
+    const host = document.createElement('div');
+    const layer = new LabelLayer(host);
+    layer.update(
+      store(
+        {
+          label: 'a-very-long-repository-name',
+          labelAnchor: 'center',
+          r: 50,
+        },
+        { label: 'CODE HEALTH', labelAnchor: 'center', r: 0, y: 300 },
+        { label: 'Ann', r: 50, y: 500 },
+      ),
+      IDENTITY,
+      screen,
+      new Set(),
+    );
+    const [repo, group, beside] = spans(host);
+    expect(repo.style.maxWidth).toBe('80px');
+    expect(group.style.maxWidth).toBe('');
+    expect(beside.style.maxWidth).toBe('');
+  });
+
+  it('leans a label by a fraction of its height', () => {
+    const host = document.createElement('div');
+    new LabelLayer(host).update(
+      store({ label: 'Stale', labelSub: '4,644 untouched', labelLean: -0.5 }),
+      IDENTITY,
+      screen,
+      new Set(),
+    );
+    // Centred on the mark (100 − 30 / 2 = 85), then up half of 30.
+    expect(spans(host)[0].style.transform).toBe('translate(109px, 70px)');
+  });
+
+  it('aligns a label toward its mark', () => {
+    const host = document.createElement('div');
+    const layer = new LabelLayer(host);
+    layer.update(
+      store(
+        { label: 'Churn', labelSub: '33 commits', labelAnchor: 'left' },
+        { label: 'Shame', labelSub: '173 scored 70+' },
+        { label: 'Blast', labelSub: '143', labelAnchor: 'above', y: 300 },
+      ),
+      IDENTITY,
+      screen,
+      new Set(),
+    );
+    const [left, right, above] = spans(host);
+    expect(left.classList.contains('atlas-label--left')).toBe(true);
+    // Sized like a centred label, so the right edge sits at the mark.
+    expect(left.style.width).not.toBe('');
+    expect(right.classList.contains('atlas-label--right')).toBe(true);
+    expect(above.classList.contains('atlas-label--left')).toBe(false);
+    expect(above.classList.contains('atlas-label--right')).toBe(false);
   });
 
   it('places labels beside their marks, as text', () => {
@@ -81,7 +152,7 @@ describe('LabelLayer', () => {
     ['left', 'translate(68px, 92px)'],
     ['above', 'translate(88px, 75px)'],
     ['below', 'translate(88px, 109px)'],
-    ['center', 'translate(88px, 92px)'],
+    ['center', 'translate(100px, 100px)'],
   ] as const)('anchors a label %s of its mark', (labelAnchor, transform) => {
     const host = document.createElement('div');
     new LabelLayer(host).update(
@@ -91,9 +162,13 @@ describe('LabelLayer', () => {
       new Set(),
     );
     expect(spans(host)[0].style.transform).toBe(transform);
-    // Centred labels span their placed width, so the text centres in it.
-    expect(spans(host)[0].style.width).toBe(
-      labelAnchor === 'left' ? '' : '24px',
+    // Labels beside or over the mark span their placed width, so the text
+    // centres in it, or ends at the mark. A centred one sits at the mark's
+    // centre and CSS centres its real box there.
+    const span = spans(host)[0];
+    expect(span.style.width).toBe(labelAnchor === 'center' ? '' : '24px');
+    expect(span.classList.contains('atlas-label--center')).toBe(
+      labelAnchor === 'center',
     );
   });
 

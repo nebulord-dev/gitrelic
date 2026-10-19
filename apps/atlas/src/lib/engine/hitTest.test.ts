@@ -184,6 +184,16 @@ describe('hitLink', () => {
     expect(hitLink([link({ progress: 0.4 })], s, 70, 0, 1)).toBeNull();
   });
 
+  it("misses inside a mark, where the link isn't drawn", () => {
+    const ringed = storeOf(
+      mark('repo', { shape: 'ring', x: 0, y: 0, r: 40 }),
+      mark('person:b', { x: 100, y: 0, r: 2 }),
+    );
+    const spoke = link({ source: 'repo' });
+    expect(hitLink([spoke], ringed, 20, 0, 1)).toBeNull();
+    expect(hitLink([spoke], ringed, 60, 0, 1)).toBe('ab');
+  });
+
   it('skips undrawn links and links to missing marks', () => {
     expect(hitLink([link({ progress: 0 })], s, 50, 0, 5)).toBeNull();
     expect(hitLink([link({ target: 'person:x' })], s, 50, 0, 5)).toBeNull();

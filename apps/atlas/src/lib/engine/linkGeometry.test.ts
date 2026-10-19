@@ -7,16 +7,16 @@ import type { LiveLink, Mark, Palette, Rgba } from '@gitrelic/scene';
 const RED: Rgba = { r: 1, g: 0, b: 0, a: 0.5 };
 const palette = new Proxy({} as Palette, { get: () => RED });
 
-function store(points: [string, number, number][]): MarkStore {
+function store(points: [string, number, number, number?][]): MarkStore {
   const s = new MarkStore();
-  for (const [id, x, y] of points) {
+  for (const [id, x, y, r = 0] of points) {
     const m: Mark = {
       id,
       shape: 'dot',
       paint: '--file',
       x,
       y,
-      r: 2,
+      r,
       w: 0,
       h: 0,
       a0: 0,
@@ -60,6 +60,28 @@ describe('tessellateLinks', () => {
     expect(at(out, 1)).toEqual([0, -1]);
     expect(at(out, 2)).toEqual([100, 1]);
     expect(at(out, 3)).toEqual([100, -1]);
+  });
+
+  it("runs from the source's edge to the target's", () => {
+    const ringed = store([
+      ['a', 0, 0, 40],
+      ['b', 100, 0, 10],
+    ]);
+    const out = tessellateLinks([link()], ringed, palette, new LinkBuffers());
+    expect(at(out, 0)[0]).toBeCloseTo(40, 6);
+    expect(at(out, 2)[0]).toBeCloseTo(90, 6);
+    // Drawing in, the fraction is of the visible part.
+    tessellateLinks([link({ progress: 0.5 })], ringed, palette, out);
+    expect(at(out, 2)[0]).toBeCloseTo(65, 6);
+  });
+
+  it('skips a link whose marks overlap', () => {
+    const touching = store([
+      ['a', 0, 0, 60],
+      ['b', 100, 0, 50],
+    ]);
+    const out = tessellateLinks([link()], touching, palette, new LinkBuffers());
+    expect(out.vertexCount).toBe(0);
   });
 
   it('only draws the drawn fraction', () => {

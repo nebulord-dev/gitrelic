@@ -87,10 +87,18 @@ export function hitLink(
     const s = store.indexOf(link.source);
     const t = store.indexOf(link.target);
     if (s === -1 || t === -1) continue;
-    const x1 = store.x[s];
-    const y1 = store.y[s];
-    const x2 = x1 + (store.x[t] - x1) * link.progress;
-    const y2 = y1 + (store.y[t] - y1) * link.progress;
+    // Edge to edge, as linkGeometry draws it.
+    const dx = store.x[t] - store.x[s];
+    const dy = store.y[t] - store.y[s];
+    const len = Math.hypot(dx, dy);
+    if (len === 0) continue;
+    const u0 = store.r[s] / len;
+    const u1 = u0 + (1 - store.r[t] / len - u0) * link.progress;
+    if (u1 <= u0) continue;
+    const x1 = store.x[s] + dx * u0;
+    const y1 = store.y[s] + dy * u0;
+    const x2 = store.x[s] + dx * u1;
+    const y2 = store.y[s] + dy * u1;
     const d = segmentDistance(wx, wy, x1, y1, x2, y2) - link.width / 2;
     if (d <= tolerance && d < bestDist) {
       best = link.id;
@@ -124,7 +132,8 @@ function bounds(store: MarkStore, i: number): [number, number, number, number] {
   const y = store.y[i];
   switch (store.shape[i]) {
     case SHAPE_CODES.dot:
-    case SHAPE_CODES.ring: {
+    case SHAPE_CODES.ring:
+    case SHAPE_CODES.outline: {
       const r = store.r[i];
       return [x - r, y - r, x + r, y + r];
     }
@@ -201,6 +210,7 @@ function contains(
   switch (store.shape[i]) {
     case SHAPE_CODES.dot:
     case SHAPE_CODES.ring:
+    case SHAPE_CODES.outline:
       return Math.hypot(dx, dy) <= store.r[i] + tol;
     case SHAPE_CODES.arc: {
       const dist = Math.hypot(dx, dy);
