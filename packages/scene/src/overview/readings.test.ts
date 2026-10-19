@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import reportJson from '../../test/fixtures/report.small.json';
 import { CATALOG } from '../catalog';
@@ -48,6 +48,22 @@ describe('repoReading', () => {
       label: 'sample-repo',
       sub: '7,009 files · 999K lines',
     });
+  });
+
+  it("formats both numbers in English, whatever the viewer's locale", () => {
+    const local = vi
+      .spyOn(Number.prototype, 'toLocaleString')
+      .mockReturnValue('7.009');
+    try {
+      const big = {
+        ...report,
+        meta: { ...report.meta, totalFiles: 7009 },
+        loc: { ...report.loc, totalLines: 998_700 },
+      };
+      expect(repoReading(big).sub).toBe('7,009 files · 999K lines');
+    } finally {
+      local.mockRestore();
+    }
   });
 
   it('leaves out what an older or empty report lacks', () => {

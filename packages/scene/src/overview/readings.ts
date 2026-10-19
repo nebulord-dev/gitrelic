@@ -67,6 +67,11 @@ export interface RepoReading {
   sub: string;
 }
 
+// English on purpose, both numbers: the words around them are English, and
+// a mixed line ("7.009 files · 999K lines" in German) reads as a typo. The
+// viewer's locale would also lengthen it (German compact notation doesn't
+// shorten thousands), and a longer line drops out of the ring sooner.
+const en = new Intl.NumberFormat('en');
 const compact = new Intl.NumberFormat('en', { notation: 'compact' });
 
 /** What the ring's centre says about the repo itself. */
@@ -75,7 +80,7 @@ export function repoReading(report: GitrelicReport): RepoReading {
   return {
     label: report.repoName,
     sub: [
-      `${n(report.meta.totalFiles)} files`,
+      `${en.format(report.meta.totalFiles)} files`,
       ...(lines > 0 ? [`${compact.format(lines)} lines`] : []),
     ].join(' · '),
   };

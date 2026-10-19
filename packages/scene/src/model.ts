@@ -85,7 +85,8 @@ export interface Mark extends MarkGeom {
   labelSub?: string;
   /**
    * A class for the label's element, naming a role the dashboard's CSS styles
-   * (the ring's flagged lenses), never a colour.
+   * (the ring's flagged lenses), never a colour. A single class token: it's
+   * added with `classList.add`, which throws on whitespace.
    */
   labelClass?: string;
   /**
