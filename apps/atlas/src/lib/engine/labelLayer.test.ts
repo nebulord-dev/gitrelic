@@ -99,7 +99,8 @@ describe('LabelLayer', () => {
       new Set(),
     );
     const [repo, group, beside] = spans(host);
-    expect(repo.style.maxWidth).toBe('90px');
+    // 0.9 × 2r = 90px, but never narrower than MIN_WRAP.
+    expect(repo.style.maxWidth).toBe('120px');
     expect(group.style.maxWidth).toBe('');
     expect(beside.style.maxWidth).toBe('');
   });
@@ -128,13 +129,17 @@ describe('LabelLayer', () => {
     expect(span().style.transform).toBe(
       'translate(100px, 100px) translate(-50%, -50%) scale(0.922)',
     );
-    expect(span().style.maxWidth).toBe('78px');
+    expect(span().style.maxWidth).toBe('130px'); // 120 / 0.922
     // 45px of room would need 0.58: too small to read, so the second line
     // goes and the name keeps full size.
     layer.update(centre(25), IDENTITY, screen, new Set());
     expect(sub().hidden).toBe(true);
     expect(span().firstChild!.textContent).toBe('react');
     expect(span().style.transform).not.toContain('scale');
+    // However small the mark gets, the name wraps no narrower than 120px,
+    // so it never breaks mid-word.
+    layer.update(centre(2), IDENTITY, screen, new Set());
+    expect(span().style.maxWidth).toBe('120px');
   });
 
   it('leans a label by a fraction of its height', () => {

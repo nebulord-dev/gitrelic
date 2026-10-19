@@ -30,6 +30,11 @@ const INSIDE_SUB_CHAR_PX = 7.1;
  * to this; past it, it drops its second line and keeps full size.
  */
 const MIN_FIT = 0.7;
+/**
+ * The narrowest an inside label wraps to, px. Past MIN_FIT its mark keeps
+ * shrinking; the name runs past it whole rather than breaking mid-word.
+ */
+const MIN_WRAP = 120;
 /** Gap between a mark's edge and its label, px. */
 const OFFSET = 4;
 /** Marks drawn fainter than this (fading, or a faint paint) go unlabelled. */
@@ -100,7 +105,7 @@ export class LabelLayer {
         }
       }
       // The wrap width before scaling, so the scaled label wraps at `room`.
-      const maxWidth = inside ? Math.round(room / fit) : 0;
+      const maxWidth = inside ? Math.round(Math.max(room, MIN_WRAP) / fit) : 0;
       // A label with a second line is a heading: both lines are one
       // candidate, so they're shown or culled together.
       const w = sub

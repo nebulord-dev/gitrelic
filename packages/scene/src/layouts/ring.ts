@@ -71,10 +71,16 @@ function fannedLabel(
   dy: number,
 ): Pick<Mark, 'labelAnchor' | 'labelLean'> {
   const inward = anchorFor(-dx, -dy);
-  const towardCentre = dy > 0 ? -SPOKE_CLEAR : SPOKE_CLEAR;
+  // Above the middle (or level with it), the spoke heads down to the centre.
+  const above = dy <= 0;
   if (inward === 'above' || inward === 'below')
-    return { labelAnchor: dx < 0 ? 'left' : 'right', labelLean: towardCentre };
-  return { labelAnchor: inward, labelLean: -towardCentre };
+    return {
+      labelAnchor: dx < 0 ? 'left' : 'right',
+      // Toward the centre: below a fan that spreads upward, and vice versa.
+      labelLean: above ? SPOKE_CLEAR : -SPOKE_CLEAR,
+    };
+  // Away from the centre: up off a spoke heading down, and vice versa.
+  return { labelAnchor: inward, labelLean: above ? -SPOKE_CLEAR : SPOKE_CLEAR };
 }
 
 /** Labels point away from the centre, so they never cross the ring. */

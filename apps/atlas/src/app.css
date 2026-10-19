@@ -140,6 +140,7 @@ body {
 .atlas-label--repo .atlas-label__sub {
   /* Shown only where it fits on one line (labelLayer drops it otherwise). */
   white-space: nowrap;
+  /* labelLayer's INSIDE_SUB_CHAR_PX measures this size: change both. */
   font-size: 12px;
   line-height: 18px;
   color: var(--soft);
