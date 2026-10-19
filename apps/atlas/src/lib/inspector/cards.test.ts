@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { describe, expect, it, vi } from 'vitest';
 
 import reportJson from '../../../../../packages/scene/test/fixtures/report.small.json';
+import ChurnCard from './ChurnCard.svelte';
 import FindingCard from './FindingCard.svelte';
 import HotspotsCard from './HotspotsCard.svelte';
 import WhatToDoCard from './WhatToDoCard.svelte';
@@ -109,5 +110,36 @@ describe('WhatToDoCard', () => {
     await fireEvent.click(screen.getByRole('button', { name: /Activity/ }));
     expect(target.scrollIntoView).toHaveBeenCalled();
     target.remove();
+  });
+});
+
+describe('ChurnCard', () => {
+  const report = reportJson as unknown as GitrelicReport;
+
+  it('leads with the package churning hardest per file', async () => {
+    const onselect = vi.fn();
+    render(ChurnCard, { report, index, onselect });
+    expect(screen.getByText('4.2')).toBeTruthy();
+    expect(screen.getByText(/changes per file in/).textContent).toMatch(
+      /src\/, across 6 files/,
+    );
+    // The lead, the finding's chip and the busiest list all select src/.
+    const src = screen.getAllByRole('button', { name: /^src\// });
+    expect(src.length).toBeGreaterThanOrEqual(3);
+    await fireEvent.click(src[0]);
+    expect(onselect).toHaveBeenCalledWith('dir:src');
+  });
+
+  it('lists the busiest packages and opens the table', async () => {
+    const ontable = vi.fn();
+    render(ChurnCard, { report, index, ontable });
+    const list = screen.getByRole('heading', {
+      name: 'Busiest packages',
+    }).parentElement!;
+    expect(list.querySelectorAll('li button')).toHaveLength(3);
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'All 9 files in the table (T) ▸' }),
+    );
+    expect(ontable).toHaveBeenCalled();
   });
 });

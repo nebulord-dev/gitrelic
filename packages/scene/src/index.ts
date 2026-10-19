@@ -281,4 +281,25 @@ export {
   pointsOf as hotspotPointsOf,
   packagesLayout,
 } from './views/hotspots';
+export {
+  CHURN_TIER_NAMES,
+  churnCharacter,
+  churnSwarm,
+  churnSwarmOf,
+  perFile,
+  QUIET_COMMITS,
+  rowName,
+  type ChurnCharacter,
+  type SwarmFile,
+  type SwarmRow,
+} from './churn/swarm';
+export { SWARM_ROWS, swarmScene } from './layouts/swarm';
+export {
+  churnFindings,
+  churnTable,
+  churnView,
+  hardestRow,
+  lockstepGroups,
+  swarmLayout,
+} from './views/churn';
 export { VIEWS } from './views/index';

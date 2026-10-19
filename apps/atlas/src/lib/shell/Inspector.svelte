@@ -11,6 +11,7 @@
   } from '@gitrelic/scene';
   import { tick } from 'svelte';
 
+  import ChurnCard from '../inspector/ChurnCard.svelte';
   import DirCard from '../inspector/DirCard.svelte';
   import ExplainCard from '../inspector/ExplainCard.svelte';
   import FileCard from '../inspector/FileCard.svelte';
@@ -258,6 +259,9 @@
   {:else if lens === 'hotspots' && lensEntry}
     <ExplainCard entry={lensEntry} />
     <HotspotsCard {report} {index} {onselect} {ontable} />
+  {:else if lens === 'churn' && lensEntry}
+    <ExplainCard entry={lensEntry} />
+    <ChurnCard {report} {index} {onselect} {ontable} />
   {:else if lens === 'overview'}
     <RepoMapCard {report} {onselect} />
     {#if lensEntry}<ExplainCard entry={lensEntry} />{/if}
