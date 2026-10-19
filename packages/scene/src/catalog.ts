@@ -65,7 +65,7 @@ export const CATALOG: readonly CatalogEntry[] = [
     group: 'code-health',
     explain: 'How often each file changes, relative to the most-changed file.',
     docsPath: 'analyzers/churn',
-    atlas: false,
+    atlas: true,
   },
   {
     id: 'cursed-files',

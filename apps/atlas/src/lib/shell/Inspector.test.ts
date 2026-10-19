@@ -24,8 +24,8 @@ describe('Inspector', () => {
   });
 
   it('explains the open lens, with its docs', () => {
-    render(Inspector, { ...base, view: 'code-health', lens: 'churn' });
-    expect(screen.getByText('Churn')).toBeTruthy();
+    render(Inspector, { ...base, view: 'code-health', lens: 'cursed-files' });
+    expect(screen.getByText('Cursed Files')).toBeTruthy();
     expect(screen.getByRole('link', { name: /Docs/ })).toBeTruthy();
   });
 
@@ -62,9 +62,9 @@ describe('Inspector', () => {
     expect(screen.getByText('api.ts')).toBeTruthy();
     expect(screen.getByText('src/')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Flagged by' })).toBeTruthy();
-    // No lens has an Atlas view yet, so each linked row opens classic.
-    const churn = screen.getByRole('link', { name: /Churn \(commits\)/ });
-    expect(churn.getAttribute('href')).toBe('/classic/#preset=churn');
+    // A row whose lens has no Atlas view opens classic.
+    const age = screen.getByRole('link', { name: /^Age/ });
+    expect(age.getAttribute('href')).toBe('/classic/#preset=age-map');
     expect(screen.getByRole('heading', { name: 'People' })).toBeTruthy();
     await fireEvent.click(screen.getByRole('button', { name: /Alice/ }));
     expect(onselect).toHaveBeenCalledWith('person:alice@example.com');
@@ -297,12 +297,26 @@ describe('Inspector', () => {
     expect(screen.getByRole('heading', { name: 'Top five' })).toBeTruthy();
   });
 
+  it('explains the Churn lens with its own card when nothing is selected', () => {
+    render(Inspector, {
+      ...base,
+      view: 'code-health' as const,
+      lens: 'churn',
+    });
+    expect(
+      screen.getByRole('link', { name: 'Docs ↗' }).getAttribute('href'),
+    ).toMatch(/analyzers\/churn$/);
+    expect(
+      screen.getByRole('heading', { name: 'Busiest packages' }),
+    ).toBeTruthy();
+  });
+
   it('links a selected lens without an Atlas view to classic', () => {
-    render(Inspector, { ...base, selection: ids.analyzer('churn') });
+    render(Inspector, { ...base, selection: ids.analyzer('cursed-files') });
     expect(
       screen
-        .getByRole('link', { name: /Open Churn in classic/ })
+        .getByRole('link', { name: /Open Cursed Files in classic/ })
         .getAttribute('href'),
-    ).toBe('/classic/#preset=churn');
+    ).toBe('/classic/#preset=cursed-files');
   });
 });

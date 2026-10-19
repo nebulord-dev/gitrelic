@@ -26,6 +26,35 @@ If you only have ten seconds:
 - **Bottom panel** (`Churn` tab) — the same data rolled up by directory. Switch to **`Test Files`** to isolate test churn from source churn.
 - **Right-side Inspector** — click any file row to see its full per-file detail (LOC, authors, age, hotspot score, etc.).
 
+## In Atlas: the swarm
+
+Atlas (`gitrelic --ui atlas`) draws Churn as a **swarm**, which answers both questions in one picture:
+
+- **One row per package.** Rows are `packages/<name>` in a `packages/` monorepo, otherwise the top-level directory; files at the root share one row. The twelve rows with the most changes are drawn, and the rest are in the table (`T`).
+- **One dot per file**, placed across on a log scale of commits. Commits are whole numbers, so each dot is spread a little along its commit count and up and down its row by a hash of its path. A file always lands in the same place, and a thousand files with one commit form a band instead of a single dot.
+- **The grey band** at the left holds files with one or two commits, drawn in grey. Other dots are coloured by churn category (see [The four categories](#the-four-categories)).
+- **The row's shading** is its package's total changes (the sum of its files' commits), strongest for the busiest package. Each row names its busiest file.
+
+The same total can hide opposite shapes. On React's last 12 months, `compiler/` has 855 changes, spread as a wide low cloud with no file past 18 commits. `packages/shared/` has 271 changes, and its feature-flag files sit stacked near the right.
+
+Tests, fixtures and generated files stay out of the swarm, as they do in classic's source tab. Hover a dot for the file's commits, the lines it gained and lost, and its **character**:
+
+| Character | Rule |
+|---|---|
+| **rewriting** | rewrite score ≥ 70: [Rewrite Ratio](/analyzers/rewrite-ratio)'s "code that doesn't stick" line |
+| **growing** | lines added ≥ 3 × lines deleted |
+| **shrinking** | lines deleted ≥ 3 × lines added |
+| **tweaking** | anything else |
+
+Hover a row for its total, its file count and how many of its files have one or two commits. Click a row to select the package, or a dot to select the file.
+
+With nothing selected, the inspector leads with the package that **churns hardest per file** (changes ÷ files, among packages with at least five files). Two findings follow:
+
+- **Most changes versus hardest per file.** The package with the most changes is set against the one with the most changes per file. On React, `compiler/` has the most (855 across 370 files, 2.3 each), while `packages/shared/` churns hardest (271 across 21 files, 12.9 each).
+- **Lockstep groups.** These are files that change commit for commit: coupling pairs of source files with strength ≥ 90% over five or more shared commits, joined into groups of three or more. On React, nine feature-flag files (`ReactFeatureFlags.js` and its forks) form one group: one change, made nine times.
+
+The detail table lists every source file with its commits, lines added and deleted, character and package.
+
 ## How churn is measured
 
 The full pipeline, from raw git output to the three dashboard surfaces:
@@ -140,7 +169,8 @@ The classifier is conservative on purpose: snapshots, fixtures, and `cypress/` c
 
 - **[Hotspots](/analyzers/hotspots)** — `churn × LOC` composite. Where churn intersects with complexity, you get files that are both unstable *and* large enough to absorb maintenance cost. Hotspots are typically what you act on.
 - **[Cursed Files](/analyzers/cursed-files)** — multi-dimensional risk score combining churn, ownership concentration, age anomalies, and coupling. Files at the intersection of "bad in many ways."
-- **[Churn Velocity](/analyzers/churn-velocity)** — is the churn accelerating or decelerating over time? A hot file with decelerating churn is stabilizing; a hot file with accelerating churn is becoming a liability.
+- **[Rewrite Ratio](/analyzers/rewrite-ratio)**: the balance of lines added and deleted, which gives each file in the swarm its character.
+- **Churn Velocity** (whether churn is speeding up or slowing down) has no page of its own. In Atlas it will be read off Churn's Rhythm form, whose week-by-week bars arrive in a later release.
 
 ## Limitations
 

@@ -284,6 +284,14 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 
 **Dropped from classic:** the churn bar (a leaderboard, which the detail table covers); Velocity's accelerating/decelerating score. 259 of the 325 files it flags on React have three commits or fewer, so it stays out until core requires a minimum sample. Tests stay out of the swarm, as in classic's source Churn tab; its tests mode (`ChurnTab mode="tests"`) moves to the Tests lens.
 
+**As built (first Churn PR, RELIC-362):**
+
+- **Swarm.** Rows are packages (`packageOf`, the same grouping as Hotspots' By package; root files share the repo's row), the twelve with the most changes, with a "+N more in the table" note. Commits are whole numbers, so each dot is spread across [c, c + 1) and up and down its row by a hash of its path (stable across builds). Files with one or two commits are ghost-grey left of the band's edge line; the rest take the risk ramp by core's churn category. The heat bar is the row itself: a full-width bar shaded from `--cell-base` toward the accent by its total (at most 7%, since the blend is in linear RGB, which reads strong). The row is the package's `dir:` mark, so hovering anywhere on it shows its tooltip and a click selects it. Row names drop `packages/`. Each row names its busiest file.
+- **Character** (tooltip and table): rewriting (rewrite score ≥ 70), growing (added ≥ 3× deleted), shrinking (deleted ≥ 3× added; added because a file that's mostly deletions isn't "tweaking"), tweaking (anything else).
+- **Lockstep** comes from coupling pairs, not weekly bars: source pairs at strength ≥ 90 over ≥ 5 shared commits, joined into groups of three or more. That's stricter than "week for week", and it needs no commit history. On React: the nine feature-flag files.
+- **Inspector (lens mode):** About, then the Churn card. It leads with the hardest-churning package (changes per file, among packages with five or more files; on React, `packages/shared/` at 12.9), then the findings and the five busiest packages.
+- **Table:** every source file: path, commits, added, deleted, character, package; most commits first, tiered by churn category.
+
 ### Code Health › Risk (checkpoint 2026-10-18)
 
 **Input:** `apps/docs/analyzers/cursed-files.md` (numbers are stale; refreshed when this lens ships), classic's Cursed Files, Hotspot Clustering, and the Risk and Tech Debt dashboards this lens absorbs. Canvas: three boards on React's last 12 months.
