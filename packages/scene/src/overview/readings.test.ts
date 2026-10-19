@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import reportJson from '../../test/fixtures/report.small.json';
 import { CATALOG } from '../catalog';
 import { normalizeReport } from '../report/normalizeReport';
-import { lensReadings } from './readings';
+import { lensReadings, repoReading } from './readings';
 import type { GitrelicReport } from '@gitrelic/core';
 
 const report = reportJson as unknown as GitrelicReport;
@@ -34,5 +34,45 @@ describe('lensReadings', () => {
     expect(byId.get('churn')?.value).toBe('—');
     expect(byId.get('languages')?.value).toBe('—');
     expect(byId.get('knowledge-silos')?.value).toBe('—');
+  });
+});
+
+describe('repoReading', () => {
+  it('names the repo, then its size', () => {
+    const big = {
+      ...report,
+      meta: { ...report.meta, totalFiles: 7009 },
+      loc: { ...report.loc, totalLines: 998_700 },
+    };
+    expect(repoReading(big)).toEqual({
+      label: 'sample-repo',
+      sub: '7,009 files · 999K lines',
+    });
+  });
+
+  it("formats both numbers in English, whatever the viewer's locale", () => {
+    const local = vi
+      .spyOn(Number.prototype, 'toLocaleString')
+      .mockReturnValue('7.009');
+    try {
+      const big = {
+        ...report,
+        meta: { ...report.meta, totalFiles: 7009 },
+        loc: { ...report.loc, totalLines: 998_700 },
+      };
+      expect(repoReading(big).sub).toBe('7,009 files · 999K lines');
+    } finally {
+      local.mockRestore();
+    }
+  });
+
+  it('leaves out what an older or empty report lacks', () => {
+    const bare = normalizeReport({});
+    const reading = repoReading({
+      ...bare,
+      repoName: 'r',
+      meta: { ...bare.meta, totalFiles: 2 },
+    });
+    expect(reading).toEqual({ label: 'r', sub: '2 files' });
   });
 });

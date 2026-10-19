@@ -7,7 +7,7 @@
 import { PRESET_GROUPS } from '../catalog';
 import { ids, REPO_ID, type EntityId } from '../ids';
 import type { Guide, Link, Mark, Paint, Scene, Viewport } from '../model';
-import type { LensReading } from '../overview/readings';
+import type { LensReading, RepoReading } from '../overview/readings';
 import type { FannedEntity } from '../overview/topEntities';
 
 export interface RingFocus {
@@ -17,18 +17,71 @@ export interface RingFocus {
 
 const DOT_R = [5, 7, 10, 14] as const;
 const RAMP = ['--risk-0', '--risk-1', '--risk-2', '--risk-3'] as const;
-const REPO_R = 44;
+/** Lenses graded 2+ (the ones that badge) get a label the CSS can heat. */
+const LABEL_CLASS = [
+  undefined,
+  undefined,
+  'atlas-label--hot',
+  'atlas-label--hot',
+] as const;
+/**
+ * Wide enough to hold the repo's name and size ("7,009 files · 999K lines")
+ * at full zoom; the size line drops out when the stage zooms out further.
+ */
+const REPO_R = 104;
 const FAN_DOT = 5;
 /**
  * Room beside the outermost marks for their DOM labels, world units. Labels
  * are screen pixels, so at the ~0.65 zoom a 1440px window fits this world at,
- * a 33-character label needs about 330 units.
+ * a two-line label 20 characters wide needs about 220 units across and 55
+ * down.
  */
-const LABEL_ROOM = 340;
-const LABEL_ROOM_Y = 36;
+const LABEL_ROOM = 240;
+const LABEL_ROOM_Y = 64;
 const MARGIN = 32;
 
 const zero = { w: 0, h: 0, a0: 0, a1: 0 };
+
+/**
+ * How far a side label leans away from the ring's horizontal axis, as a
+ * fraction of its height at the very top or bottom. Near there the ellipse
+ * stacks neighbouring lenses closer than a two-line label is tall.
+ */
+const LEAN = 0.5;
+/** How far a fanned lens's label moves off its spoke, as a fraction of its height. */
+const SPOKE_CLEAR = 0.6;
+
+/** Side labels lean apart near the top and bottom; others don't lean. */
+function leanFor(dx: number, dy: number): number | undefined {
+  const anchor = anchorFor(dx, dy);
+  if (anchor !== 'left' && anchor !== 'right') return undefined;
+  return (dy / (Math.hypot(dx, dy) || 1)) * LEAN;
+}
+
+/**
+ * A fanned lens's label, clear of both its fan (which spreads outward,
+ * nearly a half-circle) and its spoke (which runs inward). On the ring's
+ * sides it turns inward and moves up off a spoke heading down, or down off
+ * one heading up. At the very top or bottom the inward side is the spoke
+ * itself, so it goes to the outer side, dropped toward the centre: below
+ * the fan, beside the spoke.
+ */
+function fannedLabel(
+  dx: number,
+  dy: number,
+): Pick<Mark, 'labelAnchor' | 'labelLean'> {
+  const inward = anchorFor(-dx, -dy);
+  // Above the middle (or level with it), the spoke heads down to the centre.
+  const above = dy <= 0;
+  if (inward === 'above' || inward === 'below')
+    return {
+      labelAnchor: dx < 0 ? 'left' : 'right',
+      // Toward the centre: below a fan that spreads upward, and vice versa.
+      labelLean: above ? SPOKE_CLEAR : -SPOKE_CLEAR,
+    };
+  // Away from the centre: up off a spoke heading down, and vice versa.
+  return { labelAnchor: inward, labelLean: above ? -SPOKE_CLEAR : SPOKE_CLEAR };
+}
 
 /** Labels point away from the centre, so they never cross the ring. */
 function anchorFor(dx: number, dy: number): Mark['labelAnchor'] {
@@ -45,7 +98,7 @@ function entityPaint(id: EntityId): Paint {
 }
 
 export function ringScene(
-  repoName: string,
+  repo: RepoReading,
   readings: readonly LensReading[],
   focus: RingFocus | null,
   viewport: Viewport,
@@ -63,18 +116,23 @@ export function ringScene(
   const links: Link[] = [];
   const guides: Guide[] = [];
   const focused = focus?.preset ?? null;
+  // The lens whose entities fan out beyond it: its label turns inward, so
+  // the fan's curves don't run through it.
+  const fanned = focus && focus.entities.length > 0 ? focus.preset : null;
   const dim = (id: string) => (focused && id !== focused ? 0.3 : 1);
 
   marks.push({
     id: REPO_ID,
-    shape: 'ring',
+    shape: 'outline',
     paint: '--accent',
     x: cx,
     y: cy,
     r: REPO_R,
     ...zero,
     alpha: focused ? 0.5 : 1,
-    label: repoName,
+    label: repo.label,
+    labelSub: repo.sub,
+    labelClass: 'atlas-label--repo',
     labelPriority: 100,
     labelAnchor: 'center',
     z: 1,
@@ -132,9 +190,16 @@ export function ringScene(
         r: DOT_R[lens.grade],
         ...zero,
         alpha: dim(lens.preset),
-        label: `${lens.label} · ${lens.value}`,
+        label: lens.label,
+        labelSub: lens.value,
+        labelClass: LABEL_CLASS[lens.grade],
         labelPriority: lens.grade * 10 + (lens.preset === focused ? 50 : 0),
-        labelAnchor: anchorFor(x - cx, y - cy),
+        ...(lens.preset === fanned
+          ? fannedLabel(x - cx, y - cy)
+          : {
+              labelAnchor: anchorFor(x - cx, y - cy),
+              labelLean: leanFor(x - cx, y - cy),
+            }),
         z: lens.grade,
         tip: [lens.label, lens.value, ...(lens.reason ? [lens.reason] : [])],
       });

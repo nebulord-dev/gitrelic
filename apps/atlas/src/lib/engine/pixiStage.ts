@@ -24,15 +24,15 @@ import {
 import { arcBand } from './arcBand';
 import { LinkBuffers, tessellateLinks } from './linkGeometry';
 import { SHAPE_CODES, type MarkStore } from './markStore';
+import { HALO, SPRITE, SPRITE_FRAMES, type SpriteFrame } from './spriteAtlas';
 import { canvasResolution, type ScreenSize } from './viewport';
 import type { StageFrame, StageRenderer } from './stageRenderer';
 
-/** Atlas cell size for the dot and ring sprites, px. */
-const SPRITE = 64;
-const HALO = 128;
 /** Halo diameter as a multiple of the mark's. */
 const HALO_SPREAD = 3;
 const HALO_ALPHA = 0.35;
+/** An outline mark's stroke, screen px. */
+const OUTLINE_PX = 2;
 
 const LINK_VERTEX = /* glsl */ `
 in vec2 aPosition;
@@ -71,6 +71,7 @@ export class PixiStage implements StageRenderer {
     dynamicProperties: { position: true, vertex: true, color: true, uvs: true },
   });
   private arcs = new Graphics();
+  private outlines = new Graphics();
   private guides = new Graphics();
   private linkBuffers = new LinkBuffers();
   private linkGeometry: Geometry | null = null;
@@ -116,12 +117,13 @@ export class PixiStage implements StageRenderer {
       }),
     });
 
-    // Back to front: guides, links, halos, arcs, marks.
+    // Back to front: guides, links, halos, arcs, outlines, marks.
     this.world.addChild(
       this.guides,
       this.linkMesh,
       this.halos,
       this.arcs,
+      this.outlines,
       this.marks,
     );
     app.stage.addChild(this.world);
@@ -152,7 +154,10 @@ export class PixiStage implements StageRenderer {
       this.drawArcs(store);
       this.drawLinks(frame);
     }
-    if (frame.dirty || frame.guidesDirty) this.drawGuides(frame);
+    if (frame.dirty || frame.guidesDirty) {
+      this.drawGuides(frame);
+      this.drawOutlines(store, view.scale);
+    }
     app.render();
   }
 
@@ -220,10 +225,30 @@ export class PixiStage implements StageRenderer {
         p.alpha = alpha;
         h.alpha = 0;
       } else {
-        // Arcs are drawn by drawArcs; cards by the DOM card overlay.
+        // Arcs and outlines are drawn as vectors (drawArcs, drawOutlines);
+        // cards by the DOM card overlay.
         p.alpha = 0;
         h.alpha = 0;
       }
+    }
+  }
+
+  /**
+   * Outline marks as vector circles, so a large one stays sharp (a sprite
+   * that size blurs), with a stroke the same width on screen at any zoom.
+   */
+  private drawOutlines(store: MarkStore, scale: number): void {
+    const g = this.outlines.clear();
+    for (const i of store.drawOrder()) {
+      if (store.shape[i] !== SHAPE_CODES.outline || store.r[i] <= 0) continue;
+      const alpha = store.alpha[i] * store.opacity[i];
+      if (alpha <= 0) continue;
+      g.circle(store.x[i], store.y[i], store.r[i]).stroke({
+        width: OUTLINE_PX / scale,
+        alignment: 1,
+        color: rgbNumber(store.red[i], store.green[i], store.blue[i]),
+        alpha,
+      });
     }
   }
 
@@ -314,9 +339,10 @@ function rgbOf(c: Rgba): number {
  * which ParticleContainer requires. White, so tint sets the colour.
  */
 function makeSprites(): Sprites {
+  const { dot, ring, square, halo, width, height } = SPRITE_FRAMES;
   const canvas = document.createElement('canvas');
-  canvas.width = SPRITE * 2 + 8 + HALO;
-  canvas.height = HALO;
+  canvas.width = width;
+  canvas.height = height;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('2D canvas unavailable for the sprite atlas');
   ctx.fillStyle = '#fff';
@@ -324,17 +350,17 @@ function makeSprites(): Sprites {
 
   const c = SPRITE / 2;
   ctx.beginPath();
-  ctx.arc(c, c, c - 1, 0, Math.PI * 2);
+  ctx.arc(dot.x + c, c, c - 1, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.lineWidth = SPRITE * 0.12;
   ctx.beginPath();
-  ctx.arc(SPRITE + c, c, c - ctx.lineWidth / 2 - 1, 0, Math.PI * 2);
+  ctx.arc(ring.x + c, c, c - ctx.lineWidth / 2 - 1, 0, Math.PI * 2);
   ctx.stroke();
 
-  ctx.fillRect(SPRITE * 2, 0, 8, 8);
+  ctx.fillRect(square.x, square.y, square.w, square.h);
 
-  const hx = SPRITE * 2 + 8 + HALO / 2;
+  const hx = halo.x + HALO / 2;
   const glow = ctx.createRadialGradient(
     hx,
     HALO / 2,
@@ -347,16 +373,17 @@ function makeSprites(): Sprites {
   glow.addColorStop(0.35, 'rgba(255,255,255,0.35)');
   glow.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = glow;
-  ctx.fillRect(SPRITE * 2 + 8, 0, HALO, HALO);
+  ctx.fillRect(halo.x, halo.y, halo.w, halo.h);
 
   const base = Texture.from(canvas);
   const cut = (x: number, y: number, w: number, h: number) =>
     new Texture({ source: base.source, frame: new Rectangle(x, y, w, h) });
+  const frame = (f: SpriteFrame) => cut(f.x, f.y, f.w, f.h);
   return {
-    dot: cut(0, 0, SPRITE, SPRITE),
-    ring: cut(SPRITE, 0, SPRITE, SPRITE),
-    // Inset by one pixel so linear filtering never samples the neighbours.
-    square: cut(SPRITE * 2 + 1, 1, 6, 6),
-    halo: cut(SPRITE * 2 + 8, 0, HALO, HALO),
+    dot: frame(dot),
+    ring: frame(ring),
+    // Inset by one pixel so a stretched bar's edges stay solid.
+    square: cut(square.x + 1, square.y + 1, square.w - 2, square.h - 2),
+    halo: frame(halo),
   };
 }

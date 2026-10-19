@@ -85,7 +85,7 @@ body {
 .atlas-label--heading {
   font-size: 13px;
   font-weight: 600;
-  line-height: 18px;
+  line-height: 16px;
   color: var(--text);
 }
 
@@ -93,8 +93,57 @@ body {
   display: block;
   font-size: 11px;
   font-weight: 400;
-  line-height: 16px;
+  line-height: 14px;
   color: var(--muted);
+}
+
+/* A label reads toward its mark (labelLayer sets these from labelAnchor). */
+.atlas-label--left {
+  text-align: right;
+}
+
+.atlas-label--right {
+  text-align: left;
+}
+
+/* Centred on its mark at its real size (labelLayer's transform centres the
+   box on the mark) and, on a mark with a radius, wrapped within it. */
+.atlas-label--center {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Mark.labelClass roles. --hot: an Overview lens that badges (grade 2+). */
+.atlas-label--hot .atlas-label__sub {
+  color: var(--accent);
+}
+
+/* --repo: the Overview's centre. A kicker, the repo's name, its size. */
+.atlas-label--repo {
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.atlas-label--repo::before {
+  content: 'Repo';
+  display: block;
+  font-size: 10px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.atlas-label--repo .atlas-label__sub {
+  /* Shown only where it fits on one line (labelLayer drops it otherwise). */
+  white-space: nowrap;
+  /* labelLayer's INSIDE_SUB_CHAR_PX measures this size: change both. */
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--soft);
 }
 
 /* The hover tooltip, positioned per frame by engine/tooltipLayer.ts. */
