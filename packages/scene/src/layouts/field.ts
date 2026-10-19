@@ -340,10 +340,18 @@ export function fieldScene(input: FieldInput, viewport: Viewport): Scene {
   };
 }
 
+/** The fan's hub: the spokes' fixed end, under whichever file is out. */
+export const FAN_HUB = 'facet-hub';
+
 /**
  * The fan: the file at a root right of the plot, a faint ring and a leader
  * back to where it sits in the plot, and its facets on an arc beyond the
  * root, growing out of it.
+ *
+ * The spokes run from an invisible hub at the root, not from the file: picking
+ * another file while the fan is out only swaps which file sits on the hub.
+ * Tied to the file, every spoke would jump to the new file's dot in the plot
+ * and ride out with it, which reads as a whole new fan.
  */
 function fanOut(
   p: HotspotPoint,
@@ -358,6 +366,18 @@ function fanOut(
   const root = ids.file(p.file);
   const rx = viewport.width * 0.47;
   const ry = viewport.height / 2;
+  // Label-only card with no label: draws nothing, can't be hit. Its parent is
+  // the file, so a first fan grows out of the dot that was clicked.
+  marks.push({
+    id: FAN_HUB,
+    shape: 'card',
+    paint: '--muted',
+    x: rx,
+    y: ry,
+    ...zero,
+    alpha: 1,
+    parent: root,
+  });
   marks.push({
     id: root,
     shape: 'dot',
@@ -383,8 +403,9 @@ function fanOut(
     ...zero,
     r: DOT_R[p.tier] + 3,
     alpha: 0.6,
+    // Shrinks toward where its file is going, which is home: it fades in
+    // place rather than streaking to the root.
     parent: root,
-    foldOnExit: true,
     z: 5,
   });
   links.push({
@@ -416,7 +437,7 @@ function fanOut(
       ...zero,
       r: FACET_R,
       alpha: 1,
-      parent: root,
+      parent: FAN_HUB,
       foldOnExit: true,
       label: `${f.name}  ${f.value}`,
       labelPriority: 2000 + facets.length - i,
@@ -426,7 +447,7 @@ function fanOut(
     });
     links.push({
       id: `facet-link:${f.id}`,
-      source: root,
+      source: FAN_HUB,
       target: id,
       curve: 'arc',
       width: 1.2,
