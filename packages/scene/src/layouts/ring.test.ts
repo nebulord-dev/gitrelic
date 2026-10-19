@@ -75,9 +75,27 @@ describe('ringScene', () => {
     const fanned = lensOf({ preset: 'shame', entities });
     expect(resting.labelAnchor).toBe('right');
     expect(fanned.labelAnchor).toBe('left');
-    expect(fanned.labelLean).toBeUndefined();
+    // Lifted off its spoke, which heads down to the centre from above it.
+    expect(resting.y).toBeLessThan(viewport.height / 2);
+    expect(fanned.labelLean).toBeLessThan(-0.5);
     // Focused with nothing to fan, it keeps its outward label.
     expect(lensOf({ preset: 'shame', entities: [] }).labelAnchor).toBe('right');
+  });
+
+  it('keeps a fanned label off a vertical spoke at the top or bottom', () => {
+    const lenses = ringScene(repo, readings, null, viewport).marks.filter((m) =>
+      m.id.startsWith('analyzer:'),
+    );
+    const top = lenses.reduce((a, b) => (b.y < a.y ? b : a));
+    const preset = top.id.slice('analyzer:'.length);
+    const entities = lensTopEntities('hotspots', report, index, 3);
+    const fanned = ringScene(
+      repo,
+      readings,
+      { preset, entities },
+      viewport,
+    ).marks.find((m) => m.id === top.id)!;
+    expect(['left', 'right']).toContain(fanned.labelAnchor);
   });
 
   it('puts the lens name over its reading, with a hot class when it badges', () => {

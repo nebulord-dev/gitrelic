@@ -53,6 +53,27 @@ function leanFor(dx: number, dy: number): number | undefined {
   return (dy / (Math.hypot(dx, dy) || 1)) * LEAN;
 }
 
+/**
+ * A fanned lens's label: inward, off the fan, and lifted clear of its own
+ * spoke, which runs inward too (up off a spoke heading down, down off one
+ * heading up). At the very top or bottom an inward label would sit on the
+ * spoke, so it goes to the side instead.
+ */
+const SPOKE_CLEAR = 0.6;
+
+function fannedLabel(
+  dx: number,
+  dy: number,
+): Pick<Mark, 'labelAnchor' | 'labelLean'> {
+  const inward = anchorFor(-dx, -dy);
+  if (inward === 'above' || inward === 'below')
+    return { labelAnchor: dx < 0 ? 'left' : 'right' };
+  return {
+    labelAnchor: inward,
+    labelLean: dy > 0 ? SPOKE_CLEAR : -SPOKE_CLEAR,
+  };
+}
+
 function anchorFor(dx: number, dy: number): Mark['labelAnchor'] {
   const len = Math.hypot(dx, dy) || 1;
   if (dx / len > 0.35) return 'right';
@@ -164,7 +185,7 @@ export function ringScene(
         labelClass: LABEL_CLASS[lens.grade],
         labelPriority: lens.grade * 10 + (lens.preset === focused ? 50 : 0),
         ...(lens.preset === fanned
-          ? { labelAnchor: anchorFor(cx - x, cy - y) }
+          ? fannedLabel(x - cx, y - cy)
           : {
               labelAnchor: anchorFor(x - cx, y - cy),
               labelLean: leanFor(x - cx, y - cy),
