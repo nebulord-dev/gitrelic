@@ -48,7 +48,7 @@ export const rhythmLayout: Layout = {
   id: 'rhythm',
   label: 'Rhythm',
   caption:
-    'The files with the most commits, week by week; the line splits the window in half. At the right, lines deleted against added, and how the file changes. Linked rings change in lockstep.',
+    'The files with the most commits, week by week (by month past two years); the line splits the window in half. At the right, lines deleted against added, and how the file changes. Linked rings change in lockstep.',
   needsCommits: true,
   build: (input, viewport) =>
     rhythmScene(churnRhythmOf(input.report, input.commits ?? []), viewport),
