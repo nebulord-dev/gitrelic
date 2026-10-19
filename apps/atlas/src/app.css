@@ -140,6 +140,8 @@ body {
 }
 
 .atlas-label--repo .atlas-label__sub {
+  /* Shown only where it fits on one line (labelLayer drops it otherwise). */
+  white-space: nowrap;
   font-size: 12px;
   line-height: 18px;
   color: var(--soft);

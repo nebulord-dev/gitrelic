@@ -72,7 +72,14 @@ export class LabelLayer {
         continue;
       const [sx, sy] = worldToScreen(view, store.x[i], store.y[i]);
       const edge = (store.r[i] || store.w[i] / 2) * view.scale;
-      const sub = mark.labelSub ?? '';
+      // A label inside its mark (centred on one with a size) drops its second
+      // line once the mark is too small on screen to hold it across: the
+      // mark shrinks with the zoom, the text doesn't.
+      const inside = mark.labelAnchor === 'center' && edge > 0;
+      const sub =
+        inside && (mark.labelSub ?? '').length * CHAR_PX > 2 * edge
+          ? ''
+          : (mark.labelSub ?? '');
       // A label with a second line is a heading: both lines are one
       // candidate, so they're shown or culled together.
       const w = sub
@@ -95,8 +102,7 @@ export class LabelLayer {
         cls: mark.labelClass ?? '',
         anchor: mark.labelAnchor,
         centre: mark.labelAnchor === 'center' ? [sx, sy] : null,
-        maxWidth:
-          mark.labelAnchor === 'center' ? Math.round(2 * edge * INSIDE) : 0,
+        maxWidth: inside ? Math.round(2 * edge * INSIDE) : 0,
       });
       if (
         mark.labelAnchor === 'left' ||

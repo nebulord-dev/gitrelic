@@ -104,6 +104,25 @@ describe('LabelLayer', () => {
     expect(beside.style.maxWidth).toBe('');
   });
 
+  it("drops an inside label's second line when its mark is too small for it", () => {
+    const host = document.createElement('div');
+    const layer = new LabelLayer(host);
+    const centre = (r: number) =>
+      store({
+        label: 'react',
+        labelSub: '7,009 files',
+        labelAnchor: 'center',
+        r,
+      });
+    // 11 × 6.5 = 71.5px of text across a 2r-wide mark.
+    layer.update(centre(40), IDENTITY, screen, new Set());
+    const sub = () => spans(host)[0].querySelector('.atlas-label__sub');
+    expect(sub()?.textContent).toBe('7,009 files');
+    layer.update(centre(30), IDENTITY, screen, new Set());
+    expect((sub() as HTMLElement).hidden).toBe(true);
+    expect(spans(host)[0].firstChild!.textContent).toBe('react');
+  });
+
   it('leans a label by a fraction of its height', () => {
     const host = document.createElement('div');
     new LabelLayer(host).update(
