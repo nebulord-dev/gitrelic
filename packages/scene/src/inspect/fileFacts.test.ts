@@ -9,7 +9,7 @@ const F = 'src/core/engine.ts';
 // Only the fields fileFacts reads; the casts keep fixtures readable.
 function reportWith(file: string): GitrelicReport {
   const r = normalizeReport({});
-  r.hotspots.topHotspots = [
+  r.hotspots.files = [
     { file, hotspotScore: 88, category: 'critical' } as never,
   ];
   r.churn.files = [{ file, commitCount: 1234 } as never];
@@ -43,6 +43,19 @@ function reportWith(file: string): GitrelicReport {
 }
 
 describe('fileFacts', () => {
+  it('scores a file outside the top 20 hotspots', () => {
+    const r = reportWith(F);
+    r.hotspots.topHotspots = [];
+    r.hotspots.files = [
+      { file: F, hotspotScore: 40, category: 'moderate' } as never,
+    ];
+    expect(fileFacts(F, r)[0]).toMatchObject({
+      label: 'Hotspot Score',
+      value: '40',
+      lens: 'hotspots',
+    });
+  });
+
   it('lists every analyzer verdict in inspector order', () => {
     expect(fileFacts(F, reportWith(F))).toEqual([
       {
@@ -128,7 +141,7 @@ describe('fileFacts', () => {
     ['low', 'healthy'],
   ])('maps hotspot category %s to tier %s', (category, tier) => {
     const r = reportWith(F);
-    r.hotspots.topHotspots = [{ file: F, hotspotScore: 10, category } as never];
+    r.hotspots.files = [{ file: F, hotspotScore: 10, category } as never];
     expect(fileFacts(F, r)[0].tier).toBe(tier);
   });
 

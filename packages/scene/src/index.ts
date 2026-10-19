@@ -270,7 +270,9 @@ export { distinctNames } from './format/distinctNames';
 export { fieldScene, type FieldInput } from './layouts/field';
 export {
   PACKAGES_DOT_CAP,
+  PACKAGES_HOT_MIN,
   PACKAGES_MAX_GROW,
+  PACKAGES_SHOWN,
   packagesScene,
 } from './layouts/packages';
 export {

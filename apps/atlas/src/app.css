@@ -72,11 +72,29 @@ body {
   line-height: 16px;
   color: var(--soft);
   white-space: nowrap;
+  text-align: center;
   will-change: transform;
 }
 
 .atlas-label--pinned {
   color: var(--text);
+}
+
+/* A label with a second line (Mark.labelSub) is a heading: a larger, bolder
+   name over a quieter line, centred. Sizes match labelLayer's HEAD_* metrics. */
+.atlas-label--heading {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  color: var(--text);
+}
+
+.atlas-label__sub {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--muted);
 }
 
 /* The hover tooltip, positioned per frame by engine/tooltipLayer.ts. */

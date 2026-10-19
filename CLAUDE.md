@@ -66,7 +66,7 @@ Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `norm
 - **Commit-based derivations take `CommitLike[]`**, not `RawCommit[]`. Classic adapts `report.commits` with `fromRawCommits`; Atlas adapts the columnar `/gitrelic-commits.json` with `fromCommitIndex`.
 
 - **No build step.** `exports` points at `src/index.ts`; each consumer's bundler compiles it. Turbo still hashes scene's files into dependents' build hashes, so the cache stays correct without a `build` script.
-- **No framework, no Node, no DOM.** Its tsconfig has `lib: ES2022` with no `types`, and an oxlint override bans `react`, `svelte` and `node:*` imports. Its one runtime dependency is `d3-hierarchy` (pure math: `packSiblings` for By package), the same package classic uses.
+- **No framework, no Node, no DOM.** Its tsconfig has `lib: ES2022` with no `types`, and an oxlint override bans `react`, `svelte` and `node:*` imports. It has no runtime dependencies.
 - Imports from `@gitrelic/core` are `import type` only, like any browser code.
 - Tests sit next to each file (`*.test.ts`); run with `pnpm --filter @gitrelic/scene test`.
 - `test/fixtures/report.small.json` + `commits.small.json` — the deterministic sample repo's report and commit index, used by scene tests and the Atlas dev server. Regenerate with `node scripts/make-scene-fixtures.mjs` (needs a built core); a scene test fails when the fixture lacks a field `normalizeReport` backfills.

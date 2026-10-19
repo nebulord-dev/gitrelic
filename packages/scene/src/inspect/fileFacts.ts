@@ -37,7 +37,9 @@ function shameTier(score: number): FactTier | undefined {
 export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
   const facts: FileFact[] = [];
 
-  const hotspot = report.hotspots.topHotspots.find((h) => h.file === file);
+  // Every scored file, not `topHotspots` (the top 20 only): a file scoring
+  // 40 is still flagged.
+  const hotspot = report.hotspots.files.find((h) => h.file === file);
   if (hotspot) {
     facts.push({
       label: 'Hotspot Score',
