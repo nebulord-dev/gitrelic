@@ -51,7 +51,7 @@ Hover a row for its total, its file count and how many of its files have one or 
 With nothing selected, the inspector leads with the package that **churns hardest per file** (changes ÷ files, among packages with at least five files). Two findings follow:
 
 - **Most changes versus hardest per file.** The package with the most changes is set against the one with the most changes per file. On React, `compiler/` has the most (855 across 370 files, 2.3 each), while `packages/shared/` churns hardest (271 across 21 files, 12.9 each).
-- **Lockstep groups.** These are files that change commit for commit: coupling pairs of source files with strength ≥ 90% over five or more shared commits, joined into groups of three or more. On React, nine feature-flag files (`ReactFeatureFlags.js` and its forks) form one group: one change, made nine times.
+- **Lockstep groups.** These are files that change commit for commit: pairs of source files that share at least 90% of *both* files' commits, over five or more shared commits, joined into groups of three or more. On React, five feature-flag files (`ReactFeatureFlags.js` and four of its forks) form one group: one change, made five times.
 
 The detail table lists every source file with its commits, lines added and deleted, character and package.
 
