@@ -25,6 +25,11 @@ const INSIDE = 0.9;
  * `.atlas-label--repo .atlas-label__sub`) and never wraps.
  */
 const INSIDE_SUB_CHAR_PX = 7.1;
+/**
+ * An inside label shrinks with its mark below the zoom it was set for, down
+ * to this; past it, it drops its second line and keeps full size.
+ */
+const MIN_FIT = 0.7;
 /** Gap between a mark's edge and its label, px. */
 const OFFSET = 4;
 /** Marks drawn fainter than this (fading, or a faint paint) go unlabelled. */
@@ -50,6 +55,8 @@ interface LabelText {
   centre: [number, number] | null;
   /** Px a centred label wraps within, from its mark's size; 0 for none. */
   maxWidth: number;
+  /** How far an inside label is scaled down to fit its mark (1: not). */
+  fit: number;
 }
 
 export class LabelLayer {
@@ -77,15 +84,23 @@ export class LabelLayer {
         continue;
       const [sx, sy] = worldToScreen(view, store.x[i], store.y[i]);
       const edge = (store.r[i] || store.w[i] / 2) * view.scale;
-      // A label inside its mark (centred on one with a size) wraps within
-      // maxWidth, and drops its second line once that's too narrow to hold it
-      // on one line: the mark shrinks with the zoom, the text doesn't.
+      // A label inside its mark (centred on one with a size) wraps within the
+      // mark. The mark shrinks with the zoom and text doesn't, so the label
+      // scales down until its one-line second line fits; when that would make
+      // it too small to read, it drops the second line instead.
       const inside = mark.labelAnchor === 'center' && edge > 0;
-      const maxWidth = inside ? Math.round(2 * edge * INSIDE) : 0;
-      const sub =
-        inside && (mark.labelSub ?? '').length * INSIDE_SUB_CHAR_PX > maxWidth
-          ? ''
-          : (mark.labelSub ?? '');
+      const room = inside ? 2 * edge * INSIDE : 0;
+      let sub = mark.labelSub ?? '';
+      let fit = 1;
+      if (inside && sub) {
+        fit = Math.min(1, room / (sub.length * INSIDE_SUB_CHAR_PX));
+        if (fit < MIN_FIT) {
+          sub = '';
+          fit = 1;
+        }
+      }
+      // The wrap width before scaling, so the scaled label wraps at `room`.
+      const maxWidth = inside ? Math.round(room / fit) : 0;
       // A label with a second line is a heading: both lines are one
       // candidate, so they're shown or culled together.
       const w = sub
@@ -109,6 +124,7 @@ export class LabelLayer {
         anchor: mark.labelAnchor,
         centre: mark.labelAnchor === 'center' ? [sx, sy] : null,
         maxWidth,
+        fit,
       });
       if (
         mark.labelAnchor === 'left' ||
@@ -135,7 +151,7 @@ export class LabelLayer {
       if (!c) return;
       const t = text.get(id);
       if (!t) return;
-      const { label, sub: second, cls, anchor, centre, maxWidth } = t;
+      const { label, sub: second, cls, anchor, centre, maxWidth, fit } = t;
       if (main.data !== label) main.data = label;
       if (second && !entry.sub) {
         entry.sub = document.createElement('span');
@@ -169,7 +185,12 @@ export class LabelLayer {
       span.dataset.id = id;
       span.classList.toggle('atlas-label--pinned', pinned.has(id));
       const [x, y] = centre ?? [c.x, c.y];
-      span.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+      // A centred label's box is centred on the point (and scaled about its
+      // own centre, which the default transform-origin keeps in place).
+      span.style.transform =
+        `translate(${Math.round(x)}px, ${Math.round(y)}px)` +
+        (centre ? ' translate(-50%, -50%)' : '') +
+        (fit < 1 ? ` scale(${fit.toFixed(3)})` : '');
       span.hidden = false;
     });
     for (let k = shown.length; k < this.pool.length; k++)

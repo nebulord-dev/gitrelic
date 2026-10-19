@@ -106,11 +106,9 @@ body {
   text-align: left;
 }
 
-/* Centred on its mark at its real size; labelLayer puts the mark's centre in
-   the transform (`translate` composes with it) and, on a mark with a radius,
-   a max-width inside it to wrap within. */
+/* Centred on its mark at its real size (labelLayer's transform centres the
+   box on the mark) and, on a mark with a radius, wrapped within it. */
 .atlas-label--center {
-  translate: -50% -50%;
   white-space: normal;
   overflow-wrap: anywhere;
 }

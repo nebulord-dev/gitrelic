@@ -104,7 +104,7 @@ describe('LabelLayer', () => {
     expect(beside.style.maxWidth).toBe('');
   });
 
-  it("drops an inside label's second line when its mark is too small for it", () => {
+  it('shrinks an inside label to fit its mark, then drops its second line', () => {
     const host = document.createElement('div');
     const layer = new LabelLayer(host);
     const centre = (r: number) =>
@@ -114,16 +114,27 @@ describe('LabelLayer', () => {
         labelAnchor: 'center',
         r,
       });
-    // 11 × 7.1 = 78.1px of text (set at 12px) against the 0.9 × 2r the
-    // label wraps in: 81px.
+    const span = () => spans(host)[0];
+    const sub = () => span().querySelector('.atlas-label__sub') as HTMLElement;
+    // 11 × 7.1 = 78.1px of text (set at 12px) in 0.9 × 2r = 81px: full size.
     layer.update(centre(45), IDENTITY, screen, new Set());
-    const sub = () => spans(host)[0].querySelector('.atlas-label__sub');
-    expect(sub()?.textContent).toBe('7,009 files');
-    // Narrower than the mark (80px) but wider than its label's box (72px):
-    // kept, it would run past the box and over the mark's edge.
+    expect(sub().textContent).toBe('7,009 files');
+    expect(span().style.transform).toBe(
+      'translate(100px, 100px) translate(-50%, -50%)',
+    );
+    // 72px of room: scaled to 72 / 78.1, wrapping at the unscaled width.
     layer.update(centre(40), IDENTITY, screen, new Set());
-    expect((sub() as HTMLElement).hidden).toBe(true);
-    expect(spans(host)[0].firstChild!.textContent).toBe('react');
+    expect(sub().hidden).toBe(false);
+    expect(span().style.transform).toBe(
+      'translate(100px, 100px) translate(-50%, -50%) scale(0.922)',
+    );
+    expect(span().style.maxWidth).toBe('78px');
+    // 45px of room would need 0.58: too small to read, so the second line
+    // goes and the name keeps full size.
+    layer.update(centre(25), IDENTITY, screen, new Set());
+    expect(sub().hidden).toBe(true);
+    expect(span().firstChild!.textContent).toBe('react');
+    expect(span().style.transform).not.toContain('scale');
   });
 
   it('leans a label by a fraction of its height', () => {
@@ -174,7 +185,7 @@ describe('LabelLayer', () => {
     ['left', 'translate(68px, 92px)'],
     ['above', 'translate(88px, 75px)'],
     ['below', 'translate(88px, 109px)'],
-    ['center', 'translate(100px, 100px)'],
+    ['center', 'translate(100px, 100px) translate(-50%, -50%)'],
   ] as const)('anchors a label %s of its mark', (labelAnchor, transform) => {
     const host = document.createElement('div');
     new LabelLayer(host).update(
