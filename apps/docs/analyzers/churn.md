@@ -55,6 +55,16 @@ With nothing selected, the inspector leads with the package that **churns hardes
 
 The detail table lists every source file with its commits, lines added and deleted, character and package.
 
+### Rhythm
+
+The **Rhythm** toggle in the stage's corner switches to the files with the most commits, one row each, showing their commits week by week. The weeks line up with the commit strip under the stage.
+
+- **The line down the middle** splits the window in half. A file with most of its bars right of the line is speeding up; one with most left of it is slowing down.
+- **Deleted against added**, to the right of the weeks: lines deleted grow left from the axis and lines added grow right. Then comes the file's character, using the same rules as the swarm.
+- **Linked rings** in the left margin mark files that change in lockstep (see above). Rings joined by a line are one group.
+
+Hover a row for the file's commits, how many fell in the recent half, its lines and its character, or hover a week's bar for that week's commits. Click a file's dot to select it. Rhythm needs the commit history, so it appears once the history has loaded.
+
 ## How churn is measured
 
 The full pipeline, from raw git output to the three dashboard surfaces:
@@ -170,7 +180,7 @@ The classifier is conservative on purpose: snapshots, fixtures, and `cypress/` c
 - **[Hotspots](/analyzers/hotspots)** — `churn × LOC` composite. Where churn intersects with complexity, you get files that are both unstable *and* large enough to absorb maintenance cost. Hotspots are typically what you act on.
 - **[Cursed Files](/analyzers/cursed-files)** — multi-dimensional risk score combining churn, ownership concentration, age anomalies, and coupling. Files at the intersection of "bad in many ways."
 - **[Rewrite Ratio](/analyzers/rewrite-ratio)**: the balance of lines added and deleted, which gives each file in the swarm its character.
-- **Churn Velocity** (whether churn is speeding up or slowing down) has no page of its own. In Atlas it will be read off Churn's Rhythm form, whose week-by-week bars arrive in a later release.
+- **Churn Velocity** (whether churn is speeding up or slowing down) has no page of its own. In Atlas it's read off the bars in Churn's [Rhythm](#rhythm) form.
 
 ## Limitations
 

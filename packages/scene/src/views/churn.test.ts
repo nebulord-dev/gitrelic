@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import reportJson from '../../test/fixtures/report.small.json';
 import {
   churnFindings,
+  churnView,
+  rhythmLayout,
   churnTable,
   hardestRow,
   lockstepGroups,
@@ -207,5 +209,22 @@ describe('churnTable', () => {
       table.rows.find((r) => r.id === 'file:README.md')!.cells.package,
     ).toBe('(root)');
     expect(table.tierNames).toEqual(['Frozen', 'Cold', 'Warm', 'Hot']);
+  });
+});
+
+describe('churnView', () => {
+  it('has the swarm first and Rhythm, which needs commits, as its alternate', () => {
+    expect(churnView.layouts.map((l) => l.id)).toEqual(['swarm', 'rhythm']);
+    expect(churnView.layouts[0].needsCommits).toBe(false);
+    expect(rhythmLayout.needsCommits).toBe(true);
+  });
+
+  it('builds Rhythm before commits arrive, rows without weeks', () => {
+    const scene = rhythmLayout.build(
+      { report, commits: null },
+      { width: 1200, height: 800 },
+    );
+    expect(scene.marks.some((m) => m.id === 'file:src/helpers.ts')).toBe(true);
+    expect(scene.marks.some((m) => m.id.startsWith('wk:'))).toBe(false);
   });
 });

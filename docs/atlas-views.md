@@ -292,6 +292,14 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 - **Inspector (lens mode):** About, then the Churn card. It leads with the hardest-churning package (changes per file, among packages with five or more files; on React, `packages/shared/` at 12.9), then the findings and the five busiest packages.
 - **Table:** every source file: path, commits, added, deleted, character, package; most commits first, tiered by churn category.
 
+**As built (second Churn PR, RELIC-362):**
+
+- **Rhythm.** The 16 source files with the most commits, one row each, with their commits week by week over the time strip's weeks (Monday-start UTC, first commit to last, so a row lines up with the strip). Bars share one height scale and stand on the row's floor. A line splits the weeks in half, which is how Velocity is read now: no score, only the bars on either side of the line. Files are matched by current path, so weeks before a rename are empty, as in churn's own count. It needs the commit history, so it waits for `/gitrelic-commits.json` like the time strip does.
+- **Right of the weeks:** lines deleted (muted, leftward) against added (accent, rightward) on one axis, on a square-root scale. Then the character tag, the same rules as the swarm's tooltip.
+- **Lockstep marks:** a ring in the left margin for each file in a lockstep group (the swarm's rule), with the group's rings tied by a line. Only groups with two or more members among the rows are drawn. On React it ties five of the feature-flag rows; `ReactFeatureFlags.www.js` and `test-renderer.native-fb.js` sit just under the 90% bar.
+- **Constancy:** each file keeps its `file:` dot at the start of its row, so switching from the swarm, the busiest files travel into the column. Shapes swap without tweening, so the row itself (`row:`) is a separate bar. It carries the file's tooltip so the whole row hovers, but clicking it selects nothing; the dot selects the file. Week bars grow out of their file.
+- **Tooltips:** a row or dot shows the name, commits and how many fell in the recent half, lines added and deleted, and the character. A week bar shows its commits and the week.
+
 ### Code Health › Risk (checkpoint 2026-10-18)
 
 **Input:** `apps/docs/analyzers/cursed-files.md` (numbers are stale; refreshed when this lens ships), classic's Cursed Files, Hotspot Clustering, and the Risk and Tech Debt dashboards this lens absorbs. Canvas: three boards on React's last 12 months.

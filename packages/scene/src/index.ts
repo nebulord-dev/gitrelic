@@ -293,6 +293,15 @@ export {
   type SwarmFile,
   type SwarmRow,
 } from './churn/swarm';
+export {
+  churnRhythm,
+  churnRhythmOf,
+  RHYTHM_ROWS,
+  topChurnFiles,
+  type Rhythm,
+  type RhythmRow,
+} from './churn/rhythm';
+export { rhythmScene, rhythmTip } from './layouts/rhythm';
 export { SWARM_ROWS, swarmScene } from './layouts/swarm';
 export {
   churnFindings,
@@ -300,6 +309,7 @@ export {
   churnView,
   hardestRow,
   lockstepGroups,
+  rhythmLayout,
   swarmLayout,
 } from './views/churn';
 export { VIEWS } from './views/index';
