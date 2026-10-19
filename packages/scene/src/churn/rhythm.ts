@@ -3,8 +3,11 @@
 // and slowing down are read off the bars rather than a velocity score.
 //
 // Weeks are the shared time strip's (Monday-start UTC, first commit to last),
-// so a row lines up with the strip under the stage. A file is matched by its
-// current path: weeks before a rename are empty, as in churn's own count.
+// so a row lines up with the strip under the stage. Past MONTHLY_AFTER weeks
+// (a `--since all` run) the bins are calendar months instead: ten years of
+// weeks is 520 bars a row, a pixel wide each, and thousands of marks. A file
+// is matched by its current path: bins before a rename are empty, as in
+// churn's own count.
 
 import { startOfUtcWeek, WEEK_MS } from '../time/week';
 import { lockstepGroups } from './lockstep';
@@ -14,21 +17,24 @@ import type { GitrelicReport } from '@gitrelic/core';
 
 /** Files Rhythm draws, most commits first. */
 export const RHYTHM_ROWS = 16;
+/** Windows longer than this many weeks are binned by month. */
+export const MONTHLY_AFTER = 104;
 
 export interface RhythmRow {
   file: SwarmFile;
-  /** Its commits per week, aligned with `Rhythm.start`. */
-  weeks: number[];
-  /** Commits in the later half of the window's weeks. */
+  /** Its commits per bin, aligned with `Rhythm.binStarts`. */
+  bins: number[];
+  /** Commits in the later half of the window's bins. */
   recent: number;
   /** Index into `Rhythm.groups` when it changes in lockstep with others. */
   group: number | null;
 }
 
 export interface Rhythm {
-  /** Monday 00:00 UTC of the first week, epoch ms (0 with no commits). */
-  start: number;
-  weekCount: number;
+  /** What a bin is: a Monday-start UTC week, or a UTC calendar month. */
+  unit: 'week' | 'month';
+  /** Each bin's first instant, epoch ms; empty with no commits. */
+  binStarts: number[];
   rows: RhythmRow[];
   /** Lockstep groups with at least two members among `rows`, in row order. */
   groups: string[][];
@@ -60,14 +66,30 @@ export function churnRhythm(
   const start = commits.length > 0 ? startOfUtcWeek(min) : 0;
   const weekCount =
     commits.length > 0 ? Math.floor((max - start) / WEEK_MS) + 1 : 0;
+  const unit = weekCount > MONTHLY_AFTER ? 'month' : 'week';
+  const binStarts: number[] = [];
+  let binOf: (ms: number) => number;
+  if (unit === 'week') {
+    for (let w = 0; w < weekCount; w++) binStarts.push(start + w * WEEK_MS);
+    binOf = (ms) => Math.floor((ms - start) / WEEK_MS);
+  } else {
+    const monthIndex = (ms: number) => {
+      const d = new Date(ms);
+      return d.getUTCFullYear() * 12 + d.getUTCMonth();
+    };
+    const first = monthIndex(min);
+    for (let m = first; m <= monthIndex(max); m++)
+      binStarts.push(Date.UTC(Math.floor(m / 12), m % 12, 1));
+    binOf = (ms) => monthIndex(ms) - first;
+  }
 
   const slot = new Map(files.map((f, i) => [f.file, i]));
-  const weeks = files.map(() => new Array<number>(weekCount).fill(0));
+  const bins = files.map(() => new Array<number>(binStarts.length).fill(0));
   for (const c of commits) {
-    const w = Math.floor((c.timeMs - start) / WEEK_MS);
+    const b = binOf(c.timeMs);
     for (const path of c.files) {
       const i = slot.get(path);
-      if (i !== undefined) weeks[i][w]++;
+      if (i !== undefined) bins[i][b]++;
     }
   }
 
@@ -81,15 +103,15 @@ export function churnRhythm(
   const groupOf = new Map<string, number>();
   groups.forEach((g, k) => g.forEach((f) => groupOf.set(f, k)));
 
-  const half = Math.floor(weekCount / 2);
+  const half = Math.floor(binStarts.length / 2);
   return {
-    start,
-    weekCount,
+    unit,
+    binStarts,
     groups,
     rows: files.map((file, i) => ({
       file,
-      weeks: weeks[i],
-      recent: weeks[i].slice(half).reduce((s, v) => s + v, 0),
+      bins: bins[i],
+      recent: bins[i].slice(half).reduce((s, v) => s + v, 0),
       group: groupOf.get(file.file) ?? null,
     })),
   };

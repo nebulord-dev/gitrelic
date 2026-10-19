@@ -3,7 +3,12 @@ import { describe, expect, it } from 'vitest';
 import commitsJson from '../../test/fixtures/commits.small.json';
 import reportJson from '../../test/fixtures/report.small.json';
 import { fromCommitIndex } from '../commits/commitLike';
-import { churnRhythm, churnRhythmOf, topChurnFiles } from './rhythm';
+import {
+  churnRhythm,
+  churnRhythmOf,
+  MONTHLY_AFTER,
+  topChurnFiles,
+} from './rhythm';
 import type { CommitLike } from '../commits/commitLike';
 import type { CommitIndex, GitrelicReport } from '@gitrelic/core';
 
@@ -32,16 +37,17 @@ describe('topChurnFiles', () => {
 describe('churnRhythm', () => {
   it('counts each file’s commits per week over the whole window', () => {
     const rhythm = churnRhythm(report, commits);
-    expect(new Date(rhythm.start).toISOString()).toBe(
+    expect(rhythm.unit).toBe('week');
+    expect(new Date(rhythm.binStarts[0]).toISOString()).toBe(
       '2025-12-29T00:00:00.000Z',
     );
-    expect(rhythm.weekCount).toBe(14);
+    expect(rhythm.binStarts).toHaveLength(14);
     const [helpers] = rhythm.rows;
     expect(helpers.file.file).toBe('src/helpers.ts');
-    expect(helpers.weeks.join('')).toBe('00000011202001');
+    expect(helpers.bins.join('')).toBe('00000011202001');
     // Every row's weeks add up to its churn count.
     for (const row of rhythm.rows)
-      expect(row.weeks.reduce((s, v) => s + v, 0)).toBe(row.file.commits);
+      expect(row.bins.reduce((s, v) => s + v, 0)).toBe(row.file.commits);
   });
 
   it('counts the later half of the weeks as recent', () => {
@@ -49,6 +55,47 @@ describe('churnRhythm', () => {
     expect(helpers.recent).toBe(6);
     expect(config.file.file).toBe('src/config.ts');
     expect(config.recent).toBe(1);
+  });
+
+  it('bins a window past two years by month', () => {
+    // helpers.ts on Mar 3 2020, Mar 20 2020 and Jun 1 2023: past
+    // MONTHLY_AFTER weeks apart.
+    const at = (iso: string) => ({
+      timeMs: Date.parse(iso),
+      author: 'a@x',
+      files: ['src/helpers.ts'],
+    });
+    const long = [
+      at('2020-03-03T10:00:00Z'),
+      at('2020-03-20T10:00:00Z'),
+      at('2023-06-01T10:00:00Z'),
+    ];
+    const rhythm = churnRhythm(report, long);
+    expect(rhythm.unit).toBe('month');
+    // Mar 2020 through Jun 2023: 40 months, each starting on the 1st.
+    expect(rhythm.binStarts).toHaveLength(40);
+    expect(new Date(rhythm.binStarts[0]).toISOString()).toBe(
+      '2020-03-01T00:00:00.000Z',
+    );
+    expect(new Date(rhythm.binStarts[39]).toISOString()).toBe(
+      '2023-06-01T00:00:00.000Z',
+    );
+    const [helpers] = rhythm.rows;
+    expect(helpers.bins[0]).toBe(2);
+    expect(helpers.bins[39]).toBe(1);
+    expect(helpers.recent).toBe(1);
+    // Exactly MONTHLY_AFTER weeks still bins by week.
+    const edge = [
+      at('2020-03-02T00:00:00Z'),
+      at(
+        new Date(
+          Date.parse('2020-03-02T00:00:00Z') +
+            (MONTHLY_AFTER - 1) * 7 * 86_400_000,
+        ).toISOString(),
+      ),
+    ];
+    expect(churnRhythm(report, edge).unit).toBe('week');
+    expect(churnRhythm(report, edge).binStarts).toHaveLength(MONTHLY_AFTER);
   });
 
   it('caps the rows', () => {
@@ -81,8 +128,8 @@ describe('churnRhythm', () => {
 
   it('draws empty weeks without commits', () => {
     const rhythm = churnRhythm(report, []);
-    expect(rhythm.weekCount).toBe(0);
-    expect(rhythm.rows[0].weeks).toEqual([]);
+    expect(rhythm.binStarts).toEqual([]);
+    expect(rhythm.rows[0].bins).toEqual([]);
     expect(rhythm.rows[0].recent).toBe(0);
   });
 
