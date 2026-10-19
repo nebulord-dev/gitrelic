@@ -230,7 +230,7 @@ Each section records:
 - **Fan-out data:** `lensTopEntities` returns the fanned entities, only ones the index resolves.
 - **Layout:** `layouts/ring.ts`:
   - labels point away from the centre: the lens name over its reading (`labelSub`), the reading in accent when the lens badges (`labelClass`);
-  - side labels lean away from the horizontal axis near the top and bottom (`labelLean`), where the ellipse stacks lenses closer than a two-line label is tall; a fanned lens's label turns inward, off its fan, and lifts clear of its own spoke (to the side at the very top or bottom, where the spoke is vertical);
+  - side labels lean away from the horizontal axis near the top and bottom (`labelLean`), where the ellipse stacks lenses closer than a two-line label is tall; a fanned lens's label turns inward, off its fan, and lifts clear of its own spoke (at the very top or bottom, where the spoke is vertical, it goes to the outer side, dropped below the fan);
   - the centre is a thin `outline` (a vector circle, sharp at any size) holding the repo's name over its file and line counts (`repoReading`; no branch, which wouldn't fit). It wraps inside the circle and drops the counts when the circle is too small on screen;
   - view names are label-only marks;
   - fanned marks are parented to their lens, so they grow out of it.

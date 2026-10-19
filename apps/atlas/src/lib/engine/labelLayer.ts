@@ -19,7 +19,12 @@ const HEAD_H = 16;
 /** A heading's second line. */
 const SUB_H = 14;
 /** How much of its mark's width a centred label may wrap within. */
-const INSIDE = 0.8;
+const INSIDE = 0.9;
+/**
+ * An inside label's second line is set larger than CHAR_PX allows for (12px,
+ * `.atlas-label--repo .atlas-label__sub`) and never wraps.
+ */
+const INSIDE_SUB_CHAR_PX = 7.1;
 /** Gap between a mark's edge and its label, px. */
 const OFFSET = 4;
 /** Marks drawn fainter than this (fading, or a faint paint) go unlabelled. */
@@ -78,7 +83,7 @@ export class LabelLayer {
       const inside = mark.labelAnchor === 'center' && edge > 0;
       const maxWidth = inside ? Math.round(2 * edge * INSIDE) : 0;
       const sub =
-        inside && (mark.labelSub ?? '').length * CHAR_PX > maxWidth
+        inside && (mark.labelSub ?? '').length * INSIDE_SUB_CHAR_PX > maxWidth
           ? ''
           : (mark.labelSub ?? '');
       // A label with a second line is a heading: both lines are one

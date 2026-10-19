@@ -96,6 +96,8 @@ describe('ringScene', () => {
       viewport,
     ).marks.find((m) => m.id === top.id)!;
     expect(['left', 'right']).toContain(fanned.labelAnchor);
+    // Dropped toward the centre: below its fan, which spreads upward.
+    expect(fanned.labelLean).toBeGreaterThan(0.5);
   });
 
   it('puts the lens name over its reading, with a hot class when it badges', () => {

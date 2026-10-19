@@ -24,8 +24,11 @@ const LABEL_CLASS = [
   'atlas-label--hot',
   'atlas-label--hot',
 ] as const;
-/** Wide enough to hold the repo's name and size at the usual zoom. */
-const REPO_R = 96;
+/**
+ * Wide enough to hold the repo's name and size ("7,009 files · 999K lines")
+ * at full zoom; the size line drops out when the stage zooms out further.
+ */
+const REPO_R = 104;
 const FAN_DOT = 5;
 /**
  * Room beside the outermost marks for their DOM labels, world units. Labels
@@ -45,8 +48,10 @@ const zero = { w: 0, h: 0, a0: 0, a1: 0 };
  * stacks neighbouring lenses closer than a two-line label is tall.
  */
 const LEAN = 0.5;
+/** How far a fanned lens's label moves off its spoke, as a fraction of its height. */
+const SPOKE_CLEAR = 0.6;
 
-/** Labels point away from the centre, so they never cross the ring. */
+/** Side labels lean apart near the top and bottom; others don't lean. */
 function leanFor(dx: number, dy: number): number | undefined {
   const anchor = anchorFor(dx, dy);
   if (anchor !== 'left' && anchor !== 'right') return undefined;
@@ -54,26 +59,25 @@ function leanFor(dx: number, dy: number): number | undefined {
 }
 
 /**
- * A fanned lens's label: inward, off the fan, and lifted clear of its own
- * spoke, which runs inward too (up off a spoke heading down, down off one
- * heading up). At the very top or bottom an inward label would sit on the
- * spoke, so it goes to the side instead.
+ * A fanned lens's label, clear of both its fan (which spreads outward,
+ * nearly a half-circle) and its spoke (which runs inward). On the ring's
+ * sides it turns inward and moves up off a spoke heading down, or down off
+ * one heading up. At the very top or bottom the inward side is the spoke
+ * itself, so it goes to the outer side, dropped toward the centre: below
+ * the fan, beside the spoke.
  */
-const SPOKE_CLEAR = 0.6;
-
 function fannedLabel(
   dx: number,
   dy: number,
 ): Pick<Mark, 'labelAnchor' | 'labelLean'> {
   const inward = anchorFor(-dx, -dy);
+  const towardCentre = dy > 0 ? -SPOKE_CLEAR : SPOKE_CLEAR;
   if (inward === 'above' || inward === 'below')
-    return { labelAnchor: dx < 0 ? 'left' : 'right' };
-  return {
-    labelAnchor: inward,
-    labelLean: dy > 0 ? SPOKE_CLEAR : -SPOKE_CLEAR,
-  };
+    return { labelAnchor: dx < 0 ? 'left' : 'right', labelLean: towardCentre };
+  return { labelAnchor: inward, labelLean: -towardCentre };
 }
 
+/** Labels point away from the centre, so they never cross the ring. */
 function anchorFor(dx: number, dy: number): Mark['labelAnchor'] {
   const len = Math.hypot(dx, dy) || 1;
   if (dx / len > 0.35) return 'right';

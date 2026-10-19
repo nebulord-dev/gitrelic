@@ -99,7 +99,7 @@ describe('LabelLayer', () => {
       new Set(),
     );
     const [repo, group, beside] = spans(host);
-    expect(repo.style.maxWidth).toBe('80px');
+    expect(repo.style.maxWidth).toBe('90px');
     expect(group.style.maxWidth).toBe('');
     expect(beside.style.maxWidth).toBe('');
   });
@@ -114,11 +114,12 @@ describe('LabelLayer', () => {
         labelAnchor: 'center',
         r,
       });
-    // 11 × 6.5 = 71.5px of text against the 0.8 × 2r the label wraps in.
+    // 11 × 7.1 = 78.1px of text (set at 12px) against the 0.9 × 2r the
+    // label wraps in: 81px.
     layer.update(centre(45), IDENTITY, screen, new Set());
     const sub = () => spans(host)[0].querySelector('.atlas-label__sub');
     expect(sub()?.textContent).toBe('7,009 files');
-    // Narrower than the mark (80px) but wider than its label's box (64px):
+    // Narrower than the mark (80px) but wider than its label's box (72px):
     // kept, it would run past the box and over the mark's edge.
     layer.update(centre(40), IDENTITY, screen, new Set());
     expect((sub() as HTMLElement).hidden).toBe(true);
