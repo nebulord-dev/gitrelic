@@ -212,7 +212,7 @@ export function packagesScene(
     });
   }
 
-  const bounds = boundsOf(circles);
+  const bounds = boundsOf(circles, true);
   if (hidden.length > 0) {
     // What the note can't leave out: critical files in the packages it hides.
     const critical = hidden.filter((c) => c.files.some((f) => f.tier === 3));
@@ -292,14 +292,11 @@ function headingOf(c: Circle): { name: string; stats: string } {
  * vertically. Linear and deterministic: same input, same picture.
  */
 function arrange(circles: Circle[], aspect: number): void {
-  const items = circles.map((c) => {
-    const { name, stats } = headingOf(c);
-    return {
-      c,
-      w: Math.max(2 * c.r, name.length * NAME_CHAR, stats.length * STATS_CHAR),
-      h: HEAD_H + 2 * c.r,
-    };
-  });
+  const items = circles.map((c) => ({
+    c,
+    w: Math.max(2 * c.r, headingWidth(c)),
+    h: HEAD_H + 2 * c.r,
+  }));
   if (items.length === 0) return;
   let area = 0;
   for (const it of items) area += (it.w + COL_GAP) * (it.h + ROW_GAP);
@@ -326,16 +323,29 @@ function arrange(circles: Circle[], aspect: number): void {
   }
 }
 
-function boundsOf(circles: readonly Circle[]) {
+/** A heading's width in world units, allowing for the stage at 0.6. */
+function headingWidth(c: Circle): number {
+  const { name, stats } = headingOf(c);
+  return Math.max(name.length * NAME_CHAR, stats.length * STATS_CHAR);
+}
+
+/**
+ * The circles' extent plus the margin and heading room. With `headings`,
+ * also each heading's width (centred on its circle): an edge column's
+ * heading can be wider than its circle, and the stage fits these bounds.
+ * Headings are screen-sized, so they don't count toward the grow factor.
+ */
+function boundsOf(circles: readonly Circle[], headings = false) {
   if (circles.length === 0) return { x: 0, y: 0, w: 0, h: 0 };
   let x0 = Infinity;
   let y0 = Infinity;
   let x1 = -Infinity;
   let y1 = -Infinity;
   for (const c of circles) {
-    x0 = Math.min(x0, c.x - c.r);
+    const half = headings ? Math.max(c.r, headingWidth(c) / 2) : c.r;
+    x0 = Math.min(x0, c.x - half);
     y0 = Math.min(y0, c.y - c.r);
-    x1 = Math.max(x1, c.x + c.r);
+    x1 = Math.max(x1, c.x + half);
     y1 = Math.max(y1, c.y + c.r);
   }
   return {

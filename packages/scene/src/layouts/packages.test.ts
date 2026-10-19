@@ -300,4 +300,36 @@ describe('packagesScene', () => {
       '(repository root)',
     ]);
   });
+  it("keeps an edge column's wide heading inside the bounds", () => {
+    // A tiny package with a long name sits in the last column: its heading
+    // is far wider than its circle, and the stage fits the bounds.
+    const big = Array.from({ length: 60 }, (_, k) => ({
+      file: `core/f${k}.ts`,
+      commits: 2,
+      loc: 50,
+      score: 5,
+    }));
+    const scene = packagesScene(
+      hotspotPoints(
+        hotspotReport([
+          ...big,
+          {
+            file: 'a-really-quite-long-package-name-here/x.ts',
+            commits: 1,
+            loc: 10,
+            score: 1,
+          },
+        ]),
+      ),
+      viewport,
+    );
+    expect(checkScene(scene)).toEqual([]);
+    const { bounds } = scene;
+    // 13 world units a character: the layout's allowance for the name.
+    for (const m of scene.marks.filter((m) => m.id.startsWith('package:'))) {
+      const half = (m.label!.length * 13) / 2;
+      expect(m.x - half).toBeGreaterThanOrEqual(bounds.x);
+      expect(m.x + half).toBeLessThanOrEqual(bounds.x + bounds.w);
+    }
+  });
 });
