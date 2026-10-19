@@ -85,6 +85,9 @@ export function ringScene(
   const links: Link[] = [];
   const guides: Guide[] = [];
   const focused = focus?.preset ?? null;
+  // The lens whose entities fan out beyond it: its label turns inward, so
+  // the fan's curves don't run through it.
+  const fanned = focus && focus.entities.length > 0 ? focus.preset : null;
   const dim = (id: string) => (focused && id !== focused ? 0.3 : 1);
 
   marks.push({
@@ -160,8 +163,12 @@ export function ringScene(
         labelSub: lens.value,
         labelClass: LABEL_CLASS[lens.grade],
         labelPriority: lens.grade * 10 + (lens.preset === focused ? 50 : 0),
-        labelAnchor: anchorFor(x - cx, y - cy),
-        labelLean: leanFor(x - cx, y - cy),
+        ...(lens.preset === fanned
+          ? { labelAnchor: anchorFor(cx - x, cy - y) }
+          : {
+              labelAnchor: anchorFor(x - cx, y - cy),
+              labelLean: leanFor(x - cx, y - cy),
+            }),
         z: lens.grade,
         tip: [lens.label, lens.value, ...(lens.reason ? [lens.reason] : [])],
       });

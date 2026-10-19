@@ -65,6 +65,21 @@ describe('ringScene', () => {
     expect(lenses.some((m) => (m.labelLean ?? 0) < -0.4)).toBe(true);
   });
 
+  it("turns a fanned lens's label inward, away from its fan", () => {
+    const entities = lensTopEntities('shame', report, index, 5);
+    const lensOf = (focus: Parameters<typeof ringScene>[2]) =>
+      ringScene(repo, readings, focus, viewport).marks.find(
+        (m) => m.id === ids.analyzer('shame'),
+      )!;
+    const resting = lensOf(null);
+    const fanned = lensOf({ preset: 'shame', entities });
+    expect(resting.labelAnchor).toBe('right');
+    expect(fanned.labelAnchor).toBe('left');
+    expect(fanned.labelLean).toBeUndefined();
+    // Focused with nothing to fan, it keeps its outward label.
+    expect(lensOf({ preset: 'shame', entities: [] }).labelAnchor).toBe('right');
+  });
+
   it('puts the lens name over its reading, with a hot class when it badges', () => {
     const graded: LensReading[] = readings.map((r, i) => ({
       ...r,
