@@ -6,7 +6,8 @@ import { fileFacets } from '../hotspots/facets';
 import { hotspotPoints, hotspotScale } from '../hotspots/points';
 import { ids } from '../ids';
 import { checkScene } from '../model';
-import { FIELD_CALLOUTS, FIELD_DOT_CAP, fieldScene } from './field';
+import { planTransition } from '../motion/plan';
+import { FAN_HUB, FIELD_CALLOUTS, FIELD_DOT_CAP, fieldScene } from './field';
 import type { GitrelicReport } from '@gitrelic/core';
 
 const report = reportJson as unknown as GitrelicReport;
@@ -220,7 +221,7 @@ describe('fieldScene', () => {
       );
       const root = scene.marks.find((m) => m.id === ids.file(top.file))!;
       for (const [i, m] of marks.entries()) {
-        expect(m.parent).toBe(root.id);
+        expect(m.parent).toBe(FAN_HUB);
         // Clearing the selection folds the fan before the root goes home.
         expect(m.foldOnExit).toBe(true);
         expect(m.x).toBeGreaterThan(root.x);
@@ -237,7 +238,47 @@ describe('fieldScene', () => {
         l.id.startsWith('facet-link:'),
       );
       expect(facetLinks).toHaveLength(facets.length);
-      for (const l of facetLinks) expect(l.source).toBe(root.id);
+      for (const l of facetLinks) expect(l.source).toBe(FAN_HUB);
+      // The hub sits under the root and hangs off the file, so a first fan
+      // grows out of the dot that was clicked.
+      const hub = scene.marks.find((m) => m.id === FAN_HUB)!;
+      expect(hub).toMatchObject({ x: root.x, y: root.y, parent: root.id });
+      expect(hub.label).toBeUndefined();
+    });
+
+    it('keeps the fan when another file is picked: only the file on the hub changes', () => {
+      const other = points[1];
+      const a = fanned();
+      const b = fieldScene(
+        {
+          points,
+          scale,
+          focus: ids.file(other.file),
+          facets: fileFacets(other, report),
+        },
+        viewport,
+      );
+      const plan = planTransition(b, {
+        marks: new Map(a.marks.map((m) => [m.id, m])),
+        links: new Map(a.links.map((l) => [l.id, { ...l, progress: 1 }])),
+        guides: new Map(a.guides.map((g) => [g.id, g])),
+      });
+      const facetTracks = plan.marks.filter((t) => t.id.startsWith('facet'));
+      expect(facetTracks.length).toBeGreaterThan(0);
+      for (const t of facetTracks) expect(t.phase).toBe('update');
+      const spokes = plan.links.filter((t) => t.id.startsWith('facet-link:'));
+      for (const t of spokes) {
+        expect(t.phase).toBe('update');
+        expect(t.link.source).toBe(FAN_HUB);
+      }
+      // The old file goes home and the new one comes out to the hub.
+      const hub = b.marks.find((m) => m.id === FAN_HUB)!;
+      const out = plan.marks.find((t) => t.id === ids.file(other.file))!;
+      expect(out.to).toMatchObject({ x: hub.x, y: hub.y });
+      // The old file's ring fades where it is instead of streaking away.
+      const ring = plan.marks.find((t) => t.id === `home:${top.file}`)!;
+      expect(ring.phase).toBe('exit');
+      expect(ring.to.x).toBeCloseTo(ring.from.x, 0);
     });
 
     it('drops the callout column', () => {
