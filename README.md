@@ -130,7 +130,7 @@ cd apps/cli && pnpm link --global
 
 pnpm monorepo + Turbo:
 
-- `packages/core` — git analysis engine (22 analyzers covering churn, ownership, history, and diagnostics)
+- `packages/core` — git analysis engine (23 analyzers covering churn, ownership, history, and diagnostics)
 - `apps/cli` — Ink terminal UI + Commander
 - `apps/web` — Vite + React + Tailwind dashboard (served via `--web`)
 

@@ -88,6 +88,22 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       byMonth: [],
       summary: 'Not available',
     },
+    // Reports from before the fix-rate analyzer. windowDays 0 marks the
+    // backfill: a real report always has a window.
+    fixRate: raw.fixRate ?? {
+      files: [],
+      unratedFiles: 0,
+      changes: 0,
+      fixedAfter: 0,
+      rate: null,
+      byMonth: [],
+      fixCommits: 0,
+      reverts: 0,
+      sweepingSkipped: 0,
+      windowDays: 0,
+      minChanges: 0,
+      summary: 'Not available',
+    },
     parallelDev: raw.parallelDev ?? {
       files: [],
       hotFiles: [],

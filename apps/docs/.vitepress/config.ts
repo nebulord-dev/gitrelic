@@ -56,6 +56,7 @@ export default withMermaid(
             { text: 'Commit Timing', link: '/analyzers/commit-timing' },
             { text: 'Contributors', link: '/analyzers/contributors' },
             { text: 'Cursed Files', link: '/analyzers/cursed-files' },
+            { text: 'Fix Rate', link: '/analyzers/fix-rate' },
             { text: 'Ghost Files', link: '/analyzers/ghost-files' },
             { text: 'Hotspots', link: '/analyzers/hotspots' },
             { text: 'Parallel Dev', link: '/analyzers/parallel-dev' },

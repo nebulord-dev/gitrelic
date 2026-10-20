@@ -2742,6 +2742,7 @@ exports[`fixture regression > top-level report keys are stable 1`] = `
   "cursedFiles",
   "deadCode",
   "fileClasses",
+  "fixRate",
   "forensics",
   "ghostFiles",
   "hotspotClusters",

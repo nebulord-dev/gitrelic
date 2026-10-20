@@ -676,6 +676,85 @@ export async function getRenameLog(
 }
 
 /**
+ * The old-side line ranges a `git diff -U0` changed or removed, as blame's
+ * `-L` arguments. Pure insertions (`-a,0`) have no old lines, so they blame
+ * nothing.
+ */
+export function parseRemovedRanges(diff: string): string[] {
+  const ranges: string[] = [];
+  for (const m of diff.matchAll(/^@@ -(\d+)(?:,(\d+))? /gm)) {
+    const start = Number(m[1]);
+    const count = m[2] === undefined ? 1 : Number(m[2]);
+    if (count > 0) ranges.push(`-L${start},${start + count - 1}`);
+  }
+  return ranges;
+}
+
+/** A commit that last touched lines a fix changed, and its path then. */
+export interface BlameOrigin {
+  hash: string;
+  file: string;
+}
+
+/**
+ * The origins in `git blame --porcelain` output. Each commit's first block
+ * carries its `filename`, the path in that commit (so a rename since then
+ * still names the right change); later blocks repeat only the header.
+ */
+export function parseBlameOrigins(raw: string): BlameOrigin[] {
+  const files = new Map<string, string>();
+  let current = '';
+  for (const line of raw.split('\n')) {
+    const header = line.match(/^([0-9a-f]{40,64}) \d+ \d+/);
+    if (header) current = header[1];
+    else if (line.startsWith('filename ') && current && !files.has(current))
+      files.set(current, line.slice('filename '.length));
+  }
+  return [...files].map(([hash, file]) => ({ hash, file }));
+}
+
+/**
+ * Which commits last touched the lines `fix` changed in `file`: `git diff -U0`
+ * against its parent, then `git blame -w` on those lines in the parent (the
+ * SZZ approach). Whitespace-only edits don't count as the origin. Returns []
+ * when git fails (a root commit, a binary file, a path the parent lacks); a
+ * timeout is thrown instead, so the runner's fallback reports it.
+ */
+export async function blameFixedLines(
+  repoPath: string,
+  fix: string,
+  file: string,
+  timeoutMs = quickTimeoutMs,
+): Promise<BlameOrigin[]> {
+  const call = { repoPath, timeoutMs };
+  try {
+    const diff = await runGit(
+      [
+        'diff',
+        '-U0',
+        '--no-ext-diff',
+        '--no-color',
+        `${fix}^`,
+        fix,
+        '--',
+        file,
+      ],
+      call,
+    );
+    const ranges = parseRemovedRanges(diff);
+    if (ranges.length === 0) return [];
+    const blame = await runGit(
+      ['blame', '--porcelain', '-w', ...ranges, `${fix}^`, '--', file],
+      call,
+    );
+    return parseBlameOrigins(blame);
+  } catch (err) {
+    if (err instanceof GitTimeoutError) throw err;
+    return [];
+  }
+}
+
+/**
  * Detects the primary language by counting file extensions.
  */
 export function detectPrimaryLanguage(files: string[]): string {

@@ -6,7 +6,9 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 
 import {
   BlobLineCounter,
+  parseBlameOrigins,
   parseGitLog,
+  parseRemovedRanges,
   resolveCommit,
   isIgnored,
   renameTarget,
@@ -411,5 +413,50 @@ describe('resolveCommit', () => {
     await expect(resolveCommit('/nonexistent', '--output=x')).rejects.toThrow(
       /Unknown branch or revision/,
     );
+  });
+});
+
+describe('parseRemovedRanges', () => {
+  it('turns old-side hunks into blame ranges, skipping pure insertions', () => {
+    const diff = [
+      'diff --git a/a.ts b/a.ts',
+      '--- a/a.ts',
+      '+++ b/a.ts',
+      '@@ -3 +3 @@ fn()',
+      '@@ -10,4 +10,2 @@',
+      '@@ -20,0 +19,5 @@',
+      '+@@ -99,9 +99 @@ an added line, not a hunk',
+    ].join('\n');
+    expect(parseRemovedRanges(diff)).toEqual(['-L3,3', '-L10,13']);
+  });
+
+  it('finds nothing in an empty or binary diff', () => {
+    expect(parseRemovedRanges('')).toEqual([]);
+    expect(
+      parseRemovedRanges('Binary files a/x.png and b/x.png differ'),
+    ).toEqual([]);
+  });
+});
+
+describe('parseBlameOrigins', () => {
+  it('lists each commit once, with the path from its first block', () => {
+    const a = 'a'.repeat(40);
+    const b = 'b'.repeat(40);
+    const raw = [
+      `${a} 3 3 1`,
+      'author Ann',
+      'filename src/old.ts',
+      '\tconst x = 1;',
+      `${b} 7 4 2`,
+      'filename src/new.ts',
+      '\tfoo();',
+      `${a} 4 5`,
+      // A content line that looks like a header or a filename stays content.
+      '\tfilename spoof.ts',
+    ].join('\n');
+    expect(parseBlameOrigins(raw)).toEqual([
+      { hash: a, file: 'src/old.ts' },
+      { hash: b, file: 'src/new.ts' },
+    ]);
   });
 });

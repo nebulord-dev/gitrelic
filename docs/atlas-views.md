@@ -361,6 +361,18 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 - **Table.** The lens's table (cursed files and near misses) under both forms: a table belongs to the lens, not the form.
 - **React (last 12 months).** Five risky nodes: the seven flag forks as one family, `ReactFlightClient.js`, and the three near misses. 21 source hubs; the eight drawn are `ReactTypes.js` (the family and `ReactFizzServer.js`, 4 commits each), the two `*-dynamic` flag files (16 and 12 commits into the family), the compiler's `DropManualMemoization.ts`, `HIR.ts` and `CompilerError.ts` into `ValidateExhaustiveDependencies.ts`, `ReactFlightServer.js` into `ReactFlightClient.js` (6), and `ReactFiberCommitWork.js` into the family. `ReactFiberConfigDOM.js` has no hub. `useEffectEvent-test.js`, a top hub when tests counted, is gone.
 
+### Code Health › Fix rate (RELIC-359)
+
+**Before building (core) — done.** `analyzers/fix-rate.ts` and `report.fixRate`, method settled with the maintainer on 2026-10-20 from a probe of React's history:
+
+- **Attribution is line blame, not the file.** For each file a fix commit touched, `blameFixedLines` (`utils/git.ts`) runs `git diff -U0` against the parent and `git blame -w` on the removed or changed lines. The ticket's file-level rule ("a fix touched the file within N days") named the right change 15% of the time on 150 sampled React fixes, and 11% on busy files; only the latest change before the fix, 26%. Blame costs about 2 s for React's last 12 months at six at once, and 15 s for its whole history.
+- **Fixes:** subject words `fix(es|ed|ing)`, `bug(s|fix)`, `hotfix`, `regression`, `oops`, `broke(n)`, and subjects starting `Revert`. Shame's `hack`, `workaround`, `temp` and `cleanup` are dropped: compromises, not fixes. React squash-merges, so 21 of its 29 reverts in three years lack the "This reverts commit" body line; the subject catches all of them. Bots are out as fixes and as changes.
+- **Sweeping fixes** (more than 20 files) aren't traced: one compiler fix touched 175 fixtures and alone made a month read 43%. The median fix touches 2 files and 95% touch 12 or fewer.
+- **Window 30 days.** The median gap from a blamed change to its fix is 15 days, three quarters land within 44. Only changes at least 30 days old are rated.
+- **Minimum 8 rated changes** for a file's rate (99 files on React's year at the probe, 55 with fixtures out and the CLI's window), else `unratedFiles`. At 5, one fix reads 20%.
+- **Size:** 11 KB on React's 12 months, 278 KB on its whole history.
+- **What the picture has to work with:** a quiet distribution. React's repo rate is 1.2% over the year (2.2% all time), most rated files sit at 0%, and a handful exceed 20%. The lens checkpoint decides the picture, the Shame merge (`ATLAS_MERGES`) and what the inspector's Activity card says instead of shame.
+
 ---
 
 ## Decision log
@@ -384,3 +396,4 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 - **2026-10-18 — Every lens names its tooltip content at its checkpoint.** Hover shows a small tooltip by the mark (never changing the inspector), and the checkpoint records what it says.
 - **2026-10-20 — Risk's reasons take existing theme roles, near misses are thinner rather than faded.** *Why:* six new tokens per theme weren't worth it for one lens; and since many authors is told from ownership by strength, a faded near miss would have changed what its colours mean. Fix commits takes `--risk-1` because `--risk-3` is the accent.
 - **2026-10-20 — Root causes draws a family of risky files as one node, and only source files as hubs.** *Why:* on React every top hub reached the same seven flag forks, so "risky files reached" measured the family's size, not the hub; and a test changing with risky code is a symptom of the change, not its cause.
+- **2026-10-20 — Fix rate traces each fix to its cause with line blame, over a 30-day window, from 8 changes.** *Why:* the file-level rule blamed innocent changes 85% of the time on React, and blame is cheap enough (2 s a year) to do properly.
