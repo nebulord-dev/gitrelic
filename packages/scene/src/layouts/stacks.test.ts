@@ -89,10 +89,19 @@ describe('stacksScene', () => {
     const line = scene.guides.find((g) => g.id === 'threshold');
     expect(line).toBeDefined();
     expect(mark('threshold-label').label).toBe('cursed at 50');
-    expect(mark('risk-score:src/helpers.ts').label).toBe(
-      '85   hotspot 100 · accelerating',
+    // The score stands alone; signals sit in their own headed column.
+    expect(mark('risk-score:src/helpers.ts').label).toBe('85');
+    expect(mark('risk-signal:src/helpers.ts').label).toBe(
+      'hotspot 100 · accelerating',
+    );
+    expect(mark('signals-head').label).toBe('Not in the score');
+    expect(mark('risk-signal:src/helpers.ts').x).toBeGreaterThan(
+      mark('tick:x:100').x,
     );
     expect(mark('risk-score:src/config.ts').label).toBe('65');
+    expect(
+      scene.marks.find((m) => m.id === 'risk-signal:src/config.ts'),
+    ).toBeUndefined();
   });
 
   it('names every reason in the legend', () => {

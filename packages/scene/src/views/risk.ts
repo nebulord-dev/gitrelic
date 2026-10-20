@@ -31,7 +31,7 @@ export const stacksLayout: Layout = {
   id: 'stacks',
   label: 'Score stacks',
   caption:
-    'Each bar is a file’s risk score split by reason; files past the line are cursed. Near misses sit under it, on thinner bars. Beside a bar: signals the score doesn’t count.',
+    'Each bar is a file’s risk score split by reason; files past the line are cursed. Near misses sit under it, on thinner bars. On the right: signals the score doesn’t count.',
   needsCommits: false,
   build: (input, viewport) => stacksScene(riskStacksOf(input.report), viewport),
 };

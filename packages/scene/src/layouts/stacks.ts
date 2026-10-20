@@ -162,6 +162,13 @@ export function stacksScene(stacks: RiskStacks, viewport: Viewport): Scene {
     ),
   );
 
+  const signalX = right + 24;
+  if (rows.some((r) => signalText(r))) {
+    marks.push(
+      card('signals-head', signalX, top - 30, 'Not in the score', 'right', 5),
+    );
+  }
+
   const names = distinctNames(rows.map((r) => r.file));
   let slot = 0;
   const drawRow = (row: StackRow) => {
@@ -229,17 +236,24 @@ export function stacksScene(stacks: RiskStacks, viewport: Viewport): Scene {
       });
     }
 
-    const signals = signalText(row);
     marks.push(
       card(
         `risk-score:${row.file}`,
         X(row.sum) + 8,
         y,
-        signals ? `${row.score}   ${signals}` : String(row.score),
+        String(row.score),
         'right',
         2,
       ),
     );
+    // Signals the score doesn't count go in their own column past the axis,
+    // under a heading, so "hotspot 56" never reads as part of the score.
+    const signals = signalText(row);
+    if (signals) {
+      marks.push(
+        card(`risk-signal:${row.file}`, signalX, y, signals, 'right', 1),
+      );
+    }
   };
 
   cursed.forEach(drawRow);

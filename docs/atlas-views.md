@@ -338,6 +338,7 @@ Stale Files has no outlier rule: its count is every file untouched in the window
   - The near misses, with the closest one's reasons and how far short it falls.
   - Near misses that are hotspots of 50+.
 - **Inspector (lens mode).** About, then the Risk card: the cursed count and near misses, the findings, and the five highest scores, each with a small split bar.
+- **Signals the score leaves out** (hotspot 50+, accelerating) sit in their own column right of the axis, under "Not in the score", not beside the score: "50 hotspot 56" read as one number.
 - **Table.** Cursed files and near misses, with these columns: score, the points for churn / owners (ownership or many authors) / abandoned / fixes / parallel, hotspot, and status ("cursed" or "near miss (N short)"). Tiers are Near miss, Cursed, and Cursed 60+.
 - **React (last 12 months).**
   - Eight cursed files, all churn 35 + many authors 10 + parallel 5 or 10: seven `ReactFeatureFlags` forks and `ReactFlightClient.js`.
