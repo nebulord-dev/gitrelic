@@ -79,6 +79,9 @@ gitrelic --path ~/projects/my-app --no-merge-identities
 
 # Count test fixtures, snapshots and generated code in ownership metrics (excluded by default)
 gitrelic --path ~/projects/my-app --include-fixtures
+
+# Give a huge repo's long git reads more time (default 600 s each)
+gitrelic --path ~/projects/huge-repo --since all --git-timeout 1800
 ```
 
 ## How GitRelic scores files

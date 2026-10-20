@@ -4,7 +4,7 @@ import { execa } from 'execa';
 
 // ─── Running git ───────────────────────────────────────────────────────────────
 
-/** Limit for the quick lookups: rev-parse, branch, ls-tree, check-mailmap. */
+/** Limit for the quick lookups: rev-parse, branch, check-mailmap. */
 export const GIT_QUICK_TIMEOUT_MS = 30_000;
 /**
  * Default limit for the heavy reads (`git log`, the rename log, `cat-file
@@ -403,10 +403,13 @@ export interface TreeBlob {
 export async function getTreeBlobs(
   repoPath: string,
   ref: string,
+  timeoutMs = GIT_HEAVY_TIMEOUT_MS,
 ): Promise<TreeBlob[]> {
+  // Heavy: listing every file of a huge monorepo on a cold cache can take
+  // longer than a lookup, and only `--git-timeout` can then give it more.
   const stdout = await runGit(
     ['ls-tree', '-r', '-z', '--full-tree', '--end-of-options', ref],
-    { repoPath, timeoutMs: quickTimeoutMs },
+    { repoPath, timeoutMs, heavy: true },
   );
   return parseLsTree(stdout).filter((b) => !isIgnored(b.path));
 }

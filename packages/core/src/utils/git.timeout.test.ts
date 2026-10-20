@@ -14,6 +14,7 @@ import {
   resolveCommit,
   resolveRepoRoot,
   setGitQuickTimeoutForTests,
+  getTreeBlobs,
 } from './git.js';
 
 // A fake git, first on PATH. GITSTUB picks its behaviour:
@@ -87,6 +88,13 @@ describe.skipIf(process.platform === 'win32')('git time limits', () => {
     expect((err as Error).message).toBe(
       `git log timed out after 0.2 s in ${dir}. For a very large repository, raise the limit with --git-timeout <seconds>.`,
     );
+  });
+
+  it('lists files under the heavy limit, which --git-timeout raises', async () => {
+    // A huge monorepo's tree on a cold cache is no quick lookup.
+    const err = await getTreeBlobs(dir, 'HEAD', LIMIT).catch((e: unknown) => e);
+    expect(err).toMatchObject({ command: 'git ls-tree', timeoutMs: LIMIT });
+    expect((err as Error).message).toContain('--git-timeout');
   });
 
   it('kills a cat-file stream mid-read and rejects', async () => {

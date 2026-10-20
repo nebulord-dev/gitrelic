@@ -303,7 +303,7 @@ export async function runGitrelic(
   }
 
   onProgress?.('Scanning tracked files...');
-  const treeBlobs = await getTreeBlobs(repoPath, ref);
+  const treeBlobs = await getTreeBlobs(repoPath, ref, timeoutMs);
   const trackedFiles = treeBlobs.map((b) => b.path);
 
   // Fixtures and generated code would inflate ownership metrics (nobody
