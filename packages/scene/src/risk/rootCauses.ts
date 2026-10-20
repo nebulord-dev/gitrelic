@@ -25,6 +25,7 @@ export const FAMILY_COMMITS = 5;
 export const MAX_HUBS = 8;
 /** A family's shared name prefix needs this many characters, else it's named after its top member. */
 const MIN_PREFIX = 4;
+const SEPARATORS = new Set(['.', '-', '_']);
 
 const baseName = (path: string) => path.slice(path.lastIndexOf('/') + 1);
 
@@ -91,7 +92,11 @@ export function familyName(files: readonly string[]): string {
     while (i < prefix.length && i < name.length && prefix[i] === name[i]) i++;
     prefix = prefix.slice(0, i);
   }
-  prefix = prefix.replace(/[.\-_]+$/, '');
+  // Trim trailing separators by hand: `/[.\-_]+$/` backtracks quadratically
+  // on a long run of them in a crafted repo's file names.
+  let end = prefix.length;
+  while (end > 0 && SEPARATORS.has(prefix[end - 1])) end--;
+  prefix = prefix.slice(0, end);
   return prefix.length >= MIN_PREFIX
     ? `${prefix}.*`
     : `${names[0]} +${files.length - 1}`;

@@ -115,4 +115,15 @@ describe('familyName', () => {
       'api.ts +2',
     );
   });
+
+  it('trims a trailing run of separators, and stays fast on a long inner run', () => {
+    expect(familyName(['x/hook-._a.ts', 'x/hook-._b.ts'])).toBe('hook.*');
+    // A regex trim backtracks quadratically on separators that aren't trailing.
+    const dashes = '-'.repeat(100_000);
+    const start = Date.now();
+    expect(familyName([`x/abcd${dashes}e1`, `x/abcd${dashes}e2`])).toBe(
+      `abcd${dashes}e.*`,
+    );
+    expect(Date.now() - start).toBeLessThan(500);
+  });
 });
