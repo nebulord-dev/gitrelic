@@ -12,6 +12,7 @@ import { analyzeContributors } from './analyzers/contributors.js';
 import { analyzeCoupling } from './analyzers/coupling.js';
 import { CURSED_THRESHOLD, findCursedFiles } from './analyzers/cursed-files.js';
 import { analyzeDeadCode } from './analyzers/dead-code.js';
+import { analyzeFixRate } from './analyzers/fix-rate.js';
 import { analyzeForensics } from './analyzers/forensics.js';
 import { analyzeGhostFiles } from './analyzers/ghost-files.js';
 import { analyzeHotspotClustering } from './analyzers/hotspot-clustering.js';
@@ -46,6 +47,7 @@ import type {
   CouplingReport,
   CursedFilesReport,
   DeadCodeReport,
+  FixRateReport,
   ForensicsReport,
   GhostFilesReport,
   GitrelicReport,
@@ -141,6 +143,23 @@ const EMPTY_FORENSICS: ForensicsReport = {
   byMonth: [],
   summary: 'unavailable',
 };
+
+const EMPTY_FIX_RATE: FixRateReport = {
+  files: [],
+  unratedFiles: 0,
+  changes: 0,
+  fixedAfter: 0,
+  rate: null,
+  byMonth: [],
+  fixCommits: 0,
+  reverts: 0,
+  sweepingSkipped: 0,
+  blameTimeouts: 0,
+  windowDays: 0,
+  minChanges: 0,
+  summary: 'Fix rate analysis unavailable.',
+};
+
 const EMPTY_PARALLEL_DEV: ParallelDevReport = {
   files: [],
   hotFiles: [],
@@ -527,6 +546,15 @@ export async function runGitrelic(
     EMPTY_RENAME_TRACKING,
   );
 
+  onProgress?.('Tracing fixes back to their changes...');
+  const fixRate = await safeRunAsync(
+    'fixRate',
+    () =>
+      // The same files as ownership: a snapshot update isn't a fix.
+      analyzeFixRate(repoPath, commits, new Set(ownershipFiles)),
+    EMPTY_FIX_RATE,
+  );
+
   onProgress?.('Finding cursed files...');
   const cursedFiles = safeRun(
     'cursedFiles',
@@ -565,6 +593,7 @@ export async function runGitrelic(
     contributors,
     cursedFiles,
     forensics,
+    fixRate,
     parallelDev,
     loc,
     hotspots,

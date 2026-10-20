@@ -14,6 +14,7 @@ export interface GitrelicReport {
   contributors: ContributorReport;
   cursedFiles: CursedFilesReport;
   forensics: ForensicsReport;
+  fixRate: FixRateReport;
   parallelDev: ParallelDevReport;
   loc: LocReport;
   hotspots: HotspotReport;
@@ -264,6 +265,47 @@ export interface ForensicsReport {
   totalShameCommits: number;
   keywordTiers: { critical: number; moderate: number; mild: number };
   byMonth: ShameByMonth[];
+  summary: string;
+}
+
+// ─── Fix rate (changes followed by a fix of their lines) ─────────────────────
+
+export interface FixRateFix {
+  hash: string;
+  message: string; // subject line
+  date: string;
+  revert: boolean; // a `Revert "…"` commit rather than a fix
+  causes: string[]; // hashes of this file's changes whose lines it fixed
+}
+
+export interface FileFixRate {
+  file: string;
+  changes: number; // changes old enough to have had a full window to be fixed
+  fixedAfter: number; // of those, how many a fix within the window traced back to
+  rate: number; // fixedAfter / changes
+  fixes: FixRateFix[]; // newest first, at most 5
+}
+
+export interface FixRateMonth {
+  month: string; // ISO YYYY-MM of the change, not the fix
+  changes: number;
+  fixedAfter: number;
+}
+
+export interface FixRateReport {
+  // Files with at least minChanges rated changes, by rate, then by changes.
+  files: FileFixRate[];
+  unratedFiles: number; // files with rated changes, but fewer than minChanges
+  changes: number;
+  fixedAfter: number;
+  rate: number | null; // repo-wide; null with no rated change
+  byMonth: FixRateMonth[];
+  fixCommits: number; // fix and revert commits traced with blame
+  reverts: number; // of those, reverts
+  sweepingSkipped: number; // fix commits left untraced for touching too many files
+  blameTimeouts: number; // per-file blames that hit the time limit and were skipped
+  windowDays: number;
+  minChanges: number;
   summary: string;
 }
 

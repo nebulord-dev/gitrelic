@@ -346,4 +346,13 @@ describe('normalizeReport', () => {
     expect(out.fileClasses).toBe(fileClasses);
     expect(out.busFactors.excluded).toEqual({ fixture: 3, generated: 2 });
   });
+
+  it('backfills fixRate on reports from before it, and keeps a real one', () => {
+    const old = normalizeReport({} as any).fixRate;
+    expect(old.files).toEqual([]);
+    expect(old.rate).toBeNull();
+    expect(old.windowDays).toBe(0);
+    const fixRate = { files: [], rate: 0.02, windowDays: 30 };
+    expect(normalizeReport({ fixRate } as any).fixRate).toBe(fixRate);
+  });
 });

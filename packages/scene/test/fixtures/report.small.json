@@ -825,6 +825,25 @@
     ],
     "summary": "src/helpers.ts has the highest shame score (100/100) with 4 flagged commits."
   },
+  "fixRate": {
+    "files": [],
+    "unratedFiles": 10,
+    "changes": 22,
+    "fixedAfter": 1,
+    "rate": 0.045454545454545456,
+    "byMonth": [
+      { "month": "2026-01", "changes": 9, "fixedAfter": 0 },
+      { "month": "2026-02", "changes": 9, "fixedAfter": 1 },
+      { "month": "2026-03", "changes": 4, "fixedAfter": 0 }
+    ],
+    "fixCommits": 5,
+    "reverts": 1,
+    "sweepingSkipped": 0,
+    "blameTimeouts": 0,
+    "windowDays": 30,
+    "minChanges": 8,
+    "summary": "4.5% of changes (1 of 22) had their lines fixed within 30 days; 0 files have the 8+ changes a rate needs."
+  },
   "parallelDev": {
     "files": [],
     "hotFiles": [],

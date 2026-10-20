@@ -52,9 +52,9 @@ Bus factor, knowledge concentration, ghost files (owned by inactive authors), co
 Age maps, dead code candidates, blast radius, coupling maps, parallel development detection, rename tracking, and commit timing stress patterns.
 
 ### Diagnostics
-Cursed files (high churn + concentrated ownership + abandonment, excluding bot-generated churn), shame scores (commit message forensics), test coverage proximity, and LOC/language breakdown.
+Cursed files (high churn + concentrated ownership + abandonment, excluding bot-generated churn), fix rate (changes whose lines a fix had to repair within 30 days, traced with `git blame`), shame scores (commit message forensics), test coverage proximity, and LOC/language breakdown.
 
-## 22 Analyzers
+## 23 Analyzers
 
 All analysis comes from pure git history — no language-specific tooling, no external wrappers.
 

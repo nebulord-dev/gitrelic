@@ -8,7 +8,7 @@ color: green
 You are a monorepo architect specializing in the Gitrelic codebase — a git archaeology CLI that analyzes repository history to surface churn patterns, bus factor risks, and code health metrics. It's a pnpm workspace monorepo with Turbo, consisting of these workspaces:
 
 ```
-@gitrelic/core  (packages/core — private; 22 analyzers, types, git utilities)
+@gitrelic/core  (packages/core — private; 23 analyzers, types, git utilities)
     ↓
 @gitrelic/scene (packages/scene — private; framework-free browser derivations,
                  ships TS source with no build step; type-only imports from core)

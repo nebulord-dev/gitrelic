@@ -14,12 +14,12 @@ hero:
       link: https://github.com/nebulord-dev/gitrelic
 
 features:
-  - title: 22 Analyzers
+  - title: 23 Analyzers
     details: Churn, bus factor, hotspots, coupling, cursed files, ghost files, complexity trends, and more — all from pure git history.
   - title: Terminal & Web
     details: Rich Ink-powered terminal UI for quick scans, plus a full web dashboard with hero visualizations and 23 deep-dive tabs.
   - title: Zero Dependencies
-    details: Everything comes from git itself — `git log` for history, the analyzed commit's tree (`git ls-tree` / `git cat-file`) for files and line counts. No external tool wrappers, no language-specific assumptions.
+    details: Everything comes from git itself — `git log` for history, `git blame` to trace fixes to the changes they repaired, the analyzed commit's tree (`git ls-tree` / `git cat-file`) for files and line counts. No external tool wrappers, no language-specific assumptions.
   - title: Built on Research
     details: Inspired by Adam Tornhill's "Your Code as a Crime Scene" and "Software Design X-Rays" — proven techniques, applied to your repo.
 ---

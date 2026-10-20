@@ -108,7 +108,7 @@ Reports are served from the CLI's local HTTP server (`--web`), written to stdout
 
 - Every analyzer in `src/analyzers/` must have a corresponding `.test.ts`
 - Critical utils (`utils/git.ts`) must have thorough unit tests — parsing `git log` output is where subtle format drift hides
-- Check for analyzers with no tests or only smoke tests; flag them. Current count: 22 analyzers; every one should be testable offline (no live git repo required) using hand-constructed `RawCommit[]` arrays
+- Check for analyzers with no tests or only smoke tests; flag them. Current count: 23 analyzers; every one should be testable offline (no live git repo required) using hand-constructed `RawCommit[]` arrays
 
 ## Key Files
 
@@ -119,7 +119,7 @@ packages/core/src/
 ├── index.ts                   # Public exports
 ├── fixture-regression.test.ts # End-to-end snapshot suite
 ├── utils/git.ts               # ALL git execution — exec-discipline boundary
-└── analyzers/                 # 22 analyzers — sample 5–6 for contract compliance
+└── analyzers/                 # 23 analyzers — sample 5–6 for contract compliance
     ├── cursed-files.ts        # Cross-analyzer consumer — ordering-sensitive
     ├── coupling.ts            # N² risk
     ├── rename-tracking.ts     # Hits git via utils/git.ts
