@@ -521,11 +521,10 @@
     "files": [
       {
         "file": "src/helpers.ts",
-        "curseScore": 85,
+        "curseScore": 65,
         "reasons": [
           "Modified in 35% of all commits",
-          "Single author owns 100% of changes",
-          "4 shame commits detected (\"hack\" appears repeatedly) — this file keeps breaking"
+          "Single author owns 100% of changes"
         ],
         "breakdown": [
           {
@@ -537,77 +536,12 @@
             "kind": "ownership",
             "label": "Single author owns 100% of changes",
             "points": 30
-          },
-          {
-            "kind": "fixes",
-            "label": "4 shame commits detected (\"hack\" appears repeatedly) — this file keeps breaking",
-            "points": 20
           }
         ],
         "churn": 7,
         "authors": 1,
         "ageDays": 30,
         "narrative": "src/helpers.ts has been touched in 35% of all commits by a single author. That person is a single point of failure."
-      },
-      {
-        "file": "src/config.ts",
-        "curseScore": 65,
-        "reasons": [
-          "Frequently modified (4 commits)",
-          "Single author owns 100% of changes",
-          "1 shame commits detected (\"hack\" appears repeatedly) — this file keeps breaking"
-        ],
-        "breakdown": [
-          {
-            "kind": "churn",
-            "label": "Frequently modified (4 commits)",
-            "points": 15
-          },
-          {
-            "kind": "ownership",
-            "label": "Single author owns 100% of changes",
-            "points": 30
-          },
-          {
-            "kind": "fixes",
-            "label": "1 shame commits detected (\"hack\" appears repeatedly) — this file keeps breaking",
-            "points": 20
-          }
-        ],
-        "churn": 4,
-        "authors": 1,
-        "ageDays": 70,
-        "narrative": "src/config.ts has seen 4 commits from 1 author — worth keeping an eye on."
-      },
-      {
-        "file": "src/auth.ts",
-        "curseScore": 65,
-        "reasons": [
-          "Frequently modified (3 commits)",
-          "Single author owns 100% of changes",
-          "2 shame commits detected (\"fix\" appears repeatedly) — this file keeps breaking"
-        ],
-        "breakdown": [
-          {
-            "kind": "churn",
-            "label": "Frequently modified (3 commits)",
-            "points": 15
-          },
-          {
-            "kind": "ownership",
-            "label": "Single author owns 100% of changes",
-            "points": 30
-          },
-          {
-            "kind": "fixes",
-            "label": "2 shame commits detected (\"fix\" appears repeatedly) — this file keeps breaking",
-            "points": 20
-          }
-        ],
-        "churn": 3,
-        "authors": 1,
-        "ageDays": 84,
-        "narrative": "src/auth.ts has seen 3 commits from 1 author — worth keeping an eye on."
       }
     ],
     "excludedBotFiles": [],
@@ -660,9 +594,57 @@
         "authors": 1,
         "ageDays": 25,
         "narrative": "src/api.ts has seen 4 commits from 1 author — worth keeping an eye on."
+      },
+      {
+        "file": "src/config.ts",
+        "curseScore": 45,
+        "reasons": [
+          "Frequently modified (4 commits)",
+          "Single author owns 100% of changes"
+        ],
+        "breakdown": [
+          {
+            "kind": "churn",
+            "label": "Frequently modified (4 commits)",
+            "points": 15
+          },
+          {
+            "kind": "ownership",
+            "label": "Single author owns 100% of changes",
+            "points": 30
+          }
+        ],
+        "churn": 4,
+        "authors": 1,
+        "ageDays": 70,
+        "narrative": "src/config.ts has seen 4 commits from 1 author — worth keeping an eye on."
+      },
+      {
+        "file": "src/auth.ts",
+        "curseScore": 45,
+        "reasons": [
+          "Frequently modified (3 commits)",
+          "Single author owns 100% of changes"
+        ],
+        "breakdown": [
+          {
+            "kind": "churn",
+            "label": "Frequently modified (3 commits)",
+            "points": 15
+          },
+          {
+            "kind": "ownership",
+            "label": "Single author owns 100% of changes",
+            "points": 30
+          }
+        ],
+        "churn": 3,
+        "authors": 1,
+        "ageDays": 84,
+        "narrative": "src/auth.ts has seen 3 commits from 1 author — worth keeping an eye on."
       }
     ],
-    "summary": "3 cursed files. Worst is src/helpers.ts at 85/100."
+    "summary": "1 cursed file. Worst is src/helpers.ts at 65/100."
   },
   "forensics": {
     "files": [

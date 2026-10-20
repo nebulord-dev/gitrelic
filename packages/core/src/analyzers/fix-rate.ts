@@ -44,6 +44,37 @@ const FIX_WORDS =
   /\b(fix|fixes|fixed|fixing|bugfix|bug|bugs|hotfix|regression|oops|broke|broken)\b/i;
 const REVERT = /^revert(s|ed|ing)?\b/i;
 
+/**
+ * A file is fixed more often than chance when, at the repo's rate, chance
+ * alone would give it this many fixed-after changes under this often.
+ * Atlas's lens draws the same line (scene's `fixRate/points.ts`).
+ */
+export const CHANCE_TAIL = 0.025;
+
+/** P(X ≥ k) for X ~ Binomial(n, p), summed in log space so it never underflows. */
+export function binomialUpperTail(n: number, k: number, p: number): number {
+  if (k <= 0) return 1;
+  if (k > n || p <= 0) return 0;
+  if (p >= 1) return 1;
+  let logTerm = n * Math.log1p(-p);
+  const logRatio = Math.log(p) - Math.log1p(-p);
+  let below = 0;
+  for (let i = 0; i < k; i++) {
+    below += Math.exp(logTerm);
+    logTerm += Math.log((n - i) / (i + 1)) + logRatio;
+  }
+  return Math.max(0, 1 - below);
+}
+
+/** Whether a rated file's fixed-after count is more than chance explains. */
+export function aboveChance(
+  file: Pick<FileFixRate, 'changes' | 'fixedAfter'>,
+  rate: number | null,
+): boolean {
+  if (rate === null || file.fixedAfter === 0) return false;
+  return binomialUpperTail(file.changes, file.fixedAfter, rate) < CHANCE_TAIL;
+}
+
 /** Whether a subject line marks a fix, a revert, or neither. */
 export function fixKind(message: string): 'fix' | 'revert' | null {
   if (REVERT.test(message.trim())) return 'revert';

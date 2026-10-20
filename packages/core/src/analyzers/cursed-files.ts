@@ -1,9 +1,10 @@
 import { classifyAuthor } from '../utils/authorClassification.js';
+import { aboveChance } from './fix-rate.js';
 import type {
   ChurnReport,
   BusFactorReport,
   AgeMapReport,
-  ForensicsReport,
+  FixRateReport,
   ParallelDevReport,
 } from '../types.js';
 import type {
@@ -95,7 +96,8 @@ function repoIdleDays(commits: RawCommit[]): number {
  * @param churn - The churn report for the repository.
  * @param busFactor - The bus factor report for the repository.
  * @param ageMap - The age map report for the repository.
- * @param forensics - The forensics report for the repository.
+ * @param fixRate - The fix-rate report: files fixed more often than chance
+ *   are candidates and earn the `fixes` reason.
  * @param parallelDev - The parallel development report for the repository.
  * @param commits - Every commit in the analyzed window. Needed to attribute
  *   churn to humans vs bots and to date the repository's own last activity.
@@ -105,7 +107,7 @@ export function findCursedFiles(
   churn: ChurnReport,
   busFactor: BusFactorReport,
   ageMap: AgeMapReport,
-  forensics: ForensicsReport,
+  fixRate: FixRateReport,
   parallelDev: ParallelDevReport,
   commits: RawCommit[],
   // Files never eligible: test fixtures, snapshots and generated code by
@@ -121,13 +123,17 @@ export function findCursedFiles(
   const churnByFile = new Map(churn.files.map((f) => [f.file, f]));
   const busFactorByFile = new Map(busFactor.files.map((f) => [f.file, f]));
   const ageByFile = new Map(ageMap.files.map((f) => [f.file, f]));
-  const forensicsByFile = new Map(forensics.files.map((f) => [f.file, f]));
+  const fixProne = new Map(
+    fixRate.files
+      .filter((f) => aboveChance(f, fixRate.rate))
+      .map((f) => [f.file, f]),
+  );
   const parallelByFile = new Map(parallelDev.files.map((f) => [f.file, f]));
 
   const candidates = new Set([
     ...churn.topFiles.map((f) => f.file),
     ...busFactor.criticalFiles.map((f) => f.file),
-    ...forensics.shameLeaderboard.map((f) => f.file),
+    ...fixProne.keys(),
     ...parallelDev.hotFiles.map((f) => f.file),
   ]);
 
@@ -139,10 +145,10 @@ export function findCursedFiles(
     const c = churnByFile.get(file);
     const b = busFactorByFile.get(file);
     const a = ageByFile.get(file);
-    const f = forensicsByFile.get(file);
+    const f = fixProne.get(file);
 
     // Churn data is required to produce a CursedFile (needed for score, narrative, and churn field).
-    // Shame-only files (no churn data) are evaluated but dropped here intentionally.
+    // Fix-prone files with no churn data are evaluated but dropped here intentionally.
     if (!c) continue;
 
     const reasons: string[] = [];
@@ -205,25 +211,14 @@ export function findCursedFiles(
       );
     }
 
-    // Shame bonus
-    if (f) {
-      const topKw = f.dominantKeywords[0];
-      if (f.shameScore >= 75) {
-        add(
-          'fixes',
-          `${f.shameCommitCount} shame commits detected${topKw ? ` ("${topKw}" appears repeatedly)` : ''} — this file keeps breaking`,
-          20,
-        );
-      } else if (f.shameScore >= 50) {
-        add(
-          'fixes',
-          `High rate of fix/revert commits (shame score: ${f.shameScore}/100)`,
-          12,
-        );
-      } else if (f.shameScore >= 25) {
-        add('fixes', 'Notable pattern of shame commits', 6);
-      }
-    }
+    // Its changes keep needing fixes: more than chance explains at the
+    // repo's rate (see fix-rate.ts).
+    if (f)
+      add(
+        'fixes',
+        `${f.fixedAfter} of ${f.changes} changes needed a fix within ${fixRate.windowDays} days, more than chance explains`,
+        20,
+      );
 
     // Parallel development risk
     const pd = parallelByFile.get(file);

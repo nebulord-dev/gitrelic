@@ -563,7 +563,7 @@ export async function runGitrelic(
         churn,
         busFactors,
         ageMap,
-        forensics,
+        fixRate,
         parallelDev,
         commits,
         excludedFiles,
