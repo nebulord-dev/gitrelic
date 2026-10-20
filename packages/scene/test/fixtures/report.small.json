@@ -527,6 +527,23 @@
           "Single author owns 100% of changes",
           "4 shame commits detected (\"hack\" appears repeatedly) — this file keeps breaking"
         ],
+        "breakdown": [
+          {
+            "kind": "churn",
+            "label": "Modified in 35% of all commits",
+            "points": 35
+          },
+          {
+            "kind": "ownership",
+            "label": "Single author owns 100% of changes",
+            "points": 30
+          },
+          {
+            "kind": "fixes",
+            "label": "4 shame commits detected (\"hack\" appears repeatedly) — this file keeps breaking",
+            "points": 20
+          }
+        ],
         "churn": 7,
         "authors": 1,
         "ageDays": 30,
@@ -539,6 +556,23 @@
           "Frequently modified (4 commits)",
           "Single author owns 100% of changes",
           "1 shame commits detected (\"hack\" appears repeatedly) — this file keeps breaking"
+        ],
+        "breakdown": [
+          {
+            "kind": "churn",
+            "label": "Frequently modified (4 commits)",
+            "points": 15
+          },
+          {
+            "kind": "ownership",
+            "label": "Single author owns 100% of changes",
+            "points": 30
+          },
+          {
+            "kind": "fixes",
+            "label": "1 shame commits detected (\"hack\" appears repeatedly) — this file keeps breaking",
+            "points": 20
+          }
         ],
         "churn": 4,
         "authors": 1,
@@ -553,6 +587,23 @@
           "Single author owns 100% of changes",
           "2 shame commits detected (\"fix\" appears repeatedly) — this file keeps breaking"
         ],
+        "breakdown": [
+          {
+            "kind": "churn",
+            "label": "Frequently modified (3 commits)",
+            "points": 15
+          },
+          {
+            "kind": "ownership",
+            "label": "Single author owns 100% of changes",
+            "points": 30
+          },
+          {
+            "kind": "fixes",
+            "label": "2 shame commits detected (\"fix\" appears repeatedly) — this file keeps breaking",
+            "points": 20
+          }
+        ],
         "churn": 3,
         "authors": 1,
         "ageDays": 84,
@@ -560,6 +611,57 @@
       }
     ],
     "excludedBotFiles": [],
+    "threshold": 50,
+    "nearMisses": [
+      {
+        "file": "src/index.ts",
+        "curseScore": 45,
+        "reasons": [
+          "Frequently modified (5 commits)",
+          "Single author owns 100% of changes"
+        ],
+        "breakdown": [
+          {
+            "kind": "churn",
+            "label": "Frequently modified (5 commits)",
+            "points": 15
+          },
+          {
+            "kind": "ownership",
+            "label": "Single author owns 100% of changes",
+            "points": 30
+          }
+        ],
+        "churn": 5,
+        "authors": 1,
+        "ageDays": 25,
+        "narrative": "src/index.ts has seen 5 commits from 1 author — worth keeping an eye on."
+      },
+      {
+        "file": "src/api.ts",
+        "curseScore": 45,
+        "reasons": [
+          "Frequently modified (4 commits)",
+          "Single author owns 100% of changes"
+        ],
+        "breakdown": [
+          {
+            "kind": "churn",
+            "label": "Frequently modified (4 commits)",
+            "points": 15
+          },
+          {
+            "kind": "ownership",
+            "label": "Single author owns 100% of changes",
+            "points": 30
+          }
+        ],
+        "churn": 4,
+        "authors": 1,
+        "ageDays": 25,
+        "narrative": "src/api.ts has seen 4 commits from 1 author — worth keeping an eye on."
+      }
+    ],
     "summary": "3 cursed files. Worst is src/helpers.ts at 85/100."
   },
   "forensics": {

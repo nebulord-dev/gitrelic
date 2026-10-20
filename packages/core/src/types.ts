@@ -189,10 +189,29 @@ export interface ContributorReport {
 
 // ─── Cursed files ──────────────────────────────────────────────────────────────
 
+/** Which check in the curse score a reason comes from. */
+export type CurseReasonKind =
+  | 'churn'
+  | 'ownership' // one author dominates (critical or high bus factor)
+  | 'authors' // many authors; the other branch of the ownership check
+  | 'abandoned'
+  | 'fixes'
+  | 'parallel';
+
+/** One reason's share of a curse score. */
+export interface CurseReasonPoints {
+  kind: CurseReasonKind;
+  label: string; // the same text as the matching `reasons` entry
+  points: number;
+}
+
 export interface CursedFile {
   file: string;
-  curseScore: number; // 0–100
+  curseScore: number; // 0–100: the breakdown's sum, capped at 100
   reasons: string[]; // human-readable explanations
+  // The score split by reason, in the order of `reasons`. Its points sum to
+  // the uncapped score (curseScore is that sum capped at 100).
+  breakdown: CurseReasonPoints[];
   churn: number;
   authors: number;
   ageDays: number;
@@ -205,6 +224,11 @@ export interface CursedFilesReport {
   // (semantic-release, dependabot, …). Surfaced rather than silently dropped so
   // an empty panel is explainable instead of just looking broken.
   excludedBotFiles: string[];
+  // The score a file needs to be cursed (files at or above it are `files`).
+  threshold: number;
+  // Files that scored just under the threshold, highest first, so a view can
+  // show how close they came. Bot-driven files are left out, as from `files`.
+  nearMisses: CursedFile[];
   summary: string;
 }
 

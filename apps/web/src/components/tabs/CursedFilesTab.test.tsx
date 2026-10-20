@@ -9,6 +9,13 @@ function c(file: string, curseScore: number): CursedFile {
     file,
     curseScore,
     reasons: ['Single author owns 100% of changes'],
+    breakdown: [
+      {
+        kind: 'ownership',
+        label: 'Single author owns 100% of changes',
+        points: 30,
+      },
+    ],
     churn: 10,
     authors: 1,
     ageDays: 30,

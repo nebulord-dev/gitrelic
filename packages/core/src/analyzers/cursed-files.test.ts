@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
-import { findCursedFiles } from './cursed-files.js';
+import {
+  CURSED_THRESHOLD,
+  findCursedFiles,
+  NEAR_MISS_CAP,
+  NEAR_MISS_FLOOR,
+} from './cursed-files.js';
 import type {
   ChurnReport,
   BusFactorReport,
@@ -795,5 +800,251 @@ describe('findCursedFiles', () => {
       new Set(['src/__snapshots__/a.snap']),
     );
     expect(withExclusion.files.map((f) => f.file)).toEqual(['a.ts']);
+  });
+
+  // RELIC-343: the score split by reason, so a view can stack it.
+  describe('points per reason', () => {
+    const hotCritical = () => ({
+      churn: makeChurnReport([
+        { file: 'a.ts', commitCount: 10, churnScore: 80 },
+      ]),
+      bus: makeBusFactorReport([
+        {
+          file: 'a.ts',
+          risk: 'critical',
+          dominantAuthorPercent: 100,
+          uniqueAuthors: 1,
+        },
+      ]),
+      age: makeAgeMapReport([{ file: 'a.ts', ageInDays: 50 }]),
+    });
+
+    it('splits the score by reason, in the order of the reasons', () => {
+      const { churn, bus, age } = hotCritical();
+      const [file] = findCursedFiles(
+        churn,
+        bus,
+        age,
+        makeEmptyForensics(),
+        makeEmptyParallelDev(),
+        makeCommits(20),
+      ).files;
+
+      expect(file.breakdown.map((r) => [r.kind, r.points])).toEqual([
+        ['churn', 35],
+        ['ownership', 30],
+      ]);
+      expect(file.breakdown.map((r) => r.label)).toEqual(file.reasons);
+      expect(file.curseScore).toBe(65);
+    });
+
+    it('marks many authors as its own kind, never alongside ownership', () => {
+      const churn = makeChurnReport([
+        { file: 'a.ts', commitCount: 10, churnScore: 80 },
+      ]);
+      const bus = makeBusFactorReport([
+        {
+          file: 'a.ts',
+          risk: 'low',
+          dominantAuthorPercent: 30,
+          uniqueAuthors: 8,
+        },
+      ]);
+      const result = findCursedFiles(
+        churn,
+        bus,
+        makeAgeMapReport([]),
+        makeEmptyForensics(),
+        makeEmptyParallelDev(),
+        makeCommits(20),
+      );
+      // 35 + 10 = 45: a near miss, which carries a breakdown too.
+      const [near] = result.nearMisses;
+      expect(near.breakdown.map((r) => r.kind)).toEqual(['churn', 'authors']);
+    });
+
+    it('sums to the uncapped score; curseScore is that sum capped at 100', () => {
+      // churn 35 + ownership 30 + abandoned 10 + fixes 20 + parallel 20 = 115
+      const { churn, bus } = hotCritical();
+      const shame = {
+        file: 'a.ts',
+        shameScore: 80,
+        rawShamePoints: 24,
+        shameCommitCount: 5,
+        topShameCommits: [],
+        dominantKeywords: ['revert'],
+      };
+      const forensics: ForensicsReport = {
+        ...makeEmptyForensics(),
+        files: [shame],
+        shameLeaderboard: [shame],
+      };
+      const parallelFile = {
+        file: 'a.ts',
+        parallelScore: 75,
+        totalActiveWeeks: 10,
+        parallelWeeks: 8,
+        peakAuthors: 3,
+        peakWindow: {
+          weekStart: '2025-06-02T00:00:00Z',
+          authors: ['a@x.com', 'b@x.com', 'c@x.com'],
+          commitCount: 5,
+        },
+        topWindows: [],
+        narrative: '',
+      };
+      const parallel: ParallelDevReport = {
+        ...makeEmptyParallelDev(),
+        files: [parallelFile],
+        hotFiles: [parallelFile],
+      };
+      const [file] = findCursedFiles(
+        churn,
+        bus,
+        makeAgeMapReport([{ file: 'a.ts', ageInDays: 337 }]),
+        forensics,
+        parallel,
+        makeCommits(20, { files: ['other.ts'] }),
+      ).files;
+
+      expect(file.breakdown.map((r) => r.kind)).toEqual([
+        'churn',
+        'ownership',
+        'abandoned',
+        'fixes',
+        'parallel',
+      ]);
+      expect(file.breakdown.reduce((n, r) => n + r.points, 0)).toBe(115);
+      expect(file.curseScore).toBe(100);
+    });
+  });
+
+  describe('near misses', () => {
+    it('reports the threshold the cursed set was drawn at', () => {
+      const result = findCursedFiles(
+        makeChurnReport([]),
+        makeBusFactorReport([]),
+        makeAgeMapReport([]),
+        makeEmptyForensics(),
+        makeEmptyParallelDev(),
+        makeCommits(1),
+      );
+      expect(result.threshold).toBe(CURSED_THRESHOLD);
+      expect(result.nearMisses).toEqual([]);
+    });
+
+    it('keeps files from the floor up to the threshold apart from the cursed', () => {
+      // warm 15 + critical 30 = 45 (near); hot 35 + high 15 = 50 (cursed);
+      // warm 15 + high 15 = 30 (neither).
+      const churn = makeChurnReport([
+        { file: 'near.ts', commitCount: 5, churnScore: 50 },
+        { file: 'cursed.ts', commitCount: 10, churnScore: 80 },
+        { file: 'low.ts', commitCount: 5, churnScore: 50 },
+      ]);
+      const bus = makeBusFactorReport([
+        {
+          file: 'near.ts',
+          risk: 'critical',
+          dominantAuthorPercent: 100,
+          uniqueAuthors: 1,
+        },
+        {
+          file: 'cursed.ts',
+          risk: 'high',
+          dominantAuthorPercent: 80,
+          uniqueAuthors: 2,
+        },
+        {
+          file: 'low.ts',
+          risk: 'high',
+          dominantAuthorPercent: 80,
+          uniqueAuthors: 2,
+        },
+      ]);
+      const result = findCursedFiles(
+        churn,
+        bus,
+        makeAgeMapReport([]),
+        makeEmptyForensics(),
+        makeEmptyParallelDev(),
+        makeCommits(20),
+      );
+
+      expect(result.files.map((f) => f.file)).toEqual(['cursed.ts']);
+      expect(result.nearMisses.map((f) => [f.file, f.curseScore])).toEqual([
+        ['near.ts', 45],
+      ]);
+      expect(NEAR_MISS_FLOOR).toBeLessThanOrEqual(45);
+      // The summary still counts only the cursed.
+      expect(result.summary).toMatch(/^1 cursed file\./);
+    });
+
+    it('keeps the closest few, highest first, ties broken by churn then path', () => {
+      // Critical files are always candidates: warm 15 + critical 30 = 45 each.
+      const names = Array.from(
+        { length: NEAR_MISS_CAP + 5 },
+        (_, i) => `f${String(i).padStart(2, '0')}.ts`,
+      );
+      const churn = makeChurnReport(
+        names.map((file, i) => ({
+          file,
+          commitCount: i % 3,
+          churnScore: 50,
+        })),
+      );
+      const bus = makeBusFactorReport(
+        names.map((file) => ({
+          file,
+          risk: 'critical' as const,
+          dominantAuthorPercent: 100,
+          uniqueAuthors: 1,
+        })),
+      );
+      const near = findCursedFiles(
+        churn,
+        bus,
+        makeAgeMapReport([]),
+        makeEmptyForensics(),
+        makeEmptyParallelDev(),
+        makeCommits(20),
+      ).nearMisses;
+
+      expect(near).toHaveLength(NEAR_MISS_CAP);
+      const expected = [...names]
+        .sort(
+          (a, b) =>
+            (names.indexOf(b) % 3) - (names.indexOf(a) % 3) ||
+            a.localeCompare(b),
+        )
+        .slice(0, NEAR_MISS_CAP);
+      expect(near.map((f) => f.file)).toEqual(expected);
+    });
+
+    it('drops a bot-driven near miss without listing it as withheld', () => {
+      const churn = makeChurnReport([
+        { file: 'near.ts', commitCount: 5, churnScore: 50 },
+      ]);
+      const bus = makeBusFactorReport([
+        {
+          file: 'near.ts',
+          risk: 'critical',
+          dominantAuthorPercent: 100,
+          uniqueAuthors: 1,
+        },
+      ]);
+      const result = findCursedFiles(
+        churn,
+        bus,
+        makeAgeMapReport([]),
+        makeEmptyForensics(),
+        makeEmptyParallelDev(),
+        makeCommits(10, {
+          files: ['near.ts'],
+          authorEmail: 'dependabot[bot]@users.noreply.github.com',
+        }),
+      );
+      expect(result.nearMisses).toEqual([]);
+      expect(result.excludedBotFiles).toEqual([]);
+    });
   });
 });
