@@ -76,7 +76,7 @@ Read based on the task at hand:
 - `apps/atlas/src/App.svelte` — loads `/gitrelic-report.lite.json` via `lib/data/loadReport.ts`, applies the theme, renders `lib/shell/Shell.svelte`
 - `apps/atlas/src/lib/state/hash.ts` — `#v=&l=&s=` URL state; the selection is untrusted (resolve via the entity map, never render it)
 - `apps/atlas/dev/devData.ts` — Vite dev plugin serving the JSON endpoints (scene fixture, or `GITRELIC_DEV_REPO=<path>`); Node-side, the one place Atlas may value-import core
-- `apps/atlas/src/styles/tokens.css` + `packages/scene/src/theme/tokens.ts` — theme tokens (see CLAUDE.md "Atlas Styling")
+- `apps/atlas/src/styles/tokens.css` + `packages/scene/src/theme/tokens.ts` — theme tokens (see `apps/atlas/CLAUDE.md` "Styling")
 - Rules: `import type { X }` from core only (not `import { type X }`); no raw HTML (`test/noRawHtml.test.ts`); dev port 7778
 
 **If working on the documentation site:**

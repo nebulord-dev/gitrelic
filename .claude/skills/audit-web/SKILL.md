@@ -7,7 +7,7 @@ description: Use when auditing the browser dashboards (apps/web classic and apps
 
 The browser dashboards: classic (`apps/web`, React + D3) and Atlas (`apps/atlas`, Svelte 5 runes, replacing classic), both fed by `packages/scene`. Two critical constraints: never import values from `@gitrelic/core` (would bundle Node.js into the browser), and never render user-controlled git data (commit messages, file paths, author names) unsanitized — especially inside D3-built SVG nodes, which is the biggest XSS surface in this codebase.
 
-Sections marked **(classic)** apply only to `apps/web`; **(Atlas)** only to `apps/atlas`. Unmarked sections apply to both. Don't carry classic's React/Tailwind conventions into Atlas findings — see CLAUDE.md "Atlas Styling".
+Sections marked **(classic)** apply only to `apps/web`; **(Atlas)** only to `apps/atlas`. Unmarked sections apply to both. Don't carry classic's React/Tailwind conventions into Atlas findings — see `apps/atlas/CLAUDE.md` "Styling".
 
 ## Checklist
 
@@ -110,7 +110,7 @@ The dashboard uses `d3-force`, `d3-hierarchy`, `d3-scale`, `d3-shape`. These are
 - Pre-bundled d3 types (`@types/d3-*`) must match the runtime versions; version drift causes TS errors that hide real bugs
 - Home-grown reimplementations of force layouts, treemaps, or timelines tend to accumulate UX bugs. If a hero component is >500 LOC of D3 plumbing, consider whether a dedicated library would be smaller and better — precedent: sickbay replaced a home-grown dep graph with a link to Node Modules Inspector
 
-### 8. CSS and Theme Consistency (classic; Atlas themes → CLAUDE.md "Atlas Styling", enforced by `apps/atlas/test/tokens.test.ts`)
+### 8. CSS and Theme Consistency (classic; Atlas themes → `apps/atlas/CLAUDE.md` "Styling", enforced by `apps/atlas/test/tokens.test.ts`)
 
 `theme.ts` and `index.css` define the visual system. Tailwind v4 is configured via `@tailwindcss/vite`. Lower priority than the XSS sections, but:
 
