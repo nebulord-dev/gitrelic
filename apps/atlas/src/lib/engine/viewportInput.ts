@@ -67,7 +67,14 @@ export function attachViewportInput(
     if (pointers.size === 1) {
       const dx = e.clientX - prev.x;
       const dy = e.clientY - prev.y;
-      travelled += Math.abs(dx) + Math.abs(dy);
+      // Until the press passes the click slop, nothing pans: a click that
+      // wiggles a pixel would otherwise take the camera from the stage, and
+      // the next fan opening would no longer be framed. The pointer's press
+      // position is kept until then, so the first pan covers the whole way.
+      if (travelled < CLICK_SLOP) {
+        if (Math.abs(dx) + Math.abs(dy) < CLICK_SLOP) return;
+        travelled = Infinity; // a drag now, never a click
+      }
       opts.set(pan(opts.get(), dx, dy));
     } else if (pointers.size === 2) {
       const other = [...pointers.entries()].find(
