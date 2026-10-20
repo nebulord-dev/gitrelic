@@ -4,10 +4,12 @@
 import { churnView } from './churn';
 import { hotspotsView } from './hotspots';
 import { overviewView } from './overview';
+import { riskView } from './risk';
 import type { AnalyzerView } from '../model';
 
 export const VIEWS: ReadonlyMap<string, AnalyzerView> = new Map([
   ['overview', overviewView],
   ['hotspots', hotspotsView],
   ['churn', churnView],
+  ['cursed-files', riskView],
 ]);

@@ -10,13 +10,14 @@ describe('LensBar', () => {
     expect(
       screen.getByRole('navigation', { name: 'Code Health lenses' }),
     ).toBeTruthy();
-    // Hotspots and Churn have Atlas views: tabs, not links.
+    // Hotspots, Churn and Risk have Atlas views: tabs, not links.
     expect(screen.getByRole('button', { name: /^Hotspots/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Churn/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Risk/ })).toBeTruthy();
     const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(7);
-    expect(links[0].textContent).toMatch(/^Cursed Files/);
-    expect(links[0].getAttribute('href')).toBe('/classic/#preset=cursed-files');
+    expect(links).toHaveLength(6);
+    expect(links[0].textContent).toMatch(/^Stale Files/);
+    expect(links[0].getAttribute('href')).toBe('/classic/#preset=dead-code');
     expect(links[0].textContent).toContain('opens the classic dashboard');
   });
 
@@ -28,8 +29,8 @@ describe('LensBar', () => {
       ],
     ]);
     render(LensBar, { view: 'code-health', badges });
-    expect(
-      screen.getByRole('link', { name: /Cursed Files/ }).textContent,
-    ).toContain('(8 cursed files)');
+    expect(screen.getByRole('button', { name: /^Risk/ }).textContent).toContain(
+      '(8 cursed files)',
+    );
   });
 });

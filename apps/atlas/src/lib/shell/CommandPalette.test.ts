@@ -21,7 +21,7 @@ describe('CommandPalette', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
     const input = await openWithShortcut();
     expect(document.activeElement).toBe(input);
-    expect(screen.getAllByRole('option')).toHaveLength(23);
+    expect(screen.getAllByRole('option')).toHaveLength(22);
 
     await fireEvent.keyDown(input, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -128,7 +128,8 @@ describe('CommandPalette', () => {
     await fireEvent.keyDown(input, { key: 'ArrowDown' });
     await fireEvent.keyDown(input, { key: 'ArrowUp' });
     await fireEvent.keyDown(input, { key: 'Enter' });
-    expect(onpick.mock.calls[0][0].id).toBe('analyzer:risk');
+    // The second analyzer in catalog order.
+    expect(onpick.mock.calls[0][0].id).toBe('analyzer:tech-debt');
   });
 
   it('says so when nothing matches', async () => {

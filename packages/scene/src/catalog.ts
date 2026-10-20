@@ -35,14 +35,6 @@ export const CATALOG: readonly CatalogEntry[] = [
     atlas: true,
   },
   {
-    id: 'risk',
-    label: 'Risk',
-    group: 'overview',
-    explain:
-      'Files where several risk signals overlap, and the people they depend on.',
-    atlas: false,
-  },
-  {
     id: 'tech-debt',
     label: 'Tech Debt',
     group: 'overview',
@@ -69,12 +61,12 @@ export const CATALOG: readonly CatalogEntry[] = [
   },
   {
     id: 'cursed-files',
-    label: 'Cursed Files',
+    label: 'Risk',
     group: 'code-health',
     explain:
-      'Files flagged on several risk dimensions at once: high churn, concentrated ownership, shame and age anomalies.',
+      'Files risky on several counts at once: churn, one owner or many authors, fix commits, parallel edits, abandonment. Each score is split by reason.',
     docsPath: 'analyzers/cursed-files',
-    atlas: false,
+    atlas: true,
   },
   {
     id: 'dead-code',

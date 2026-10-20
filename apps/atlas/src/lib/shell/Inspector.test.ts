@@ -24,8 +24,8 @@ describe('Inspector', () => {
   });
 
   it('explains the open lens, with its docs', () => {
-    render(Inspector, { ...base, view: 'code-health', lens: 'cursed-files' });
-    expect(screen.getByText('Cursed Files')).toBeTruthy();
+    render(Inspector, { ...base, view: 'code-health', lens: 'blast-radius' });
+    expect(screen.getByText('Blast Radius')).toBeTruthy();
     expect(screen.getByRole('link', { name: /Docs/ })).toBeTruthy();
   });
 
@@ -332,12 +332,27 @@ describe('Inspector', () => {
     ).toBeTruthy();
   });
 
+  it('explains the Risk lens with its own card when nothing is selected', () => {
+    render(Inspector, {
+      ...base,
+      view: 'code-health' as const,
+      lens: 'cursed-files',
+    });
+    expect(
+      screen.getByRole('link', { name: 'Docs ↗' }).getAttribute('href'),
+    ).toMatch(/analyzers\/cursed-files$/);
+    expect(screen.getByRole('heading', { name: 'Risk' })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: 'Highest scores' }),
+    ).toBeTruthy();
+  });
+
   it('links a selected lens without an Atlas view to classic', () => {
-    render(Inspector, { ...base, selection: ids.analyzer('cursed-files') });
+    render(Inspector, { ...base, selection: ids.analyzer('dead-code') });
     expect(
       screen
-        .getByRole('link', { name: /Open Cursed Files in classic/ })
+        .getByRole('link', { name: /Open Stale Files in classic/ })
         .getAttribute('href'),
-    ).toBe('/classic/#preset=cursed-files');
+    ).toBe('/classic/#preset=dead-code');
   });
 });

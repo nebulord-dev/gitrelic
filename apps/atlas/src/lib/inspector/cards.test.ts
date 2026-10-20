@@ -8,6 +8,7 @@ import Card from './Card.svelte';
 import ChurnCard from './ChurnCard.svelte';
 import FindingCard from './FindingCard.svelte';
 import HotspotsCard from './HotspotsCard.svelte';
+import RiskCard from './RiskCard.svelte';
 import WhatToDoCard from './WhatToDoCard.svelte';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -182,5 +183,58 @@ describe('Card', () => {
     const card = screen.getByText('body').closest('section')!;
     expect(card.classList).toContain('card');
     expect(card.hasAttribute('data-sticky')).toBe(false);
+  });
+});
+
+describe('RiskCard', () => {
+  const report = reportJson as unknown as GitrelicReport;
+
+  it('leads with the cursed count, near misses and the findings', async () => {
+    const onselect = vi.fn();
+    render(RiskCard, { report, index, onselect });
+    expect(screen.getByText('3')).toBeTruthy();
+    expect(screen.getByText(/cursed files at 50\+/).textContent).toMatch(
+      /2 near misses/,
+    );
+    expect(
+      screen.getByText(/All 3 cursed files score on churn, ownership/),
+    ).toBeTruthy();
+    // The near-miss finding's chip selects the file.
+    await fireEvent.click(
+      screen.getAllByRole('button', { name: 'index.ts' })[0],
+    );
+    expect(onselect).toHaveBeenCalledWith('file:src/index.ts');
+  });
+
+  it('lists the highest scores with their split, and opens the table', async () => {
+    const ontable = vi.fn();
+    render(RiskCard, { report, index, ontable });
+    const list = screen.getByRole('heading', {
+      name: 'Highest scores',
+    }).parentElement!;
+    const rows = list.querySelectorAll('li button');
+    expect(rows).toHaveLength(5);
+    expect(rows[0].textContent).toMatch(/helpers\.ts\s*85/);
+    // One segment per reason: churn, ownership, fix commits.
+    expect(rows[0].querySelectorAll('span.block')).toHaveLength(3);
+    expect(rows[0].getAttribute('title')).toBe(
+      'Churn 35 · Ownership 30 · Fix commits 20',
+    );
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'All 5 files in the table (T) ▸' }),
+    );
+    expect(ontable).toHaveBeenCalled();
+  });
+
+  it('says so when no file scores 40 or more', () => {
+    const empty = {
+      ...report,
+      cursedFiles: { ...report.cursedFiles, files: [], nearMisses: [] },
+    };
+    render(RiskCard, { report: empty, index });
+    expect(screen.getByText(/No file scores 40 or more/)).toBeTruthy();
+    expect(
+      screen.queryByRole('heading', { name: 'Highest scores' }),
+    ).toBeNull();
   });
 });

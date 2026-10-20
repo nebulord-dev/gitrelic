@@ -14,7 +14,7 @@ describe('buildEntityIndex', () => {
     const kinds = new Map<string, number>();
     for (const e of index.entries)
       kinds.set(e.kind, (kinds.get(e.kind) ?? 0) + 1);
-    expect(kinds.get('analyzer')).toBe(23);
+    expect(kinds.get('analyzer')).toBe(22);
     expect(kinds.get('person')).toBe(3);
     expect(kinds.get('dir')).toBe(3); // docs, src, src/__tests__
     expect(kinds.get('file')).toBe(10);

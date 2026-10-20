@@ -9,14 +9,31 @@ import { PRESETS } from './registry';
 // name (docs/atlas-views.md records each).
 const ATLAS_RENAMES: Record<string, string> = {
   overview: 'Repo map',
+  'cursed-files': 'Risk',
+};
+
+// A classic preset folded into an Atlas lens leaves the catalog: Atlas has
+// no tab for it, and classic still serves it at /classic/#preset=<id>.
+const ATLAS_MERGES: Record<string, string> = {
+  risk: 'cursed-files',
 };
 
 describe('scene catalog ↔ classic presets', () => {
-  it('covers exactly the classic presets', () => {
+  it('covers exactly the classic presets, less the merged ones', () => {
     expect(CATALOG.map((e) => e.id).sort()).toEqual(
-      Object.keys(PRESETS).sort(),
+      Object.keys(PRESETS)
+        .filter((id) => !(id in ATLAS_MERGES))
+        .sort(),
     );
   });
+
+  it.each(Object.entries(ATLAS_MERGES))(
+    '%s merges into %s, a classic preset Atlas draws',
+    (from, into) => {
+      expect(from in PRESETS).toBe(true);
+      expect(CATALOG.find((e) => e.id === into)?.atlas).toBe(true);
+    },
+  );
 
   it.each(CATALOG.map((e) => [e.id, e] as const))(
     '%s matches label, group and docs',
