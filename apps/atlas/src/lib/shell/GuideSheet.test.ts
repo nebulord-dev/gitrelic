@@ -17,9 +17,9 @@ describe('GuideSheet', () => {
     expect(
       screen.getByRole('region', { name: 'Ownership & Risk' }),
     ).toBeTruthy();
-    // Repo map, Hotspots and Churn have Atlas views (Open); the rest link classic.
-    expect(screen.getAllByRole('link', { name: 'Classic ↗' }).length).toBe(20);
-    expect(screen.getAllByRole('button', { name: 'Open' })).toHaveLength(3);
+    // Repo map, Hotspots, Churn and Risk have Atlas views (Open); the rest link classic.
+    expect(screen.getAllByRole('link', { name: 'Classic ↗' }).length).toBe(19);
+    expect(screen.getAllByRole('button', { name: 'Open' })).toHaveLength(4);
   });
 
   it('filters by label or explanation, and says when nothing matches', async () => {

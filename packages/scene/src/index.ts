@@ -314,4 +314,24 @@ export {
   rhythmLayout,
   swarmLayout,
 } from './views/churn';
+export {
+  HOTSPOT_MARK,
+  REASON_KINDS,
+  REASON_NAMES,
+  reasonList,
+  RISK_HIGH,
+  RISK_TIER_NAMES,
+  riskStacks,
+  riskStacksOf,
+  riskTier,
+  segmentTip,
+  sharedReasons,
+  signalText,
+  stackRowTip,
+  type RiskStacks,
+  type RiskTier,
+  type StackRow,
+} from './risk/stacks';
+export { REASON_PAINT, stacksScene } from './layouts/stacks';
+export { riskFindings, riskTable, riskView, stacksLayout } from './views/risk';
 export { VIEWS } from './views/index';

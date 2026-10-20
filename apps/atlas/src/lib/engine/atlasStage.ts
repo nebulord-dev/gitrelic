@@ -68,6 +68,8 @@ export class AtlasStage {
   private rowHover: EntityId | null = null;
   /** The marks holding entities the scene didn't draw (`Scene.standIns`). */
   private standIns: Scene['standIns'];
+  /** Marks whose click selects another entity (`Mark.selects`). */
+  private selects = new Map<EntityId, EntityId>();
   /**
    * The pointer's mark first: a row that keeps keyboard focus mustn't
    * contradict what's under the cursor. A row whose entity has no mark of
@@ -128,7 +130,8 @@ export class AtlasStage {
       hover: (sx, sy) => this.setHovered(this.pick(sx, sy)),
       leave: () => this.setHovered(null),
       click: (sx, sy) => {
-        const id = this.pick(sx, sy);
+        const hit = this.pick(sx, sy);
+        const id = hit && (this.selects.get(hit) ?? hit);
         this.select(id);
         opts.onSelect?.(id);
       },
@@ -200,6 +203,9 @@ export class AtlasStage {
     }
     this.lastEmpty = empty;
     this.standIns = scene.standIns;
+    this.selects = new Map(
+      scene.marks.flatMap((m) => (m.selects ? [[m.id, m.selects]] : [])),
+    );
     const plan = planTransition(scene, this.engine.live(), {
       reducedMotion: this.opts.reducedMotion(),
     });

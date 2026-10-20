@@ -206,6 +206,30 @@ describe('AtlasStage', () => {
     expect(onSelect).toHaveBeenLastCalledWith(null);
   });
 
+  it('a mark that selects another entity reports that entity on click', async () => {
+    // A score stack's segment (layout-only id) selects its file.
+    const { stage, fc, host, onSelect } = await setup();
+    stage!.show(
+      scene({ ...dot('seg:a.ts:churn', 200, 100), selects: 'file:a.ts' }),
+    );
+    settle(fc);
+    const [sx, sy] = [
+      200 * stage!.transform.scale + stage!.transform.tx,
+      100 * stage!.transform.scale + stage!.transform.ty,
+    ];
+    host.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        pointerId: 1,
+        clientX: sx,
+        clientY: sy,
+      }),
+    );
+    host.dispatchEvent(
+      new PointerEvent('pointerup', { pointerId: 1, clientX: sx, clientY: sy }),
+    );
+    expect(onSelect).toHaveBeenCalledWith('file:a.ts');
+  });
+
   it('pins the hovered mark’s label', async () => {
     const { stage, fc, host, labelHost } = await setup();
     stage!.show(

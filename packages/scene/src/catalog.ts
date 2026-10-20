@@ -69,12 +69,12 @@ export const CATALOG: readonly CatalogEntry[] = [
   },
   {
     id: 'cursed-files',
-    label: 'Cursed Files',
+    label: 'Risk',
     group: 'code-health',
     explain:
-      'Files flagged on several risk dimensions at once: high churn, concentrated ownership, shame and age anomalies.',
+      'Files risky on several counts at once: churn, one owner or many authors, fix commits, parallel edits, abandonment. Each score is split by reason.',
     docsPath: 'analyzers/cursed-files',
-    atlas: false,
+    atlas: true,
   },
   {
     id: 'dead-code',

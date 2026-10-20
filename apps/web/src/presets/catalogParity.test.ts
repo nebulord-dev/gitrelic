@@ -9,6 +9,7 @@ import { PRESETS } from './registry';
 // name (docs/atlas-views.md records each).
 const ATLAS_RENAMES: Record<string, string> = {
   overview: 'Repo map',
+  'cursed-files': 'Risk',
 };
 
 describe('scene catalog ↔ classic presets', () => {

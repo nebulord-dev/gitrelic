@@ -72,6 +72,11 @@ export interface Mark extends MarkGeom {
   /** Overrides `parentOf(id)` for enter/exit motion. */
   parent?: EntityId;
   /**
+   * What clicking this mark selects, when that isn't its own id: a part of an
+   * entity drawn as its own mark (a score stack's segment selects its file).
+   */
+  selects?: EntityId;
+  /**
    * Leaving, fold into its ancestor where that is now, before anything moves
    * (a fan closing into its root), instead of into the ancestor's place in
    * the next scene.

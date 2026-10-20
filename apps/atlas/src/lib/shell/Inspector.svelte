@@ -21,6 +21,7 @@
   import PersonCard from '../inspector/PersonCard.svelte';
   import RepoMapCard from '../inspector/RepoMapCard.svelte';
   import RepositoryCard from '../inspector/RepositoryCard.svelte';
+  import RiskCard from '../inspector/RiskCard.svelte';
   import { modalOpen, paletteShortcut, pressed } from './shortcut';
   import type { GitrelicReport } from '@gitrelic/core';
 
@@ -264,6 +265,9 @@
   {:else if lens === 'churn' && lensEntry}
     <ExplainCard entry={lensEntry} />
     <ChurnCard {report} {index} {onselect} {ontable} />
+  {:else if lens === 'cursed-files' && lensEntry}
+    <ExplainCard entry={lensEntry} />
+    <RiskCard {report} {index} {onselect} {ontable} />
   {:else if lens === 'overview'}
     <RepoMapCard {report} {onselect} />
     {#if lensEntry}<ExplainCard entry={lensEntry} />{/if}
