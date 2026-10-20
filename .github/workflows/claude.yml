@@ -51,7 +51,10 @@ jobs:
           # pay-per-token API key: runs count against its usage limits.
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           show_full_output: false
-          claude_args: --model claude-sonnet-5-5 --allowedTools "Bash(gh issue comment:*),Bash(gh pr comment:*),Bash(gh issue list:*)"
+          # Read-only `gh pr diff` / `gh pr view` let it read the PR it reviews;
+          # without them a review run hit two permission denials and posted
+          # nothing (#133).
+          claude_args: --model claude-sonnet-5-5 --allowedTools "Bash(gh issue comment:*),Bash(gh pr comment:*),Bash(gh issue list:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
           prompt: |
             You are a helpful code reviewer and issue triager for the GitRelic repo.
 
@@ -70,6 +73,7 @@ jobs:
             - Post an analysis comment using `gh issue comment ${{ github.event.issue.number }} --body "..."`
 
             If this is a new or updated PR (event: pull_request):
+            - Read the change with `gh pr diff ${{ github.event.pull_request.number }}` (and `gh pr view` for its description)
             - Review for correctness, potential bugs, and security issues
             - Post feedback using `gh pr comment`
 
