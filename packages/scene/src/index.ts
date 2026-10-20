@@ -333,5 +333,24 @@ export {
   type StackRow,
 } from './risk/stacks';
 export { REASON_PAINT, stacksScene } from './layouts/stacks';
-export { riskFindings, riskTable, riskView, stacksLayout } from './views/risk';
+export {
+  FAMILY_COMMITS,
+  FAMILY_STRENGTH,
+  familyName,
+  MAX_HUBS,
+  rootCauses,
+  rootCausesOf,
+  type Hub,
+  type HubLink,
+  type RiskNode,
+  type RootCauses,
+} from './risk/rootCauses';
+export { rootCausesScene } from './layouts/rootCauses';
+export {
+  riskFindings,
+  riskTable,
+  riskView,
+  rootCausesLayout,
+  stacksLayout,
+} from './views/risk';
 export { VIEWS } from './views/index';

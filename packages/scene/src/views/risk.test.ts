@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
 import reportJson from '../../test/fixtures/report.small.json';
+import { reactShaped } from '../../test/rootCausesReport';
 import { CATALOG } from '../catalog';
-import { riskFindings, riskTable, riskView, stacksLayout } from './risk';
+import {
+  riskFindings,
+  riskTable,
+  riskView,
+  rootCausesLayout,
+  stacksLayout,
+} from './risk';
 import type { CursedFile, GitrelicReport } from '@gitrelic/core';
 
 const report = reportJson as unknown as GitrelicReport;
@@ -48,6 +55,13 @@ describe('riskView', () => {
     expect(stacksLayout.caption).toBeTruthy();
     expect(stacksLayout.needsCommits).toBe(false);
   });
+
+  it('has Root causes as its one alternate form', () => {
+    expect(riskView.layouts).toEqual([stacksLayout, rootCausesLayout]);
+    expect(rootCausesLayout.id).toBe('root-causes');
+    expect(rootCausesLayout.caption).toBeTruthy();
+    expect(rootCausesLayout.needsCommits).toBe(false);
+  });
 });
 
 describe('riskFindings', () => {
@@ -92,6 +106,27 @@ describe('riskFindings', () => {
     expect(text(first.segments)).toBe(
       '2 cursed files; the worst is a.ts at 55.',
     );
+  });
+
+  it('names the hub upstream of the most risky files, a family counted in full', () => {
+    const hub = riskFindings({ report: reactShaped(), commits: null }).find(
+      (f) => f.id === 'hub',
+    )!;
+    expect(text(hub.segments)).toBe(
+      'ReactTypes.js changes with 8 risky files: ReactFeatureFlags.* (7) and ReactFizzServer.js. No other source file reaches as many.',
+    );
+    expect(hub.segments[0]).toEqual({
+      ref: 'file:shared/ReactTypes.js',
+      text: 'ReactTypes.js',
+    });
+    expect(hub.segments).toContainEqual({
+      ref: 'file:shared/ReactFeatureFlags.js',
+      text: 'ReactFeatureFlags.* (7)',
+    });
+  });
+
+  it('names no hub when none reaches two risky nodes', () => {
+    expect(riskFindings(input).some((f) => f.id === 'hub')).toBe(false);
   });
 
   it('says nothing when no file scores 40 or more', () => {
