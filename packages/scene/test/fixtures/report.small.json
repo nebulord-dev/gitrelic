@@ -839,6 +839,7 @@
     "fixCommits": 5,
     "reverts": 1,
     "sweepingSkipped": 0,
+    "blameTimeouts": 0,
     "windowDays": 30,
     "minChanges": 8,
     "summary": "4.5% of changes (1 of 22) had their lines fixed within 30 days; 0 files have the 8+ changes a rate needs."

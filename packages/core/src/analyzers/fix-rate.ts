@@ -23,7 +23,7 @@
  */
 
 import { classifyAuthor } from '../utils/authorClassification.js';
-import { blameFixedLines } from '../utils/git.js';
+import { blameFixedLines, GitTimeoutError } from '../utils/git.js';
 import type {
   FileFixRate,
   FixRateFix,
@@ -70,11 +70,13 @@ function plan(commits: RawCommit[]): Plan {
  * The report from blame results already gathered. Pure; `analyzeFixRate`
  * runs the blames.
  * @param rated - the files to rate: tracked, less fixtures and generated code.
+ * @param blameTimeouts - blames that hit their limit and were skipped.
  */
 export function computeFixRate(
   commits: RawCommit[],
   origins: FixOrigins,
   rated: Set<string>,
+  blameTimeouts = 0,
 ): FixRateReport {
   const { human, traced, sweepingSkipped } = plan(commits);
   const windowMs = FIX_WINDOW_DAYS * DAY_MS;
@@ -177,6 +179,7 @@ export function computeFixRate(
     fixCommits: traced.length,
     reverts: traced.filter((c) => fixKind(c.message) === 'revert').length,
     sweepingSkipped,
+    blameTimeouts,
     windowDays: FIX_WINDOW_DAYS,
     minChanges: MIN_CHANGES,
     summary: summarize(rate, changes, fixedAfter, files.length),
@@ -201,8 +204,8 @@ function summarize(
 
 /**
  * Blames every traceable fix (`CONCURRENCY` at a time), then rates. Each
- * blame is a quick lookup with its own limit; one that hits it fails the
- * analyzer (the runner's fallback reports it) rather than rating on a gap.
+ * blame is a quick lookup with its own limit; one that hits it is skipped
+ * and counted in `blameTimeouts`, so one slow file can't empty the report.
  * @param rated - the files to rate: tracked, less fixtures and generated code.
  */
 export async function analyzeFixRate(
@@ -216,14 +219,26 @@ export async function analyzeFixRate(
   );
   const origins: FixOrigins = new Map();
   let next = 0;
+  let blameTimeouts = 0;
   const worker = async () => {
     while (next < jobs.length) {
       const { fix, file } = jobs[next++];
-      const found = await blameFixedLines(repoPath, fix.hash, file);
+      let found: BlameOrigin[];
+      try {
+        found = await blameFixedLines(repoPath, fix.hash, file);
+      } catch (err) {
+        if (!(err instanceof GitTimeoutError)) throw err;
+        blameTimeouts++;
+        continue;
+      }
       if (found.length === 0) continue;
       origins.set(fix.hash, [...(origins.get(fix.hash) ?? []), ...found]);
     }
   };
   await Promise.all(Array.from({ length: CONCURRENCY }, worker));
-  return computeFixRate(commits, origins, rated);
+  if (blameTimeouts > 0)
+    process.stderr.write(
+      `[gitrelic] fix rate: ${blameTimeouts} blame${blameTimeouts === 1 ? '' : 's'} hit the time limit and ${blameTimeouts === 1 ? 'was' : 'were'} skipped.\n`,
+    );
+  return computeFixRate(commits, origins, rated, blameTimeouts);
 }

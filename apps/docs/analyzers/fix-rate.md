@@ -53,6 +53,7 @@ Expect low numbers. Most changes are never followed by a fix of their own lines 
 | `byMonth[]` | `month`, `changes`, `fixedAfter`, by the month of the change |
 | `fixCommits`, `reverts` | Fix commits traced, and how many of them were reverts |
 | `sweepingSkipped` | Fix commits left untraced for touching more than 20 files |
+| `blameTimeouts` | Files a fix touched whose blame hit git's 30-second limit; they're skipped and the rest are still rated |
 | `windowDays`, `minChanges` | The rules this report used (30 and 8) |
 
 Tracing costs one `git diff` and one `git blame` per file a fix touched. On React that's about 2 seconds for 12 months of history, and 15 seconds for all of it.

@@ -11,7 +11,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { analyzeFixRate } from './analyzers/fix-rate.js';
 import { runGitrelic } from './runner.js';
-import { blameFixedLines, getAllCommits } from './utils/git.js';
+import {
+  blameFixedLines,
+  getAllCommits,
+  setGitQuickTimeoutForTests,
+} from './utils/git.js';
 import type { GitrelicReport } from './types.js';
 
 const ANN = 'ann@corp.com';
@@ -154,6 +158,25 @@ describe('fix rate on a real history', () => {
   it('counts the traced fixes, bots left out', () => {
     expect(report.fixRate.fixCommits).toBe(4);
     expect(report.fixRate.reverts).toBe(0);
+    expect(report.fixRate.blameTimeouts).toBe(0);
+  });
+
+  it('skips a blame that times out, counts it, and still rates the rest', async () => {
+    const commits = await getAllCommits(repo);
+    setGitQuickTimeoutForTests(1);
+    try {
+      const r = await analyzeFixRate(
+        repo,
+        commits,
+        new Set(['a.ts', 'new.ts']),
+      );
+      // fix3, guard and late on a.ts; fixNew on new.ts.
+      expect(r.blameTimeouts).toBe(4);
+      const a = r.files.find((f) => f.file === 'a.ts')!;
+      expect(a).toMatchObject({ changes: 10, fixedAfter: 0 });
+    } finally {
+      setGitQuickTimeoutForTests();
+    }
   });
 
   it('only blames tracked files it was asked to rate', async () => {

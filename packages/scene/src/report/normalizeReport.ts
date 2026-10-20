@@ -100,6 +100,7 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       fixCommits: 0,
       reverts: 0,
       sweepingSkipped: 0,
+      blameTimeouts: 0,
       windowDays: 0,
       minChanges: 0,
       summary: 'Not available',

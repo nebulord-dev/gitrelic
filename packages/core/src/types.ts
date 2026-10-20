@@ -303,6 +303,7 @@ export interface FixRateReport {
   fixCommits: number; // fix and revert commits traced with blame
   reverts: number; // of those, reverts
   sweepingSkipped: number; // fix commits left untraced for touching too many files
+  blameTimeouts: number; // per-file blames that hit the time limit and were skipped
   windowDays: number;
   minChanges: number;
   summary: string;

@@ -154,6 +154,7 @@ const EMPTY_FIX_RATE: FixRateReport = {
   fixCommits: 0,
   reverts: 0,
   sweepingSkipped: 0,
+  blameTimeouts: 0,
   windowDays: 0,
   minChanges: 0,
   summary: 'Fix rate analysis unavailable.',
