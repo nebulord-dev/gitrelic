@@ -549,14 +549,23 @@ export async function countBlobLines(
     }
     await proc;
   } catch (err) {
-    // A kill mid-stream can end the read loop before `proc` settles: wait for
-    // it (so its rejection is never left unhandled) and report its error,
-    // which is the one that says the limit was hit.
+    // The read loop can fail while git still runs (counting threw): kill it,
+    // or the wait below lasts as long as git does. `kill` is false when git
+    // has already exited, e.g. after the time limit killed it.
+    const killedHere = proc.kill();
+    // Wait for `proc` (so its rejection is never left unhandled) and report
+    // its error when the limit was hit or git failed on its own; when we
+    // killed it, the read loop's error is the real cause.
     const final = await proc.then(
       () => err,
       (procErr: unknown) => procErr,
     );
-    throw timeoutOr(final, args, { repoPath, timeoutMs, heavy: true });
+    const timedOut = (final as { timedOut?: boolean }).timedOut === true;
+    throw timeoutOr(killedHere && !timedOut ? err : final, args, {
+      repoPath,
+      timeoutMs,
+      heavy: true,
+    });
   }
   return counter.results;
 }

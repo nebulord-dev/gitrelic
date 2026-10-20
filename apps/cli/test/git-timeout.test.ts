@@ -57,6 +57,33 @@ describe('gitrelic --git-timeout', () => {
     expect(stderr).toContain('expected a positive number of seconds');
   });
 
+  it('rejects a limit past what a Node timer holds', async () => {
+    // 2,147,484 s is 2^31 ms and change: a timer that long fires at once.
+    const { exitCode, stderr } = await execa(
+      process.execPath,
+      [binary, '--json', '--git-timeout', '2147484'],
+      { reject: false },
+    );
+    expect(exitCode).toBe(1);
+    expect(stderr).toContain('expected at most 2147483 seconds');
+  });
+
+  it.skipIf(process.platform === 'win32')(
+    'accepts a fractional limit and applies it',
+    async () => {
+      const { exitCode, stderr } = await execa(
+        process.execPath,
+        [binary, '--json', '--path', dir, '--git-timeout', '0.5'],
+        {
+          reject: false,
+          env: { PATH: `${bin}${path.delimiter}${process.env.PATH}` },
+        },
+      );
+      expect(exitCode).toBe(1);
+      expect(stderr).toContain('git log timed out after 0.5 s');
+    },
+  );
+
   it.skipIf(process.platform === 'win32')(
     'fails a hung git log with its limit on stderr, stdout left empty',
     async () => {

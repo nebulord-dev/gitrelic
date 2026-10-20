@@ -24,13 +24,28 @@ const pkg = JSON.parse(
   readFileSync(path.resolve(__dirname, '../package.json'), 'utf-8'),
 );
 
-/** `--git-timeout`: a positive number of seconds (fractions allowed). */
+/**
+ * The longest delay a Node timer holds (2^31 − 1 ms, about 24.8 days). execa
+ * doesn't check it, and a longer one overflows and fires after 1 ms.
+ */
+const MAX_TIMER_MS = 2_147_483_647;
+
+/**
+ * `--git-timeout`: a positive number of seconds (fractions allowed), returned
+ * as whole milliseconds, rounded up so a tiny value never becomes 0 (no limit).
+ */
 function parseSeconds(value: string): number {
   const seconds = Number(value);
   if (!value.trim() || !Number.isFinite(seconds) || seconds <= 0) {
     throw new InvalidArgumentError('expected a positive number of seconds.');
   }
-  return seconds;
+  const ms = Math.ceil(seconds * 1000);
+  if (ms > MAX_TIMER_MS) {
+    throw new InvalidArgumentError(
+      `expected at most ${Math.floor(MAX_TIMER_MS / 1000)} seconds.`,
+    );
+  }
+  return ms;
 }
 
 program
@@ -85,6 +100,7 @@ const opts = program.opts<{
   since?: string;
   mergeIdentities: boolean;
   includeFixtures?: boolean;
+  /** In milliseconds: `parseSeconds` converts. */
   gitTimeout?: number;
   web?: boolean;
   ui?: 'classic' | 'atlas';
@@ -104,8 +120,7 @@ const web = opts.web || opts.ui !== undefined;
 
 const inputPath = path.resolve(opts.path);
 const since = opts.since === 'all' ? undefined : opts.since;
-const gitTimeoutMs =
-  opts.gitTimeout === undefined ? undefined : opts.gitTimeout * 1000;
+const gitTimeoutMs = opts.gitTimeout;
 
 // Validate the repo path up front so we can fail with a clean message instead
 // of a buried git stderr trace from deep inside the analyzer stack.

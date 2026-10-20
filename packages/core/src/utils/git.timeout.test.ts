@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { runGitrelic } from '../runner.js';
 import {
+  BlobLineCounter,
   countBlobLines,
   getAllCommits,
   getCurrentBranch,
@@ -94,6 +95,26 @@ describe.skipIf(process.platform === 'win32')('git time limits', () => {
     );
     expect(err).toBeInstanceOf(GitTimeoutError);
     expect(err).toMatchObject({ command: 'git cat-file' });
+  });
+
+  it('kills cat-file when counting throws, instead of waiting it out', async () => {
+    // The stub writes a byte, then sleeps 5 s; the limit is far beyond that.
+    const boom = new Error('counting failed');
+    const push = vi
+      .spyOn(BlobLineCounter.prototype, 'push')
+      .mockImplementation(() => {
+        throw boom;
+      });
+    try {
+      const start = Date.now();
+      const err = await countBlobLines(dir, ['abc'], 60_000).catch(
+        (e: unknown) => e,
+      );
+      expect(Date.now() - start).toBeLessThan(2000);
+      expect(err).toBe(boom);
+    } finally {
+      push.mockRestore();
+    }
   });
 
   it('reports a hung repo-root lookup instead of "not a repository"', async () => {
