@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { fixRateReport } from '../../../../../packages/scene/test/fixRateReport';
 import reportJson from '../../../../../packages/scene/test/fixtures/report.small.json';
+import { fixesReport } from '../../../../../packages/scene/test/riskFixesReport';
 import ActivityCard from './ActivityCard.svelte';
 import Card from './Card.svelte';
 import ChurnCard from './ChurnCard.svelte';
@@ -188,7 +189,9 @@ describe('Card', () => {
 });
 
 describe('RiskCard', () => {
-  const report = reportJson as unknown as GitrelicReport;
+  // The fixture has one cursed file and no fixes; this report has three
+  // cursed files sharing churn, ownership and fix commits.
+  const report = fixesReport();
 
   it('leads with the cursed count, near misses and the findings', async () => {
     const onselect = vi.fn();

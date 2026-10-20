@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import reportJson from '../../test/fixtures/report.small.json';
+import { fixesReport } from '../../test/riskFixesReport';
 import { reactShaped } from '../../test/rootCausesReport';
 import { CATALOG } from '../catalog';
 import {
@@ -66,7 +67,9 @@ describe('riskView', () => {
 
 describe('riskFindings', () => {
   it('names the reasons the whole cursed set shares', () => {
-    const [shared] = riskFindings(input);
+    // The fixture has one cursed file: three that share churn, ownership and
+    // fix commits.
+    const [shared] = riskFindings({ report: fixesReport(), commits: null });
     expect(shared.id).toBe('shared');
     expect(text(shared.segments)).toBe(
       'All 3 cursed files score on churn, ownership and fix commits.',
@@ -76,7 +79,7 @@ describe('riskFindings', () => {
   it('names the near misses and what the closest is short of', () => {
     const near = riskFindings(input).find((f) => f.id === 'near')!;
     expect(text(near.segments)).toBe(
-      '2 files just miss the line at 50: index.ts and api.ts. The closest scores on churn and ownership, 5 points short.',
+      '4 files just miss the line at 50: index.ts, api.ts and 2 more. The closest scores on churn and ownership, 5 points short.',
     );
     expect(near.segments).toContainEqual({
       ref: 'file:src/index.ts',
@@ -140,16 +143,18 @@ describe('riskTable', () => {
   it('lists cursed files and near misses, highest score first', () => {
     expect(table.rows.map((r) => r.id)).toEqual([
       'file:src/helpers.ts',
-      'file:src/config.ts',
-      'file:src/auth.ts',
       'file:src/index.ts',
       'file:src/api.ts',
+      'file:src/config.ts',
+      'file:src/auth.ts',
     ]);
     expect(table.sort).toEqual({ column: 'score', descending: true });
   });
 
   it('gives each reason its points, the hotspot and the status', () => {
-    expect(table.rows[0].cells).toEqual({
+    // A report where fix rate rates helpers.ts, so the fixes column has points.
+    const fixes = riskTable({ report: fixesReport(), commits: null });
+    expect(fixes.rows[0].cells).toEqual({
       file: 'src/helpers.ts',
       score: 85,
       churn: 35,
@@ -160,9 +165,9 @@ describe('riskTable', () => {
       hotspot: 100,
       status: 'cursed',
     });
-    expect(table.rows[3].cells.status).toBe('near miss (5 short)');
-    expect(table.rows[0].tier).toBe(3);
-    expect(table.rows[3].tier).toBe(1);
+    expect(fixes.rows[3].cells.status).toBe('near miss (5 short)');
+    expect(fixes.rows[0].tier).toBe(3);
+    expect(fixes.rows[3].tier).toBe(1);
   });
 
   it('counts many authors under owners', () => {

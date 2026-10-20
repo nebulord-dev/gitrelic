@@ -92,10 +92,10 @@ describe('rootCauses', () => {
     const r = rootCausesOf(fixture);
     expect(r.nodes.map((nd) => nd.file)).toEqual([
       'src/helpers.ts',
-      'src/config.ts',
-      'src/auth.ts',
       'src/index.ts',
       'src/api.ts',
+      'src/config.ts',
+      'src/auth.ts',
     ]);
     expect(r.hubs).toEqual([]);
     expect(rootCausesOf(fixture)).toBe(r);
