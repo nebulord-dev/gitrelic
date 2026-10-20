@@ -21,6 +21,8 @@ import {
 import type { Link, Mark, Scene, Viewport } from '../model';
 
 const ROW_MAX = 64;
+/** Room beside each column for its names (hubs' left, risky files' right). */
+const LABEL_ROOM = 300;
 const zero = { r: 0, w: 0, h: 0, a0: 0, a1: 0 };
 const baseName = (path: string) => path.slice(path.lastIndexOf('/') + 1);
 
@@ -164,7 +166,8 @@ export function rootCausesScene(rc: RootCauses, viewport: Viewport): Scene {
       alpha: 0.95,
       z: 2,
       label: name(h.file),
-      labelSub: `${h.links.length} risky · ${h.commits} commits`,
+      // Files, not nodes: a family counts every member, as the finding does.
+      labelSub: `${h.files} risky ${h.files === 1 ? 'file' : 'files'} · ${h.commits} commits`,
       labelAnchor: 'left',
       labelPriority: 30 - i,
       tip: hubTip(h, name(h.file), label),
@@ -176,8 +179,9 @@ export function rootCausesScene(rc: RootCauses, viewport: Viewport): Scene {
         target: ids.file(l.node),
         curve: 'ribbon',
         width: 1 + 7 * (l.coCommits / maxCo),
-        paint: '--link',
-        alpha: 0.75,
+        // Not `--link`: Flat's is a hairline grey barely off the background.
+        paint: '--muted',
+        alpha: 0.45,
       });
     }
   });
@@ -189,7 +193,16 @@ export function rootCausesScene(rc: RootCauses, viewport: Viewport): Scene {
     card('rc-head:hubs', hubX, headY, 'Change with them', 'left', 5),
     card('rc-head:risky', nodeX, headY, 'Risky files', 'right', 5),
   );
-  return { marks, links, guides: [], bounds, standIns };
+  // Bounds hug the two columns and their labels, so the stage frames the
+  // picture rather than the whole world (a short list sat in empty space).
+  const lastY = Math.max(hubY(hubs.length - 1), nodeY(ordered.length - 1));
+  const fitted = {
+    x: hubX - LABEL_ROOM,
+    y: headY - 24,
+    w: nodeX - hubX + 2 * LABEL_ROOM,
+    h: lastY + 40 - (headY - 24),
+  };
+  return { marks, links, guides: [], bounds: fitted, standIns };
 }
 
 function card(

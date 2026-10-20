@@ -53,6 +53,8 @@ describe('rootCauses', () => {
     ]);
     expect(dynamic.commits).toBe(13);
     expect(dynamic.shared).toBe(12);
+    // One node, seven files: reach in files counts every member.
+    expect(dynamic.files).toBe(7);
   });
 
   it('keeps files apart under 75% of the busier file’s commits or 5 commits', () => {

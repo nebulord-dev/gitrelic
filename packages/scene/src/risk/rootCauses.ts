@@ -55,6 +55,8 @@ export interface Hub {
   commits: number;
   /** One per risky node it changes with, most shared commits first. */
   links: HubLink[];
+  /** Risky files it reaches: a family counts every member. */
+  files: number;
   /** The links' shared commits, summed. */
   shared: number;
 }
@@ -166,6 +168,10 @@ export function rootCauses(report: GitrelicReport): RootCauses {
       file,
       commits: h.commits,
       links,
+      files: links.reduce(
+        (n, l) => n + nodes.find((nd) => nd.file === l.node)!.members.length,
+        0,
+      ),
       shared: links.reduce((s, l) => s + l.coCommits, 0),
     };
   });
@@ -197,7 +203,7 @@ export function hubTip(
 ): string[] {
   return [
     name,
-    `Changes with ${hub.links.length} risky ${hub.links.length === 1 ? 'node' : 'nodes'}`,
+    `Changes with ${hub.files} risky ${hub.files === 1 ? 'file' : 'files'}`,
     ...hub.links.map(
       (l) =>
         `${nodeLabel(l.node)} · ${l.coCommits} of its ${hub.commits} commits`,

@@ -64,10 +64,29 @@ describe('rootCausesScene', () => {
   it('says how often a hub changes with each node', () => {
     expect(mark('file:shared/ReactTypes.js').tip).toEqual([
       'ReactTypes.js',
-      'Changes with 2 risky nodes',
+      'Changes with 8 risky files',
       `ReactFizzServer.js · 4 of its 11 commits`,
       'ReactFeatureFlags.* (7) · 4 of its 11 commits',
     ]);
+  });
+
+  it("counts a hub's risky files, every family member included", () => {
+    expect(mark('file:shared/ReactTypes.js').labelSub).toBe(
+      '8 risky files · 11 commits',
+    );
+  });
+
+  it('draws ribbons in a role that shows on both themes', () => {
+    for (const l of scene.links) expect(l.paint).toBe('--muted');
+  });
+
+  it('fits its bounds to the columns, not the whole viewport', () => {
+    const { x, y, w, h } = scene.bounds;
+    expect(w).toBeLessThan(viewport.width);
+    expect(h).toBeLessThan(viewport.height);
+    const hubs = scene.marks.filter((m) => m.labelAnchor === 'left');
+    for (const m of hubs) expect(m.x).toBeGreaterThan(x);
+    for (const m of scene.marks) expect(m.y).toBeLessThan(y + h);
   });
 
   it('marks a near miss and its score', () => {

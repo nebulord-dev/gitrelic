@@ -134,7 +134,7 @@ export function riskFindings(input: ViewInput): Finding[] {
     const reached = hub.links
       .map((l) => nodeOf.get(l.node)!)
       .sort((a, b) => b.members.length - a.members.length);
-    const files = reached.reduce((s, nd) => s + nd.members.length, 0);
+    const files = hub.files;
     const chip = (nd: RiskNode): FindingSegment => ({
       ref: ids.file(nd.file),
       text: nd.family
