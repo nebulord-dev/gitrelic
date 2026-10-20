@@ -49,11 +49,14 @@ export function binomialUpperTail(n: number, k: number, p: number): number {
   if (p <= 0) return 0;
   if (p >= 1) return 1;
   // P(X ≥ k) = 1 − P(X ≤ k − 1); terms built by ratio, so no factorials.
-  let term = (1 - p) ** n;
+  // In log space: (1 − p)^n underflows to 0 past a few thousand changes,
+  // which would zero every term and make any count look like chance.
+  let logTerm = n * Math.log1p(-p);
+  const logRatio = Math.log(p) - Math.log1p(-p);
   let below = 0;
   for (let i = 0; i < k; i++) {
-    below += term;
-    term *= ((n - i) / (i + 1)) * (p / (1 - p));
+    below += Math.exp(logTerm);
+    logTerm += Math.log((n - i) / (i + 1)) + logRatio;
   }
   return Math.max(0, 1 - below);
 }

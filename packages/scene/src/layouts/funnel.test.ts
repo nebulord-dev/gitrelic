@@ -142,6 +142,29 @@ describe('funnelScene', () => {
     );
   });
 
+  it('never dates a repaired change it hasn’t loaded', () => {
+    const h = (k: number) => hashOf(k).slice(0, 12);
+    const full = funnelScene(
+      { data, focus: ids.file(RUNNER), commits: fixRateCommits() },
+      viewport,
+    );
+    expect(markOf(full, `change:${h(109)}`).tip?.[2]).toMatch(
+      /^Repaired 2 changes of \d{4}-\d{2}-\d{2}, \d{4}-\d{2}-\d{2}$/,
+    );
+    // 102, one of 109's causes, falls outside the loaded commits.
+    const partial = funnelScene(
+      {
+        data,
+        focus: ids.file(RUNNER),
+        commits: fixRateCommits().filter((c) => c.hash !== h(102)),
+      },
+      viewport,
+    );
+    const tip = markOf(partial, `change:${h(109)}`).tip ?? [];
+    expect(tip[2]).toBe('Repaired 2 changes');
+    expect(tip.join(' ')).not.toContain('1970');
+  });
+
   it('opens no chain for a file it doesn’t rate, or before commits load', () => {
     for (const s of [
       funnelScene(

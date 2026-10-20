@@ -368,10 +368,20 @@ function fixChain(
     let tip: string[];
     if (fix) {
       const repaired = fix.causes.map(short).filter((h) => h !== c.hash);
+      // A cause outside the loaded commits (renamed since, or older than the
+      // window) has no date to show; it still counts.
+      const dates = repaired
+        .map((h) => commitTime(own, h))
+        .filter((t): t is number => t !== undefined)
+        .map(day);
+      const what =
+        repaired.length === 1 ? 'the change' : `${n(repaired.length)} changes`;
       tip = [
         fix.message,
         `${fix.revert ? 'Revert' : 'Fix'} · ${when}`,
-        `Repaired ${repaired.length === 1 ? 'the change' : `${n(repaired.length)} changes`} of ${repaired.map((h) => day(commitTime(own, h) ?? 0)).join(', ')}`,
+        dates.length === repaired.length
+          ? `Repaired ${what} of ${dates.join(', ')}`
+          : `Repaired ${n(repaired.length)} ${repaired.length === 1 ? 'change' : 'changes'}`,
       ];
     } else if (cause) {
       tip = ['A change a fix repaired', when, `Fixed by: ${cause}`];

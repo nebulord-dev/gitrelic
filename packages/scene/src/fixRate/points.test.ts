@@ -32,6 +32,17 @@ describe('binomialUpperTail', () => {
     expect(binomialUpperTail(5, 6, 0.3)).toBe(0);
     expect(binomialUpperTail(5, 1, 0)).toBe(0);
   });
+
+  it('stays finite where (1 − p)^n underflows', () => {
+    // 0.7^5000 is below the smallest double; mean 1500, sd ≈ 32.4.
+    expect(0.7 ** 5000).toBe(0);
+    expect(binomialUpperTail(5000, 1500, 0.3)).toBeGreaterThan(0.45);
+    expect(binomialUpperTail(5000, 1500, 0.3)).toBeLessThan(0.55);
+    expect(binomialUpperTail(5000, 1700, 0.3)).toBeLessThan(1e-6);
+    const allowed = chanceAllows(5000, 0.3);
+    expect(allowed).toBeGreaterThan(1550);
+    expect(allowed).toBeLessThan(1580);
+  });
 });
 
 describe('chanceAllows', () => {
