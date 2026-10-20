@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import reportJson from '../../test/fixtures/report.small.json';
-import { checkScene, type Mark } from '../model';
+import { fixesReport } from '../../test/riskFixesReport';
+import { checkScene, type Mark, type Scene } from '../model';
 import { riskStacks, type RiskStacks, type StackRow } from '../risk/stacks';
 import { REASON_PAINT, stacksScene } from './stacks';
 import type { GitrelicReport } from '@gitrelic/core';
@@ -10,11 +11,17 @@ const report = reportJson as unknown as GitrelicReport;
 const viewport = { width: 1200, height: 800 };
 const scene = stacksScene(riskStacks(report), viewport);
 const byId = new Map(scene.marks.map((m) => [m.id, m]));
-const mark = (id: string): Mark => {
-  const m = byId.get(id);
-  if (!m) throw new Error(`no mark ${id}`);
-  return m;
-};
+const markIn =
+  (s: Scene) =>
+  (id: string): Mark => {
+    const m = s.marks.find((k) => k.id === id);
+    if (!m) throw new Error(`no mark ${id}`);
+    return m;
+  };
+const mark = markIn(scene);
+// The fixture's only cursed file has two reasons; this one has three
+// (helpers.ts: churn 35, ownership 30, fixes 20) and three cursed files.
+const fixesMark = markIn(stacksScene(riskStacks(fixesReport()), viewport));
 
 const row = (file: string, over: Partial<StackRow> = {}): StackRow => ({
   file,
@@ -51,7 +58,7 @@ describe('stacksScene', () => {
 
   it('splits a bar into segments that add up to its score, left to right', () => {
     const segs = ['churn', 'ownership', 'fixes'].map((k) =>
-      mark(`seg:src/helpers.ts:${k}`),
+      fixesMark(`seg:src/helpers.ts:${k}`),
     );
     for (let i = 1; i < segs.length; i++)
       expect(segs[i].x).toBeGreaterThan(segs[i - 1].x);
@@ -81,7 +88,7 @@ describe('stacksScene', () => {
     expect(nearOwner.alpha - REASON_PAINT.authors.alpha).toBeGreaterThan(0.2);
     const sep = mark('near-label');
     expect(sep.label).toBe('near misses, under 50');
-    expect(sep.y).toBeGreaterThan(mark('file:src/auth.ts').y);
+    expect(sep.y).toBeGreaterThan(mark('file:src/helpers.ts').y);
     expect(sep.y).toBeLessThan(mark('file:src/index.ts').y);
   });
 
@@ -90,7 +97,7 @@ describe('stacksScene', () => {
     expect(line).toBeDefined();
     expect(mark('threshold-label').label).toBe('cursed at 50');
     // The score stands alone; signals sit in their own headed column.
-    expect(mark('risk-score:src/helpers.ts').label).toBe('85');
+    expect(mark('risk-score:src/helpers.ts').label).toBe('65');
     expect(mark('risk-signal:src/helpers.ts').label).toBe(
       'hotspot 100 · accelerating',
     );
@@ -98,7 +105,7 @@ describe('stacksScene', () => {
     expect(mark('risk-signal:src/helpers.ts').x).toBeGreaterThan(
       mark('tick:x:100').x,
     );
-    expect(mark('risk-score:src/config.ts').label).toBe('65');
+    expect(mark('risk-score:src/config.ts').label).toBe('45');
     expect(
       scene.marks.find((m) => m.id === 'risk-signal:src/config.ts'),
     ).toBeUndefined();

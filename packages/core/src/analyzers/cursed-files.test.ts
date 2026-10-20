@@ -10,7 +10,8 @@ import type {
   ChurnReport,
   BusFactorReport,
   AgeMapReport,
-  ForensicsReport,
+  FileFixRate,
+  FixRateReport,
   ParallelDevReport,
 } from '../types.js';
 import type { RawCommit } from '../utils/git.js';
@@ -82,14 +83,36 @@ function makeAgeMapReport(
   };
 }
 
-function makeEmptyForensics(): ForensicsReport {
+function makeEmptyFixRate(): FixRateReport {
   return {
     files: [],
-    shameLeaderboard: [],
-    totalShameCommits: 0,
-    keywordTiers: { critical: 0, moderate: 0, mild: 0 },
+    unratedFiles: 0,
+    changes: 0,
+    fixedAfter: 0,
+    rate: null,
     byMonth: [],
+    fixCommits: 0,
+    reverts: 0,
+    sweepingSkipped: 0,
+    blameTimeouts: 0,
+    windowDays: 30,
+    minChanges: 8,
     summary: '',
+  };
+}
+
+/** A fix-rate report at a 2% repo rate with these rated files. */
+function makeFixRate(
+  files: Array<Pick<FileFixRate, 'file' | 'changes' | 'fixedAfter'>>,
+): FixRateReport {
+  return {
+    ...makeEmptyFixRate(),
+    rate: 0.02,
+    files: files.map((f) => ({
+      ...f,
+      rate: f.fixedAfter / f.changes,
+      fixes: [],
+    })),
   };
 }
 
@@ -149,7 +172,7 @@ describe('findCursedFiles', () => {
       churn,
       bus,
       age,
-      makeEmptyForensics(),
+      makeEmptyFixRate(),
       makeEmptyParallelDev(),
       makeCommits(20),
     );
@@ -176,7 +199,7 @@ describe('findCursedFiles', () => {
       churn,
       bus,
       age,
-      makeEmptyForensics(),
+      makeEmptyFixRate(),
       makeEmptyParallelDev(),
       makeCommits(20),
     );
@@ -202,7 +225,7 @@ describe('findCursedFiles', () => {
       churn,
       bus,
       age,
-      makeEmptyForensics(),
+      makeEmptyFixRate(),
       makeEmptyParallelDev(),
       makeCommits(20),
     );
@@ -227,7 +250,7 @@ describe('findCursedFiles', () => {
       churn,
       bus,
       age,
-      makeEmptyForensics(),
+      makeEmptyFixRate(),
       makeEmptyParallelDev(),
       makeCommits(20),
     );
@@ -254,7 +277,7 @@ describe('findCursedFiles', () => {
       churn,
       bus,
       age,
-      makeEmptyForensics(),
+      makeEmptyFixRate(),
       makeEmptyParallelDev(),
       makeCommits(50),
     );
@@ -290,7 +313,7 @@ describe('findCursedFiles', () => {
       churn,
       bus,
       age,
-      makeEmptyForensics(),
+      makeEmptyFixRate(),
       makeEmptyParallelDev(),
       makeCommits(30),
     );
@@ -318,7 +341,7 @@ describe('findCursedFiles', () => {
       churn,
       bus,
       age,
-      makeEmptyForensics(),
+      makeEmptyFixRate(),
       makeEmptyParallelDev(),
       makeCommits(20),
     );
@@ -355,42 +378,20 @@ describe('findCursedFiles', () => {
       churn,
       bus,
       age,
-      makeEmptyForensics(),
+      makeEmptyFixRate(),
       makeEmptyParallelDev(),
       makeCommits(20),
     );
     expect(result.files.length).toBe(0);
   });
 
-  it('drops shame-only files with no churn data', () => {
-    const forensics: ForensicsReport = {
-      files: [
-        {
-          file: 'shame-only.ts',
-          shameScore: 90,
-          rawShamePoints: 9,
-          shameCommitCount: 3,
-          topShameCommits: [],
-          dominantKeywords: ['revert'],
-        },
-      ],
-      shameLeaderboard: [
-        {
-          file: 'shame-only.ts',
-          shameScore: 90,
-          rawShamePoints: 9,
-          shameCommitCount: 3,
-          topShameCommits: [],
-          dominantKeywords: ['revert'],
-        },
-      ],
-      totalShameCommits: 3,
-      keywordTiers: { critical: 0, moderate: 0, mild: 0 },
-      byMonth: [],
-      summary: '',
-    };
+  it('drops fix-prone files with no churn data', () => {
+    // 4 of 10 at a 2% repo rate: far above chance.
+    const fixRate = makeFixRate([
+      { file: 'fix-only.ts', changes: 10, fixedAfter: 4 },
+    ]);
 
-    // No churn data for shame-only.ts
+    // No churn data for fix-only.ts
     const churn = makeChurnReport([]);
     const busFactor = makeBusFactorReport([]);
     const ageMap = makeAgeMapReport([]);
@@ -399,46 +400,20 @@ describe('findCursedFiles', () => {
       churn,
       busFactor,
       ageMap,
-      forensics,
+      fixRate,
       makeEmptyParallelDev(),
       makeCommits(100),
     );
-    expect(
-      result.files.find((f) => f.file === 'shame-only.ts'),
-    ).toBeUndefined();
+    expect(result.files.find((f) => f.file === 'fix-only.ts')).toBeUndefined();
   });
 
-  it('adds shame reason for files with shameScore >= 75', () => {
-    // Build a file that scores shame-qualifying (shameScore = 80)
-    const forensics: ForensicsReport = {
-      files: [
-        {
-          file: 'src/auth.ts',
-          shameScore: 80,
-          rawShamePoints: 24,
-          shameCommitCount: 5,
-          topShameCommits: [],
-          dominantKeywords: ['revert'],
-        },
-      ],
-      shameLeaderboard: [
-        {
-          file: 'src/auth.ts',
-          shameScore: 80,
-          rawShamePoints: 24,
-          shameCommitCount: 5,
-          topShameCommits: [],
-          dominantKeywords: ['revert'],
-        },
-      ],
-      totalShameCommits: 5,
-      keywordTiers: { critical: 0, moderate: 0, mild: 0 },
-      byMonth: [],
-      summary: '',
-    };
+  it('adds 20 points for a file fixed more often than chance', () => {
+    // 4 of 10 at a 2% repo rate: chance gives that well under 2.5% of the time.
+    const fixRate = makeFixRate([
+      { file: 'src/auth.ts', changes: 10, fixedAfter: 4 },
+    ]);
 
-    // Give it enough churn to be a candidate and cross 50 with shame bonus
-    // churnScore > 75 = +35, shameScore >= 75 = +20 → total 55 (enough)
+    // churnScore > 75 = +35, fixed above chance = +20 → total 55
     const churn = makeChurnReport([
       {
         file: 'src/auth.ts',
@@ -453,13 +428,61 @@ describe('findCursedFiles', () => {
       churn,
       busFactor,
       ageMap,
-      forensics,
+      fixRate,
       makeEmptyParallelDev(),
       makeCommits(100),
     );
     const auth = result.files.find((f) => f.file === 'src/auth.ts');
-    expect(auth).toBeDefined();
-    expect(auth!.reasons.some((r) => r.includes('revert'))).toBe(true);
+    expect(auth?.curseScore).toBe(55);
+    expect(auth?.breakdown.at(-1)).toEqual({
+      kind: 'fixes',
+      label:
+        '4 of 10 changes needed a fix within 30 days, more than chance explains',
+      points: 20,
+    });
+  });
+
+  it('gives no fix points when chance explains the fixes', () => {
+    // 1 of 10 at 2%: chance gives at least one about 18% of the time.
+    const fixRate = makeFixRate([
+      { file: 'src/auth.ts', changes: 10, fixedAfter: 1 },
+    ]);
+    const result = findCursedFiles(
+      makeChurnReport([
+        { file: 'src/auth.ts', commitCount: 20, churnScore: 80 },
+      ]),
+      makeBusFactorReport([]),
+      makeAgeMapReport([]),
+      fixRate,
+      makeEmptyParallelDev(),
+      makeCommits(100),
+    );
+    const all = [...result.files, ...result.nearMisses];
+    expect(all.some((f) => f.breakdown.some((r) => r.kind === 'fixes'))).toBe(
+      false,
+    );
+  });
+
+  it('makes a file fixed more often than chance a candidate', () => {
+    // Not top churn, critical or parallel: only its fix rate brings it in.
+    const churn: ChurnReport = {
+      ...makeChurnReport([]),
+      files: [
+        { file: 'quiet.ts', commitCount: 10, churnScore: 80, category: 'hot' },
+      ],
+    };
+    const result = findCursedFiles(
+      churn,
+      makeBusFactorReport([]),
+      makeAgeMapReport([]),
+      makeFixRate([{ file: 'quiet.ts', changes: 10, fixedAfter: 4 }]),
+      makeEmptyParallelDev(),
+      makeCommits(100),
+    );
+    // Scored only because it's a candidate: churn 35 + fixes 20.
+    expect(result.files.map((f) => [f.file, f.curseScore])).toEqual([
+      ['quiet.ts', 55],
+    ]);
   });
 
   it('adds parallel development bonus to curse score', () => {
@@ -514,7 +537,7 @@ describe('findCursedFiles', () => {
       churn,
       bus,
       age,
-      makeEmptyForensics(),
+      makeEmptyFixRate(),
       parallelDev,
       makeCommits(20),
     );
@@ -526,7 +549,7 @@ describe('findCursedFiles', () => {
   });
 
   it('includes parallel dev hot files in candidate set', () => {
-    // File is NOT in churn.topFiles or busFactor.criticalFiles or forensics.shameLeaderboard
+    // File is NOT in churn.topFiles or busFactor.criticalFiles or fixRate's fix-prone files
     // but IS in parallelDev.hotFiles — should still be evaluated
     const churn: ChurnReport = {
       files: [
@@ -595,7 +618,7 @@ describe('findCursedFiles', () => {
       churn,
       bus,
       age,
-      makeEmptyForensics(),
+      makeEmptyFixRate(),
       parallelDev,
       makeCommits(20),
     );
@@ -628,7 +651,7 @@ describe('findCursedFiles', () => {
         churn,
         bus,
         age,
-        makeEmptyForensics(),
+        makeEmptyFixRate(),
         makeEmptyParallelDev(),
         // The real pattern behind this: semantic-release rewrites CHANGELOG.md
         // on every release, which made it the top "cursed" file in gitrelic's
@@ -650,7 +673,7 @@ describe('findCursedFiles', () => {
         churn,
         bus,
         age,
-        makeEmptyForensics(),
+        makeEmptyFixRate(),
         makeEmptyParallelDev(),
         makeCommits(20, { files: ['CHANGELOG.md'] }),
       );
@@ -675,7 +698,7 @@ describe('findCursedFiles', () => {
         churn,
         bus,
         age,
-        makeEmptyForensics(),
+        makeEmptyFixRate(),
         makeEmptyParallelDev(),
         makeCommits(20, { files: ['CHANGELOG.md'], authorEmail: email }),
       );
@@ -690,7 +713,7 @@ describe('findCursedFiles', () => {
         churn,
         bus,
         age,
-        makeEmptyForensics(),
+        makeEmptyFixRate(),
         makeEmptyParallelDev(),
         [
           ...makeCommits(9, {
@@ -728,7 +751,7 @@ describe('findCursedFiles', () => {
         churn,
         bus,
         age,
-        makeEmptyForensics(),
+        makeEmptyFixRate(),
         makeEmptyParallelDev(),
         makeCommits(10, { files: ['other.ts'], daysAgo: 0 }),
       );
@@ -747,7 +770,7 @@ describe('findCursedFiles', () => {
         churn,
         bus,
         age,
-        makeEmptyForensics(),
+        makeEmptyFixRate(),
         makeEmptyParallelDev(),
         makeCommits(10, { files: ['a.ts'], daysAgo: 337 }),
       );
@@ -787,7 +810,7 @@ describe('findCursedFiles', () => {
       churn,
       bus,
       age,
-      makeEmptyForensics(),
+      makeEmptyFixRate(),
       makeEmptyParallelDev(),
       makeCommits(20),
     ] as const;
@@ -825,7 +848,7 @@ describe('findCursedFiles', () => {
         churn,
         bus,
         age,
-        makeEmptyForensics(),
+        makeEmptyFixRate(),
         makeEmptyParallelDev(),
         makeCommits(20),
       ).files;
@@ -854,7 +877,7 @@ describe('findCursedFiles', () => {
         churn,
         bus,
         makeAgeMapReport([]),
-        makeEmptyForensics(),
+        makeEmptyFixRate(),
         makeEmptyParallelDev(),
         makeCommits(20),
       );
@@ -866,19 +889,9 @@ describe('findCursedFiles', () => {
     it('sums to the uncapped score; curseScore is that sum capped at 100', () => {
       // churn 35 + ownership 30 + abandoned 10 + fixes 20 + parallel 20 = 115
       const { churn, bus } = hotCritical();
-      const shame = {
-        file: 'a.ts',
-        shameScore: 80,
-        rawShamePoints: 24,
-        shameCommitCount: 5,
-        topShameCommits: [],
-        dominantKeywords: ['revert'],
-      };
-      const forensics: ForensicsReport = {
-        ...makeEmptyForensics(),
-        files: [shame],
-        shameLeaderboard: [shame],
-      };
+      const fixRate = makeFixRate([
+        { file: 'a.ts', changes: 10, fixedAfter: 4 },
+      ]);
       const parallelFile = {
         file: 'a.ts',
         parallelScore: 75,
@@ -902,7 +915,7 @@ describe('findCursedFiles', () => {
         churn,
         bus,
         makeAgeMapReport([{ file: 'a.ts', ageInDays: 337 }]),
-        forensics,
+        fixRate,
         parallel,
         makeCommits(20, { files: ['other.ts'] }),
       ).files;
@@ -925,7 +938,7 @@ describe('findCursedFiles', () => {
         makeChurnReport([]),
         makeBusFactorReport([]),
         makeAgeMapReport([]),
-        makeEmptyForensics(),
+        makeEmptyFixRate(),
         makeEmptyParallelDev(),
         makeCommits(1),
       );
@@ -965,7 +978,7 @@ describe('findCursedFiles', () => {
         churn,
         bus,
         makeAgeMapReport([]),
-        makeEmptyForensics(),
+        makeEmptyFixRate(),
         makeEmptyParallelDev(),
         makeCommits(20),
       );
@@ -1004,7 +1017,7 @@ describe('findCursedFiles', () => {
         churn,
         bus,
         makeAgeMapReport([]),
-        makeEmptyForensics(),
+        makeEmptyFixRate(),
         makeEmptyParallelDev(),
         makeCommits(20),
       ).nearMisses;
@@ -1036,7 +1049,7 @@ describe('findCursedFiles', () => {
         churn,
         bus,
         makeAgeMapReport([]),
-        makeEmptyForensics(),
+        makeEmptyFixRate(),
         makeEmptyParallelDev(),
         makeCommits(10, {
           files: ['near.ts'],

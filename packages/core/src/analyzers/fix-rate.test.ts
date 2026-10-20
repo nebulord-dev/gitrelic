@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  aboveChance,
+  binomialUpperTail,
   computeFixRate,
   FIX_WINDOW_DAYS,
   fixKind,
@@ -250,5 +252,32 @@ describe('computeFixRate', () => {
     );
     expect(r.changes).toBe(0);
     expect(r.unratedFiles).toBe(0);
+  });
+});
+
+describe('aboveChance', () => {
+  // React's last 12 months: a 1.2% repo rate. The Atlas lens marks the same
+  // three files (scene's fixRate/points.test.ts).
+  const p = 0.0121;
+  it.each([
+    [3, 8, true],
+    [4, 18, true],
+    [2, 11, true],
+    [1, 25, false],
+    [1, 8, false],
+    [0, 20, false],
+  ])('%i of %i changes → %s', (fixedAfter, changes, expected) => {
+    expect(aboveChance({ fixedAfter, changes }, p)).toBe(expected);
+  });
+
+  it('is never above chance without a repo rate', () => {
+    expect(aboveChance({ fixedAfter: 5, changes: 8 }, null)).toBe(false);
+  });
+
+  it('sums the tail without underflowing on huge files', () => {
+    // (1 − p)^n is 0 in floating point here; the log-space sum isn't.
+    expect(binomialUpperTail(5000, 1500, 0.3)).toBeCloseTo(0.5, 1);
+    expect(binomialUpperTail(10, 0, 0.1)).toBe(1);
+    expect(binomialUpperTail(10, 11, 0.1)).toBe(0);
   });
 });

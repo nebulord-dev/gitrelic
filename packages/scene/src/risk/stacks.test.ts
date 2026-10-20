@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import reportJson from '../../test/fixtures/report.small.json';
+import { fixesReport } from '../../test/riskFixesReport';
 import { normalizeReport } from '../report/normalizeReport';
 import {
   HOTSPOT_MARK,
@@ -22,16 +23,17 @@ describe('riskStacks', () => {
     const { rows, threshold } = riskStacks(report);
     expect(threshold).toBe(50);
     expect(rows.map((r) => [r.file, r.score, r.cursed])).toEqual([
-      ['src/helpers.ts', 85, true],
-      ['src/config.ts', 65, true],
-      ['src/auth.ts', 65, true],
+      ['src/helpers.ts', 65, true],
       ['src/index.ts', 45, false],
       ['src/api.ts', 45, false],
+      ['src/config.ts', 45, false],
+      ['src/auth.ts', 45, false],
     ]);
   });
 
   it('carries core’s split and how far a near miss falls short', () => {
-    const { rows } = riskStacks(report);
+    // Fix rate rates no file in the fixture, so a report where it does.
+    const { rows } = riskStacks(fixesReport());
     const helpers = rows[0];
     expect(helpers.breakdown.map((b) => [b.kind, b.points])).toEqual([
       ['churn', 35],
@@ -108,7 +110,9 @@ describe('riskStacks', () => {
 
 describe('reasons in words', () => {
   it('finds the reasons every row shares, in scoring order', () => {
-    const cursed = riskStacks(report).rows.filter((r) => r.cursed);
+    // The fixture has one cursed file and no fixes: three that share all three.
+    const cursed = riskStacks(fixesReport()).rows.filter((r) => r.cursed);
+    expect(cursed).toHaveLength(3);
     expect(sharedReasons(cursed)).toEqual(['churn', 'ownership', 'fixes']);
     expect(sharedReasons([])).toEqual([]);
   });
@@ -132,7 +136,7 @@ describe('reasons in words', () => {
   });
 
   it('a row’s tooltip has its score and each reason with its points', () => {
-    const near = riskStacks(report).rows[3];
+    const near = riskStacks(report).rows[1];
     expect(stackRowTip(near, 'index.ts')).toEqual([
       'index.ts',
       'Score 45 · 5 short of the line',
