@@ -278,7 +278,7 @@ export function funnelScene(input: FunnelInput, viewport: Viewport): Scene {
     card(
       'axis:y',
       left,
-      top - 30,
+      top - 44,
       `fixed within ${n(data.windowDays)} days ↑`,
       'center',
       2,
@@ -289,7 +289,8 @@ export function funnelScene(input: FunnelInput, viewport: Viewport): Scene {
       card(
         'note:unrated',
         left,
-        tickY + 52,
+        // Clear of the axis name's label box, or the planner drops one.
+        tickY + 64,
         `${n(data.unratedFiles)} ${data.unratedFiles === 1 ? 'file has' : 'files have'} fewer than ${n(data.minChanges)} changes old enough to rate`,
         'right',
         2,

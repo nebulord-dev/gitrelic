@@ -3,11 +3,13 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { createRawSnippet, flushSync } from 'svelte';
 import { describe, expect, it, vi } from 'vitest';
 
+import { fixRateReport } from '../../../../../packages/scene/test/fixRateReport';
 import reportJson from '../../../../../packages/scene/test/fixtures/report.small.json';
 import ActivityCard from './ActivityCard.svelte';
 import Card from './Card.svelte';
 import ChurnCard from './ChurnCard.svelte';
 import FindingCard from './FindingCard.svelte';
+import FixRateCard from './FixRateCard.svelte';
 import HotspotsCard from './HotspotsCard.svelte';
 import RiskCard from './RiskCard.svelte';
 import WhatToDoCard from './WhatToDoCard.svelte';
@@ -282,5 +284,43 @@ describe('ActivityCard', () => {
   it('says nothing about fixes for a file fix rate doesn’t rate', () => {
     render(ActivityCard, { activity: null });
     expect(screen.queryByText(/needed a fix/)).toBeNull();
+  });
+});
+
+describe('FixRateCard', () => {
+  it('leads with the files above chance, then the most-fixed, each selectable', async () => {
+    const report = fixRateReport();
+    const onselect = vi.fn();
+    const ontable = vi.fn();
+    render(FixRateCard, {
+      report,
+      index: buildEntityIndex(report),
+      onselect,
+      ontable,
+    });
+    expect(screen.getByText('3')).toBeTruthy();
+    expect(screen.getByText(/files above chance, of 9 rated/)).toBeTruthy();
+    expect(screen.getByText(/Repo-wide, 1\.2% of changes/)).toBeTruthy();
+    await fireEvent.click(screen.getByRole('button', { name: /^runner\.ts/ }));
+    expect(onselect).toHaveBeenCalledWith(
+      'file:compiler/packages/snap/src/runner.ts',
+    );
+    // Five with a fix: the three above chance and the two single fixes.
+    expect(screen.getAllByRole('button', { name: / of \d+/ })).toHaveLength(5);
+    await fireEvent.click(
+      screen.getByRole('button', { name: /All 9 rated files in the table/ }),
+    );
+    expect(ontable).toHaveBeenCalled();
+  });
+
+  it('asks for a re-run on a report from before fix rate', () => {
+    const report = fixRateReport([], {
+      windowDays: 0,
+      minChanges: 0,
+      rate: null,
+    });
+    render(FixRateCard, { report, index: buildEntityIndex(report) });
+    expect(screen.getByText(/predates fix rate/)).toBeTruthy();
+    expect(screen.queryByText(/above chance/)).toBeNull();
   });
 });

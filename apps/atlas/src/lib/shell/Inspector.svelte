@@ -16,6 +16,7 @@
   import ExplainCard from '../inspector/ExplainCard.svelte';
   import FileCard from '../inspector/FileCard.svelte';
   import { fileSections, scrollToSection } from '../inspector/fileSections';
+  import FixRateCard from '../inspector/FixRateCard.svelte';
   import HotspotsCard from '../inspector/HotspotsCard.svelte';
   import LensPreviewCard from '../inspector/LensPreviewCard.svelte';
   import PersonCard from '../inspector/PersonCard.svelte';
@@ -268,6 +269,9 @@
   {:else if lens === 'cursed-files' && lensEntry}
     <ExplainCard entry={lensEntry} />
     <RiskCard {report} {index} {onselect} {ontable} />
+  {:else if lens === 'fix-rate' && lensEntry}
+    <ExplainCard entry={lensEntry} />
+    <FixRateCard {report} {index} {onselect} {ontable} />
   {:else if lens === 'overview'}
     <RepoMapCard {report} {onselect} />
     {#if lensEntry}<ExplainCard entry={lensEntry} />{/if}
