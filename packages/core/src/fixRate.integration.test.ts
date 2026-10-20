@@ -163,3 +163,57 @@ describe('fix rate on a real history', () => {
     expect(none.changes).toBe(0);
   });
 });
+
+describe('a fix that renames the file it repairs', () => {
+  let renameRepo = '';
+  const run = (args: string[]) =>
+    execFileSync('git', args, {
+      cwd: renameRepo,
+      stdio: 'pipe',
+      env: {
+        ...process.env,
+        GIT_AUTHOR_NAME: 'Ann Lee',
+        GIT_AUTHOR_EMAIL: ANN,
+        GIT_COMMITTER_NAME: 'Ann Lee',
+        GIT_COMMITTER_EMAIL: ANN,
+      },
+    })
+      .toString()
+      .trim();
+  const lines = (third: string) =>
+    Array.from({ length: 10 }, (_, i) => (i === 2 ? third : `line ${i + 1}`))
+      .join('\n')
+      .concat('\n');
+  const step = (message: string) => {
+    run(['add', '-A']);
+    run(['commit', '--quiet', '-m', message]);
+    return run(['rev-parse', 'HEAD']);
+  };
+
+  beforeAll(() => {
+    renameRepo = mkdtempSync(path.join(tmpdir(), 'gitrelic-fixrename-'));
+    run(['init', '--quiet', '--initial-branch=main']);
+    run(['config', 'commit.gpgsign', 'false']);
+    writeFileSync(path.join(renameRepo, 'old.ts'), lines('line 3'));
+    step('feat: base');
+  });
+
+  afterAll(() => rmSync(renameRepo, { recursive: true, force: true }));
+
+  it('blames the path the parent had', async () => {
+    writeFileSync(path.join(renameRepo, 'old.ts'), lines('bad'));
+    const bad = step('feat: three');
+    run(['mv', 'old.ts', 'new.ts']);
+    writeFileSync(path.join(renameRepo, 'new.ts'), lines('good'));
+    const fix = step('fix: three, and rename');
+    expect(await blameFixedLines(renameRepo, fix, 'new.ts')).toEqual([
+      { hash: bad, file: 'old.ts' },
+    ]);
+  });
+
+  it('still blames nothing for a file the fix added', async () => {
+    writeFileSync(path.join(renameRepo, 'added.ts'), 'fresh\n');
+    const fix = step('fix: add a file');
+    expect(await blameFixedLines(renameRepo, fix, 'added.ts')).toEqual([]);
+  });
+});

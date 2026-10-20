@@ -714,11 +714,33 @@ export function parseBlameOrigins(raw: string): BlameOrigin[] {
 }
 
 /**
+ * The path `file` had before a commit renamed it, from `git diff
+ * --name-status -z -M` output: rename and copy entries are
+ * `R<score>\0<old>\0<new>`, the rest `<status>\0<path>`. Undefined when the
+ * commit didn't rename it.
+ */
+export function parseRenamedFrom(
+  raw: string,
+  file: string,
+): string | undefined {
+  const parts = raw.split('\0');
+  for (let i = 0; i < parts.length && parts[i];) {
+    const status = parts[i];
+    if (status.startsWith('R') || status.startsWith('C')) {
+      if (status.startsWith('R') && parts[i + 2] === file) return parts[i + 1];
+      i += 3;
+    } else i += 2;
+  }
+  return undefined;
+}
+
+/**
  * Which commits last touched the lines `fix` changed in `file`: `git diff -U0`
  * against its parent, then `git blame -w` on those lines in the parent (the
- * SZZ approach). Whitespace-only edits don't count as the origin. Returns []
- * when git fails (a root commit, a binary file, a path the parent lacks); a
- * timeout is thrown instead, so the runner's fallback reports it.
+ * SZZ approach). Whitespace-only edits don't count as the origin. When the
+ * fix itself renamed the file, both run against the path the parent had.
+ * Returns [] when git fails (a root commit, a binary file, a path the parent
+ * lacks); a timeout is thrown instead, so the runner's fallback reports it.
  */
 export async function blameFixedLines(
   repoPath: string,
@@ -727,24 +749,39 @@ export async function blameFixedLines(
   timeoutMs = quickTimeoutMs,
 ): Promise<BlameOrigin[]> {
   const call = { repoPath, timeoutMs };
-  try {
-    const diff = await runGit(
+  const diffOf = (paths: string[]) =>
+    runGit(
       [
         'diff',
         '-U0',
+        '-M',
         '--no-ext-diff',
         '--no-color',
         `${fix}^`,
         fix,
         '--',
-        file,
+        ...paths,
       ],
       call,
     );
+  try {
+    let before = file;
+    let diff = await diffOf([file]);
+    // The parent lacks the path: a new file, or one the fix renamed.
+    if (/^new file mode /m.test(diff)) {
+      const renames = await runGit(
+        ['diff', '--name-status', '-z', '-M', `${fix}^`, fix],
+        call,
+      );
+      const from = parseRenamedFrom(renames, file);
+      if (from === undefined) return [];
+      before = from;
+      diff = await diffOf([from, file]);
+    }
     const ranges = parseRemovedRanges(diff);
     if (ranges.length === 0) return [];
     const blame = await runGit(
-      ['blame', '--porcelain', '-w', ...ranges, `${fix}^`, '--', file],
+      ['blame', '--porcelain', '-w', ...ranges, `${fix}^`, '--', before],
       call,
     );
     return parseBlameOrigins(blame);

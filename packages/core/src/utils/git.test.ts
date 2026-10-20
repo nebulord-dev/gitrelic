@@ -9,6 +9,7 @@ import {
   parseBlameOrigins,
   parseGitLog,
   parseRemovedRanges,
+  parseRenamedFrom,
   resolveCommit,
   isIgnored,
   renameTarget,
@@ -458,5 +459,32 @@ describe('parseBlameOrigins', () => {
       { hash: a, file: 'src/old.ts' },
       { hash: b, file: 'src/new.ts' },
     ]);
+  });
+});
+
+describe('parseRenamedFrom', () => {
+  const raw = [
+    'M',
+    'a.ts',
+    'C075',
+    'src/x.ts',
+    'src/copy.ts',
+    'R090',
+    'src/old name.ts',
+    'src/new name.ts',
+    'A',
+    'b.ts',
+    '',
+  ].join('\0');
+
+  it('names the old path of a renamed file', () => {
+    expect(parseRenamedFrom(raw, 'src/new name.ts')).toBe('src/old name.ts');
+  });
+
+  it('is undefined for an added, modified or copied file', () => {
+    expect(parseRenamedFrom(raw, 'b.ts')).toBeUndefined();
+    expect(parseRenamedFrom(raw, 'a.ts')).toBeUndefined();
+    expect(parseRenamedFrom(raw, 'src/copy.ts')).toBeUndefined();
+    expect(parseRenamedFrom('', 'a.ts')).toBeUndefined();
   });
 });
