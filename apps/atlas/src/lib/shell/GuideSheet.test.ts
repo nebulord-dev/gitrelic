@@ -18,7 +18,7 @@ describe('GuideSheet', () => {
       screen.getByRole('region', { name: 'Ownership & Risk' }),
     ).toBeTruthy();
     // Repo map, Hotspots, Churn and Risk have Atlas views (Open); the rest link classic.
-    expect(screen.getAllByRole('link', { name: 'Classic ↗' }).length).toBe(19);
+    expect(screen.getAllByRole('link', { name: 'Classic ↗' }).length).toBe(18);
     expect(screen.getAllByRole('button', { name: 'Open' })).toHaveLength(4);
   });
 

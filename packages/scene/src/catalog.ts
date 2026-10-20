@@ -35,14 +35,6 @@ export const CATALOG: readonly CatalogEntry[] = [
     atlas: true,
   },
   {
-    id: 'risk',
-    label: 'Risk',
-    group: 'overview',
-    explain:
-      'Files where several risk signals overlap, and the people they depend on.',
-    atlas: false,
-  },
-  {
     id: 'tech-debt',
     label: 'Tech Debt',
     group: 'overview',

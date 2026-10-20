@@ -12,9 +12,11 @@ import {
 } from './catalog';
 
 describe('catalog', () => {
-  it('lists 23 presets with unique ids, each in a known group', () => {
-    expect(CATALOG).toHaveLength(23);
-    expect(new Set(CATALOG.map((e) => e.id)).size).toBe(23);
+  // Classic's 23 presets, less those merged into an Atlas lens (ATLAS_MERGES
+  // in apps/web's catalogParity.test.ts): Risk into cursed-files.
+  it('lists 22 presets with unique ids, each in a known group', () => {
+    expect(CATALOG).toHaveLength(22);
+    expect(new Set(CATALOG.map((e) => e.id)).size).toBe(22);
     const groups = new Set<string>(PRESET_GROUPS.map((g) => g.id));
     for (const entry of CATALOG) expect(groups.has(entry.group)).toBe(true);
   });
