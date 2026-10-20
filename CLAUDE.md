@@ -62,7 +62,18 @@ Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `norm
 
 - **The scene model** (`model.ts`, `ids.ts`): layouts are pure `(ViewInput, Viewport) => Scene` functions; a `Scene` is marks, links and guides in world units. Marks share one flat geometry record (`MarkGeom`) whatever their shape, and are painted with theme roles (`Paint`), never colors, so a theme switch re-tints without a rebuild. Every mark is keyed by an entity id (`file:`, `dir:`, `person:`, `cell:`, `week:`, `commit:`, `analyzer:`, `repo`) that stays the same across views — that's what lets a mark travel between layouts. `parentOf` derives ancestry from the id. Layout tests run `checkScene` (finite numbers, unique ids, links between existing marks, marks inside bounds).
 - **Motion and labels** are planned here, run in Atlas: `motion/plan.ts` `planTransition(next, live)` matches marks by id against what is on screen now (including mid-flight values, so interruptions continue smoothly): leaving links retract, marks move, entering marks grow from their nearest ancestor on screen, leaving ones shrink into their nearest ancestor in the next scene (a mark with `foldOnExit`, like a fan's, first closes into its ancestor where it is now), and new links draw in, staggered, from 250 ms into the move. Guides fade in and out, and one that stays (same id) moves with the marks. Each step starts once the one before is mostly done (`TIMING.retractLead`, `foldLead`, `drawAfter`), never waiting out an out-cubic tail: a still stage after a click reads as a stall. Reduced motion makes everything a fade. `labels/plan.ts` `planLabels` is greedy priority culling over a grid hash (cap 150; pinned labels always shown).
-- **Views:** `views/index.ts` `VIEWS` maps each Atlas lens to its `AnalyzerView` (a test keeps it in step with `catalog.atlas`). The first is `views/overview.ts`: the Repo map lens drawn by `layouts/ring.ts`. The ring's data is `overview/readings.ts` (`lensReadings`: a short reading and an outlier grade per lens) and `overview/topEntities.ts` (`lensTopEntities`: a lens's top entities for the fan-out, only ids the index resolves). `ViewInput` carries `focus` (the shell's choice of what to fan) and `index`. The second is `views/hotspots.ts`: the field (`layouts/field.ts`) and By package (`layouts/packages.ts`), fed by `hotspots/points.ts` (`hotspotPoints`, memoised per report as `hotspotPointsOf`; `hotspotScale` recovers core's score curve); a selected file fans out its `hotspots/facets.ts` `fileFacets` beside a narrowed field. The third is `views/churn.ts`: the per-package swarm (`layouts/swarm.ts`), fed by `churn/swarm.ts` (`churnSwarmOf`: source files by package with commits, lines and a character), with lockstep groups from coupling (`churn/lockstep.ts`); its alternate, Rhythm (`layouts/rhythm.ts`, data `churn/rhythm.ts` `churnRhythmOf`), is the top files' commits week by week and needs commits. The fourth is `views/risk.ts` (the `cursed-files` lens, labelled Risk): score stacks (`layouts/stacks.ts`), fed by `risk/stacks.ts` (`riskStacksOf`: cursed files then near misses, each split by core's per-reason `breakdown`, with the hotspot and acceleration signals the score leaves out); its alternate, Root causes (`layouts/rootCauses.ts`, data `risk/rootCauses.ts` `rootCausesOf`), is the source files that change with the risky ones, a family of risky files that change together drawn as one node. The fifth is `views/fixRate.ts` (the Atlas-only `fix-rate` lens, which Shame merges into): the funnel field (`layouts/funnel.ts`), fed by `fixRate/points.ts` (`fixRateOf`: core's rated files, each with `aboveChance` — its fixed-after count has under a 2.5% binomial upper-tail chance at the repo rate — the one threshold its badge, `fileFacts` row and What to do's `review-changes` rule share); a selected file opens its fix chain, which needs commits (`CommitLike.hash` matches `fixes[].causes`). The selected file's **What to do** is `advice/whatToDo.ts`: a priority-ordered rule table over the analyzers' signals (thresholds named beside the rules), at most three actions, each with its evidence and the inspector section that shows it. A `Mark` may carry `tip` (the hover tooltip's plain-text lines) and an `AnalyzerView` a `table` (`LensTable`, for the table drawer). A `Layout` declares `caption` (the stage's how-to-read line) and `focusKinds` (the selection kinds it re-forms around; any other selection gives it no focus, so it isn't rebuilt per click). Layout-only marks (axis ticks, callouts, density bins, package names) use ids outside the entity kinds (`tick:`, `callout:`, `bin:`, `package:`, the fan's `facet:` and `home:`…): the index never resolves them, so clicking one selects nothing, unless it names the entity it's part of in `selects` (a stack's segment selects its file). A mark's `labelAnchor` picks its label's side; `labelSub` adds a quieter second line, `labelClass` a CSS role for the label (styled in Atlas's `app.css`, never a colour), `labelLean` shifts it by a fraction of its height. Shape `ring` has a stroke that scales with its radius; `outline` is a thin one for a large circle (the Overview's repo).
+- **Views** (`views/index.ts` `VIEWS`, kept in step with `catalog.atlas` by a test): one `AnalyzerView` per Atlas lens, its data in a folder memoised per report (`*Of(report)`), drawn by one or more layouts. What each lens shows, its thresholds, tooltips and why: `docs/atlas-views.md`.
+
+  | Lens | View | Layouts (first is primary) | Data |
+  |---|---|---|---|
+  | Repo map | `views/overview.ts` | `ring` | `overview/readings.ts`, `overview/topEntities.ts` |
+  | Hotspots | `views/hotspots.ts` | `field`, `packages` | `hotspots/points.ts`, `hotspots/facets.ts` |
+  | Churn | `views/churn.ts` | `swarm`, `rhythm` (needs commits) | `churn/swarm.ts`, `churn/lockstep.ts`, `churn/rhythm.ts` |
+  | Risk (`cursed-files`) | `views/risk.ts` | `stacks`, `rootCauses` | `risk/stacks.ts`, `risk/rootCauses.ts` |
+  | Fix rate (`fix-rate`, Atlas-only) | `views/fixRate.ts` | `funnel` (its lane needs commits) | `fixRate/points.ts` (`aboveChance`, the lens's one threshold; core has the same test) |
+
+- **The layout contract.** A `Layout` declares `caption` (the stage's how-to-read line) and `focusKinds` (the selection kinds it re-forms around; any other selection isn't rebuilt per click). A `Mark` may carry `tip` (tooltip lines), `labelAnchor`, `labelSub` (a quieter second line), `labelClass` (a CSS role from Atlas's `app.css`, never a colour) and `labelLean`; a `Link` may set `bow` (an arc's bow as a share of its length). An `AnalyzerView` may carry a `table` (`LensTable`, for the table drawer). Layout-only marks (ticks, callouts, bins, package names, the fan's `facet:`/`home:`…) use ids outside the entity kinds, so clicking one selects nothing unless it names its entity in `selects`. Shape `ring` has a stroke that scales with its radius; `outline` is a thin one for a large circle.
+- **What to do** (`advice/whatToDo.ts`): a priority-ordered rule table over the analyzers' signals (thresholds named beside the rules), at most three actions per file, each with its evidence and the inspector section that shows it.
 - **Navigation data:** `catalog.ts` lists classic's presets, less those merged into an Atlas lens (`ATLAS_MERGES`; today `risk` → `cursed-files` and `shame` → `fix-rate`) and plus the Atlas-only ones (`ATLAS_ONLY`: `fix-rate`) (label, group, docs path, one-line explanation, `atlas` flag) in lens order, with `lensesOf(view)`, `defaultLens(view)` (a view's first lens with an Atlas view) and `isPresetGroup` (a type guard for hash values); a web test (`catalogParity.test.ts`) keeps it in step with classic's registry. `badges.ts` `outlierGrades` grades each rule 0–3 against repo size (thresholds in one `RULES` table) and `computeOutlierBadges` is grade ≥ 2 — never on max-normalized scores, whose top tier always has members. Stale Files has no rule (its count measures the window). `entities.ts` indexes analyzers, people, directories and files by entity id; `search/rank.ts` is the palette's fuzzy ranker.
 - **Commit-based derivations take `CommitLike[]`**, not `RawCommit[]`. Classic adapts `report.commits` with `fromRawCommits`; Atlas adapts the columnar `/gitrelic-commits.json` with `fromCommitIndex`.
 
@@ -70,7 +81,7 @@ Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `norm
 - **No framework, no Node, no DOM.** Its tsconfig has `lib: ES2022` with no `types`, and an oxlint override bans `react`, `svelte` and `node:*` imports. It has no runtime dependencies.
 - Imports from `@gitrelic/core` are `import type` only, like any browser code.
 - Tests sit next to each file (`*.test.ts`); run with `pnpm --filter @gitrelic/scene test`.
-- `test/fixtures/report.small.json` + `commits.small.json` — the deterministic sample repo's report and commit index, used by scene tests and the Atlas dev server. Regenerate with `node scripts/make-scene-fixtures.mjs` (needs a built core); a scene test fails when the fixture lacks a field `normalizeReport` backfills.
+- `test/fixtures/report.small.json` + `commits.small.json` — the deterministic sample repo's report and commit index, used by scene tests and the Atlas dev server. Regenerate with `node scripts/make-scene-fixtures.mjs` (needs a built core); a scene test fails when the fixture lacks a field `normalizeReport` backfills. The sample repo is too small for some lenses' data (fix rate rates no file in it): tests that need it build a synthetic report instead (`test/fixRateReport.ts`, `test/riskFixesReport.ts`, `test/rootCausesReport.ts`).
 
 ### `apps/cli` — Terminal Interface (published as `gitrelic` on npm)
 
@@ -82,39 +93,21 @@ Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `norm
 
 ### `apps/web` — Web Dashboard (classic)
 
-> **Migration note:** a new dashboard, **Atlas** (Svelte 5, `apps/atlas` + `packages/scene`), is being built alongside this one and will replace it. Everything in this section and in [Web Styling](#web-styling) applies to the **classic React app only**. Don't carry its React/Tailwind conventions (`cn()`, `classMaps.ts`, `style={{}}` carve-outs, the disabled theme toggle) into Atlas code.
+The React dashboard Atlas is replacing; it stays served under `/classic/` and by `--ui classic`. Its file map, Tailwind rules and cookbook are in `apps/web/CLAUDE.md` (loaded when you work there). Don't carry its conventions (`cn()`, `classMaps.ts`, `style={{}}` carve-outs) into Atlas. Like all browser code it may only `import type` from `@gitrelic/core`.
 
-- `src/App.tsx` — loads `/gitrelic-report.json`, normalizes missing fields via `normalizeReport` (from `@gitrelic/scene`), then renders `Shell`
-- `src/components/layout/Shell.tsx` — top-level layout (sidebar + top bar + main pane + bottom panel + inspector)
-- `src/components/layout/Sidebar.tsx` — left nav, switches between overview and tab modes
-- `src/components/layout/BottomPanel.tsx` — routes to the 22 tab components under `components/tabs/`
-- `src/components/layout/InspectorPanel.tsx` — drill-down panel for the selected file/contributor/activity
-- `src/components/hero/` — D3 visualizations (commit graph, swimlanes, treemaps, force graphs, etc.). Biggest XSS surface — must only use `.text()`, never `.html()`
-- `src/components/tabs/` — 22 deep-dive tabs, one per analyzer
-- Critical rule: only `import type` from `@gitrelic/core` — see [Browser code imports](#browser-code-imports).
-- **Styling:** Tailwind v4 only — see [Web Styling](#web-styling) section below.
-
-### `apps/atlas` — Web Dashboard (Atlas, in progress)
+### `apps/atlas` — Web Dashboard (Atlas, replacing classic)
 
 Svelte 5 (runes) + Vite + Tailwind v4. Served by `gitrelic --ui atlas` (implies `--web`) at `/`, with classic under `/classic/`; classic's `useSelection` reads `#preset=<id>` on load, so Atlas can link analyzers it has no view for to `/classic/#preset=<id>` (the rail does that from PR 3.1).
 
 **Read `docs/atlas-views.md` before building or changing a view.** It holds the navigation shape (five group views in the rail, one lens bar of analyzers, corner-toggle forms for the rare alternate picture — never a second tab row), where trend/distribution/leaderboard live (time strip, inspector chart, detail table), the URL fields, and each view's design-checkpoint outcome. Every view starts with a checkpoint with a maintainer, recorded there before it's built.
 
-- `src/App.svelte` — loads `/gitrelic-report.lite.json` via `lib/data/loadReport.ts` (normalized with `normalizeReport`), applies the theme, renders `lib/shell/Shell.svelte` (top bar, collapsible rail, stage, inspector). `loadCommits()` fetches `/gitrelic-commits.json` once, only when a view needs commits.
-- `src/lib/state/hash.ts` + `nav.svelte.ts` — the URL hash `#v=&l=&f=&s=&t=` (view, lens, form, selected entity id, time window) and the `Nav` runes class that owns it. Everything read from the hash is checked — a view must be a rail group, a lens an Atlas view (`catalog.atlas`) in that view, a form one its lens declares, a selection one scene's `buildEntityIndex` resolves, (`t`, the time window, is dropped until a lens reads it) — and anything else is dropped, never rendered (the URL is rewritten without it). Defaults (the Overview view, a view's default lens) stay out of the URL. Selecting replaces the history entry; opening a view, lens or form pushes one. `inspectorPref.ts` remembers the collapsed inspector in localStorage, like the theme.
-- `src/lib/shell/` — `Rail` (the five views, 56px; a view's dot rolls up its lenses' `computeOutlierBadges`), `LensBar` (the open view's lenses from scene `lensesOf`; those without an Atlas view link to `/classic/#preset=<id>` with ↗), `Inspector` (lens mode with nothing selected, otherwise cards by selection kind; 400px docked from 1200px, a drawer below that; `I` collapses it to a 52px strip), `GuideSheet` (`?`: every analyzer by view, the open lens pinned), `CommandPalette` (⌘K / Ctrl+K / `/`, scene `rankEntities`; an empty query lists analyzers), `Stage`, `TopBar`. `shortcut.ts` `pressed()` is the single-key shortcut test (never while typing in a field).
-- `Stage` takes the open layout's `caption` and the lens's docs link (both along its bottom edge), a Fit button (the `0` key's twin), and, for a lens with alternate forms, `FormToggle` in its corner; Shell keeps the primary form out of the URL. Its `frameKey` (lens + form) makes a new picture reframe even after the viewer zoomed (`AtlasStage.show(scene, { reframe })`); a selection re-forming the same picture keeps their zoom.
-- `src/lib/table/` — `TableDrawer` (the full-width detail table over the stage: `T`, filter, tier toggles, sortable headers; a row's hover lights its mark through `AtlasStage.hover`, a click selects; Escape closes it first) and `tableRows.ts` (`visibleRows`, `nextSort`; pure). It renders a lens's `AnalyzerView.table`.
-- `src/lib/time/` — `TimeStrip` (the shared strip under the stage: commits per week, the selection's weeks lit, following renames; Shell computes the totals once and only the selection's hits per click) and `ActivityStrip`, the bars both it and the inspector's Activity card draw.
-- `src/lib/inspector/` — the cards: `RepositoryCard`, `ExplainCard`, `FileCard` (name, folder via `PathText` — breaks only after a slash — then `WhatToDoCard` from scene `whatToDo`, `FlaggedBy` from scene `fileFacts`, people from `fileContributors`, `ActivityCard`, `coupledWith`), `PersonCard` (`personFacts`), `DirCard` (`dirFacts`), `FindingCard` (entity chips only for ids the index knows). Each card is its own `card` surface. Fact tiers colour through the `--risk-*` ramp (`text-risk-0..3`). The inspector wraps names and never truncates them.
-- `src/lib/views/fanFocus.ts` — which lens the Overview ring fans (kept while one of its fanned entities is selected). Shell builds the open lens's layout from scene `VIEWS` in a fixed 1200×800 world; the stage fits it.
-- `src/lib/engine/` — the canvas engine. `AtlasStage` ties it together (Stage.svelte and the bench are thin shells around it; it frames the first scene with marks and glides the camera to a changed extent until the viewer pans or zooms; a new lens or form reframes regardless): `MarkStore` (marks as structure-of-arrays Float32Arrays in insertion order; `drawOrder` — arcs under the rest, then `z`, then slot — is the one paint order the renderer draws in and the hit test picks by), `TweenEngine` (plays a scene `TransitionPlan` into the store per animation frame, sleeps when idle, injectable `FrameClock` for tests; `repaint` re-tints on a theme switch), `viewport.ts` + `viewportInput.ts` (pan/zoom/fit math and the wheel/drag/pinch/key wiring), `hitTest.ts` (grid-indexed mark picking, polar test for arcs, segment distance for links), `labelLayer.ts` (DOM labels over the canvas via `planLabels`, `textContent` only), `tooltipLayer.ts` (the hovered mark's `tip` lines in a card beside it, updated per frame like the labels, `textContent` only), `themeBridge.ts` (computed CSS tokens → `Palette`; `test/themePalette.test.ts` checks every colour role in both themes parses), `reducedMotion.ts`.
-- `src/lib/engine/pixiStage.ts` — the PixiJS v8 (WebGL) renderer behind the `StageRenderer` interface. **Never rebuild display objects per frame:** marks are particles in one `ParticleContainer` sharing one generated sprite atlas (dot, ring, square, halo; frames in `spriteAtlas.ts`, with transparent gutters so linear filtering never bleeds a neighbour), links are one custom-shader mesh with per-vertex colour (`linkGeometry.ts` tessellates, pure and tested; links run from mark edge to mark edge), arcs (`arcBand.ts`), `outline` marks and guides are a `Graphics` each, re-tessellated only on frames marked dirty (outlines and guides also on zoom, for a constant screen-px stroke). Cards and text are DOM overlays, never canvas. Without WebGL the stage shows a link to classic. Custom GLSL follows Pixi's ES 3.00 convention (`in`/`out`, `out vec4 finalColor`). `pixi.js` is pinned to an exact version on purpose: the link shader's uniform names and `ParticleContainer`'s `dynamicProperties` have shifted between v8 minors, so bump it deliberately and re-run the bench.
-- `bench.html` + `src/dev/bench.ts` — the performance gate, dev-only (`/bench.html` on the dev server; the build only takes `index.html`): 5,000 marks and 2,000 curved links morphing grid ↔ fan, a 168-cell arc ring, 300 labels, Interrupt/Theme/Motion buttons, live p50/p95 frame interval and draw CPU. `?morph` and `?glow` set the starting state. Frame timing comes from a rAF probe loop (the browser's frame timestamps), not draw completion. Headless (SwiftShader) numbers are meaningless. The gate: no dropped frames while morphing (p95 interval within the display's refresh, ≤ 16.7 ms at 60 Hz), in both themes, on an M2 MacBook Air with Chrome DevTools' 4× CPU slowdown (standing in for a 2020-era Intel laptop; the per-frame work is CPU-bound).
-- `dev/devData.ts` — Vite dev plugin serving both JSON endpoints: the scene fixture by default, or a live analysis with `GITRELIC_DEV_REPO=<path>` (`GITRELIC_DEV_SINCE` defaults to `12 months ago` like the CLI, `all` for full history; needs a built core). Node-side, so it may value-import core.
-- Dev port 7778 (`pnpm --filter @gitrelic/atlas dev`); 7777 is classic's and the CLI's.
-- `typecheck` is `svelte-check` for `src` plus `tsc -p tsconfig.node.json` for `vite.config.ts`, `dev/` and `test/`, so browser code never sees Node types.
-- **No raw HTML.** Report data (commit messages, names, paths) is attacker-influenced; `test/noRawHtml.test.ts` fails on `{@html}`, `innerHTML`, `outerHTML` or `insertAdjacentHTML` in `src`.
+- **Read `apps/atlas/CLAUDE.md`** for the file map: data loading, the URL hash, the shell, table drawer, time strip, inspector cards and the canvas engine.
+- **Rules that hold everywhere:**
+  - **No raw HTML.** Report data is attacker-influenced; `test/noRawHtml.test.ts` fails on `{@html}`, `innerHTML`, `outerHTML` or `insertAdjacentHTML` in `src`.
+  - **Never rebuild display objects per frame** in the Pixi renderer.
+  - **`pixi.js` is pinned** to an exact version on purpose.
+  - **Theme tokens:** a name added to `THEME_TOKENS` (`packages/scene/src/theme/tokens.ts`) must be defined in both themes in `apps/atlas/src/styles/tokens.css` as a literal value; `test/tokens.test.ts` enforces it (details in `apps/atlas/CLAUDE.md`, Styling).
+- **Dev server.** It runs on port 7778 (`pnpm --filter @gitrelic/atlas dev`), serving the scene fixture by default, or a live analysis with `GITRELIC_DEV_REPO=<path>` (needs a built core). 7777 is classic's and the CLI's.
 
 ### `apps/docs` — VitePress Documentation Site
 
@@ -122,7 +115,6 @@ Svelte 5 (runes) + Vite + Tailwind v4. Served by `gitrelic --ui atlas` (implies 
 - `guide/`, `analyzers/`, `dashboard/`, `advanced/` — content
 - Deployed to `nebulord-dev.github.io/gitrelic` via `.github/workflows/docs.yml` on `apps/docs/**` changes to `main`
 - **Excluded from root `pnpm build`** — docs has its own deploy workflow. `pnpm docs:dev` / `pnpm docs:build` to work locally.
-
 
 ## IMPORTANT
 
@@ -196,23 +188,7 @@ Changes to either side (new core dep, removed core dep, web dist layout change) 
 
 ## Issue tracking
 
-Issues live in Linear under the GitRelic team. Track GitRelic work only in Linear — not Jira, and not a markdown kanban file. The team backlog is hand-ordered
-— top of the list is the next thing to work on. When asked "what's next" or
-"pick up the next issue," look at the GitRelic backlog (sorted by manual order,
-not priority or date) and start with the topmost issue in Todo state.
-
-### Polish Initiative (frozen during the Atlas migration)
-
-**Paused.** Classic hero/bottom-panel polish is on hold while Atlas is built — don't
-start `Polish:` tickets without a maintainer confirming. `docs/polish-pattern.md` is now input
-to each Atlas view's design checkpoint (what the analyzer must communicate), not a spec
-for new React work.
-
-Issues prefixed `Polish: <analyzer>` belong to the Polish Initiative — a forensic pass
-to optimize each analyzer's hero graphs and bottom panels. Before working on any
-Polish ticket, read `docs/polish-pattern.md` — it maps each analyzer to its decided
-bottom-panel form (narrative-KPI, table, etc.) and lists per-analyzer specs. Update
-the doc when a polish ticket discovers the spec is wrong or when a new pattern emerges.
+Issues live in Linear under the GitRelic team, Atlas work in the Atlas project. Track GitRelic work only in Linear — not Jira, and not a markdown kanban file. The backlog is hand-ordered (top is next), but the Linear MCP can't read that order: when asked "what's next", ask the maintainer rather than guessing from priority or date.
 
 ## Build Commands
 
@@ -227,6 +203,8 @@ pnpm dev                            # watch all
 ```
 
 TypeScript 6 throughout (`tsconfig.base.json` + `pnpm-workspace.yaml` catalog). tsdown bundles core and CLI; Vite bundles web and atlas; VitePress bundles docs.
+
+**tsdown sometimes hangs after finishing** (core or CLI, with or without Turbo): the bundle is written but the process never exits. A CLI build takes about a second, so anything idle for minutes is this. Kill it and rerun; for unattended runs wrap it in a watchdog (`perl -e 'alarm shift; exec @ARGV' 600 pnpm build`).
 
 ## Linting & Formatting
 
@@ -271,78 +249,12 @@ The built output is `dist/index.mjs` (matches `apps/cli/package.json` `bin` fiel
 
 ## Dependency Hygiene
 
-GitRelic has three dependency surfaces and each is scanned / updated differently:
+The full guide — the three dependency surfaces, `pnpm outdated` vs `taze`, bumping, the `vitepress>vite` pin, and the advisory behind every security override and ignored advisory — is `docs/dependencies.md`. The rules that bite every time:
 
-1. **Per-package `dependencies` / `devDependencies`** in `packages/core`, `apps/cli`, `apps/web`, `apps/docs`
-2. **Workspace catalog** in `pnpm-workspace.yaml` (shared `typescript`, `tsdown`, `vitest`, `@types/*`, etc.)
-3. **pnpm overrides** in root `package.json` (narrow pins for security / compat — e.g. `vitepress>vite`)
-
-### `pnpm outdated` vs `taze`
-
-They answer different questions — use both.
-
-- **`pnpm -r outdated`** — "Is my **installed** version behind the latest?" Reads the lockfile. Reports nothing if your declared range (e.g. `^9.5.2`) already resolves to the current latest (`9.6.1`). Great for catching real upgrades available without range-bumping.
-- **`pnpm dlx taze -r`** — "Is my **declared range** behind the latest?" Reads `package.json`. Flags `^9.5.2` even if the resolved install is already `9.6.1`, because the floor of the range is stale. Also understands catalog entries. Runs with `npx taze -r` too.
-
-Both tools together give the full picture. Taze also has a known parse error on pnpm's range-selector override keys (`picomatch@>=4.0.0 <4.0.4`) — harmless, the report above the error is complete.
-
-### Bumping
-
-```bash
-pnpm -r update --latest <pkg>        # rewrites package.json ranges AND lockfile (-L short form)
-pnpm -r up -L --interactive          # pick-list — use this for anything majorish
-```
-
-- `pnpm update` (no `--latest`) only refreshes within the existing range — it won't raise the declared floor
-- `pnpm -r up -L` does NOT touch the workspace catalog; bump `pnpm-workspace.yaml` by hand (or use taze)
-- Overrides in root `package.json` are also invisible to `pnpm update` — edit directly
-
-### Bundled-deps mirror discipline
-
-When bumping any runtime dep in `packages/core`, bump the matching entry in `apps/cli/package.json` in the **same commit**. The `install-smoke` CI job (and the same step in `publish.yml`) compares `name@range` pairs, so a missing dep *or* a drifted range fails the build.
-
-`pnpm -r up -L <pkg>` handles this automatically when both packages declare the dep (common case: `execa`).
-
-### Why `vitepress>vite` is pinned to vite 6
-
-That override is **scoped** — it only pins vite **where vitepress depends on it**, not the top-level vite used by `apps/web`. VitePress 1.x was built against vite 6; vite 7+ has breaking changes VitePress 1.x never absorbed. The lockfile happily holds both `vite@6.4.x` (inside vitepress) and `vite@8.x` (for `apps/web`). Taze will flag the top-level vite range even though the override pins a different vite instance to 6 — that's not drift, it's two separate vites in the graph. Drop the override only when moving to VitePress 2.x (which supports vite 7+).
-
-The heading deliberately says "vite 6" rather than a patch version — the pin gets bumped on every vite 6 security patch, and a version in the heading goes stale immediately.
-
-### Security overrides
-
-`package.json` is JSON and can't hold comments, so the advisory backing each security override is recorded here. Without this table nobody can tell whether a boundary is correct, or when a pin becomes safe to drop.
-
-| Override | Advisories | Drop when |
-| --- | --- | --- |
-| `ws@>=8.0.0 <8.21.0` | GHSA-96hv-2xvq-fx4p, GHSA-58qx-3vcg-4xpx | `ink` ships a release resolving ws ≥ 8.21.0 |
-| `undici@>=6.0.0 <6.28.1` | GHSA-8xcm-r25x-g524, GHSA-m8rv-5g2x-5cg5, GHSA-v3r7-h72x-cjcm, GHSA-35p6-xmwp-9g52, GHSA-g8m3-5g58-fq7m, GHSA-p88m-4jfj-68fv, GHSA-3wwx-pv8p-q78v, GHSA-r53p-7pc4-xj5r, GHSA-rfgv-xxqx-mfg5 | `semantic-release` → `@actions/core` drops undici 6 |
-| `undici@>=7.0.0 <7.29.1` | GHSA-4cwx-7wf7-3272, GHSA-jr45-8vmc-qm54, GHSA-hm92-r4w5-c3mj, GHSA-vmh5-mc38-953g, GHSA-pr7r-676h-xcf6, GHSA-3wwx-pv8p-q78v, GHSA-pmjh-fq2x-6v4x, GHSA-r53p-7pc4-xj5r, GHSA-rfgv-xxqx-mfg5, GHSA-3xpg-4rpp-hhhm, GHSA-2jfj-6hjv-fm6j, GHSA-2gqq-gqf2-x968, GHSA-w293-vg96-wgc3, GHSA-8436-99hf-9mmv, GHSA-rx4f-c7p8-82vq | `@semantic-release/github` requires undici ≥ 7.29.1 |
-| `js-yaml@>=4.0.0 <4.3.2` | GHSA-5p4m-2wfm-xmqj, GHSA-52cp-r559-cp3m, GHSA-h67p-54hq-rp68, GHSA-2883-xcg3-v3hh | `cosmiconfig` requires js-yaml ≥ 4.3.2 |
-| `postcss@>=8.0.0 <8.5.23` | GHSA-fxqj-rqcc-2cmp, GHSA-r28c-9q8g-f849 | vitepress/vue toolchain resolves postcss ≥ 8.5.23 |
-| `dompurify@>=3.0.0 <3.4.16` | GHSA-55q2-fjhq-7xh7, GHSA-c2j3-45gr-mqc4, GHSA-p98j-92pf-mc4p, GHSA-6688-9rhm-gjv2 | `mermaid` requires dompurify ≥ 3.4.16 |
-| `esbuild@>=0.27.3 <0.28.1` | GHSA-g7r4-m6w7-qqqr | nothing in the tree can match the selector (see below) |
-| `vitepress>vite` | GHSA-fx2h-pf6j-xcff, GHSA-v6wh-96g9-6wx3 | moving to VitePress 2.x |
-
-### Ignored advisories
-
-`pnpm.auditConfig.ignoreGhsas` in `package.json` silences advisories that have no usable fix and no reachable attack path. Each one needs a row here, and drops out the moment its condition clears. Don't add to the list just to make `pnpm audit` quiet.
-
-| Advisory | Package / path | Why ignored | Revisit when |
-| --- | --- | --- | --- |
-| GHSA-vfj7-8cjw-p6xm (high) | `braces` ≤ 3.0.3 via `@semantic-release/git` → `micromatch` | No patched release exists. The DoS needs attacker-controlled glob patterns; the only patterns are the two hardcoded `assets` in `.releaserc.json`, run in CI. | `braces` ships a fix, or `@semantic-release/git` drops micromatch |
-| GHSA-238p-pmpm-9mq7 (low) | `katex` < 0.18.2 via `apps/docs` → `mermaid` | Fix is katex 0.18, but mermaid 11 pins `^0.16` — overriding would force a breaking line on it. Docs-site only, needs pre-existing prototype pollution, and we author every diagram. | `mermaid` 11.x widens to katex ≥ 0.18.2, or docs move to mermaid 12 |
-
-**Always bound the lower end at the major.** Write `ws@>=8.0.0 <8.21.0`, never `ws@<8.21.0`. A bare `<X` selector also matches every earlier major, so the override would silently force a major upgrade on any future transitive that pulls an older line — a breaking change disguised as a security pin. Nothing in the tree triggers it today, which is exactly why it would be missed. The `postcss` and `dompurify` entries are narrowed to the 8.x / 3.x lines for this reason even though their advisories nominally cover everything below the patched version.
-
-**The `esbuild` override is a tripwire, not an upgrade.** esbuild is an *optional* `peerDependency` of vite 8, and vite 8 bundles rolldown as its actual bundler — it never calls esbuild. Narrowing the peer range caused pnpm to **drop** esbuild and its 26 `@esbuild/*` platform packages from the vite 8 subtree rather than install 0.28.1. That's the desired outcome (the vulnerable copy is gone, builds verified green), but it means no esbuild in the tree matches the selector anymore. Leave it in place as a guard against a future dep reintroducing a 0.27.x. The separate `esbuild@<0.25.0` floor and the surviving `esbuild@0.25.12` under vite 6 are unrelated and not vulnerable — GHSA-g7r4-m6w7-qqqr starts at 0.27.3.
-
-Regenerate this table from the live feed with:
-
-```bash
-gh api repos/nebulord-dev/gitrelic/dependabot/alerts --paginate \
-  -q '.[] | select(.state=="open") | "\(.dependency.package.name)\t\(.security_advisory.ghsa_id)\t\(.security_vulnerability.vulnerable_version_range)"' | sort -u
-```
+- **Bump a core runtime dep and its CLI mirror in the same commit** (`pnpm -r up -L <pkg>` does both when both declare it); `install-smoke` fails on drift.
+- **Every security override and ignored advisory gets a row in `docs/dependencies.md`** with its advisories and when it can go. Don't ignore an advisory just to quiet `pnpm audit`.
+- **Bound an override's lower end at the major** (`ws@>=8.0.0 <8.21.0`, never `ws@<8.21.0`): a bare `<X` silently forces earlier majors up.
+- `pnpm -r up -L` doesn't touch the workspace catalog (`pnpm-workspace.yaml`) or root overrides; edit those by hand.
 
 ## Releases & Versioning
 
@@ -365,89 +277,3 @@ Effect during pre-1.0:
 - `feat!:` / `chore!:` / `BREAKING CHANGE:` → **minor** (0.1.0 → 0.2.0), not major
 
 **Do not remove this rule casually.** It exists because a single `chore!:` commit (the gitlore→gitrelic rename) once caused semantic-release to jump straight to `v2.0.0`, which had to be unpublished and reset. Remove it only when intentionally cutting `1.0.0`, and do so in the same PR that marks the 1.0 release.
-
-## Atlas Styling
-
-`apps/atlas` uses Tailwind v4 over a CSS-variable theme. None of the classic rules below (`cn()`, `classMaps.ts`, carve-out lists) apply.
-
-- **Themes:** `src/styles/tokens.css` defines every name in `THEME_TOKENS` (`packages/scene/src/theme/tokens.ts`) under `:root[data-theme='glow']` and `:root[data-theme='flat']`. Adding a token means adding it to the list and to both themes; `test/tokens.test.ts` fails otherwise. Token values are literals (no `color-mix` or `var()` chains) so the canvas renderer can read them with `getComputedStyle`. Flat is the default; the viewer's choice is kept in localStorage, not the URL.
-- **Tailwind sees only theme roles.** `src/app.css` clears the default palette (`--color-*: initial`) and aliases tokens with `@theme inline` (`bg-bg`, `text-muted`, `bg-accent`, `text-accent-ink`, `border-control-border`, `rounded-chip`…). `panel` and `card` are `@utility` classes for the two surface styles, and `modal` the solid one for dialogs over the stage (Glow's glass surfaces would let the canvas show through).
-- **Conditional classes** use Svelte's built-in array/object `class={[...]}` syntax; there is no `cn()` helper.
-
-## Web Styling
-
-> Classic dashboard (`apps/web`) only.
-
-`apps/web` uses Tailwind v4 for all styling. Inline `style={{}}` on JSX is reserved for runtime/data-driven values only — static styling lives in className via Tailwind utilities.
-
-### Composition primitives
-
-- `cn()` from `apps/web/src/utils/cn.ts` (clsx + tailwind-merge) — use only for runtime conditionals or spread-merges. **Bare ternary** for single conditionals (`className={cond ? 'a' : 'b'}`, NOT `cn(cond ? 'a' : 'b')`). Even with shared base classes, prefer the bare-ternary form (`className={cond ? 'base a' : 'base b'}`) over `cn('base', cond ? 'a' : 'b')` — established precedent through PR3c heroes and PR4 tabs.
-- `classMaps.ts` from `apps/web/src/utils/classMaps.ts` — typed tier→class lookups for severity/accent/domain colors. Don't compose color classes by template-stringing tier names (`text-severity-${tier}`) — bypasses the type system, grep-hostile.
-
-```tsx
-import { cn } from '../../utils/cn';
-import { severityText } from '../../utils/classMaps';
-
-<div className={cn('flex gap-2', isActive && 'border-border-focus')} />
-<span className={severityText[variant]}>...</span>
-```
-
-### Theme bridge
-
-CSS variables in `apps/web/src/index.css` are the source of truth for colors and other theme values. A `@theme` block aliases them to Tailwind tokens (`bg-surface-primary`, `text-severity-critical`, `bg-tooltip-bg`, etc.). Light/dark is designed to switch via `[data-theme='light']` on `<html>`, but the toggle is currently disabled in `TopBar.tsx` pending full hero/graph coverage — dark is the active default. **Don't introduce `dark:` variants** — they fight the existing system. **Don't migrate `index.css` to Tailwind primitives** (`@apply`, `@layer components`) — the CSS variable token system is good as CSS.
-
-Available token domains:
-- `bg-surface-*` / `border-border-*` / `text-text-*` (UI chrome)
-- `bg-severity-{critical,warning,moderate,healthy}-{bg,text}` + `text-severity-{critical,warning,moderate,healthy}` foreground only
-- `stale` is a `BadgeVariant` but resolves to `bg-surface-tertiary text-text-tertiary` via `classMaps.ts` (no dedicated severity token)
-- `bg-accent-{ownership,coupling,temporal}-{bg,text}` + `text-accent-{ownership,coupling,temporal}` foreground only
-- `bg-accent-primary` / `text-accent-primary` (bare — no `-bg`/`-text` variants)
-- `bg-tooltip-bg` / `text-tooltip-text` (tooltip-specific token pair — distinct from `bg-surface-elevated` which is for general elevated surfaces)
-
-### Cookbook rules
-
-These rules were established through the RELIC-336 migration (PR1–PR4) and are the result of multiple PR review cycles. Following them up-front avoids fixup commits.
-
-**1. Carve-outs are for runtime values only.** A `style={{}}` block is only justified when the value depends on data, mouse coords, or other per-render state. Static module-level constants (`const ROW_HEIGHT = 40`) are NOT carve-out candidates — they're `className="h-10"` (or `className="h-[Npx]"` if off-scale).
-
-**2. Standard Tailwind scale before arbitrary values.** Spacing/widths half-step scale: 0/0.5/1/1.5/2/2.5/3/3.5/4/5/6/8/10/12 = 0/2/4/6/8/10/12/14/16/20/24/32/40/48 px. So:
-- `py-1.5` (6px), NOT `py-[6px]`
-- `px-2.5` (10px), NOT `px-[10px]`
-- `gap-1.5` (6px), NOT `gap-[6px]`
-- `max-w-80` (320px), NOT `max-w-[320px]`
-
-Type sizes don't have half-step scale — `text-[10px]`, `text-[11px]`, `text-[9px]` are correct (they're between standard `text-xs`=12px and below). Genuinely off-scale values (5px, 7px, 11px, 13px, 22px, 50px, 130px, 250px, 300px, 350px) use arbitrary `[Npx]` syntax.
-
-**3. Border radius mapping:** `borderRadius: 4` → `rounded` (4px). `borderRadius: 2` → `rounded-xs` (2px). Don't confuse them.
-
-**4. Tooltip styling:** use `bg-tooltip-bg text-tooltip-text` token pair (NOT `bg-surface-elevated`/`text-text-primary` — those are surface tokens, render slightly different in light/dark themes).
-
-**5. SVG-specific rules:**
-- Static `style` props on JSX `<rect>`/`<g>`/`<text>` migrate to `className=` (Tailwind utilities work on inline SVG).
-- D3 `.attr('fill', ...)` and `.style('fill', ...)` calls inside `useEffect`/`useMemo` are NOT React style props — leave alone.
-- `<g transform={...}>` is a JSX attribute, not a React `style` prop — never migrate.
-
-### When carve-outs are correct
-
-- Tooltip dynamic position (`style={{ left: tooltip.x, top: tooltip.y }}`)
-- Data-driven backgrounds (`style={{ background: bubbleColor(author) }}`)
-- D3 scale outputs (`style={{ left: xScale(d.date) }}`)
-- Untokenizable rgba opacity variants (`style={{ color: 'rgba(248,81,73,0.8)' }}` — when no theme token resolves to that exact value)
-- Per-row dynamic positioning computed from index/data (`style={{ top: i * rowHeight }}`)
-- Runtime percentage bar widths (`style={{ width: \`${percentage}%\` }}`)
-
-### Patterns and primitives to look at
-
-- `apps/web/src/components/shared/NarrativeKPI.tsx` — canary component, foundation reference
-- `apps/web/src/components/shared/Tooltip.tsx` — tooltip primitive with `wrapperClassName` API for layout customization
-- `apps/web/src/components/shared/Badge.tsx` — uses `badgeClasses` from `classMaps.ts`
-- `apps/web/src/utils/classMaps.ts` — typed tier→class registry
-
-### Don't
-
-- Add `dark:` variants — fight the `[data-theme]` system.
-- Migrate `index.css` to `@apply` / `@layer components`.
-- Add `class-variance-authority` or similar.
-- Compose color classes via template strings (`text-severity-${tier}`).
-- Mass-disable lint rules with file-level `/* oxlint-disable */` for migration shortcuts.
