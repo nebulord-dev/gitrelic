@@ -143,5 +143,9 @@ describe('riskTable', () => {
     });
     expect(t.rows[0].cells.owners).toBe(10);
     expect(t.rows[0].tier).toBe(2);
+    // The header names both branches, since one column holds either.
+    expect(t.columns.find((c) => c.id === 'owners')?.label).toBe(
+      'Ownership / authors',
+    );
   });
 });

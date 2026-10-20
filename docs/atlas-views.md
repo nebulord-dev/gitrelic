@@ -340,7 +340,7 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 - **Inspector (lens mode).** About, then the Risk card: the cursed count and near misses, the findings, and the five highest scores, each with a small split bar.
 - **Overview's Risk tab is retired.** Classic's `risk` preset merges into this lens (`ATLAS_MERGES` in `catalogParity.test.ts`, the first entry), so Atlas has one Risk, in Code Health. Overview's bar is Repo map · Tech Debt ↗ until Complexity growth's checkpoint; classic still serves the old dashboard at `/classic/#preset=risk`.
 - **Signals the score leaves out** (hotspot 50+, accelerating) sit in their own column right of the axis, under "Not in the score", not beside the score: "50 hotspot 56" read as one number.
-- **Table.** Cursed files and near misses, with these columns: score, the points for churn / owners (ownership or many authors) / abandoned / fixes / parallel, hotspot, and status ("cursed" or "near miss (N short)"). Tiers are Near miss, Cursed, and Cursed 60+.
+- **Table.** Cursed files and near misses, with these columns: score, the points for churn / "Ownership / authors" (one column: a file scores one or the other) / abandoned / fixes / parallel, hotspot, and status ("cursed" or "near miss (N short)"). Tiers are Near miss, Cursed, and Cursed 60+.
 - **React (last 12 months).**
   - Eight cursed files, all churn 35 + many authors 10 + parallel 5 or 10: seven `ReactFeatureFlags` forks and `ReactFlightClient.js`.
   - Three near misses at 45: `ReactFizzServer.js` (hotspot 100, accelerating) and `ReactFiberConfigDOM.js` (hotspot 94) on churn + many authors, and `ValidateExhaustiveDependencies.ts` on churn 15 + ownership 30.

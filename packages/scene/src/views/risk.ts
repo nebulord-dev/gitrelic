@@ -127,7 +127,7 @@ export function riskTable(input: ViewInput): LensTable {
       { id: 'file', label: 'File' },
       { id: 'score', label: 'Score', numeric: true },
       { id: 'churn', label: REASON_NAMES.churn, numeric: true },
-      { id: 'owners', label: 'Owners', numeric: true },
+      { id: 'owners', label: 'Ownership / authors', numeric: true },
       { id: 'abandoned', label: REASON_NAMES.abandoned, numeric: true },
       { id: 'fixes', label: 'Fixes', numeric: true },
       { id: 'parallel', label: 'Parallel', numeric: true },
