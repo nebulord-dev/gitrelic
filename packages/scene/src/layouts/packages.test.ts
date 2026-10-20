@@ -94,8 +94,9 @@ describe('packagesScene', () => {
     expect(card('package:compiler').labelPriority).toBeGreaterThan(fileTop);
   });
 
-  it('draws the biggest packages and the hot small ones, noting the rest', () => {
-    // pkg0 is biggest … pkg13 smallest; tiny/ is smallest of all but hot.
+  it('draws the biggest packages, the hot small ones and any with a critical file, noting the rest', () => {
+    // pkg0 is biggest … pkg13 smallest; tiny/ is smallest of all but hot,
+    // and pkg12 holds one critical file.
     const files = [];
     for (let k = 0; k < 14; k++)
       for (let i = 0; i < 40 - k; i++)
@@ -111,14 +112,48 @@ describe('packagesScene', () => {
     const discs = scene.marks
       .filter((m) => m.id.startsWith('dir:'))
       .map((m) => m.id);
-    expect(discs).toHaveLength(PACKAGES_SHOWN + 1);
+    expect(discs).toHaveLength(PACKAGES_SHOWN + 2);
     expect(discs).toContain('dir:tiny');
+    expect(discs).toContain('dir:pkg12');
     expect(discs).not.toContain('dir:pkg10');
-    // Hidden packages draw no files, and the note names their critical ones.
-    expect(scene.marks.some((m) => m.id.startsWith('file:pkg12/'))).toBe(false);
-    expect(scene.marks.find((m) => m.id === 'package-more')!.label).toBe(
-      '+4 more packages · 114 files · 1 critical (pkg12) · in the table (T)',
+    // Hidden packages draw no files; the note counts them.
+    expect(scene.marks.some((m) => m.id.startsWith('file:pkg13/'))).toBe(false);
+    // The rest stand together as one empty ghost circle, last in the
+    // columns, under a heading like the others.
+    const note = scene.marks.find((m) => m.id === 'package-more')!;
+    expect(note).toMatchObject({ shape: 'outline', paint: '--ghost' });
+    const head = scene.marks.find((m) => m.id === 'package-more:head')!;
+    expect(head).toMatchObject({
+      label: '+3 more packages',
+      labelSub: '86 files · in the table (T)',
+      labelAnchor: 'above',
+      x: note.x,
+    });
+    // In the last column, at its top, clear of the table drawer.
+    for (const m of scene.marks.filter((m) => m.id.startsWith('dir:'))) {
+      expect(note.x).toBeGreaterThanOrEqual(m.x);
+      if (m.x === note.x) expect(note.y).toBeLessThan(m.y);
+    }
+    // A marker, not a measure: the smallest drawn circle's size.
+    const smallest = Math.min(
+      ...scene.marks.filter((m) => m.id.startsWith('dir:')).map((m) => m.r),
     );
+    expect(note.r).toBeCloseTo(smallest);
+    expect(
+      scene.marks.some(
+        (m) => m.parent === 'package-more' && m.id.startsWith('file:'),
+      ),
+    ).toBe(false);
+    // Their files light the note from a table row, and it names them.
+    expect(scene.standIns?.get(ids.file('pkg13/f26.ts'))).toBe('package-more');
+    expect(
+      [...scene.standIns!.values()].filter((h) => h === 'package-more'),
+    ).toHaveLength(86);
+    expect(note.tip).toEqual([
+      'Not drawn: 3 smaller packages',
+      'pkg10, pkg11, pkg13',
+      'Their files are in the table (T)',
+    ]);
     expect(checkScene(scene)).toEqual([]);
     // Every package fits: no note.
     expect(
@@ -126,6 +161,60 @@ describe('packagesScene', () => {
         (m) => m.id === 'package-more',
       ),
     ).toBe(false);
+  });
+
+  it('names four hidden packages in the note’s tooltip, then counts the rest', () => {
+    const files = [];
+    for (let k = 0; k < 16; k++)
+      for (let i = 0; i < 40 - k; i++)
+        files.push({
+          file: `pkg${k}/f${i}.ts`,
+          commits: 2,
+          loc: 100,
+          score: 5,
+        });
+    const note = packagesScene(
+      hotspotPoints(hotspotReport(files)),
+      viewport,
+    ).marks.find((m) => m.id === 'package-more')!;
+    expect(note.tip?.[1]).toBe('pkg10, pkg11, pkg12, pkg13 +2 more');
+  });
+
+  it('draws a small package that holds a critical file', () => {
+    // Twelve bigger packages, but the root's one file is critical (React's
+    // package.json).
+    const files = [{ file: 'package.json', commits: 9, loc: 100, score: 90 }];
+    for (let k = 0; k < 12; k++)
+      for (let i = 0; i < 10; i++)
+        files.push({
+          file: `pkg${k}/f${i}.ts`,
+          commits: 2,
+          loc: 100,
+          score: 5,
+        });
+    const scene = packagesScene(hotspotPoints(hotspotReport(files)), viewport);
+    expect(scene.marks.some((m) => m.id === REPO_ID)).toBe(true);
+    expect(scene.marks.some((m) => m.id === ids.file('package.json'))).toBe(
+      true,
+    );
+    // Equal sizes sort by name, so pkg10 and pkg11 come before pkg2.
+    expect(scene.marks.find((m) => m.id === 'package-more')!.tip?.[1]).toBe(
+      'pkg8, pkg9',
+    );
+  });
+
+  it('keeps the ghost heading apart from a drawn package named more', () => {
+    // more/ is among the biggest; the smallest are bundled into the ghost.
+    const files = [];
+    for (let k = 0; k < PACKAGES_SHOWN + 3; k++) {
+      const pkg = k === 0 ? 'more' : `pkg${k}`;
+      for (let i = 0; i < 40 - k; i++)
+        files.push({ file: `${pkg}/f${i}.ts`, commits: 2, loc: 100, score: 5 });
+    }
+    const scene = packagesScene(hotspotPoints(hotspotReport(files)), viewport);
+    expect(scene.marks.some((m) => m.id === 'dir:more')).toBe(true);
+    expect(scene.marks.some((m) => m.id === 'package-more')).toBe(true);
+    expect(checkScene(scene)).toEqual([]);
   });
 
   it('outlines the selected package', () => {
@@ -234,11 +323,14 @@ describe('packagesScene', () => {
     // The spiral this replaced took ~20 s here; generous for slow CI.
     expect(Date.now() - t).toBeLessThan(1000);
     // Most of these run hot, so far more than PACKAGES_SHOWN are drawn,
-    // each with its heading.
+    // each with its heading, and the ghost circle with its own.
     const discs = scene.marks.filter((m) => m.id.startsWith('dir:')).length;
     expect(discs).toBeGreaterThan(PACKAGES_SHOWN);
     expect(scene.marks.filter((m) => m.id.startsWith('package:'))).toHaveLength(
       discs,
+    );
+    expect(scene.marks.some((m) => m.id === 'package-more')).toBe(
+      scene.marks.some((m) => m.id === 'package-more:head'),
     );
   });
 
