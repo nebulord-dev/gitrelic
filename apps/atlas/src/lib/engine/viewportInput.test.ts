@@ -61,6 +61,29 @@ describe('attachViewportInput', () => {
     expect(opts.click).not.toHaveBeenCalled();
   });
 
+  it('never pans for a click that wiggles under the slop', () => {
+    // A pan marks the camera as the viewer's, and the stage then stops
+    // framing a fan when it opens: a click must not take the camera.
+    const { pointer, opts } = setup();
+    pointer('pointerdown', 1, 50, 50);
+    pointer('pointermove', 1, 51, 51);
+    pointer('pointermove', 1, 52, 50);
+    pointer('pointerup', 1, 52, 50);
+    expect(opts.set).not.toHaveBeenCalled();
+    expect(opts.click).toHaveBeenCalledOnce();
+  });
+
+  it('pans the whole way from the press once a drag passes the slop', () => {
+    const { pointer, view, opts } = setup();
+    pointer('pointerdown', 1, 50, 50);
+    pointer('pointermove', 1, 52, 50);
+    pointer('pointermove', 1, 55, 50);
+    pointer('pointermove', 1, 60, 50);
+    pointer('pointerup', 1, 60, 50);
+    expect(view()).toEqual({ scale: 1, tx: 10, ty: 0 });
+    expect(opts.click).not.toHaveBeenCalled();
+  });
+
   it('treats a press without movement as a click, in element coordinates', () => {
     const { pointer, opts } = setup();
     pointer('pointerdown', 1, 50, 50);
