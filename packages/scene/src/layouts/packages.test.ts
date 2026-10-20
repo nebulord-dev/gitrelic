@@ -122,7 +122,7 @@ describe('packagesScene', () => {
     // columns, under a heading like the others.
     const note = scene.marks.find((m) => m.id === 'package-more')!;
     expect(note).toMatchObject({ shape: 'outline', paint: '--ghost' });
-    const head = scene.marks.find((m) => m.id === 'package:more')!;
+    const head = scene.marks.find((m) => m.id === 'package-more:head')!;
     expect(head).toMatchObject({
       label: '+3 more packages',
       labelSub: '86 files · in the table (T)',
@@ -201,6 +201,20 @@ describe('packagesScene', () => {
     expect(scene.marks.find((m) => m.id === 'package-more')!.tip?.[1]).toBe(
       'pkg8, pkg9',
     );
+  });
+
+  it('keeps the ghost heading apart from a drawn package named more', () => {
+    // more/ is among the biggest; the smallest are bundled into the ghost.
+    const files = [];
+    for (let k = 0; k < PACKAGES_SHOWN + 3; k++) {
+      const pkg = k === 0 ? 'more' : `pkg${k}`;
+      for (let i = 0; i < 40 - k; i++)
+        files.push({ file: `${pkg}/f${i}.ts`, commits: 2, loc: 100, score: 5 });
+    }
+    const scene = packagesScene(hotspotPoints(hotspotReport(files)), viewport);
+    expect(scene.marks.some((m) => m.id === 'dir:more')).toBe(true);
+    expect(scene.marks.some((m) => m.id === 'package-more')).toBe(true);
+    expect(checkScene(scene)).toEqual([]);
   });
 
   it('outlines the selected package', () => {
@@ -312,9 +326,11 @@ describe('packagesScene', () => {
     // each with its heading, and the ghost circle with its own.
     const discs = scene.marks.filter((m) => m.id.startsWith('dir:')).length;
     expect(discs).toBeGreaterThan(PACKAGES_SHOWN);
-    const ghost = scene.marks.some((m) => m.id === 'package-more') ? 1 : 0;
     expect(scene.marks.filter((m) => m.id.startsWith('package:'))).toHaveLength(
-      discs + ghost,
+      discs,
+    );
+    expect(scene.marks.some((m) => m.id === 'package-more')).toBe(
+      scene.marks.some((m) => m.id === 'package-more:head'),
     );
   });
 

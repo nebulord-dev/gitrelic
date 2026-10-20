@@ -266,8 +266,9 @@ export function packagesScene(
       ],
     });
     marks.push(
+      // Not `package:more`: a drawn top-level `more/` would own that id.
       heading(
-        'package:more',
+        'package-more:head',
         'package-more',
         rest.x,
         rest.y - rest.r - 6,
