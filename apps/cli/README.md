@@ -31,7 +31,14 @@ gitrelic --path ~/projects/my-app --since "6 months ago"
 
 # Output JSON for piping
 gitrelic --path ~/projects/my-app --json > report.json
+
+# Give a huge repo's full history more time (default: 600 s per long git read: history, the file list, line counts)
+gitrelic --path ~/projects/huge-repo --since all --git-timeout 1800
 ```
+
+gitrelic won't hang on git: each git process has a time limit, and git is
+told never to prompt for credentials, so a stuck repository fails with a
+message naming the command instead of hanging.
 
 ## What You Get
 

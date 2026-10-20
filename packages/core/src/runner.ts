@@ -277,6 +277,8 @@ export async function runGitrelic(
   options: RunGitrelicOptions,
 ): Promise<GitrelicReport> {
   const { repoPath, branch, since, onProgress } = options;
+  // Undefined keeps each heavy git read's default limit.
+  const timeoutMs = options.gitTimeoutMs;
   const shouldMergeIdentities = options.mergeIdentities ?? true;
   const repoName = path.basename(repoPath);
 
@@ -286,7 +288,7 @@ export async function runGitrelic(
   const ref = await resolveCommit(repoPath, branch);
 
   onProgress?.('Reading git history...');
-  const rawCommits = await getAllCommits(repoPath, { since, ref });
+  const rawCommits = await getAllCommits(repoPath, { since, ref, timeoutMs });
   // Merge before anything else so every analyzer, and report.commits, sees
   // one canonical email per person.
   const { commits, identities } = shouldMergeIdentities
@@ -301,7 +303,7 @@ export async function runGitrelic(
   }
 
   onProgress?.('Scanning tracked files...');
-  const treeBlobs = await getTreeBlobs(repoPath, ref);
+  const treeBlobs = await getTreeBlobs(repoPath, ref, timeoutMs);
   const trackedFiles = treeBlobs.map((b) => b.path);
 
   // Fixtures and generated code would inflate ownership metrics (nobody
@@ -405,6 +407,7 @@ export async function runGitrelic(
       const linesByOid = await countBlobLines(
         repoPath,
         treeBlobs.filter((b) => !b.isSymlink).map((b) => b.oid),
+        timeoutMs,
       );
       const linesByPath = new Map(
         treeBlobs.map((b) => [
@@ -519,7 +522,8 @@ export async function runGitrelic(
   onProgress?.('Tracking file renames...');
   const renameTracking = await safeRunAsync(
     'renameTracking',
-    () => analyzeRenameTracking(repoPath, trackedFiles, { since, ref }),
+    () =>
+      analyzeRenameTracking(repoPath, trackedFiles, { since, ref, timeoutMs }),
     EMPTY_RENAME_TRACKING,
   );
 

@@ -2,6 +2,90 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { execa } from 'execa';
 
+// ─── Running git ───────────────────────────────────────────────────────────────
+
+/** Limit for the quick lookups: rev-parse, branch, check-mailmap. */
+export const GIT_QUICK_TIMEOUT_MS = 30_000;
+/**
+ * Default limit for the heavy reads (`git log`, the rename log, `cat-file
+ * --batch`). Far above what a large repo's full history needs: it's there to
+ * end a hung process, not to rush a slow one. `--git-timeout` overrides it.
+ */
+export const GIT_HEAVY_TIMEOUT_MS = 600_000;
+
+let quickTimeoutMs = GIT_QUICK_TIMEOUT_MS;
+/** @internal Tests only: shortens the quick limit; no argument restores it. */
+export function setGitQuickTimeoutForTests(ms = GIT_QUICK_TIMEOUT_MS): void {
+  quickTimeoutMs = ms;
+}
+
+// git must never wait for input: a credential prompt (or Git Credential
+// Manager's dialog) would hang the run with nothing on screen. Merged into
+// process.env (execa extends it by default).
+const GIT_ENV = { GIT_TERMINAL_PROMPT: '0', GCM_INTERACTIVE: 'never' };
+
+/** A git process ran past its time limit and was killed. */
+export class GitTimeoutError extends Error {
+  constructor(
+    /** The subcommand, e.g. `git log`. */
+    readonly command: string,
+    readonly repoPath: string,
+    readonly timeoutMs: number,
+    /** Whether `--git-timeout` raises this call's limit. */
+    overridable: boolean,
+  ) {
+    super(
+      `${command} timed out after ${formatSeconds(timeoutMs)} in ${repoPath}. ` +
+        (overridable
+          ? 'For a very large repository, raise the limit with --git-timeout <seconds>.'
+          : 'git may be stuck on a lock file or a slow filesystem.'),
+    );
+    this.name = 'GitTimeoutError';
+  }
+}
+
+function formatSeconds(ms: number): string {
+  const s = ms / 1000;
+  return `${Number.isInteger(s) ? s : s.toFixed(1)} s`;
+}
+
+interface GitCall {
+  repoPath: string;
+  timeoutMs: number;
+  /** A heavy read, whose limit `--git-timeout` sets. */
+  heavy?: boolean;
+}
+
+/** execa's failure, as a GitTimeoutError when the limit killed git. */
+function timeoutOr(err: unknown, args: string[], call: GitCall): unknown {
+  if ((err as { timedOut?: boolean }).timedOut !== true) return err;
+  return new GitTimeoutError(
+    `git ${args[0]}`,
+    call.repoPath,
+    call.timeoutMs,
+    !!call.heavy,
+  );
+}
+
+/**
+ * Runs git and returns its stdout. Every git call goes through here (the
+ * streaming `cat-file` uses the same options and `timeoutOr`), so none can
+ * run without a time limit or wait on a prompt.
+ */
+async function runGit(args: string[], call: GitCall): Promise<string> {
+  try {
+    const { stdout } = await execa('git', args, {
+      cwd: call.repoPath,
+      timeout: call.timeoutMs,
+      env: GIT_ENV,
+      stdin: 'ignore',
+    });
+    return stdout;
+  } catch (err) {
+    throw timeoutOr(err, args, call);
+  }
+}
+
 // ─── Raw git primitives ────────────────────────────────────────────────────────
 
 export interface FileStats {
@@ -43,7 +127,7 @@ export interface RawCommit {
  */
 export async function getAllCommits(
   repoPath: string,
-  options: { since?: string; ref?: string } = {},
+  options: { since?: string; ref?: string; timeoutMs?: number } = {},
 ): Promise<RawCommit[]> {
   const args = [
     'log',
@@ -57,7 +141,11 @@ export async function getAllCommits(
   // keeps even a hostile value from being parsed as a git flag.
   if (options.ref) args.push('--end-of-options', options.ref);
 
-  const { stdout } = await execa('git', args, { cwd: repoPath });
+  const stdout = await runGit(args, {
+    repoPath,
+    timeoutMs: options.timeoutMs ?? GIT_HEAVY_TIMEOUT_MS,
+    heavy: true,
+  });
   const commits = parseGitLog(stdout);
   await mailmapCoAuthors(repoPath, commits);
   return commits;
@@ -82,8 +170,9 @@ async function mailmapCoAuthors(
   try {
     mapped = await checkMailmap(repoPath, [...contacts]);
   } catch {
-    // A trailer value git can't parse as a contact shouldn't sink the whole
-    // analysis — unmapped co-authors are still correct, just possibly split.
+    // A trailer value git can't parse as a contact, or a check-mailmap that
+    // timed out, shouldn't sink the whole analysis — unmapped co-authors are
+    // still correct, just possibly split.
     return;
   }
   for (const c of commits) {
@@ -106,8 +195,9 @@ export async function checkMailmap(
   const out = new Map<string, CoAuthor>();
   for (let i = 0; i < contacts.length; i += CHECK_MAILMAP_BATCH) {
     const batch = contacts.slice(i, i + CHECK_MAILMAP_BATCH);
-    const { stdout } = await execa('git', ['check-mailmap', ...batch], {
-      cwd: repoPath,
+    const stdout = await runGit(['check-mailmap', ...batch], {
+      repoPath,
+      timeoutMs: quickTimeoutMs,
     });
     // One output line per input contact, in order.
     stdout.split('\n').forEach((line, j) => {
@@ -285,10 +375,9 @@ export async function resolveCommit(
   // than via `--end-of-options`, which rev-parse only accepts from git 2.30.
   if (rev.startsWith('-')) throw unknown();
   try {
-    const { stdout } = await execa(
-      'git',
+    const stdout = await runGit(
       ['rev-parse', '--verify', '--quiet', `${rev}^{commit}`],
-      { cwd: repoPath },
+      { repoPath, timeoutMs: quickTimeoutMs },
     );
     return stdout.trim();
   } catch (err) {
@@ -314,11 +403,13 @@ export interface TreeBlob {
 export async function getTreeBlobs(
   repoPath: string,
   ref: string,
+  timeoutMs = GIT_HEAVY_TIMEOUT_MS,
 ): Promise<TreeBlob[]> {
-  const { stdout } = await execa(
-    'git',
+  // Heavy: listing every file of a huge monorepo on a cold cache can take
+  // longer than a lookup, and only `--git-timeout` can then give it more.
+  const stdout = await runGit(
     ['ls-tree', '-r', '-z', '--full-tree', '--end-of-options', ref],
-    { cwd: repoPath },
+    { repoPath, timeoutMs, heavy: true },
   );
   return parseLsTree(stdout).filter((b) => !isIgnored(b.path));
 }
@@ -442,19 +533,43 @@ export class BlobLineCounter {
 export async function countBlobLines(
   repoPath: string,
   oids: string[],
+  timeoutMs = GIT_HEAVY_TIMEOUT_MS,
 ): Promise<Map<string, number | null>> {
   const unique = [...new Set(oids)];
   const counter = new BlobLineCounter();
   if (unique.length === 0) return counter.results;
-  const proc = execa('git', ['cat-file', '--batch'], {
+  const args = ['cat-file', '--batch'];
+  const proc = execa('git', args, {
     cwd: repoPath,
     input: unique.join('\n') + '\n',
     buffer: false,
+    timeout: timeoutMs,
+    env: GIT_ENV,
   });
-  for await (const chunk of proc.stdout as AsyncIterable<Buffer>) {
-    counter.push(chunk);
+  try {
+    for await (const chunk of proc.stdout as AsyncIterable<Buffer>) {
+      counter.push(chunk);
+    }
+    await proc;
+  } catch (err) {
+    // The read loop can fail while git still runs (counting threw): kill it,
+    // or the wait below lasts as long as git does. `kill` is false when git
+    // has already exited, e.g. after the time limit killed it.
+    const killedHere = proc.kill();
+    // Wait for `proc` (so its rejection is never left unhandled) and report
+    // its error when the limit was hit or git failed on its own; when we
+    // killed it, the read loop's error is the real cause.
+    const final = await proc.then(
+      () => err,
+      (procErr: unknown) => procErr,
+    );
+    const timedOut = (final as { timedOut?: boolean }).timedOut === true;
+    throw timeoutOr(killedHere && !timedOut ? err : final, args, {
+      repoPath,
+      timeoutMs,
+      heavy: true,
+    });
   }
-  await proc;
   return counter.results;
 }
 
@@ -478,14 +593,17 @@ export async function resolveRepoRoot(
   startPath: string,
 ): Promise<string | null> {
   try {
-    const { stdout } = await execa('git', ['rev-parse', '--show-toplevel'], {
-      cwd: startPath,
+    const stdout = await runGit(['rev-parse', '--show-toplevel'], {
+      repoPath: startPath,
+      timeoutMs: quickTimeoutMs,
     });
     // `--show-toplevel` always emits forward slashes, even on Windows. Normalize
     // so `repoPath` keeps the native separators the old path.resolve() produced,
     // since it gets serialized into the report the dashboard renders.
     return stdout.trim() ? path.normalize(stdout.trim()) : null;
   } catch (err) {
+    // A hung git isn't "not a repository" either.
+    if (err instanceof GitTimeoutError) throw err;
     // ENOENT covers two very different causes: a missing git binary, and a cwd
     // that does not exist. Only the former is worth surfacing — if startPath
     // itself is gone, null is the honest answer.
@@ -503,8 +621,9 @@ export async function resolveRepoRoot(
  */
 export async function getCurrentBranch(repoPath: string): Promise<string> {
   try {
-    const { stdout } = await execa('git', ['branch', '--show-current'], {
-      cwd: repoPath,
+    const stdout = await runGit(['branch', '--show-current'], {
+      repoPath,
+      timeoutMs: quickTimeoutMs,
     });
     return stdout.trim() || 'HEAD';
   } catch {
@@ -516,21 +635,21 @@ export async function getCurrentBranch(repoPath: string): Promise<string> {
  * Returns all local branch names.
  */
 export async function getBranches(repoPath: string): Promise<string[]> {
-  const { stdout } = await execa(
-    'git',
-    ['branch', '--format=%(refname:short)'],
-    { cwd: repoPath },
-  );
+  const stdout = await runGit(['branch', '--format=%(refname:short)'], {
+    repoPath,
+    timeoutMs: quickTimeoutMs,
+  });
   return stdout.split('\n').filter(Boolean);
 }
 
 /**
  * Fetches the raw rename log for a repo. Returns an empty string if git fails,
- * so the rename-tracking analyzer can degrade gracefully.
+ * so the rename-tracking analyzer can degrade gracefully. A timeout is thrown
+ * instead, so the runner's fallback reports it rather than "no renames".
  */
 export async function getRenameLog(
   repoPath: string,
-  options: { since?: string; ref?: string } = {},
+  options: { since?: string; ref?: string; timeoutMs?: number } = {},
 ): Promise<string> {
   const args = [
     'log',
@@ -545,9 +664,13 @@ export async function getRenameLog(
   if (options.ref) args.push('--end-of-options', options.ref);
 
   try {
-    const { stdout } = await execa('git', args, { cwd: repoPath });
-    return stdout;
-  } catch {
+    return await runGit(args, {
+      repoPath,
+      timeoutMs: options.timeoutMs ?? GIT_HEAVY_TIMEOUT_MS,
+      heavy: true,
+    });
+  } catch (err) {
+    if (err instanceof GitTimeoutError) throw err;
     return '';
   }
 }
