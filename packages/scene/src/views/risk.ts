@@ -1,8 +1,10 @@
 // Code Health › Risk: score stacks (docs/atlas-views.md › Risk). Root causes,
-// its alternate form, lands in its own PR.
+// its alternate form, is the source files that change with the risky ones.
 
 import { ids } from '../ids';
+import { rootCausesScene } from '../layouts/rootCauses';
 import { stacksScene } from '../layouts/stacks';
+import { rootCausesOf, type RiskNode } from '../risk/rootCauses';
 import {
   REASON_KINDS,
   REASON_NAMES,
@@ -34,6 +36,16 @@ export const stacksLayout: Layout = {
     'Each bar is a file’s risk score split by reason; files past the line are cursed. Near misses sit under it, on thinner bars. On the right: signals the score doesn’t count.',
   needsCommits: false,
   build: (input, viewport) => stacksScene(riskStacksOf(input.report), viewport),
+};
+
+export const rootCausesLayout: Layout = {
+  id: 'root-causes',
+  label: 'Root causes',
+  caption:
+    'Left: source files that keep changing with the risky files on the right; a ribbon’s width is the commits they share. Files that change together are one node.',
+  needsCommits: false,
+  build: (input, viewport) =>
+    rootCausesScene(rootCausesOf(input.report), viewport),
 };
 
 /** Up to `max` file chips, joined into a sentence's list. */
@@ -113,6 +125,45 @@ export function riskFindings(input: ViewInput): Finding[] {
       ],
     });
   }
+  // The hub upstream of the most risky files: fix there, and several calm down.
+  const { hubs, nodes } = rootCausesOf(input.report);
+  const hub = hubs[0];
+  if (hub && hub.links.length > 1) {
+    const nodeOf = new Map(nodes.map((nd) => [nd.file, nd]));
+    // Families first: they're most of the files reached.
+    const reached = hub.links
+      .map((l) => nodeOf.get(l.node)!)
+      .sort((a, b) => b.members.length - a.members.length);
+    const files = reached.reduce((s, nd) => s + nd.members.length, 0);
+    const chip = (nd: RiskNode): FindingSegment => ({
+      ref: ids.file(nd.file),
+      text: nd.family
+        ? `${nd.family} (${n(nd.members.length)})`
+        : baseName(nd.file),
+    });
+    const shown = reached.slice(0, 2);
+    const segments: FindingSegment[] = [
+      { ref: ids.file(hub.file), text: baseName(hub.file) },
+      ` changes with ${plural(files, 'risky file')}: `,
+    ];
+    shown.forEach((nd, i) => {
+      if (i > 0)
+        segments.push(
+          shown.length === 2 && reached.length === 2 ? ' and ' : ', ',
+        );
+      segments.push(chip(nd));
+    });
+    const rest = reached.length - shown.length;
+    if (rest > 0) segments.push(` and ${n(rest)} more`);
+    // Hubs rank by risky nodes reached (a family counts once).
+    const tied = hubs.filter((h) => h.links.length === hub.links.length);
+    segments.push(
+      tied.length > 1
+        ? `. ${tied.length - 1 === 1 ? 'One other source file reaches' : `${n(tied.length - 1)} others reach`} as many.`
+        : '. No other source file reaches as many.',
+    );
+    findings.push({ id: 'hub', tone: 'notable', segments });
+  }
   return findings;
 }
 
@@ -157,7 +208,7 @@ export function riskTable(input: ViewInput): LensTable {
 
 export const riskView: AnalyzerView = {
   id: 'cursed-files',
-  layouts: [stacksLayout],
+  layouts: [stacksLayout, rootCausesLayout],
   findings: riskFindings,
   table: riskTable,
 };
