@@ -6,7 +6,12 @@ import type {
   ForensicsReport,
   ParallelDevReport,
 } from '../types.js';
-import type { CursedFile, CursedFilesReport } from '../types.js';
+import type {
+  CurseReasonKind,
+  CurseReasonPoints,
+  CursedFile,
+  CursedFilesReport,
+} from '../types.js';
 import type { RawCommit } from '../utils/git.js';
 
 /**
@@ -24,6 +29,17 @@ const BOT_CHURN_THRESHOLD = 0.5;
 const ABANDONED_AFTER_DAYS = 180;
 
 const MS_PER_DAY = 86_400_000;
+
+/** The score a file needs to be cursed. */
+export const CURSED_THRESHOLD = 50;
+
+/**
+ * Files scoring from here up to the threshold are reported as near misses, at
+ * most NEAR_MISS_CAP of them: enough to show what just missed the line
+ * without carrying the whole candidate set in the report.
+ */
+export const NEAR_MISS_FLOOR = 40;
+export const NEAR_MISS_CAP = 20;
 
 /**
  * Fraction of each file's commits authored by bots, keyed by file path.
@@ -116,6 +132,7 @@ export function findCursedFiles(
   ]);
 
   const cursed: CursedFile[] = [];
+  const nearMisses: CursedFile[] = [];
 
   for (const file of candidates) {
     if (excludedFiles.has(file)) continue;
@@ -129,36 +146,47 @@ export function findCursedFiles(
     if (!c) continue;
 
     const reasons: string[] = [];
+    const breakdown: CurseReasonPoints[] = [];
     let curseScore = 0;
+    // Each reason's text and points are recorded together, so the breakdown
+    // always sums to the score.
+    const add = (kind: CurseReasonKind, label: string, points: number) => {
+      reasons.push(label);
+      breakdown.push({ kind, label, points });
+      curseScore += points;
+    };
 
     // High churn
     if (c.churnScore > 75) {
-      reasons.push(
+      add(
+        'churn',
         `Modified in ${Math.round((c.commitCount / totalCommits) * 100)}% of all commits`,
+        35,
       );
-      curseScore += 35;
     } else if (c.churnScore > 40) {
-      reasons.push(`Frequently modified (${c.commitCount} commits)`);
-      curseScore += 15;
+      add('churn', `Frequently modified (${c.commitCount} commits)`, 15);
     }
 
     // Bus factor risk
     if (b) {
       if (b.risk === 'critical') {
-        reasons.push(
+        add(
+          'ownership',
           `Single author owns ${b.dominantAuthorPercent}% of changes`,
+          30,
         );
-        curseScore += 30;
       } else if (b.risk === 'high') {
-        reasons.push(
+        add(
+          'ownership',
           `Heavily concentrated ownership (${b.dominantAuthorPercent}% one author)`,
+          15,
         );
-        curseScore += 15;
       } else if (b.uniqueAuthors > 5) {
-        reasons.push(
+        add(
+          'authors',
           `${b.uniqueAuthors} different authors — high coordination overhead`,
+          10,
         );
-        curseScore += 10;
       }
     }
 
@@ -170,28 +198,30 @@ export function findCursedFiles(
       a.ageInDays - idleDays > ABANDONED_AFTER_DAYS &&
       c.churnScore > 60
     ) {
-      reasons.push(
+      add(
+        'abandoned',
         `Heavily churned, then untouched for ${Math.round(a.ageInDays)} days`,
+        10,
       );
-      curseScore += 10;
     }
 
     // Shame bonus
     if (f) {
       const topKw = f.dominantKeywords[0];
       if (f.shameScore >= 75) {
-        reasons.push(
+        add(
+          'fixes',
           `${f.shameCommitCount} shame commits detected${topKw ? ` ("${topKw}" appears repeatedly)` : ''} — this file keeps breaking`,
+          20,
         );
-        curseScore += 20;
       } else if (f.shameScore >= 50) {
-        reasons.push(
+        add(
+          'fixes',
           `High rate of fix/revert commits (shame score: ${f.shameScore}/100)`,
+          12,
         );
-        curseScore += 12;
       } else if (f.shameScore >= 25) {
-        reasons.push('Notable pattern of shame commits');
-        curseScore += 6;
+        add('fixes', 'Notable pattern of shame commits', 6);
       }
     }
 
@@ -199,25 +229,26 @@ export function findCursedFiles(
     const pd = parallelByFile.get(file);
     if (pd) {
       if (pd.parallelScore >= 70) {
-        reasons.push(
+        add(
+          'parallel',
           `Heavy parallel development — ${pd.parallelWeeks} weeks of concurrent multi-author work`,
+          20,
         );
-        curseScore += 20;
       } else if (pd.parallelScore >= 40) {
-        reasons.push('Notable parallel development activity');
-        curseScore += 10;
+        add('parallel', 'Notable parallel development activity', 10);
       } else if (pd.parallelScore >= 20) {
-        reasons.push('Some parallel development detected');
-        curseScore += 5;
+        add('parallel', 'Some parallel development detected', 5);
       }
     }
 
-    if (curseScore < 50 || reasons.length === 0) continue;
+    if (curseScore < NEAR_MISS_FLOOR || reasons.length === 0) continue;
+    const isCursed = curseScore >= CURSED_THRESHOLD;
 
     // Withheld only after scoring, so the exclusion list names files that would
-    // otherwise have topped the panel — the ones worth explaining away.
+    // otherwise have topped the panel — the ones worth explaining away. A
+    // bot-driven near miss is simply dropped.
     if ((botShare.get(file) ?? 0) > BOT_CHURN_THRESHOLD) {
-      excludedBotFiles.push(file);
+      if (isCursed) excludedBotFiles.push(file);
       continue;
     }
 
@@ -229,10 +260,11 @@ export function findCursedFiles(
       totalCommits,
     );
 
-    cursed.push({
+    (isCursed ? cursed : nearMisses).push({
       file,
       curseScore: Math.min(curseScore, 100),
       reasons,
+      breakdown,
       churn: c.commitCount,
       authors: b?.uniqueAuthors ?? 1,
       ageDays: a?.ageInDays ?? 0,
@@ -241,11 +273,22 @@ export function findCursedFiles(
   }
 
   const files = cursed.sort((a, b) => b.curseScore - a.curseScore);
+  // Ties broken by churn, then path, so which files make the cap is stable.
+  const closest = nearMisses
+    .sort(
+      (a, b) =>
+        b.curseScore - a.curseScore ||
+        b.churn - a.churn ||
+        a.file.localeCompare(b.file),
+    )
+    .slice(0, NEAR_MISS_CAP);
   excludedBotFiles.sort();
 
   return {
     files,
     excludedBotFiles,
+    threshold: CURSED_THRESHOLD,
+    nearMisses: closest,
     summary: buildSummary(files, excludedBotFiles),
   };
 }

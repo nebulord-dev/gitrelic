@@ -79,17 +79,7 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
     // Reports written before cursedFiles became a report object carry a bare
     // array here. Lift those so old reports keep rendering instead of crashing
     // on `.files`.
-    cursedFiles: Array.isArray(raw.cursedFiles)
-      ? {
-          files: raw.cursedFiles,
-          excludedBotFiles: [],
-          summary: 'Not available',
-        }
-      : {
-          files: raw.cursedFiles?.files ?? [],
-          excludedBotFiles: raw.cursedFiles?.excludedBotFiles ?? [],
-          summary: raw.cursedFiles?.summary ?? 'Not available',
-        },
+    cursedFiles: normalizeCursedFiles(raw.cursedFiles),
     forensics: raw.forensics ?? {
       files: [],
       shameLeaderboard: [],
@@ -225,5 +215,33 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
     identities: raw.identities ?? [],
     fileClasses: raw.fileClasses ?? {},
     commits: raw.commits ?? [],
+  };
+}
+
+type CursedFiles = GitrelicReport['cursedFiles'];
+type CursedFile = CursedFiles['files'][number];
+
+/**
+ * Reports written before cursedFiles became a report object carry a bare
+ * array; reports before per-reason points have files without a `breakdown`
+ * (left empty: the split is unknown, not zero) and no near misses. Every
+ * report so far drew the cursed line at 50.
+ */
+function normalizeCursedFiles(
+  raw: Partial<CursedFiles> | CursedFile[] | undefined,
+): CursedFiles {
+  const report: Partial<CursedFiles> = Array.isArray(raw)
+    ? { files: raw }
+    : (raw ?? {});
+  const withBreakdown = (f: CursedFile): CursedFile => ({
+    ...f,
+    breakdown: f.breakdown ?? [],
+  });
+  return {
+    files: (report.files ?? []).map(withBreakdown),
+    excludedBotFiles: report.excludedBotFiles ?? [],
+    threshold: report.threshold ?? 50,
+    nearMisses: (report.nearMisses ?? []).map(withBreakdown),
+    summary: report.summary ?? 'Not available',
   };
 }

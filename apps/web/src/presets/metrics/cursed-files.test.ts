@@ -8,6 +8,7 @@ function makeFile(overrides: Partial<CursedFile> = {}): CursedFile {
     file: 'a.ts',
     curseScore: 50,
     reasons: [],
+    breakdown: [],
     churn: 10,
     authors: 2,
     ageDays: 100,

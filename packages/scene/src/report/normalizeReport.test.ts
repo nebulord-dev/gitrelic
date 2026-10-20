@@ -255,6 +255,48 @@ describe('normalizeReport', () => {
     const out = normalizeReport({} as any);
     expect(out.cursedFiles.files).toEqual([]);
     expect(out.cursedFiles.excludedBotFiles).toEqual([]);
+    expect(out.cursedFiles.nearMisses).toEqual([]);
+    expect(out.cursedFiles.threshold).toBe(50);
+  });
+
+  // Per-reason points (RELIC-343) arrived after the report object. Older
+  // files get an empty breakdown: the split is unknown, not zero points.
+  it('backfills breakdown, near misses and the threshold on older reports', () => {
+    const file = {
+      file: 'c.ts',
+      curseScore: 55,
+      reasons: ['x'],
+      churn: 9,
+      authors: 1,
+      ageDays: 3,
+      narrative: '',
+    };
+    const fromObject = normalizeReport({
+      cursedFiles: { files: [file], excludedBotFiles: [], summary: '' },
+    } as any);
+    const fromArray = normalizeReport({ cursedFiles: [file] } as any);
+    for (const out of [fromObject, fromArray]) {
+      expect(out.cursedFiles.files[0].breakdown).toEqual([]);
+      expect(out.cursedFiles.files[0].reasons).toEqual(['x']);
+      expect(out.cursedFiles.nearMisses).toEqual([]);
+      expect(out.cursedFiles.threshold).toBe(50);
+    }
+  });
+
+  it('keeps a current breakdown, threshold and near misses as written', () => {
+    const breakdown = [{ kind: 'churn', label: 'x', points: 35 }];
+    const near = { file: 'n.ts', curseScore: 45, reasons: ['x'], breakdown };
+    const out = normalizeReport({
+      cursedFiles: {
+        files: [{ file: 'c.ts', curseScore: 60, reasons: ['x'], breakdown }],
+        excludedBotFiles: [],
+        threshold: 50,
+        nearMisses: [near],
+        summary: '',
+      },
+    } as any);
+    expect(out.cursedFiles.files[0].breakdown).toEqual(breakdown);
+    expect(out.cursedFiles.nearMisses).toEqual([near]);
   });
 
   it('defaults identities to an empty list on pre-0.49 reports', () => {

@@ -30,6 +30,8 @@ export type {
   Contributor,
   CursedFile,
   CursedFilesReport,
+  CurseReasonKind,
+  CurseReasonPoints,
   RepoMeta,
   ForensicsReport,
   FileForensics,

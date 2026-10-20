@@ -10,7 +10,7 @@ import { analyzeCommitTiming } from './analyzers/commit-timing.js';
 import { analyzeComplexityTrend } from './analyzers/complexity-trend.js';
 import { analyzeContributors } from './analyzers/contributors.js';
 import { analyzeCoupling } from './analyzers/coupling.js';
-import { findCursedFiles } from './analyzers/cursed-files.js';
+import { CURSED_THRESHOLD, findCursedFiles } from './analyzers/cursed-files.js';
 import { analyzeDeadCode } from './analyzers/dead-code.js';
 import { analyzeForensics } from './analyzers/forensics.js';
 import { analyzeGhostFiles } from './analyzers/ghost-files.js';
@@ -263,6 +263,8 @@ const EMPTY_RENAME_TRACKING: RenameTrackingReport = {
 const EMPTY_CURSED_FILES: CursedFilesReport = {
   files: [],
   excludedBotFiles: [],
+  threshold: CURSED_THRESHOLD,
+  nearMisses: [],
   summary: '',
 };
 
