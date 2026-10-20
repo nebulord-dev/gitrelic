@@ -128,6 +128,11 @@ export interface Link {
   width: number;
   paint: Paint;
   alpha: number;
+  /**
+   * How far an `arc` bows out, as a fraction of its length (the engine's
+   * default when absent). A layout sets it to keep short arcs readable.
+   */
+  bow?: number;
 }
 
 /**

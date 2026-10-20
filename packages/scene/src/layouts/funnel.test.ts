@@ -142,6 +142,31 @@ describe('funnelScene', () => {
     );
   });
 
+  it('spaces the lane by commit order, so same-day commits separate and arcs rise', () => {
+    const chain = funnelScene(
+      { data, focus: ids.file(RUNNER), commits: fixRateCommits() },
+      viewport,
+    );
+    const xs = chain.marks
+      .filter((m) => m.id.startsWith('change:'))
+      .map((m) => m.x);
+    const gaps = xs.slice(1).map((x, i) => x - xs[i]);
+    for (const g of gaps) expect(g).toBeCloseTo(gaps[0], 6);
+    expect(gaps[0]).toBeGreaterThan(0);
+    for (const l of chain.links) {
+      const span = Math.abs(
+        markOf(chain, l.source).x - markOf(chain, l.target).x,
+      );
+      // A quadratic arc peaks at half its control offset.
+      const rise = ((l.bow ?? 0) * span) / 2;
+      expect(rise).toBeGreaterThanOrEqual(18 - 1e-9);
+      expect(rise).toBeLessThanOrEqual(70 + 1e-9);
+    }
+    const months = chain.marks.filter((m) => m.id.startsWith('lane:month:'));
+    expect(months[0].label).toMatch(/^[A-Z][a-z]{2} \d{4}$/);
+    expect(new Set(months.map((m) => m.label)).size).toBe(months.length);
+  });
+
   it('never dates a repaired change it hasn’t loaded', () => {
     const h = (k: number) => hashOf(k).slice(0, 12);
     const full = funnelScene(

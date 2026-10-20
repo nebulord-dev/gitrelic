@@ -40,6 +40,12 @@ const zero = { r: 0, w: 0, h: 0, a0: 0, a1: 0 };
 const n = (v: number) => v.toLocaleString('en-US');
 const baseName = (path: string) => path.slice(path.lastIndexOf('/') + 1);
 const day = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+const MONTHS = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
+const month = (ms: number) => MONTHS[new Date(ms).getUTCMonth()];
+const year = (ms: number) => new Date(ms).getUTCFullYear();
+/** A repair arc's height above the lane, world units. */
+const ARC_MIN_RISE = 18;
+const ARC_MAX_RISE = 70;
 const short = (hash: string) => hash.slice(0, 12);
 
 export interface FunnelInput {
@@ -306,9 +312,11 @@ export function funnelScene(input: FunnelInput, viewport: Viewport): Scene {
 }
 
 /**
- * The selected file's lane: its commits along a time axis spanning the
- * repo's window, fixes as rings, the changes they repaired on the risk
- * colour, and an arc from each fix to each of its causes.
+ * The selected file's lane: its commits in order, one evenly spaced slot
+ * each (a fix often lands the same day as what it repairs, so a time axis
+ * stacks them), with each month named where it starts. Fixes are rings, the
+ * changes they repaired take the risk colour, and an arc rises from each fix
+ * to each of its causes, never flatter than `ARC_MIN_RISE`.
  */
 function fixChain(
   pt: FixPoint,
@@ -320,17 +328,11 @@ function fixChain(
   links: Link[],
   guides: Guide[],
 ): void {
-  let t0 = Infinity;
   let t1 = -Infinity;
-  for (const c of commits) {
-    t0 = Math.min(t0, c.timeMs);
-    t1 = Math.max(t1, c.timeMs);
-  }
+  for (const c of commits) t1 = Math.max(t1, c.timeMs);
   const x0 = viewport.width * 0.5;
   const x1 = viewport.width - 60;
   const y = viewport.height * 0.42;
-  const T = (t: number) =>
-    t1 === t0 ? (x0 + x1) / 2 : x0 + ((t - t0) / (t1 - t0)) * (x1 - x0);
 
   const fixes = new Map(pt.fixes.map((f) => [short(f.hash), f]));
   const fixedBy = new Map<string, string>();
@@ -338,7 +340,10 @@ function fixChain(
     for (const c of f.causes)
       if (!fixedBy.has(short(c))) fixedBy.set(short(c), f.message);
   const own = commits.filter((c) => c.files.includes(pt.file));
+  const slot = (i: number) =>
+    own.length === 1 ? (x0 + x1) / 2 : x0 + (i / (own.length - 1)) * (x1 - x0);
   const at = new Map<string, number>();
+  const xOf = new Map<string, number>();
   const ratedUntil = t1 - windowDays * DAY_MS;
 
   guides.push(line('lane:axis', x0, y, x1, y));
@@ -351,16 +356,33 @@ function fixChain(
       'right',
       2500,
     ),
-    card('lane:start', x0, y + 22, day(t0), 'center', 5),
-    card('lane:end', x1, y + 22, day(t1), 'center', 5),
   );
+  // Each month named under its first commit; the label planner drops one
+  // that would crowd its neighbour.
+  own.forEach((c, i) => {
+    const m = month(c.timeMs);
+    const key = (ms: number) => `${year(ms)}-${month(ms)}`;
+    if (i > 0 && key(c.timeMs) === key(own[i - 1].timeMs)) return;
+    const first = i === 0 || m.startsWith('Jan');
+    marks.push(
+      card(
+        `lane:month:${i}`,
+        slot(i),
+        y + 22,
+        first ? `${m} ${year(c.timeMs)}` : m,
+        'center',
+        5,
+      ),
+    );
+  });
 
   own.forEach((c, i) => {
     // Twelve hex digits practically never collide; if two do, both still draw.
     const key = c.hash && !at.has(c.hash) ? c.hash : `#${i}`;
     const id = `change:${key}`;
-    const x = T(c.timeMs);
+    const x = slot(i);
     at.set(key, c.timeMs);
+    xOf.set(key, x);
     const fix = c.hash ? fixes.get(c.hash) : undefined;
     const cause = c.hash ? fixedBy.get(c.hash) : undefined;
     const recent = c.timeMs > ratedUntil;
@@ -413,6 +435,10 @@ function fixChain(
     for (const c of f.causes) {
       const to = short(c);
       if (!at.has(to) || to === from) continue;
+      // Rises a share of its span, but never under ARC_MIN_RISE nor over
+      // ARC_MAX_RISE; a quadratic curve peaks at half its control offset.
+      const span = Math.abs(xOf.get(from)! - xOf.get(to)!);
+      const rise = Math.min(ARC_MAX_RISE, Math.max(ARC_MIN_RISE, span * 0.25));
       links.push({
         id: `repair:${from}:${to}`,
         source: `change:${from}`,
@@ -421,6 +447,7 @@ function fixChain(
         width: 1.5,
         paint: '--accent',
         alpha: 0.8,
+        bow: span > 0 ? (2 * rise) / span : undefined,
       });
     }
   }
