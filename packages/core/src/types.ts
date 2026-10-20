@@ -720,6 +720,12 @@ export interface RunGitrelicOptions {
    */
   includeFixtures?: boolean;
   /**
+   * Time limit, in ms, for each heavy git read (`git log`, the rename log,
+   * `cat-file --batch`). Default `GIT_HEAVY_TIMEOUT_MS` (10 minutes). Quick
+   * lookups keep their own short limit.
+   */
+  gitTimeoutMs?: number;
+  /**
    * Version stamped into `meta.gitrelicVersion`. Passed in by the caller (the
    * CLI) rather than read from a package.json at runtime: core is bundled into
    * the CLI, so any path relative to core's own module is fragile.

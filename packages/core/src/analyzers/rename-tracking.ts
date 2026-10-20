@@ -107,11 +107,12 @@ export function buildRenameChains(
 export async function analyzeRenameTracking(
   repoPath: string,
   trackedFiles: string[],
-  options?: { since?: string; ref?: string },
+  options?: { since?: string; ref?: string; timeoutMs?: number },
 ): Promise<RenameTrackingReport> {
   const raw = await getRenameLog(repoPath, {
     since: options?.since,
     ref: options?.ref,
+    timeoutMs: options?.timeoutMs,
   });
 
   if (!raw) {

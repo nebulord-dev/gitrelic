@@ -2,8 +2,12 @@ import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { useState, useEffect } from 'react';
-import { runGitrelic, resolveRepoRoot } from '@gitrelic/core';
-import { Option, program } from 'commander';
+import {
+  GIT_HEAVY_TIMEOUT_MS,
+  runGitrelic,
+  resolveRepoRoot,
+} from '@gitrelic/core';
+import { InvalidArgumentError, Option, program } from 'commander';
 import { render } from 'ink';
 import open from 'open';
 
@@ -19,6 +23,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(
   readFileSync(path.resolve(__dirname, '../package.json'), 'utf-8'),
 );
+
+/** `--git-timeout`: a positive number of seconds (fractions allowed). */
+function parseSeconds(value: string): number {
+  const seconds = Number(value);
+  if (!value.trim() || !Number.isFinite(seconds) || seconds <= 0) {
+    throw new InvalidArgumentError('expected a positive number of seconds.');
+  }
+  return seconds;
+}
 
 program
   .name('gitrelic')
@@ -48,6 +61,11 @@ program
     '--include-fixtures',
     'Count test fixtures, snapshots and generated code in ownership metrics (bus factor, ghost files, knowledge silos)',
   )
+  .option(
+    '--git-timeout <seconds>',
+    `Give up on each long git read (history, line counts) after this many seconds (default: ${GIT_HEAVY_TIMEOUT_MS / 1000})`,
+    parseSeconds,
+  )
   .option('--web', 'Open web dashboard after analysis')
   .addOption(
     new Option(
@@ -67,6 +85,7 @@ const opts = program.opts<{
   since?: string;
   mergeIdentities: boolean;
   includeFixtures?: boolean;
+  gitTimeout?: number;
   web?: boolean;
   ui?: 'classic' | 'atlas';
   open: boolean;
@@ -85,6 +104,8 @@ const web = opts.web || opts.ui !== undefined;
 
 const inputPath = path.resolve(opts.path);
 const since = opts.since === 'all' ? undefined : opts.since;
+const gitTimeoutMs =
+  opts.gitTimeout === undefined ? undefined : opts.gitTimeout * 1000;
 
 // Validate the repo path up front so we can fail with a clean message instead
 // of a buried git stderr trace from deep inside the analyzer stack.
@@ -132,6 +153,7 @@ if (opts.json) {
       since,
       mergeIdentities: opts.mergeIdentities,
       includeFixtures: opts.includeFixtures,
+      gitTimeoutMs,
       version: pkg.version,
     });
     // A consumer that stops reading early (`gitrelic --json | head`) makes Node
@@ -197,6 +219,7 @@ function GitrelicApp() {
       since,
       mergeIdentities: opts.mergeIdentities,
       includeFixtures: opts.includeFixtures,
+      gitTimeoutMs,
       version: pkg.version,
       onProgress: setProgress,
     })

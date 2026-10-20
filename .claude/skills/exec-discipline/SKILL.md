@@ -7,7 +7,7 @@ description: "Enforce that processes run only from utils/git.ts (git) and utils/
 
 ## Rule
 
-All git command execution in `@gitrelic/core` MUST go through `packages/core/src/utils/git.ts`, and every external tool (cloc/scc, git-sizer — optional, see CLAUDE.md › Data source) through `packages/core/src/utils/tools.ts`. No other file imports `execa` or `child_process`. Both modules run processes with argument arrays (never a shell). `utils/tools.ts` also sets a timeout on every call (tools come from `PATH` and run against untrusted repos); `utils/git.ts` doesn't today, so don't flag its existing calls for it.
+All git command execution in `@gitrelic/core` MUST go through `packages/core/src/utils/git.ts`, and every external tool (cloc/scc, git-sizer — optional, see CLAUDE.md › Data source) through `packages/core/src/utils/tools.ts`. No other file imports `execa` or `child_process`. Both modules run processes with argument arrays (never a shell). Both also set a timeout on every call (tools come from `PATH`, and both run against untrusted repos). In `utils/git.ts` that means going through `runGit`, which also sets `GIT_TERMINAL_PROMPT=0`: flag any new `execa('git', …)` that bypasses it.
 
 ## Why
 
