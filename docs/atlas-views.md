@@ -373,6 +373,17 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 - **Size:** 11 KB on React's 12 months, 278 KB on its whole history.
 - **What the picture has to work with:** a quiet distribution. React's repo rate is 1.2% over the year (2.2% all time), most rated files sit at 0%, and a handful exceed 20%. The lens checkpoint decides the picture, the Shame merge (`ATLAS_MERGES`) and what the inspector's Activity card says instead of shame.
 
+**Checkpoint (2026-10-20).** On React's last 12 months, 55 files are rated (8–28 changes, median 12): 43 at 0%, 9 with exactly one fix, and 3 whose count chance can't explain at the 1.2% repo rate: `snap/src/runner.ts` 3 of 8, `Entrypoint/Pipeline.ts` 4 of 18, `HIR/BuildHIR.ts` 2 of 11. A ranked list would set `ReactFeatureFlags.www.js` (1 of 25) beside them as if they meant the same. The picture's job is to tell "above chance" from "had a fix".
+
+- **Above chance** is the lens's one threshold: a file's fixed-after count has under a 2.5% chance (binomial upper tail) at the repo rate for its number of changes. It adapts to each repo, where a fixed cut (25%) would flag everything in a sloppy repo and nothing in a careful one. It drives the badge, the fact's warning tier and What to do.
+- **Picture: a funnel field.** x = rated changes, y = fix rate. A shaded band is what chance alone gives at the repo rate (the binomial upper limit for each size), narrowing as changes grow. Rated files are dots; the 0% files settle on a quiet floor; files above the band take the accent and are labelled, the rest stay unlabelled until hovered. Unrated files aren't drawn: the caption says how many there are and why ("1,169 files have fewer than 8 changes old enough to rate").
+- **Selection: its fix chain.** The field narrows (as Hotspots does for facets) and the file's lane opens beside it: its commits over time as dots (changes too recent to rate drawn faint), with an arc from each listed fix back to the changes it repaired (`fixes[].causes`). Needs commits (`loadCommits`), like Rhythm. The lane is the selection's picture, not a form: no FormToggle.
+- **Tooltips.** A dot: the file, "3 of 8 changes fixed within 30 days", "chance allows up to 1 at this size", its latest fix's message. The band: "What chance gives at a 1.2% repo rate". An arc: the fix's subject and date, and which change it repaired.
+- **Finding** (lens mode): "3 files are fixed more often than chance: runner.ts (3 of 8), Pipeline.ts (4 of 18), BuildHIR.ts (2 of 11). Repo-wide, 1.2% of changes needed a fix within 30 days." With none above chance, it says so and gives the repo rate.
+- **Table:** rated files — file, changes, fixed-after, rate, above chance, latest fix.
+- **Empty.** A report from before fix rate (`windowDays` 0): "This report predates fix rate; re-run gitrelic." No rated file: "No file has 8 changes older than 30 days yet."
+- **Shame retires** (`ATLAS_MERGES`: `shame` → `fix-rate`, a new Atlas-only catalog id). Everything in scene that read `forensics` moves: the badge rule (files above chance), the Overview reading and fan entries, `fileFacts` ("Fix rate 38% (3 of 8)", warning tier when above chance, lens `fix-rate`), What to do's `read-log` rule (above chance: "Review its changes closely", evidence "3 of 8 changes needed a fix within 30 days; 1.2% repo-wide", section Activity), and the Activity card lists the file's fixes instead of shame words. Core's Risk score still takes its "fix commits" reason from forensics: a core follow-up, not this PR.
+
 ---
 
 ## Decision log
