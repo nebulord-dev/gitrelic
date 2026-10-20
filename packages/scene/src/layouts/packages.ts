@@ -46,7 +46,10 @@ export const PACKAGES_MAX_GROW = 3;
  * stay sized by the true count, so the picture's proportions don't change.
  */
 export const PACKAGES_DOT_CAP = 3000;
-/** Packages drawn by size; smaller ones join only when they run hot. */
+/**
+ * Packages drawn by size; smaller ones join only when they run hot or hold
+ * a critical file.
+ */
 export const PACKAGES_SHOWN = 10;
 /** A smaller package with this many files at 25+ is drawn anyway. */
 export const PACKAGES_HOT_MIN = 3;
@@ -57,6 +60,8 @@ interface Circle {
   pkg: string;
   files: HotspotPoint[];
   hot: number;
+  /** The ghost circle bundling this many hidden packages, if it is one. */
+  rest?: number;
   r: number;
   x: number;
   y: number;
@@ -91,13 +96,33 @@ export function packagesScene(
     }))
     .sort((a, b) => b.r - a.r || (a.pkg < b.pkg ? -1 : 1));
   const circles = all.filter(
-    (c, i) => i < PACKAGES_SHOWN || c.hot >= PACKAGES_HOT_MIN,
+    (c, i) =>
+      i < PACKAGES_SHOWN ||
+      c.hot >= PACKAGES_HOT_MIN ||
+      c.files.some((f) => f.tier === 3),
   );
   const hidden = all.filter((c) => !circles.includes(c));
+  // The hidden packages stand together as one empty circle at the end, the
+  // size of the smallest drawn one: the rest, bundled, not measured (sized
+  // by its files it outgrew most packages).
+  const restFiles = hidden.flatMap((c) => c.files);
+  const rest: Circle | null =
+    hidden.length > 0
+      ? {
+          pkg: '',
+          files: restFiles,
+          hot: 0,
+          rest: hidden.length,
+          r: Math.min(...circles.map((c) => c.r)),
+          x: 0,
+          y: 0,
+        }
+      : null;
+  const placed = rest ? [...circles, rest] : circles;
   const points = circles.flatMap((c) => c.files);
-  arrange(circles, viewport.width / viewport.height);
+  arrange(placed, viewport.width / viewport.height);
 
-  const raw = boundsOf(circles);
+  const raw = boundsOf(placed);
   const grow =
     raw.w > 0 && raw.h > 0
       ? Math.min(
@@ -108,7 +133,7 @@ export function packagesScene(
           ),
         )
       : 1;
-  for (const c of circles) {
+  for (const c of placed) {
     c.x *= grow;
     c.y *= grow;
     c.r *= grow;
@@ -212,43 +237,52 @@ export function packagesScene(
     });
   }
 
-  const bounds = boundsOf(circles, true);
-  if (hidden.length > 0) {
-    // What the note can't leave out: critical files in the packages it hides.
-    const critical = hidden.filter((c) => c.files.some((f) => f.tier === 3));
-    const files = hidden.reduce((sum, c) => sum + c.files.length, 0);
-    let note = `+${plural(hidden.length, 'more package')} · ${plural(files, 'file')}`;
-    if (critical.length > 0) {
-      const count = critical.reduce(
-        (sum, c) => sum + c.files.filter((f) => f.tier === 3).length,
-        0,
-      );
-      const named = critical
-        .slice(0, 2)
-        .map((c) => c.pkg.replace(/^packages\//, '') || '(root files)');
-      note += ` · ${n(count)} critical (${named.join(', ')}${critical.length > 2 ? '…' : ''})`;
-    }
-    note += ' · in the table (T)';
-    bounds.h += 28;
+  const bounds = boundsOf(placed, true);
+  if (rest) {
+    // Hidden packages hold no critical file (those are always drawn). A
+    // ghost outline, empty, under a heading like the others; their files
+    // stand in on it, so a table row lights it.
+    for (const f of rest.files) standIns.set(ids.file(f.file), 'package-more');
+    const names = hidden.map(shortName);
+    const { name, stats } = headingOf(rest);
     marks.push({
       id: 'package-more',
-      shape: 'card',
-      paint: '--muted',
-      x: bounds.x + MARGIN,
-      y: bounds.y + bounds.h - 20,
-      r: 0,
+      shape: 'outline',
+      paint: '--ghost',
+      x: rest.x,
+      y: rest.y,
+      r: rest.r,
       w: 0,
       h: 0,
       a0: 0,
       a1: 0,
-      alpha: 1,
-      label: note,
-      labelPriority: 1999,
+      alpha: 0.8,
+      tip: [
+        `Not drawn: ${plural(hidden.length, 'smaller package')}`,
+        names.length > 4
+          ? `${names.slice(0, 4).join(', ')} +${n(names.length - 4)} more`
+          : names.join(', '),
+        'Their files are in the table (T)',
+      ],
     });
+    marks.push(
+      heading(
+        'package:more',
+        'package-more',
+        rest.x,
+        rest.y - rest.r - 6,
+        name,
+        stats,
+      ),
+    );
   }
 
   return { marks, links: [], guides, bounds, standIns };
 }
+
+/** A package as the note's tooltip names it: its heading, unbracketed. */
+const shortName = (c: { pkg: string }) =>
+  c.pkg.replace(/^packages\//, '') || 'root files';
 
 function heading(
   id: string,
@@ -279,6 +313,11 @@ function heading(
 }
 
 function headingOf(c: Circle): { name: string; stats: string } {
+  if (c.rest !== undefined)
+    return {
+      name: `+${plural(c.rest, 'more package')}`,
+      stats: `${plural(c.files.length, 'file')} · in the table (T)`,
+    };
   return {
     name: c.pkg ? c.pkg.replace(/^packages\//, '') : '(root files)',
     stats: `${plural(c.files.length, 'file')} · ${c.hot > 0 ? n(c.hot) : 'none'} at 25+`,
@@ -286,7 +325,8 @@ function headingOf(c: Circle): { name: string; stats: string } {
 }
 
 /**
- * Stands the circles (biggest first) in columns, filling each top to bottom
+ * Stands the circles (biggest first, the ghost circle last but at the top
+ * of its column) in columns, filling each top to bottom
  * up to a height that gives the whole roughly the stage's `aspect`; a column
  * is as wide as its widest circle or heading, and its stack is centred
  * vertically. Linear and deterministic: same input, same picture.
@@ -311,6 +351,10 @@ function arrange(circles: Circle[], aspect: number): void {
       col.w = Math.max(col.w, it.w);
     } else columns.push({ items: [it], w: it.w, h: it.h });
   }
+  // The ghost circle comes last but heads its column: the table drawer,
+  // where its rows are hovered, opens over the bottom of the stage.
+  const last = columns[columns.length - 1].items;
+  if (last[last.length - 1].c.rest !== undefined) last.unshift(last.pop()!);
   let x = 0;
   for (const col of columns) {
     let y = (height - col.h) / 2;
