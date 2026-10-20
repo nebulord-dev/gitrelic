@@ -266,36 +266,29 @@ export function funnelScene(input: FunnelInput, viewport: Viewport): Scene {
     });
     marks.push(card(`tick:x:${c}`, x, tickY, n(c), 'center', 1));
   }
+  // The unrated count reads as the x axis's second line, centred with it.
+  const xAxis = card(
+    'axis:x',
+    (left + right) / 2,
+    tickY + 24,
+    'changes old enough to rate →',
+    'center',
+    2,
+  );
+  if (data.unratedFiles > 0)
+    xAxis.labelSub = `${n(data.unratedFiles)} ${data.unratedFiles === 1 ? 'file has' : 'files have'} fewer than ${n(data.minChanges)} changes old enough to rate`;
   marks.push(
-    card(
-      'axis:x',
-      (left + right) / 2,
-      tickY + 24,
-      'changes old enough to rate →',
-      'center',
-      2,
-    ),
+    xAxis,
+    // Starts at the plot's left edge, over the axis it names.
     card(
       'axis:y',
       left,
       top - 44,
       `fixed within ${n(data.windowDays)} days ↑`,
-      'center',
+      'right',
       2,
     ),
   );
-  if (data.unratedFiles > 0)
-    marks.push(
-      card(
-        'note:unrated',
-        left,
-        // Clear of the axis name's label box, or the planner drops one.
-        tickY + 64,
-        `${n(data.unratedFiles)} ${data.unratedFiles === 1 ? 'file has' : 'files have'} fewer than ${n(data.minChanges)} changes old enough to rate`,
-        'right',
-        2,
-      ),
-    );
 
   if (lane && laneCommits)
     fixChain(

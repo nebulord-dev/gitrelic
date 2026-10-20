@@ -90,10 +90,19 @@ describe('funnelScene', () => {
     ]);
   });
 
-  it('notes how many files are too new to rate', () => {
-    expect(markOf(scene, 'note:unrated').label).toBe(
+  it('notes how many files are too new to rate, under the x axis name', () => {
+    const axis = markOf(scene, 'axis:x');
+    expect(axis.labelSub).toBe(
       '1,169 files have fewer than 8 changes old enough to rate',
     );
+    expect(axis.labelAnchor).toBe('center');
+  });
+
+  it('starts the y axis name at the plot’s left edge', () => {
+    const y = markOf(scene, 'axis:y');
+    expect(y.labelAnchor).toBe('right');
+    const grid = scene.guides.find((g) => g.id.startsWith('grid:y:'));
+    expect(grid?.kind === 'line' && grid.x1).toBe(y.x);
   });
 
   it('opens the selected file’s fix chain, with arcs to what each fix repaired', () => {
