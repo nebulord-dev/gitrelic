@@ -199,6 +199,27 @@ describe('Inspector', () => {
     narrow.mockRestore();
   });
 
+  it('contains its absolute children, so they never stretch the page', () => {
+    // sr-only text is position: absolute; without a positioned inspector it
+    // lands against the page, past the window, and the page scrolls.
+    render(Inspector, { ...base, selection: ids.file('src/api.ts') });
+    expect(
+      screen.getByRole('complementary', { name: 'Inspector' }).classList,
+    ).toContain('relative');
+  });
+
+  it('keeps the File card, with its section tabs, stuck at the top', () => {
+    render(Inspector, { ...base, selection: ids.file('src/api.ts') });
+    const card = screen.getByText('api.ts').closest('section')!;
+    expect(card.hasAttribute('data-sticky')).toBe(true);
+    expect(card.classList).toContain('sticky');
+    expect(
+      within(card).getByRole('navigation', { name: 'Sections' }),
+    ).toBeTruthy();
+    // Only the one card sticks.
+    expect(document.querySelectorAll('[data-sticky]')).toHaveLength(1);
+  });
+
   it('jumps to a section without touching the URL (the selection lives there)', async () => {
     history.replaceState(null, '', '/#s=file%3Asrc%2Fapi.ts');
     render(Inspector, { ...base, selection: ids.file('src/api.ts') });

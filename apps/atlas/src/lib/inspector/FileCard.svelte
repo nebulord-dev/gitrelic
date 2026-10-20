@@ -61,7 +61,8 @@
   let anchors = $derived(new Set(sections.map((s) => s.anchor)));
 </script>
 
-<Card eyebrow="File">
+<!-- Sticky: the name and the section tabs stay in view while the rest scrolls. -->
+<Card eyebrow="File" sticky>
   <div class="text-xl leading-snug font-semibold [overflow-wrap:anywhere]">
     {name}
   </div>

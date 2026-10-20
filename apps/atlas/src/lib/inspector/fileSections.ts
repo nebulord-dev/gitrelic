@@ -43,8 +43,26 @@ export function fileSections(
 
 /**
  * Scrolls the inspector to a section. Never a `#anchor` link: Atlas keeps
- * its state in the URL hash, so changing it would drop the selection.
+ * its state in the URL hash, so changing it would drop the selection. Nor
+ * `scrollIntoView`, which scrolls every scrollable ancestor, the page too:
+ * only the inspector's own scroll box moves. The section lands below the
+ * box's sticky bar (`data-sticky`, the section tabs), not under it.
  */
 export function scrollToSection(anchor: string): void {
-  document.getElementById(anchor)?.scrollIntoView({ block: 'start' });
+  const el = document.getElementById(anchor);
+  const box = el && scrollParent(el);
+  if (!el || !box) return;
+  const margin = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+  const offset =
+    el.getBoundingClientRect().top - box.getBoundingClientRect().top;
+  const bar = box.querySelector('[data-sticky]')?.getBoundingClientRect();
+  box.scrollTo({ top: box.scrollTop + offset - margin - (bar?.height ?? 0) });
+}
+
+/** The nearest ancestor that scrolls: the inspector, for its cards. */
+export function scrollParent(el: HTMLElement): HTMLElement | null {
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    if (/auto|scroll/.test(getComputedStyle(p).overflowY)) return p;
+  }
+  return null;
 }
