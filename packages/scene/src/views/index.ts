@@ -2,6 +2,7 @@
 // be `atlas: true` in the catalog; views.test.ts keeps the two in step.
 
 import { churnView } from './churn';
+import { fixRateView } from './fixRate';
 import { hotspotsView } from './hotspots';
 import { overviewView } from './overview';
 import { riskView } from './risk';
@@ -12,4 +13,5 @@ export const VIEWS: ReadonlyMap<string, AnalyzerView> = new Map([
   ['hotspots', hotspotsView],
   ['churn', churnView],
   ['cursed-files', riskView],
+  ['fix-rate', fixRateView],
 ]);

@@ -260,7 +260,6 @@ export {
 export {
   ADVICE_LIMIT,
   COUPLING_MIN_COMMITS,
-  SHAME_ACT,
   whatToDo,
   type Advice,
   type AdviceId,
@@ -353,4 +352,23 @@ export {
   rootCausesLayout,
   stacksLayout,
 } from './views/risk';
+export {
+  binomialUpperTail,
+  CHANCE_TAIL,
+  chanceAllows,
+  FIX_TIER_NAMES,
+  fixPointOf,
+  fixRateOf,
+  ratePct,
+  type FixPoint,
+  type FixRateData,
+  type FixTier,
+} from './fixRate/points';
+export { fixTip, funnelScene, type FunnelInput } from './layouts/funnel';
+export {
+  fixRateFindings,
+  fixRateTable,
+  fixRateView,
+  funnelLayout,
+} from './views/fixRate';
 export { VIEWS } from './views/index';
