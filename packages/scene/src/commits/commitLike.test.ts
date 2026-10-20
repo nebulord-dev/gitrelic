@@ -43,16 +43,19 @@ describe('fromRawCommits', () => {
         timeMs: Date.parse('2026-01-02T07:30:00Z'),
         author: 'ann@corp.com',
         files: ['src/a.ts'],
+        hash: 'a'.repeat(12),
       },
       {
         timeMs: Date.parse('2026-01-02T09:00:00Z'),
         author: 'bob@corp.com',
         files: ['src/a.ts', 'src/b.ts'],
+        hash: 'b'.repeat(12),
       },
       {
         timeMs: Date.parse('2026-01-03T12:00:00Z'),
         author: 'ann@corp.com',
         files: [],
+        hash: 'c'.repeat(12),
       },
     ]);
   });

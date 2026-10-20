@@ -4,20 +4,40 @@ import reportJson from '../../test/fixtures/report.small.json';
 import { ADVICE_LIMIT, whatToDo } from './whatToDo';
 import type { GitrelicReport } from '@gitrelic/core';
 
-const report = reportJson as unknown as GitrelicReport;
+const fixture = reportJson as unknown as GitrelicReport;
+// The fixture's repo is too small to rate a file: give helpers.ts a fix rate
+// chance can't explain (3 of 8 at 1.2%).
+const report: GitrelicReport = {
+  ...fixture,
+  fixRate: {
+    ...fixture.fixRate,
+    rate: 0.0121,
+    windowDays: 30,
+    minChanges: 8,
+    files: [
+      {
+        file: 'src/helpers.ts',
+        changes: 8,
+        fixedAfter: 3,
+        rate: 3 / 8,
+        fixes: [],
+      },
+    ],
+  },
+};
 const idsOf = (file: string, r: GitrelicReport = report) =>
   whatToDo(file, r).map((a) => a.id);
 
 describe('whatToDo', () => {
   it('gives at most three actions, most important first', () => {
-    // src/helpers.ts: critical hotspot with one dominant author, shame 100,
-    // coupled to index.ts, and untested once src/ loses its __tests__ —
-    // four rules, three shown.
+    // src/helpers.ts: critical hotspot with one dominant author, fixed more
+    // often than chance, coupled to index.ts, and untested once src/ loses
+    // its __tests__ — four rules, three shown.
     const advice = whatToDo('src/helpers.ts', report);
     expect(advice).toHaveLength(ADVICE_LIMIT);
     expect(advice.map((a) => a.id)).toEqual([
       'pair',
-      'read-log',
+      'review-changes',
       'change-together',
     ]);
     expect(advice[0]).toMatchObject({
@@ -25,8 +45,11 @@ describe('whatToDo', () => {
       evidence: expect.stringMatching(/^7 commits; \S.* wrote \d+%\.$/),
       section: 'people',
     });
-    expect(advice[1].why).toMatch(/contract is wrong/);
-    expect(advice[1].section).toBe('activity');
+    expect(advice[1]).toMatchObject({
+      action: 'Review its changes closely.',
+      evidence: '3 of 8 changes needed a fix within 30 days; 1.2% repo-wide.',
+      section: 'activity',
+    });
   });
 
   it('says nothing about a generated file, however hot', () => {
@@ -110,7 +133,7 @@ describe('whatToDo', () => {
         ),
       },
       // Quiet the higher rules so add-tests makes the top three.
-      forensics: { ...report.forensics, files: [] },
+      fixRate: fixture.fixRate,
     };
     expect(whatToDo('src/helpers.ts', bare)).toContainEqual(
       expect.objectContaining({
@@ -134,7 +157,7 @@ describe('whatToDo', () => {
     const calm: GitrelicReport = {
       ...report,
       busFactors: { ...report.busFactors, files: [] },
-      forensics: { ...report.forensics, files: [] },
+      fixRate: fixture.fixRate,
       testCoverage: { ...report.testCoverage, files: [] },
     };
     expect(whatToDo('src/helpers.ts', calm)).toEqual([
@@ -235,5 +258,28 @@ describe('whatToDo', () => {
     expect(idsOf('main.ts', rooted('elsewhere/__tests__'))).toContain(
       'add-tests',
     );
+  });
+
+  it('asks for a review only when chance can’t explain its fixes', () => {
+    const withRate = (changes: number, fixedAfter: number): GitrelicReport => ({
+      ...report,
+      fixRate: {
+        ...report.fixRate,
+        files: [
+          {
+            file: 'src/api.ts',
+            changes,
+            fixedAfter,
+            rate: fixedAfter / changes,
+            fixes: [],
+          },
+        ],
+      },
+    });
+    // One fix in 25 is chance at 1.2%; three in 8 isn't.
+    expect(idsOf('src/api.ts', withRate(25, 1))).not.toContain(
+      'review-changes',
+    );
+    expect(idsOf('src/api.ts', withRate(8, 3))).toContain('review-changes');
   });
 });

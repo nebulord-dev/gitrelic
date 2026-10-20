@@ -8,7 +8,7 @@ import type { MarkStore } from './markStore';
 
 /** Points along a curved link (straight links use 2). */
 export const CURVE_SEGMENTS = 16;
-/** How far an `arc` link bows out, as a fraction of its length. */
+/** How far an `arc` link bows out, as a fraction of its length, unless the link sets `bow`. */
 export const BOW = 0.2;
 /** A ribbon narrows to this fraction of its width at the target end. */
 export const RIBBON_TAPER = 0.35;
@@ -73,7 +73,7 @@ export function tessellateLinks(
 
     // Quadratic Bézier through a control point bowed off the chord's midpoint
     // (to the chord's left, so A→B and B→A bow opposite ways and don't overlap).
-    const bow = link.curve === 'straight' ? 0 : BOW * len;
+    const bow = link.curve === 'straight' ? 0 : (link.bow ?? BOW) * len;
     const nx = -(y2 - y1) / len;
     const ny = (x2 - x1) / len;
     const cx = (x1 + x2) / 2 + nx * bow;

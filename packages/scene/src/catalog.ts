@@ -2,7 +2,9 @@
 // docs page and a one-line explanation. Presets without an Atlas view yet
 // open in the classic dashboard (`/classic/#preset=<id>`).
 //
-// The ids match apps/web's preset registry; a web test keeps the two in step.
+// The ids match apps/web's preset registry, less the classic presets merged
+// into an Atlas lens and plus the lenses only Atlas has (fix-rate); a web test
+// keeps the two in step.
 
 export const PRESET_GROUPS = [
   { id: 'overview', label: 'Overview' },
@@ -112,13 +114,14 @@ export const CATALOG: readonly CatalogEntry[] = [
     atlas: false,
   },
   {
-    id: 'shame',
-    label: 'Shame',
+    // Atlas only: replaces classic's Shame (docs/atlas-views.md › Fix rate).
+    id: 'fix-rate',
+    label: 'Fix rate',
     group: 'code-health',
     explain:
-      'Fix, hotfix and revert commits per file: histories that keep needing repair.',
-    docsPath: 'analyzers/shame',
-    atlas: false,
+      'How often a file’s changes needed a fix of their own lines within 30 days, against what chance gives.',
+    docsPath: 'analyzers/fix-rate',
+    atlas: true,
   },
   {
     id: 'bus-factor',

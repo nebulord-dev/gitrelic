@@ -66,20 +66,24 @@ describe('ringScene', () => {
   });
 
   it("turns a fanned lens's label inward, away from its fan", () => {
-    const entities = lensTopEntities('shame', report, index, 5);
+    // The fixture rates no file, so Fix rate fans the hotspots' files: the
+    // test is about where the lens sits, not what it fans.
+    const entities = lensTopEntities('hotspots', report, index, 5);
     const lensOf = (focus: Parameters<typeof ringScene>[2]) =>
       ringScene(repo, readings, focus, viewport).marks.find(
-        (m) => m.id === ids.analyzer('shame'),
+        (m) => m.id === ids.analyzer('fix-rate'),
       )!;
     const resting = lensOf(null);
-    const fanned = lensOf({ preset: 'shame', entities });
+    const fanned = lensOf({ preset: 'fix-rate', entities });
     expect(resting.labelAnchor).toBe('right');
     expect(fanned.labelAnchor).toBe('left');
     // Lifted off its spoke, which heads down to the centre from above it.
     expect(resting.y).toBeLessThan(viewport.height / 2);
     expect(fanned.labelLean).toBeLessThan(-0.5);
     // Focused with nothing to fan, it keeps its outward label.
-    expect(lensOf({ preset: 'shame', entities: [] }).labelAnchor).toBe('right');
+    expect(lensOf({ preset: 'fix-rate', entities: [] }).labelAnchor).toBe(
+      'right',
+    );
   });
 
   it('keeps a fanned label off a vertical spoke at the top or bottom', () => {

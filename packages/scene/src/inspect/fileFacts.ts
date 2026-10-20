@@ -1,3 +1,4 @@
+import { fixPointOf, ratePct } from '../fixRate/points';
 import type { GitrelicReport, HotspotCategory } from '@gitrelic/core';
 
 export type FactTier = 'critical' | 'warning' | 'moderate' | 'healthy';
@@ -16,17 +17,6 @@ const baseName = (path: string) => path.split('/').pop() ?? path;
 
 function hotspotTier(category: HotspotCategory): FactTier {
   return category === 'low' ? 'healthy' : category;
-}
-
-/**
- * Shame's notable bar is 70 (docs/analyzers/shame.md); a few `fix` commits
- * score low and stay neutral rather than reading as a warning.
- */
-function shameTier(score: number): FactTier | undefined {
-  if (score >= 70) return 'critical';
-  if (score >= 40) return 'warning';
-  if (score >= 20) return 'moderate';
-  return undefined;
 }
 
 /**
@@ -141,13 +131,14 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
     });
   }
 
-  const sh = report.forensics.files.find((f) => f.file === file);
-  if (sh && sh.shameScore > 0) {
+  // Rated files only; a warning when chance can't explain its fixes.
+  const fx = fixPointOf(report, file);
+  if (fx) {
     facts.push({
-      label: 'Shame Score',
-      value: String(sh.shameScore),
-      tier: shameTier(sh.shameScore),
-      lens: 'shame',
+      label: 'Fix rate',
+      value: `${ratePct(fx.rate)} (${fmt(fx.fixedAfter)} of ${fmt(fx.changes)})`,
+      ...(fx.aboveChance ? { tier: 'warning' as const } : {}),
+      lens: 'fix-rate',
     });
   }
 

@@ -41,6 +41,16 @@ Expect low numbers. Most changes are never followed by a fix of their own lines 
 - **Blame names the last writer, not always the culprit.** If a fix changes a line next to the bug, blame names whoever wrote that line.
 - **Renames since the change.** A change counts under the path the file had then. A file renamed since keeps only the changes made under its current name.
 
+## In the dashboard
+
+In the Atlas dashboard (`gitrelic --ui atlas`), Fix rate is a lens under **Code Health**:
+
+- **The funnel.** Each dot is a rated file: changes across, the share fixed within 30 days up. The shaded band is what chance alone gives at your repo's own rate. It narrows as files get more changes, because a few fixes in many changes is less surprising than a few in eight. A file **above the band** is fixed more often than chance explains: those files are named and coloured. Files with no fix sit on the floor under the axis.
+- **A file's fix chain.** Click a file to see its commits over time, with an arc from each fix back to the changes it repaired. Hover a fix for its message.
+- **The inspector** shows a file's fix rate under *Flagged by*, lists its fixes under *Activity*, and suggests reviewing its changes closely when it's above chance.
+
+"Above chance" means a file's count of fixed changes has under a 2.5% probability at the repo's rate for its number of changes (a binomial test). It adapts to each repo, so a careful repo and a sloppy one both get their genuine outliers rather than everything or nothing.
+
 ## In the report
 
 `gitrelic --json` includes it as `fixRate`:

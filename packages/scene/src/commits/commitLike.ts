@@ -12,6 +12,8 @@ export interface CommitLike {
   /** Canonical author email. */
   author: string;
   files: readonly string[];
+  /** 12-character abbreviated hash (the index's length), to match a commit by. */
+  hash?: string;
 }
 
 export function fromRawCommits(commits: readonly RawCommit[]): CommitLike[] {
@@ -25,6 +27,7 @@ export function fromRawCommits(commits: readonly RawCommit[]): CommitLike[] {
       timeMs,
       author: c.authorEmail,
       files: c.files,
+      hash: c.hash.slice(0, 12),
     }));
 }
 
@@ -38,5 +41,6 @@ export function fromCommitIndex(index: CommitIndex): CommitLike[] {
     files: index.fileIds
       .slice(index.fileOffsets[i], index.fileOffsets[i + 1])
       .map((id) => index.files[id]),
+    hash: index.hash[i],
   }));
 }

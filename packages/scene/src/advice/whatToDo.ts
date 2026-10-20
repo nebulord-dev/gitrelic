@@ -5,21 +5,20 @@
 // most ADVICE_LIMIT actions; with none, the inspector leaves the section out.
 // Seeded from the analyzers' docs (cursed-files.md "What action it suggests").
 
+import { fixPointOf, ratePct } from '../fixRate/points';
 import { COUPLING_HOT, REWRITE_HOT } from '../hotspots/facets';
 import { LARGE_FILE } from '../hotspots/points';
 import { coupledWith } from '../inspect/coupledWith';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export const ADVICE_LIMIT = 3;
-/** Shame's warning bar, as the file inspector colours it. */
-export const SHAME_ACT = 40;
 /** Shared commits a partner needs before "change them together" is advice. */
 export const COUPLING_MIN_COMMITS = 3;
 
 export type AdviceId =
   | 'new-owner'
   | 'pair'
-  | 'read-log'
+  | 'review-changes'
   | 'split'
   | 'add-tests'
   | 'change-together'
@@ -66,7 +65,9 @@ function signalsOf(file: string, report: GitrelicReport) {
       report.loc.files.find((l) => l.file === file)?.lines ?? hotspot?.loc ?? 0,
     owner: report.busFactors.files.find((b) => b.file === file),
     ghost: report.ghostFiles.files.find((g) => g.file === file),
-    shame: report.forensics.files.find((f) => f.file === file),
+    fix: fixPointOf(report, file),
+    repoRate: report.fixRate.rate,
+    fixWindow: report.fixRate.windowDays,
     velocity: report.churnVelocity.files.find((v) => v.file === file),
     // Test coverage's sibling check misses tests kept elsewhere (React
     // tests react-server from react-dom's __tests__), so the folder must
@@ -114,13 +115,14 @@ const RULES: readonly ((s: Signals) => Advice | null)[] = [
           section: 'people',
         }
       : null,
+  // Its changes need fixing more often than chance explains.
   (s) =>
-    s.shame && s.shame.shameScore >= SHAME_ACT
+    s.fix?.aboveChance && s.repoRate !== null
       ? {
-          id: 'read-log',
-          action: 'Read its commit log before the code.',
-          why: 'Repeated fix and revert messages usually mean its contract is wrong, not its implementation.',
-          evidence: `${times(s.shame.shameCommitCount, 'commit')} ${s.shame.shameCommitCount === 1 ? 'says' : 'say'} ${(s.shame.dominantKeywords.length > 0 ? s.shame.dominantKeywords.slice(0, 2) : ['fix', 'revert']).join(' or ')}.`,
+          id: 'review-changes',
+          action: 'Review its changes closely.',
+          why: 'Changes to it need a follow-up fix more often than the rest of the repo’s do.',
+          evidence: `${n(s.fix.fixedAfter)} of ${n(s.fix.changes)} changes needed a fix within ${n(s.fixWindow)} days; ${ratePct(s.repoRate)} repo-wide.`,
           section: 'activity',
         }
       : null,

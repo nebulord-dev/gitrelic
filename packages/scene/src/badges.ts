@@ -14,6 +14,7 @@
 // (66% of React's files in 12 months). Its design checkpoint decides what a
 // real "stale" outlier is.
 
+import { fixRateOf } from './fixRate/points';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export interface Badge {
@@ -64,14 +65,19 @@ export const RULES: readonly Rule[] = [
     reason: (c) => `${c} file${c === 1 ? '' : 's'} with a curse score of 50+`,
   },
   {
-    preset: 'shame',
-    measure: (r) => ({
-      count: r.forensics.files.filter((f) => f.shameScore >= 70).length,
-      of: r.forensics.files.length,
-    }),
+    preset: 'fix-rate',
+    // "Above chance" already adapts to the repo's own rate, so any one fires.
+    measure: (r) => {
+      const { points } = fixRateOf(r);
+      return {
+        count: points.filter((p) => p.aboveChance).length,
+        of: points.length,
+      };
+    },
     share: 0,
     min: 1,
-    reason: (c) => `${c} file${c === 1 ? '' : 's'} with a shame score of 70+`,
+    reason: (c) =>
+      `${c} file${c === 1 ? ' is' : 's are'} fixed more often than chance`,
   },
   {
     preset: 'bus-factor',

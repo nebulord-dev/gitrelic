@@ -3,6 +3,7 @@
 // the index knows are returned, so every fanned mark is selectable; the ids
 // are the ones the lens's own view will use, so the marks can travel into it.
 
+import { fixRateOf } from '../fixRate/points';
 import { ids, type EntityId } from '../ids';
 import type { EntityIndex } from '../entities';
 import type { GitrelicReport } from '@gitrelic/core';
@@ -73,10 +74,11 @@ const SOURCES: Record<string, (r: GitrelicReport) => Candidate[]> = {
     r.rewriteRatio.topRewriters.map((f) =>
       file(f.file, rewriteRate(f.totalInsertions, f.totalDeletions)),
     ),
-  shame: (r) =>
-    byDesc(r.forensics.files, (f) => f.shameScore)
-      .filter((f) => f.shameScore > 0)
-      .map((f) => file(f.file, `shame ${f.shameScore}`)),
+  // Above chance first (the lens's own order), only files with a fix.
+  'fix-rate': (r) =>
+    fixRateOf(r)
+      .points.filter((p) => p.fixedAfter > 0)
+      .map((p) => file(p.file, `${n(p.fixedAfter)} of ${n(p.changes)} fixed`)),
   'bus-factor': (r) =>
     byDesc(r.busFactors.criticalFiles, (f) => f.dominantAuthorPercent).map(
       (f) =>

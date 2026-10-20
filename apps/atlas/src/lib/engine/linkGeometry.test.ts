@@ -119,6 +119,23 @@ describe('tessellateLinks', () => {
     expect((at(out, last)[0] + at(out, last + 1)[0]) / 2).toBeCloseTo(100, 6);
   });
 
+  it('bows an arc by its own share when it sets one', () => {
+    const peak = (bow?: number) => {
+      const out = tessellateLinks(
+        [link({ curve: 'arc', bow })],
+        s,
+        palette,
+        new LinkBuffers(),
+      );
+      const mid = CURVE_SEGMENTS / 2;
+      return Math.abs((at(out, mid * 2)[1] + at(out, mid * 2 + 1)[1]) / 2);
+    };
+    // A quadratic curve peaks at half its control offset: 0.1 of the chord
+    // by default, 0.5 at bow 1.
+    expect(peak()).toBeCloseTo(10, 0);
+    expect(peak(1)).toBeCloseTo(50, 0);
+  });
+
   it('tapers ribbons towards the target', () => {
     const out = tessellateLinks(
       [link({ curve: 'ribbon', width: 10 })],
