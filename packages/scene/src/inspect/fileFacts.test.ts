@@ -36,7 +36,13 @@ function reportWith(file: string): GitrelicReport {
   ];
   r.cursedFiles.files = [{ file, curseScore: 64 } as never];
   r.rewriteRatio.files = [{ file, ratio: 1.456 } as never];
-  r.forensics.files = [{ file, shameScore: 40 } as never];
+  r.fixRate = {
+    ...r.fixRate,
+    rate: 0.0121,
+    windowDays: 30,
+    minChanges: 8,
+    files: [{ file, changes: 8, fixedAfter: 3, rate: 3 / 8, fixes: [] }],
+  };
   r.churnVelocity.files = [{ file, trend: 'accelerating' } as never];
   r.renameTracking.chains = [{ currentPath: file, renameCount: 2 } as never];
   return r;
@@ -104,7 +110,12 @@ describe('fileFacts', () => {
         lens: 'cursed-files',
       },
       { label: 'Rewrite Ratio', value: '1.46', lens: 'rewrite-ratio' },
-      { label: 'Shame Score', value: '40', tier: 'warning', lens: 'shame' },
+      {
+        label: 'Fix rate',
+        value: '38% (3 of 8)',
+        tier: 'warning',
+        lens: 'fix-rate',
+      },
       { label: 'Churn Trend', value: 'accelerating' },
       { label: 'Renames', value: '2 times', lens: 'renames' },
     ]);
@@ -116,7 +127,7 @@ describe('fileFacts', () => {
 
   it('omits zero-signal rows and neutral tiers', () => {
     const r = reportWith(F);
-    r.forensics.files = [{ file: F, shameScore: 0 } as never];
+    r.fixRate = { ...r.fixRate, files: [] };
     r.renameTracking.chains = [{ currentPath: F, renameCount: 0 } as never];
     r.coupling.fileProfiles = [
       { file: F, topPartner: null, couplingScore: 0 } as never,
@@ -127,7 +138,7 @@ describe('fileFacts', () => {
     r.busFactors.files[0] = { ...r.busFactors.files[0], risk: 'high' } as never;
     const facts = fileFacts(F, r);
     const labels = facts.map((f) => f.label);
-    expect(labels).not.toContain('Shame Score');
+    expect(labels).not.toContain('Fix rate');
     expect(labels).not.toContain('Renames');
     expect(labels).not.toContain('Coupled With');
     expect(facts.find((f) => f.label === 'Blast Radius')?.tier).toBeUndefined();
@@ -145,15 +156,29 @@ describe('fileFacts', () => {
     expect(fileFacts(F, r)[0].tier).toBe(tier);
   });
 
-  it('tiers shame against its notable bar of 70', () => {
-    const tierAt = (shameScore: number) => {
+  it('warns on a fix rate only when chance can’t explain it', () => {
+    const factAt = (changes: number, fixedAfter: number) => {
       const r = reportWith(F);
-      r.forensics.files = [{ file: F, shameScore } as never];
-      return fileFacts(F, r).find((f) => f.label === 'Shame Score')?.tier;
+      r.fixRate = {
+        ...r.fixRate,
+        files: [
+          {
+            file: F,
+            changes,
+            fixedAfter,
+            rate: fixedAfter / changes,
+            fixes: [],
+          },
+        ],
+      };
+      return fileFacts(F, r).find((f) => f.label === 'Fix rate');
     };
-    expect(tierAt(9)).toBeUndefined();
-    expect(tierAt(25)).toBe('moderate');
-    expect(tierAt(40)).toBe('warning');
-    expect(tierAt(75)).toBe('critical');
+    // At 1.2%: one fix in 25 is chance; 3 in 8 isn't.
+    expect(factAt(25, 1)).toEqual({
+      label: 'Fix rate',
+      value: '4% (1 of 25)',
+      lens: 'fix-rate',
+    });
+    expect(factAt(8, 3)?.tier).toBe('warning');
   });
 });

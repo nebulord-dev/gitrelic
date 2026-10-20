@@ -3,6 +3,7 @@
     coupledWith,
     fileContributors,
     fileFacts,
+    fixPointOf,
     ids,
     whatToDo,
     type EntityId,
@@ -58,6 +59,7 @@
 
   let sections = $derived(fileSections(file, report));
   let advice = $derived(whatToDo(file, report));
+  let fixes = $derived(fixPointOf(report, file) ?? null);
   let anchors = $derived(new Set(sections.map((s) => s.anchor)));
 </script>
 
@@ -140,7 +142,13 @@
   </Card>
 {/if}
 
-<ActivityCard {activity} failed={historyFailed} id="insp-activity" />
+<ActivityCard
+  {activity}
+  failed={historyFailed}
+  id="insp-activity"
+  {fixes}
+  windowDays={report.fixRate.windowDays}
+/>
 
 {#if coupled.length > 0}
   <Card eyebrow="Changes with" id="insp-coupled">

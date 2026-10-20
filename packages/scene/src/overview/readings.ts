@@ -4,6 +4,7 @@
 
 import { outlierGrades, type OutlierGrade } from '../badges';
 import { CATALOG, type CatalogEntry, type PresetGroup } from '../catalog';
+import { fixRateOf } from '../fixRate/points';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export interface LensReading {
@@ -36,8 +37,12 @@ const VALUE: Record<string, (r: GitrelicReport) => string> = {
     `${n(r.complexityTrend.files.filter((f) => f.trend === 'growing').length)} growing`,
   'age-map': (r) => `${n(r.ageMap.ancientFiles.length)} ancient`,
   'rewrite-ratio': (r) => `${n(r.rewriteRatio.highRewrite)} high rewrite`,
-  shame: (r) =>
-    `${n(r.forensics.files.filter((f) => f.shameScore >= 70).length)} scored 70+`,
+  'fix-rate': (r) => {
+    const { available, points } = fixRateOf(r);
+    return available
+      ? `${n(points.filter((p) => p.aboveChance).length)} above chance`
+      : '—';
+  },
   'bus-factor': (r) => `${n(r.busFactors.criticalFiles.length)} single-owner`,
   coupling: (r) => `${n(r.coupling.pairs.length)} pairs`,
   'knowledge-silos': (r) =>

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { fixRateReport, rated } from '../test/fixRateReport';
 import reportJson from '../test/fixtures/report.small.json';
 import { computeOutlierBadges, outlierGrades, RULES } from './badges';
 import { CATALOG } from './catalog';
@@ -59,9 +60,13 @@ describe('computeOutlierBadges', () => {
       1,
     ],
     [
-      'shame',
-      { forensics: { ...base.forensics, files: [{ shameScore: 69 }] } },
-      { forensics: { ...base.forensics, files: [{ shameScore: 70 }] } },
+      // At a 1.2% repo rate: one fix in 8 is chance, three is not.
+      'fix-rate',
+      { fixRate: fixRateReport([rated('a.ts', 8, 1)]).fixRate },
+      {
+        fixRate: fixRateReport([rated('a.ts', 8, 1), rated('b.ts', 8, 3)])
+          .fixRate,
+      },
       1,
     ],
     [
@@ -161,11 +166,11 @@ describe('computeOutlierBadges', () => {
       'bus-factor',
       'commit-timing',
       'cursed-files',
+      'fix-rate',
       'ghost-files',
       'hotspots',
       'knowledge-silos',
       'parallel-dev',
-      'shame',
       'test-coverage',
     ]);
   });

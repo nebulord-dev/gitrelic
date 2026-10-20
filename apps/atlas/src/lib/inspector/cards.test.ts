@@ -1,9 +1,10 @@
-import { buildEntityIndex } from '@gitrelic/scene';
+import { buildEntityIndex, type FixPoint } from '@gitrelic/scene';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { createRawSnippet, flushSync } from 'svelte';
 import { describe, expect, it, vi } from 'vitest';
 
 import reportJson from '../../../../../packages/scene/test/fixtures/report.small.json';
+import ActivityCard from './ActivityCard.svelte';
 import Card from './Card.svelte';
 import ChurnCard from './ChurnCard.svelte';
 import FindingCard from './FindingCard.svelte';
@@ -82,10 +83,10 @@ describe('HotspotsCard', () => {
 describe('WhatToDoCard', () => {
   const advice = [
     {
-      id: 'read-log',
-      action: 'Read its commit log before the code.',
-      why: 'Repeated fix and revert messages usually mean its contract is wrong.',
-      evidence: '3 commits say fix or revert.',
+      id: 'review-changes',
+      action: 'Review its changes closely.',
+      why: 'Changes to it need a follow-up fix more often than the rest of the repo’s do.',
+      evidence: '3 of 8 changes needed a fix within 30 days; 1.2% repo-wide.',
       section: 'activity',
     },
     {
@@ -107,10 +108,8 @@ describe('WhatToDoCard', () => {
     document.body.append(box);
     render(WhatToDoCard, { advice, sections: new Set(['insp-activity']) });
 
-    expect(
-      screen.getByText('Read its commit log before the code.'),
-    ).toBeTruthy();
-    expect(screen.getByText(/contract is wrong/)).toBeTruthy();
+    expect(screen.getByText('Review its changes closely.')).toBeTruthy();
+    expect(screen.getByText(/more often than the rest/)).toBeTruthy();
     expect(screen.getByText(/index\.ts moved with it/)).toBeTruthy();
     // No Changes with section on screen, so no link to it.
     expect(screen.queryByRole('button', { name: /Changes with/ })).toBeNull();
@@ -236,5 +235,52 @@ describe('RiskCard', () => {
     expect(
       screen.queryByRole('heading', { name: 'Highest scores' }),
     ).toBeNull();
+  });
+});
+
+describe('ActivityCard', () => {
+  const point: FixPoint = {
+    file: 'src/a.ts',
+    changes: 8,
+    fixedAfter: 3,
+    rate: 3 / 8,
+    allowed: 1,
+    aboveChance: true,
+    tier: 3,
+    fixes: [
+      {
+        hash: 'b'.repeat(40),
+        message: 'Revert "cache the parse"',
+        date: '2026-03-02T10:00:00Z',
+        revert: true,
+        causes: ['a'.repeat(40)],
+      },
+      {
+        hash: 'c'.repeat(40),
+        message: 'fix: null check <img src=x>',
+        date: '2026-02-01T10:00:00Z',
+        revert: false,
+        causes: ['a'.repeat(40)],
+      },
+    ],
+  };
+
+  it("lists a rated file's fixes, newest first, as text", () => {
+    render(ActivityCard, { activity: null, fixes: point, windowDays: 30 });
+    expect(
+      screen.getByText(
+        /3 of 8 changes needed a fix within 30\s+days, more than chance explains\./,
+      ),
+    ).toBeTruthy();
+    const items = screen.getAllByRole('listitem').map((li) => li.textContent);
+    expect(items[0]).toMatch(/2026-03-02.*Revert · Revert "cache the parse"/);
+    // Commit messages are data: rendered as text, never markup.
+    expect(items[1]).toContain('fix: null check <img src=x>');
+    expect(document.querySelector('img')).toBeNull();
+  });
+
+  it('says nothing about fixes for a file fix rate doesn’t rate', () => {
+    render(ActivityCard, { activity: null });
+    expect(screen.queryByText(/needed a fix/)).toBeNull();
   });
 });
