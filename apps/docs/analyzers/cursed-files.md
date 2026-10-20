@@ -5,7 +5,7 @@ description: Cross-analyzer risk scoring — files that are simultaneously high-
 
 # Cursed Files
 
-**Cursed Files** is the only analyzer that reads no git data of its own. It is a *composite*: it consumes the output of Churn, Bus Factor, Age Map, Shame, and Parallel Dev, and surfaces the files that appear as a problem in several of them at once.
+**Cursed Files** is the only analyzer that reads no git data of its own. It is a *composite*: it consumes the output of Churn, Bus Factor, Age Map, Fix Rate, and Parallel Dev, and surfaces the files that appear as a problem in several of them at once.
 
 The premise is that single signals mislead. A high-churn file is usually just an active file. A single-author file is usually just a file one person happens to own. Neither is alarming alone. A file that is high-churn *and* narrowly owned *and* accumulating fix commits *and* contested by concurrent editors is a different thing — the risks compound, and no individual analyzer's leaderboard shows the intersection.
 
@@ -33,7 +33,7 @@ flowchart LR
     C[ChurnReport] --> X[findCursedFiles]
     B[BusFactorReport] --> X
     A[AgeMapReport] --> X
-    F[ForensicsReport<br/>shame] --> X
+    F[FixRateReport] --> X
     P[ParallelDevReport] --> X
     G[("git log<br/>author emails")] --> X
     X --> R[("CursedFilesReport<br/>files[] + excludedBotFiles[]")]
@@ -43,9 +43,9 @@ flowchart LR
     T -.click row.-> I
 ```
 
-**Candidates** are the union of four leaderboards: churn's top files, bus factor's critical files, shame's leaderboard, and parallel dev's hot files. A file that appears on none of them is never considered.
+**Candidates** are the union of four leaderboards: churn's top files, bus factor's critical files, files fixed more often than chance (Fix Rate), and parallel dev's hot files. A file that appears on none of them is never considered.
 
-**Churn data is required.** A file on the shame leaderboard with no churn record is dropped — the score, the narrative and the `churn` column all depend on it.
+**Churn data is required.** A file fixed more often than chance with no churn record is dropped — the score, the narrative and the `churn` column all depend on it.
 
 ### The point table
 
@@ -59,14 +59,12 @@ Each signal contributes independently, and each contributes a **reason chip** yo
 | Ownership | bus factor `high` | **+15** | *Heavily concentrated ownership* |
 | Ownership | `> 5` unique authors | **+10** | *N different authors — high coordination overhead* |
 | Abandonment | quiet 180d+ before the repo went quiet, and `churnScore > 60` | **+10** | *Heavily churned, then untouched for N days* |
-| Shame | `shameScore ≥ 75` | **+20** | *N shame commits detected — this file keeps breaking* |
-| Shame | `shameScore ≥ 50` | **+12** | *High rate of fix/revert commits* |
-| Shame | `shameScore ≥ 25` | **+6** | *Notable pattern of shame commits* |
+| Fixes | fixed more often than chance ([Fix Rate](/analyzers/fix-rate)) | **+20** | *N of M changes needed a fix within 30 days, more than chance explains* |
 | Parallel | `parallelScore ≥ 70` | **+20** | *Heavy parallel development* |
 | Parallel | `parallelScore ≥ 40` | **+10** | *Notable parallel development activity* |
 | Parallel | `parallelScore ≥ 20` | **+5** | *Some parallel development detected* |
 
-The churn, ownership, shame and parallel tiers are mutually exclusive within their group — a file scores the highest matching tier, not the sum of all of them.
+The churn, ownership and parallel tiers are mutually exclusive within their group — a file scores the highest matching tier, not the sum of all of them.
 
 **The qualifying floor is 50**, and the total is capped at 100. Fifty is deliberately hard to reach on one signal: maximum churn alone is 35, and maximum ownership concentration alone is 30. **A file must trip at least two independent analyzers to be cursed at all.** That is the whole design.
 
@@ -150,15 +148,15 @@ One cursed file out of 7,009 is also the point being made above: the intersectio
 ## What action it suggests
 
 - **A file with both churn and ownership chips** — the highest-value target. It changes constantly and one person understands it. Pair on it, or split it before that person leaves.
-- **A file with a shame chip** — read the commit log, not the file. Repeated `fix`/`revert` messages usually mean the file's contract is wrong, not its implementation.
+- **A file with a fixes chip** — its changes keep needing repair. Read the fixes Fix Rate lists for it (each names the change it repaired): a repeated pattern usually means the file's contract is wrong, not its implementation.
 - **A file with the abandonment chip** — it was heavily churned, then stopped. Either it stabilised (fine) or it was abandoned mid-refactor (not fine). Cross-reference with [Dead Code](/analyzers/dead-code).
 - **Zero cursed files** — genuinely good news. Check the withheld list to confirm nothing was excluded that you would have wanted to see.
 - **Everything cursed** — if a large share of your files qualify, the repository has a systemic ownership problem rather than a set of bad files. Start with [Bus Factor](/analyzers/bus-factor) instead.
 
 ## Limitations
 
-- **Composite, so it inherits every upstream limitation.** If Churn is misreading a generated file, or Shame is over-weighting the word "fix", Cursed Files amplifies that. Verify a file against its contributing analyzers in the Inspector before acting.
-- **Window-sensitive, dramatically so.** As the React example shows, the analyzed window can change the answer completely. The score depends on churn and shame scores that are themselves normalised within the window.
+- **Composite, so it inherits every upstream limitation.** If Churn is misreading a generated file, or a commit message calls something a fix that isn't, Cursed Files amplifies that. Verify a file against its contributing analyzers in the Inspector before acting.
+- **Window-sensitive, dramatically so.** As the React example shows, the analyzed window can change the answer completely. The score depends on churn scores and a fix rate that are themselves measured within the window.
 - **The floor is absolute, not relative to repo size.** Fifty points means the same on a 26-commit repo as on a 19,000-commit one, so large mature repositories often produce very few cursed files while small young ones can produce several. Compare a repository against itself over time, not against another repository.
 - **Reason chips carry no weights.** The panel tells you a file is cursed for three reasons but not which contributed most. The `--json` report has the split: each file's `breakdown` lists every reason with its points, and `nearMisses` lists the files that scored 40–49, just under the line.
 - **Bot detection is email-pattern based.** A release bot committing under a human's identity is invisible to it, and will still register as human churn.
@@ -169,7 +167,7 @@ One cursed file out of 7,009 is also the point being made above: the intersectio
 
 - **[Churn](/analyzers/churn)** — the largest single contributor to the curse score (+35 at the top tier). If a file is cursed mostly on churn, start there.
 - **[Bus Factor](/analyzers/bus-factor)** — ownership concentration, contributing at both extremes. The natural next stop for any file carrying an ownership chip.
-- **[Shame](/analyzers/shame)** — commit-message forensics. Explains the fix/revert chips, and is usually the most actionable contributing signal because it points at specific commits.
+- **[Fix Rate](/analyzers/fix-rate)** — changes followed by a fix of their own lines. Explains the fixes chip, and is usually the most actionable contributing signal because it names the fixes and the changes they repaired.
 - **[Parallel Dev](/analyzers/parallel-dev)** — concurrent multi-author editing. A cursed file with a parallel chip is contested as well as unstable.
 - **[Hotspots](/analyzers/hotspots)** — churn × LOC. Where Cursed Files intersects *social and historical* risk, Hotspots intersects churn with *size*. A file on both lists is the strongest refactor candidate GitRelic can identify.
 - **[Web Dashboard](/dashboard/)** — the rendering layer hosting the hero and the reason-chip table.
