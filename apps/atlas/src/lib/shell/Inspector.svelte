@@ -190,7 +190,9 @@
 <aside
   aria-label="Inspector"
   class={[
-    'w-100 max-w-[calc(100vw-32px)] shrink-0 flex-col gap-3 overflow-y-auto',
+    // Positioned, so absolute children (sr-only text) scroll inside it
+    // rather than stretching the page past the window.
+    'relative w-100 max-w-[calc(100vw-32px)] shrink-0 flex-col gap-3 overflow-y-auto',
     selection
       ? 'flex max-[1199px]:fixed max-[1199px]:top-16 max-[1199px]:right-4 max-[1199px]:bottom-4 max-[1199px]:z-30'
       : 'hidden min-[1200px]:flex',

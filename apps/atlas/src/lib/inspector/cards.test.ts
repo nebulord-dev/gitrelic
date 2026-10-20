@@ -1,8 +1,10 @@
 import { buildEntityIndex } from '@gitrelic/scene';
 import { fireEvent, render, screen } from '@testing-library/svelte';
+import { createRawSnippet, flushSync } from 'svelte';
 import { describe, expect, it, vi } from 'vitest';
 
 import reportJson from '../../../../../packages/scene/test/fixtures/report.small.json';
+import Card from './Card.svelte';
 import ChurnCard from './ChurnCard.svelte';
 import FindingCard from './FindingCard.svelte';
 import HotspotsCard from './HotspotsCard.svelte';
@@ -94,10 +96,14 @@ describe('WhatToDoCard', () => {
   ] as const;
 
   it('lists each action with its evidence, linking only to sections that render', async () => {
+    // The inspector's scroll box, holding the section the link jumps to.
+    const box = document.createElement('div');
+    box.style.overflowY = 'auto';
+    box.scrollTo = vi.fn() as typeof box.scrollTo;
     const target = document.createElement('section');
     target.id = 'insp-activity';
-    target.scrollIntoView = vi.fn();
-    document.body.append(target);
+    box.append(target);
+    document.body.append(box);
     render(WhatToDoCard, { advice, sections: new Set(['insp-activity']) });
 
     expect(
@@ -108,8 +114,8 @@ describe('WhatToDoCard', () => {
     // No Changes with section on screen, so no link to it.
     expect(screen.queryByRole('button', { name: /Changes with/ })).toBeNull();
     await fireEvent.click(screen.getByRole('button', { name: /Activity/ }));
-    expect(target.scrollIntoView).toHaveBeenCalled();
-    target.remove();
+    expect(box.scrollTo).toHaveBeenCalled();
+    box.remove();
   });
 });
 
@@ -141,5 +147,40 @@ describe('ChurnCard', () => {
       screen.getByRole('button', { name: 'All 9 files in the table (T) ▸' }),
     );
     expect(ontable).toHaveBeenCalled();
+  });
+});
+
+describe('Card', () => {
+  const children = createRawSnippet(() => ({ render: () => '<p>body</p>' }));
+
+  it('casts a shadow once cards scroll under a sticky one, not before', async () => {
+    const box = document.createElement('div');
+    box.style.overflowY = 'auto';
+    document.body.append(box);
+    render(Card, {
+      target: box,
+      props: { eyebrow: 'File', sticky: true, children },
+    });
+    const card = box.querySelector('section')!;
+    expect(card.hasAttribute('data-sticky')).toBe(true);
+    expect(card.hasAttribute('data-stuck')).toBe(false);
+
+    box.scrollTop = 120;
+    await fireEvent.scroll(box);
+    flushSync();
+    expect(card.hasAttribute('data-stuck')).toBe(true);
+
+    box.scrollTop = 0;
+    await fireEvent.scroll(box);
+    flushSync();
+    expect(card.hasAttribute('data-stuck')).toBe(false);
+    box.remove();
+  });
+
+  it('is a plain card by default', () => {
+    render(Card, { eyebrow: 'People', children });
+    const card = screen.getByText('body').closest('section')!;
+    expect(card.classList).toContain('card');
+    expect(card.hasAttribute('data-sticky')).toBe(false);
   });
 });
