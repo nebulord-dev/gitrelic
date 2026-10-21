@@ -51,7 +51,7 @@ const MARGIN = 24;
 /** A section's band reaches this far past its tiles, into the gaps. */
 const BAND_PAD = 10;
 const BAND_ALPHA = 0.1;
-/** Other tiles while one is open: dimmed, still labelled (the cutoff is 0.5). */
+/** Other tiles while one is open: dimmed, still labeled (the cutoff is 0.5). */
 const DIM = 0.55;
 const OPEN_LABEL = 110;
 const ROW_LABEL = 100;
@@ -272,7 +272,7 @@ export function dashboardScene(
     });
     const height = rows * CELL_H + (rows - 1) * GAP;
     // The section's band, under everything: tinted by its loudest lens's
-    // grade (colour means grade here, as everywhere), so the views read
+    // grade (color means grade here, as everywhere), so the views read
     // apart and the loud ones warm.
     const loudest = Math.max(0, ...lenses.map((r) => r.grade));
     marks.push({
