@@ -27,5 +27,7 @@ describe('palettePick', () => {
   it('selects files and people', () => {
     expect(palettePick(ids.file('src/a.ts'))).toBeNull();
     expect(palettePick(ids.person('a@example.com'))).toBeNull();
+    // A view is selected: on Overview the fan opens it.
+    expect(palettePick(ids.view('structure'))).toBeNull();
   });
 });

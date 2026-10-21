@@ -28,4 +28,18 @@ describe('nextFanFocus', () => {
       nextFanFocus(null, ids.file('src/api.ts'), report, index),
     ).toBeNull();
   });
+
+  it('opens a selected view, and moves between views and lenses', () => {
+    const structure = ids.view('structure');
+    expect(nextFanFocus(null, structure, report, index)).toBe(structure);
+    expect(nextFanFocus(structure, hotspots, report, index)).toBe(hotspots);
+    expect(nextFanFocus(hotspots, structure, report, index)).toBe(structure);
+  });
+
+  it('closes a view for an entity, which only a lens fan can hold', () => {
+    const [first] = lensTopEntities('hotspots', report, index);
+    expect(
+      nextFanFocus(ids.view('code-health'), first.id, report, index),
+    ).toBeNull();
+  });
 });

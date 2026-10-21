@@ -112,11 +112,11 @@
   let fanFocus = $state<EntityId | null>(null);
   $effect(() => {
     const selection = nav.selection;
-    // Only while Overview's ring is open; a lens picked elsewhere doesn't
+    // Only while the Overview is open; a lens picked elsewhere doesn't
     // leave a fan waiting for the next visit.
-    const onRing = nav.lens === 'overview';
+    const onOverview = nav.lens === 'overview';
     fanFocus = untrack(() =>
-      onRing ? nextFanFocus(fanFocus, selection, report, index) : null,
+      onOverview ? nextFanFocus(fanFocus, selection, report, index) : null,
     );
   });
   let lensView = $derived(nav.lens ? VIEWS.get(nav.lens) : undefined);
@@ -133,7 +133,7 @@
     const entry = nav.lens ? catalogEntry(nav.lens) : undefined;
     return entry ? (docsUrl(entry) ?? undefined) : undefined;
   });
-  // The ring fans its focused lens; other layouts re-form around a
+  // The Overview fans its focus (a view or a lens); other layouts re-form around a
   // selection of a kind they declare (the field draws a selected file even
   // when it's cool). Anything else gives them no focus, so a click they
   // can't show doesn't rebuild and re-plan the scene.
