@@ -66,7 +66,7 @@ Pure TypeScript that turns a `GitrelicReport` into what a dashboard shows: `norm
 
   | Lens | View | Layouts (first is primary) | Data |
   |---|---|---|---|
-  | Repo map | `views/overview.ts` | `fan`, `ring` | `overview/readings.ts`, `overview/topEntities.ts`, `overview/viewHeadlines.ts` (shared parts: `layouts/overviewParts.ts`) |
+  | Repo map | `views/overview.ts` | `fan`, `ring`, `dashboard` (on trial) | `overview/readings.ts`, `overview/topEntities.ts`, `overview/viewHeadlines.ts`, `overview/vitals.ts` (shared parts: `layouts/overviewParts.ts`) |
   | Hotspots | `views/hotspots.ts` | `field`, `packages` | `hotspots/points.ts`, `hotspots/facets.ts` |
   | Churn | `views/churn.ts` | `swarm`, `rhythm` (needs commits) | `churn/swarm.ts`, `churn/lockstep.ts`, `churn/rhythm.ts` |
   | Risk (`cursed-files`) | `views/risk.ts` | `stacks`, `rootCauses` | `risk/stacks.ts`, `risk/rootCauses.ts` |
