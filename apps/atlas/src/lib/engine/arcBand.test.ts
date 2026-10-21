@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { arcBand } from './arcBand';
+import { arcBand, circleDashes } from './arcBand';
 
 const pairs = (flat: number[]) =>
   Array.from({ length: flat.length / 2 }, (_, i) => [
@@ -31,5 +31,19 @@ describe('arcBand', () => {
   it('flattens finer for longer arcs, and never below one segment', () => {
     expect(arcBand(0, 0, 1, 2, 0, 0.001)).toHaveLength(8);
     expect(arcBand(0, 0, 1, 2, 0, Math.PI * 2).length).toBeGreaterThan(300);
+  });
+});
+
+describe('circleDashes', () => {
+  it('splits a circle into whole dash-and-gap pairs of about the dash length on screen', () => {
+    // 2π × 100 × 0.5 ≈ 314px on screen, 4px dashes and gaps: 39 pairs.
+    expect(circleDashes(100, 0.5, 4)).toBe(39);
+    // The same circle zoomed in twice as far: twice the pairs.
+    expect(circleDashes(100, 1, 4)).toBe(79);
+  });
+
+  it('never returns fewer than two pairs, so a tiny circle stays dashed', () => {
+    expect(circleDashes(1, 0.1, 4)).toBe(2);
+    expect(circleDashes(0, 1, 4)).toBe(2);
   });
 });

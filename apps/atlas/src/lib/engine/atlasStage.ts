@@ -363,7 +363,7 @@ export class AtlasStage {
     const pinned = new Set<EntityId>();
     if (this.hovered) pinned.add(this.hovered);
     if (this.selected) pinned.add(this.selected);
-    this.labels.update(this.store, this.view, this.size, pinned);
+    this.labels.update(this.store, this.view, this.size, pinned, this.selected);
     this.tooltip.update(this.store, this.view, this.size, this.hovered);
     this.opts.onFrame?.(this.clock.now() - start);
     // A plan can cut the engine's repaint short, or end before the camera

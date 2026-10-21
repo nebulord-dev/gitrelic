@@ -27,3 +27,11 @@ export function arcBand(
   }
   return points;
 }
+
+/**
+ * How many dash-and-gap pairs a dashed circle of radius `r` (world units)
+ * splits into at zoom `scale`, so each dash is about `dash` screen px long.
+ */
+export function circleDashes(r: number, scale: number, dash: number): number {
+  return Math.max(2, Math.round((2 * Math.PI * r * scale) / (2 * dash)));
+}

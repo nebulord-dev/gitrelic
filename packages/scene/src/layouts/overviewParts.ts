@@ -94,17 +94,20 @@ export function fanOut(
   return { marks, links };
 }
 
-/** Every mark, plus margin and room for the labels drawn beside them. */
+/** Every mark (a card by its box), plus margin and room for the labels drawn beside them. */
 export function labelledBounds(marks: readonly Mark[]) {
   let x0 = Infinity;
   let y0 = Infinity;
   let x1 = -Infinity;
   let y1 = -Infinity;
   for (const m of marks) {
-    x0 = Math.min(x0, m.x - m.r);
-    y0 = Math.min(y0, m.y - m.r);
-    x1 = Math.max(x1, m.x + m.r);
-    y1 = Math.max(y1, m.y + m.r);
+    // A card's half-size, or a dot's radius (the other is 0).
+    const hw = Math.max(m.r, m.w / 2);
+    const hh = Math.max(m.r, m.h / 2);
+    x0 = Math.min(x0, m.x - hw);
+    y0 = Math.min(y0, m.y - hh);
+    x1 = Math.max(x1, m.x + hw);
+    y1 = Math.max(y1, m.y + hh);
   }
   if (!Number.isFinite(x0)) return { x: 0, y: 0, w: 0, h: 0 };
   return {

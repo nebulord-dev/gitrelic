@@ -52,3 +52,14 @@ export function loudestView(readings: readonly LensReading[]): FanView {
   }
   return best;
 }
+
+const LEADING_NUMBER = /^([\d,.]+%?)\s+(.*)$/;
+
+/**
+ * A reading's leading number and the rest ("8 files" → "8", "files"), for a
+ * fan card that sets the number large; a reading without one stays whole.
+ */
+export function splitReading(value: string): { lead: string; rest: string } {
+  const m = LEADING_NUMBER.exec(value);
+  return m ? { lead: m[1], rest: m[2] } : { lead: '', rest: value };
+}

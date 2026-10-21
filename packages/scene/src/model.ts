@@ -89,6 +89,12 @@ export interface Mark extends MarkGeom {
    */
   labelSub?: string;
   /**
+   * A short lead set apart from the label, before it (a fan card's number:
+   * "8" beside "Code Health" over "files"). Shown with the label, so the
+   * parts are shown or culled together.
+   */
+  labelLead?: string;
+  /**
    * A class for the label's element, naming a role the dashboard's CSS styles
    * (the ring's flagged lenses), never a colour. A single class token: it's
    * added with `classList.add`, which throws on whitespace.
@@ -123,7 +129,11 @@ export interface Link {
   id: string;
   source: EntityId;
   target: EntityId;
-  curve: 'straight' | 'arc' | 'ribbon';
+  /**
+   * `s-curve` leaves its source and meets its target horizontally (a tree's
+   * edges, from port to port); `arc` bows off its chord (see `bow`).
+   */
+  curve: 'straight' | 'arc' | 'ribbon' | 's-curve';
   /** Stroke width (ribbon: width at the source end), world units. */
   width: number;
   paint: Paint;
@@ -159,6 +169,8 @@ export type Guide =
       r: number;
       paint: Paint;
       alpha: number;
+      /** Dashed, with dashes (and gaps) this many screen px long. */
+      dash?: number;
     }
   | {
       id: string;

@@ -1,5 +1,5 @@
 // The Overview fan (docs/atlas-views.md › Overview), the view's landing form:
-// the repo, the four other views as nodes headed by their loudest lens, and
+// the repo, the four other views as cards headed by their loudest lens, and
 // the open view's lenses on an arc. Previewing a lens slides the picture left
 // (and, near the arc's ends, up or down) and fans that lens's top entities out
 // of it, away from the arc's centre, exactly as the ring does and with the
@@ -9,6 +9,7 @@ import { PRESET_GROUPS } from '../catalog';
 import { ids, REPO_ID } from '../ids';
 import {
   FAN_VIEWS,
+  splitReading,
   viewHeadline,
   type FanView,
 } from '../overview/viewHeadlines';
@@ -20,7 +21,7 @@ import {
   RAMP,
   ZERO,
 } from './overviewParts';
-import type { Link, Mark, Scene, Viewport } from '../model';
+import type { Guide, Link, Mark, Scene, Viewport } from '../model';
 import type { LensReading, RepoReading } from '../overview/readings';
 import type { FannedEntity } from '../overview/topEntities';
 
@@ -35,8 +36,17 @@ export interface FanFocus {
 const REPO_R = 72;
 /** The repo while a lens is previewed: smaller, at the edge. */
 const REPO_R_TUCKED = 44;
-/** How far the open view's node outgrows the others. */
-const OPEN_R = 3;
+/**
+ * A view's card, world units: wide enough for a number beside a two-line
+ * name and caption at the ~0.7 zoom the world fits at (the label layer
+ * scales the card's text with it).
+ */
+const CARD_W = 260;
+const CARD_H = 84;
+/** The repo's dashed orbit, as a multiple of its radius. */
+const ORBIT = 1.7;
+/** The orbit's dashes, screen px. */
+const ORBIT_DASH = 4;
 /** Lenses not previewed: below the labels' cutoff, as on the ring. */
 const DIM_LENS = 0.3;
 /** Other views while a lens is previewed: still labelled (the cutoff is 0.5). */
@@ -49,8 +59,6 @@ const VIEW_LABEL = 60;
 const PREVIEWED_LABEL = 110;
 /** The tucked repo's centred label gives way to the views beside it. */
 const REPO_LABEL_TUCKED = 50;
-/** How far a branch bows, as a share of its length, away from the views. */
-const BRANCH_BOW = 0.2;
 /** The previewed lens's fan, as a share of the stage's height. */
 const FAN_RADIUS = 0.26;
 /** Room between a fan's outermost entity and the world's top or bottom. */
@@ -75,12 +83,15 @@ export function fanScene(
     : undefined;
   // Previewing slides everything left to make room for the lens's fan.
   const shift = previewed ? -w * 0.17 : 0;
-  const viewX = w * 0.36 + shift;
+  const viewX = w * 0.38 + shift;
+  // Where branches leave the open card: its right edge.
+  const outX = viewX + CARD_W / 2;
 
-  // The open view's lenses on an arc to its right, centred on the stage's
-  // middle rather than on the view, so a view at the bottom keeps its lenses
-  // on screen. They step evenly down the arc's height, not its angle, so the
-  // ends, where the arc turns back, don't stack them closer than a label.
+  // The open view's lenses on an arc to the right of the cards' right edges,
+  // centred on the stage's middle rather than on the view, so a view at the
+  // bottom keeps its lenses on screen. They step evenly down the arc's
+  // height, not its angle, so the ends, where the arc turns back, don't
+  // stack them closer than a label.
   const radius = h * 0.36;
   const span = Math.min(
     MAX_SPAN,
@@ -106,13 +117,15 @@ export function fanScene(
       (cy + previewedDy)
     : 0;
 
+  const repoX = previewed ? w * 0.06 : w * 0.11;
+  const repoR = previewed ? REPO_R_TUCKED : REPO_R;
   marks.push({
     id: REPO_ID,
     shape: 'outline',
     paint: '--accent',
-    x: previewed ? w * 0.06 : w * 0.11,
+    x: repoX,
     y: cy,
-    r: previewed ? REPO_R_TUCKED : REPO_R,
+    r: repoR,
     ...ZERO,
     alpha: previewed ? 0.5 : 1,
     label: repo.label,
@@ -122,32 +135,61 @@ export function fanScene(
     labelAnchor: 'center',
     z: 1,
   });
+  // Links run between ports, invisible marks on the repo's and the cards'
+  // edges, so they meet a card at its side rather than its centre.
+  const port = (id: string, x: number, y: number, parent: string): Mark => ({
+    id,
+    shape: 'dot',
+    paint: '--link',
+    x,
+    y,
+    r: 0,
+    ...ZERO,
+    alpha: 0,
+    parent,
+  });
+  marks.push(port('port:repo:out', repoX + repoR, cy, REPO_ID));
+  const guides: Guide[] = [
+    {
+      id: 'orbit:repo',
+      kind: 'circle',
+      x: repoX,
+      y: cy,
+      r: repoR * ORBIT,
+      paint: '--muted',
+      alpha: previewed ? 0.2 : 0.35,
+      dash: ORBIT_DASH,
+    },
+  ];
 
-  // The views in rail order, a column; each headed by its loudest lens.
+  // The views in rail order, a column of cards; each headed by its loudest
+  // lens, its number set large beside the view's name over the rest of the
+  // reading. The open view's card is filled; a loud one keeps an accent touch.
   const gap = h * 0.15;
-  let sourceY = cy;
   FAN_VIEWS.forEach((view, i) => {
     const id = ids.view(view);
     const head = viewHeadline(view, readings);
     const grade = head?.grade ?? 0;
     const open = view === focus.view;
     const y = cy + lift + (i - (FAN_VIEWS.length - 1) / 2) * gap;
-    if (open) sourceY = y;
+    const { lead, rest } = splitReading(head?.value ?? '');
     marks.push({
       id,
-      shape: 'dot',
+      shape: 'card',
       paint: RAMP[grade],
       x: viewX,
       y,
-      r: DOT_R[grade] + (open ? OPEN_R : 0),
+      r: 0,
       ...ZERO,
+      w: CARD_W,
+      h: CARD_H,
       alpha: previewed && !open ? DIM_VIEW : 1,
+      labelLead: lead || undefined,
       label: labelOf(view),
-      labelSub: head?.value,
-      labelClass: LABEL_CLASS[grade],
+      labelSub: rest || undefined,
+      labelClass: open ? 'atlas-label--open' : LABEL_CLASS[grade],
       labelPriority: VIEW_LABEL + grade,
-      // Above: trunks arrive from the left and branches leave to the right.
-      labelAnchor: 'above',
+      labelAnchor: 'center',
       z: 2,
       tip: [
         labelOf(view),
@@ -155,20 +197,24 @@ export function fanScene(
         ...(head?.reason ? [head.reason] : []),
       ],
     });
+    const inPort = `port:${view}:in`;
+    marks.push(port(inPort, viewX - CARD_W / 2, y, id));
+    if (open) marks.push(port(`port:${view}:out`, outX, y, id));
     links.push({
       id: `trunk:${view}`,
-      source: REPO_ID,
-      target: id,
-      curve: 'straight',
+      source: 'port:repo:out',
+      target: inPort,
+      curve: 's-curve',
       width: open ? 1.5 : 1,
       paint: open ? '--link-hot' : '--link',
       alpha: open ? 0.6 : 0.35,
     });
   });
 
-  const source = ids.view(focus.view);
+  const parent = ids.view(focus.view);
+  const source = `port:${focus.view}:out`;
   for (const { lens, dx, dy } of placed) {
-    const x = viewX + dx;
+    const x = outX + dx;
     const y = cy + lift + dy;
     const id = ids.analyzer(lens.preset);
     const isPreviewed = lens === previewed;
@@ -183,7 +229,7 @@ export function fanScene(
       ...ZERO,
       alpha: dim,
       // Grows out of its view, and folds back into it when another opens.
-      parent: source,
+      parent,
       foldOnExit: true,
       label: lens.label,
       labelSub: lens.value,
@@ -200,10 +246,9 @@ export function fanScene(
       id: `branch:${lens.preset}`,
       source,
       target: id,
-      curve: 'arc',
-      // Bowed to the right, away from the column: a branch heading down
-      // bows to its chord's right, one heading up to its left.
-      bow: y > sourceY ? -BRANCH_BOW : BRANCH_BOW,
+      // Out of the card's side and into the lens level: it stays right of
+      // the column, so it never crosses another card.
+      curve: 's-curve',
       width: lens.grade >= 2 ? 1.5 : 1,
       paint: lens.grade >= 2 ? '--link-hot' : '--link',
       alpha: (lens.grade >= 2 ? 0.6 : 0.35) * dim,
@@ -224,5 +269,5 @@ export function fanScene(
     }
   }
 
-  return { marks, links, guides: [], bounds: labelledBounds(marks) };
+  return { marks, links, guides, bounds: labelledBounds(marks) };
 }

@@ -129,7 +129,8 @@ body {
   overflow-wrap: anywhere;
 }
 
-/* Mark.labelClass roles. --hot: an Overview lens that badges (grade 2+). */
+/* Mark.labelClass roles. --hot: an Overview lens or view that badges (grade
+   2+); --open (with the card rules below): the fan's open view. */
 .atlas-label--hot .atlas-label__sub {
   color: var(--accent);
 }
@@ -160,6 +161,89 @@ body {
   font-size: 12px;
   line-height: 18px;
   color: var(--soft);
+}
+
+/* A lead before a label's text (Mark.labelLead). */
+.atlas-label__lead {
+  margin-right: 0.3em;
+}
+
+/*
+ * A card mark's label is the card: labelLayer sizes the box to the mark and
+ * scales it with the view, so the sizes here are world units (its CARD_*
+ * metrics measure them: change both). The lead (a number) on the left, the
+ * name over the caption on the right.
+ */
+.atlas-label--card {
+  box-sizing: border-box;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: auto auto;
+  align-content: center;
+  justify-content: start;
+  column-gap: 14px;
+  padding: 0 18px;
+  overflow: hidden;
+  text-align: left;
+  font-size: 18px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: min(var(--card-radius), 12px);
+}
+
+.atlas-label--card .atlas-label__lead {
+  grid-row: span 2;
+  align-self: center;
+  margin: 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 36px;
+  line-height: 40px;
+  color: var(--text);
+}
+
+.atlas-label--card .atlas-label__sub {
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--muted);
+}
+
+.atlas-label--card.atlas-label--pinned {
+  border-color: var(--control-border);
+}
+
+/* --hot on a card: a loud view not open. Its number takes the accent. */
+.atlas-label--card.atlas-label--hot .atlas-label__lead {
+  color: var(--accent);
+}
+
+.atlas-label--card.atlas-label--hot .atlas-label__sub {
+  color: var(--muted);
+}
+
+/* --open: the fan's open view, filled with the accent. */
+.atlas-label--card.atlas-label--open {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.atlas-label--open .atlas-label__lead,
+.atlas-label--open .atlas-label__sub {
+  color: var(--accent-ink);
+}
+
+.atlas-label--open .atlas-label__sub {
+  opacity: 0.75;
+}
+
+/* The selected card (the canvas draws nothing for cards to mark it). */
+.atlas-label--card.atlas-label--selected {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  box-shadow: var(--selected-glow);
 }
 
 /* The hover tooltip, positioned per frame by engine/tooltipLayer.ts. */

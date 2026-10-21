@@ -6,6 +6,7 @@ import { lensReadings, type LensReading } from './readings';
 import {
   FAN_VIEWS,
   loudestView,
+  splitReading,
   VIEW_BLURBS,
   viewHeadline,
 } from './viewHeadlines';
@@ -57,5 +58,32 @@ describe('loudestView', () => {
 
   it('opens the first view when everything is calm', () => {
     expect(loudestView(calm)).toBe('code-health');
+  });
+});
+
+describe('splitReading', () => {
+  it('splits a reading into its leading number and the rest', () => {
+    expect(splitReading('8 files')).toEqual({ lead: '8', rest: 'files' });
+    expect(splitReading('1,234 single-owner')).toEqual({
+      lead: '1,234',
+      rest: 'single-owner',
+    });
+    expect(splitReading('63% AI-assisted')).toEqual({
+      lead: '63%',
+      rest: 'AI-assisted',
+    });
+    expect(splitReading('40 ghosts of 77')).toEqual({
+      lead: '40',
+      rest: 'ghosts of 77',
+    });
+  });
+
+  it('keeps a reading without a leading number whole', () => {
+    expect(splitReading('TypeScript')).toEqual({
+      lead: '',
+      rest: 'TypeScript',
+    });
+    expect(splitReading('—')).toEqual({ lead: '', rest: '—' });
+    expect(splitReading('12')).toEqual({ lead: '', rest: '12' });
   });
 });

@@ -56,27 +56,133 @@ describe('fanScene', () => {
         .filter((r) => r.group === 'code-health')
         .map((r) => ids.analyzer(r.preset)),
     );
-    // A trunk to each view, a branch to each open lens.
-    expect(scene.links.filter((l) => l.source === REPO_ID)).toHaveLength(4);
-    expect(
-      scene.links.filter((l) => l.source === ids.view('code-health')),
-    ).toHaveLength(readings.filter((r) => r.group === 'code-health').length);
+    // A trunk to each view, a branch to each open lens, S-curves between
+    // ports on the cards' edges.
+    const trunks = scene.links.filter((l) => l.id.startsWith('trunk:'));
+    expect(trunks.map((l) => [l.source, l.target])).toEqual(
+      FAN_VIEWS.map((v) => ['port:repo:out', `port:${v}:in`]),
+    );
+    const branches = scene.links.filter((l) => l.id.startsWith('branch:'));
+    expect(branches).toHaveLength(
+      readings.filter((r) => r.group === 'code-health').length,
+    );
+    for (const l of [...trunks, ...branches]) expect(l.curve).toBe('s-curve');
+    for (const l of branches) expect(l.source).toBe('port:code-health:out');
   });
 
-  it('heads each view with its loudest lens, heated by its grade', () => {
+  it('puts ports, invisible and unhittable, on the cards’ and the repo’s edges', () => {
+    const scene = fanScene(repo, readings, closed, viewport);
+    const repoMark = markOf(scene, REPO_ID);
+    expect(markOf(scene, 'port:repo:out')).toMatchObject({
+      x: repoMark.x + repoMark.r,
+      y: repoMark.y,
+      r: 0,
+      alpha: 0,
+      parent: REPO_ID,
+    });
+    for (const v of FAN_VIEWS) {
+      const card = markOf(scene, ids.view(v));
+      expect(markOf(scene, `port:${v}:in`)).toMatchObject({
+        x: card.x - card.w / 2,
+        y: card.y,
+        r: 0,
+        alpha: 0,
+        parent: card.id,
+      });
+    }
+    // Only the open view's lenses branch, so only it has a port out.
+    const open = markOf(scene, ids.view('code-health'));
+    expect(markOf(scene, 'port:code-health:out')).toMatchObject({
+      x: open.x + open.w / 2,
+      y: open.y,
+    });
+    expect(scene.marks.some((m) => m.id === 'port:structure:out')).toBe(false);
+    for (const m of scene.marks.filter((m) => m.id.startsWith('port:')))
+      expect(m.label).toBeUndefined();
+  });
+
+  it('rings the repo with a faint dashed orbit that follows it when tucked', () => {
+    for (const focus of [closed, previewing]) {
+      const scene = fanScene(repo, readings, focus, viewport);
+      const repoMark = markOf(scene, REPO_ID);
+      const orbit = scene.guides.find((g) => g.id === 'orbit:repo');
+      expect(orbit).toMatchObject({
+        kind: 'circle',
+        x: repoMark.x,
+        y: repoMark.y,
+        paint: '--muted',
+      });
+      if (orbit?.kind !== 'circle') throw new Error('not a circle');
+      expect(orbit.r / repoMark.r).toBeGreaterThanOrEqual(1.6);
+      expect(orbit.r / repoMark.r).toBeLessThanOrEqual(1.8);
+      expect(orbit.dash).toBeGreaterThan(0);
+      expect(orbit.alpha).toBeLessThan(0.6);
+    }
+  });
+
+  it('draws each view as a card headed by its loudest lens', () => {
     const scene = fanScene(repo, readings, closed, viewport);
     const health = markOf(scene, ids.view('code-health'));
     const cursed = readings.find((r) => r.preset === 'cursed-files')!;
+    const [lead, ...rest] = cursed.value.split(' ');
     expect(health).toMatchObject({
+      shape: 'card',
+      labelAnchor: 'center',
+      // The number large, the view's name over the rest of the reading.
+      labelLead: lead,
       label: 'Code Health',
-      labelSub: cursed.value,
-      paint: '--risk-3',
-      labelClass: 'atlas-label--hot',
+      labelSub: rest.join(' '),
     });
+    expect(health.w).toBeGreaterThan(2 * health.h);
+    expect(health.r).toBe(0);
     const team = markOf(scene, ids.view('team-activity'));
-    expect(team.paint).toBe('--risk-0');
-    expect(team.labelClass).toBeUndefined();
-    expect(health.r).toBeGreaterThan(team.r);
+    expect(team.w).toBe(health.w);
+    expect(team.h).toBe(health.h);
+  });
+
+  it('fills the open view’s card, touches loud ones with accent, leaves calm ones', () => {
+    const scene = fanScene(repo, readings, closed, viewport);
+    // Code Health is open (and loud); Ownership & Risk loud; Team calm.
+    expect(markOf(scene, ids.view('code-health')).labelClass).toBe(
+      'atlas-label--open',
+    );
+    expect(markOf(scene, ids.view('ownership-risk')).labelClass).toBe(
+      'atlas-label--hot',
+    );
+    expect(markOf(scene, ids.view('team-activity')).labelClass).toBeUndefined();
+    const other = fanScene(
+      repo,
+      readings,
+      { view: 'team-activity', lens: null },
+      viewport,
+    );
+    expect(markOf(other, ids.view('team-activity')).labelClass).toBe(
+      'atlas-label--open',
+    );
+    expect(markOf(other, ids.view('code-health')).labelClass).toBe(
+      'atlas-label--hot',
+    );
+  });
+
+  it('stacks the cards in a column, clear of each other and of the lenses', () => {
+    for (const view of FAN_VIEWS) {
+      const scene = fanScene(repo, readings, { view, lens: null }, viewport);
+      const cards = scene.marks.filter((m) => m.id.startsWith('view:'));
+      for (let i = 1; i < cards.length; i++) {
+        expect(cards[i].x).toBe(cards[0].x);
+        expect(cards[i].y - cards[i - 1].y).toBeGreaterThan(cards[i].h + 24);
+      }
+      // Lens dots and their right-hand labels (two lines, 20 characters, at
+      // the ~0.65 zoom the world fits at: about 220 by 50 units).
+      for (const l of scene.marks.filter((m) => m.id.startsWith('analyzer:')))
+        for (const c of cards) {
+          const label = { x0: l.x - l.r, x1: l.x + l.r + 220 };
+          const apart =
+            label.x0 > c.x + c.w / 2 + 10 ||
+            Math.abs(l.y - c.y) > c.h / 2 + 25 + 10;
+          expect(apart, `${view} ${l.id} on ${c.id}`).toBe(true);
+        }
+    }
   });
 
   it('opens the view it is given, its lenses growing out of it', () => {
@@ -111,8 +217,8 @@ describe('fanScene', () => {
     expect(fanned.map((m) => m.id)).toEqual(
       previewing.lens.entities.map((e) => e.id),
     );
-    // Outward, away from the open view.
-    const view = markOf(scene, ids.view('code-health'));
+    // Outward, away from the arc's centre: the open card's port out.
+    const view = markOf(scene, 'port:code-health:out');
     const far = (m: { x: number; y: number }) =>
       Math.hypot(m.x - view.x, m.y - view.y);
     for (const m of fanned) expect(far(m)).toBeGreaterThan(far(lens));
@@ -187,42 +293,57 @@ describe('fanScene', () => {
       expect(Math.abs(ys[i] - ys[i - 1])).toBeGreaterThanOrEqual(60);
   });
 
-  /** Points along a link as the engine draws it (linkGeometry.ts). */
+  /** Points along an S-curve link as the engine draws it (linkGeometry.ts). */
   function curveOf(link: Link, a: Mark, b: Mark, steps = 64) {
-    const len = Math.hypot(b.x - a.x, b.y - a.y);
-    const bow = link.curve === 'straight' ? 0 : (link.bow ?? 0.2) * len;
-    const cx = (a.x + b.x) / 2 + (-(b.y - a.y) / len) * bow;
-    const cy = (a.y + b.y) / 2 + ((b.x - a.x) / len) * bow;
+    expect(link.curve).toBe('s-curve');
+    const mx = (a.x + b.x) / 2;
     return Array.from({ length: steps + 1 }, (_, k) => {
       const u = k / steps;
       const v = 1 - u;
       return {
-        x: v * v * a.x + 2 * v * u * cx + u * u * b.x,
-        y: v * v * a.y + 2 * v * u * cy + u * u * b.y,
+        x:
+          v * v * v * a.x +
+          3 * v * v * u * mx +
+          3 * v * u * u * mx +
+          u * u * u * b.x,
+        y:
+          v * v * v * a.y +
+          3 * v * v * u * a.y +
+          3 * v * u * u * b.y +
+          u * u * u * b.y,
       };
     });
   }
 
-  it('keeps every branch clear of the other views, whichever is open', () => {
+  /** How far a point is outside a card (negative: inside). */
+  const outside = (p: { x: number; y: number }, c: Mark) =>
+    Math.max(Math.abs(p.x - c.x) - c.w / 2, Math.abs(p.y - c.y) - c.h / 2);
+
+  it('keeps every link clear of the cards it doesn’t end at, whichever is open', () => {
     for (const view of FAN_VIEWS) {
       const scene = fanScene(repo, readings, { view, lens: null }, viewport);
-      const others = scene.marks.filter(
-        (m) => m.id.startsWith('view:') && m.id !== ids.view(view),
+      const cards = scene.marks.filter((m) => m.id.startsWith('view:'));
+      const links = scene.links.filter(
+        (l) => l.id.startsWith('branch:') || l.id.startsWith('trunk:'),
       );
-      const branches = scene.links.filter((l) => l.id.startsWith('branch:'));
-      expect(branches.length).toBeGreaterThan(0);
-      for (const l of branches) {
+      expect(links.length).toBeGreaterThan(4);
+      for (const l of links) {
         const pts = curveOf(
           l,
           markOf(scene, l.source),
           markOf(scene, l.target),
         );
-        for (const o of others)
+        for (const c of cards) {
+          // A link may touch its own card at its port, nothing more.
+          const own =
+            l.target === `port:${c.id.slice(5)}:in` ||
+            l.source === `port:${c.id.slice(5)}:out`;
           for (const p of pts)
             expect(
-              Math.hypot(p.x - o.x, p.y - o.y),
-              `${view} ${l.id} near ${o.id}`,
-            ).toBeGreaterThan(o.r + 10);
+              outside(p, c),
+              `${view} ${l.id} through ${c.id}`,
+            ).toBeGreaterThan(own ? -0.01 : 10);
+        }
       }
     }
   });
@@ -234,7 +355,7 @@ describe('fanScene', () => {
       const fanned = scene.marks.filter((m) => m.parent === own);
       expect(fanned).toHaveLength(8);
       const lensMark = markOf(scene, own);
-      const view = markOf(scene, ids.view('code-health'));
+      const view = markOf(scene, 'port:code-health:out');
       const far = (m: Mark) => Math.hypot(m.x - view.x, m.y - view.y);
       const others = scene.marks.filter(
         (m) => m.id.startsWith('analyzer:') && m.id !== own,
