@@ -25,7 +25,7 @@
   import { Nav } from '../state/nav.svelte';
   import TableDrawer from '../table/TableDrawer.svelte';
   import TimeStrip from '../time/TimeStrip.svelte';
-  import { nextFanFocus } from '../views/fanFocus';
+  import { fanFold, nextFanFocus } from '../views/fanFocus';
   import { palettePick } from '../views/palettePick';
   import { stageClick } from '../views/stageClick';
   import CommandPalette from './CommandPalette.svelte';
@@ -192,18 +192,14 @@
     }
   }
 
-  // A second click on a lens dot opens it (Atlas lenses only; classic is
-  // the inspector's button). The arm belongs to the stage: a selection made
-  // anywhere else clears it.
-  let armed = $state<EntityId | null>(null);
-  $effect(() => {
-    if (nav.selection !== untrack(() => armed)) armed = null;
-  });
-  function stageSelect(id: EntityId | null) {
-    const click = stageClick(armed, nav.selection, id);
-    armed = click.armed;
-    if (click.open) nav.openLens(click.open);
-    else nav.select(id);
+  // A second click on the selected mark folds it; on the Overview it folds
+  // back one step (a fanned file to its lens, a lens on the Fan to its view).
+  function stageSelect(id: EntityId | null, repeat: boolean) {
+    const foldTo =
+      nav.lens === 'overview'
+        ? fanFold(nav.selection, fanFocus, layout?.id)
+        : null;
+    nav.select(stageClick(nav.selection, id, repeat, foldTo));
   }
 </script>
 

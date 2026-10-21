@@ -20,12 +20,22 @@ export interface ViewportInputOptions {
   hover?(sx: number, sy: number): void;
   /** Pointer left the element. */
   leave?(): void;
-  /** A press and release without dragging, in element coordinates. */
-  click?(sx: number, sy: number): void;
+  /**
+   * A press and release without dragging, in element coordinates. `repeat`
+   * is a double-click's second click (the `dblclick` that follows fits).
+   */
+  click?(sx: number, sy: number, repeat: boolean): void;
 }
 
 /** Movement under this many px between press and release is still a click. */
 export const CLICK_SLOP = 4;
+
+/**
+ * A click this soon after the last one, at the same spot, is a double-click's
+ * second. The OS sets the real interval (500 ms by default on macOS and
+ * Windows); one set slower only makes a slow double-click fold, then fit.
+ */
+export const DOUBLE_CLICK_MS = 500;
 
 /** Attaches the listeners; returns a function that removes them. */
 export function attachViewportInput(
@@ -34,6 +44,8 @@ export function attachViewportInput(
 ): () => void {
   const pointers = new Map<number, { x: number; y: number }>();
   let travelled = 0;
+  // The last click that could start a double-click (a repeat never does).
+  let lastClick: { t: number; x: number; y: number } | null = null;
 
   const local = (e: { clientX: number; clientY: number }): [number, number] => {
     const rect = el.getBoundingClientRect();
@@ -96,8 +108,15 @@ export function attachViewportInput(
 
   const onUp = (e: PointerEvent) => {
     if (!pointers.delete(e.pointerId)) return;
-    if (pointers.size === 0 && travelled < CLICK_SLOP)
-      opts.click?.(...local(e));
+    if (pointers.size > 0 || travelled >= CLICK_SLOP) return;
+    const [sx, sy] = local(e);
+    const t = performance.now();
+    const repeat =
+      lastClick !== null &&
+      t - lastClick.t < DOUBLE_CLICK_MS &&
+      Math.abs(sx - lastClick.x) + Math.abs(sy - lastClick.y) < CLICK_SLOP;
+    lastClick = repeat ? null : { t, x: sx, y: sy };
+    opts.click?.(sx, sy, repeat);
   };
 
   // The browser took the gesture (or the pointer vanished): forget it, and

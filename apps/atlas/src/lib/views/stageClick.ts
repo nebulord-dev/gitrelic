@@ -1,34 +1,19 @@
-// What a click on the stage does. A first click selects (and arms a lens
-// dot); a second click on the same, still-selected lens opens it — but only
-// a lens with an Atlas view. Leaving for classic is the inspector's button,
-// never a click that looks like re-selecting. The arm is the stage's own: any
-// selection the stage didn't just make (inspector, ⌘K, Back) clears it.
+// What a click on the stage selects. A click selects what it lands on (on
+// empty stage, nothing); a click on what is already selected folds it: the
+// first click didn't take you anywhere, so the second reads as undoing it,
+// never as going further. Opening a lens is the inspector's button. A
+// selection fanned out of something else (the Overview's file picked from a
+// lens's fan) folds back to that, not to nothing. The second click of a
+// double-click keeps the selection: a double-click selects and fits.
 
-import {
-  catalogEntry,
-  entityKey,
-  entityKind,
-  type EntityId,
-} from '@gitrelic/scene';
-
-export interface StageClick {
-  /** A lens to open, or null to select `id` instead. */
-  open: string | null;
-  /** The lens dot armed for a second click after this one. */
-  armed: EntityId | null;
-}
+import type { EntityId } from '@gitrelic/scene';
 
 export function stageClick(
-  armed: EntityId | null,
   selection: EntityId | null,
   id: EntityId | null,
-): StageClick {
-  const isLens = id !== null && entityKind(id) === 'analyzer';
-  if (isLens && id === armed && id === selection) {
-    const preset = entityKey(id);
-    if (catalogEntry(preset)?.atlas) return { open: preset, armed: null };
-    // No Atlas view: stay put (the inspector offers classic).
-    return { open: null, armed };
-  }
-  return { open: null, armed: isLens ? id : null };
+  repeat: boolean,
+  foldTo: EntityId | null = null,
+): EntityId | null {
+  if (id === null || id !== selection || repeat) return id;
+  return foldTo;
 }

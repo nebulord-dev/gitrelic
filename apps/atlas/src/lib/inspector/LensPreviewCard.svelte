@@ -17,7 +17,6 @@
     index,
     onselect,
     onopen,
-    onMap = false,
   }: {
     preset: string;
     report: GitrelicReport;
@@ -25,8 +24,6 @@
     onselect?: (id: EntityId) => void;
     /** Opens a lens that has an Atlas view. */
     onopen?: (lens: string) => void;
-    /** The Overview is showing, so a second click on the lens opens it. */
-    onMap?: boolean;
   } = $props();
 
   let entry = $derived(catalogEntry(preset));
@@ -55,9 +52,6 @@
         class="grid h-10 place-content-center rounded-chip border border-control-border text-[14px] text-text no-underline hover:text-accent"
         >Open {entry.label} in classic ↗</a
       >
-    {/if}
-    {#if onMap && entry.atlas}
-      <p class="m-0 text-[12px] text-muted">Or click the lens again.</p>
     {/if}
   </Card>
 

@@ -31,7 +31,8 @@
     scene?: Scene | null;
     theme: ThemeName;
     selected?: EntityId | null;
-    onselect?: (id: EntityId | null) => void;
+    /** A click: what it hit, and whether it is a double-click's second. */
+    onselect?: (id: EntityId | null, repeat: boolean) => void;
     /** Shown while there's no scene (the lens has no Atlas view yet). */
     empty?: Snippet;
     /** One line on how to read the picture, under it. */
@@ -100,7 +101,7 @@
             reducedMotion: () => prefersReducedMotion(),
             // The corner controls (fit, form toggle) and the caption row.
             insets: STAGE_INSETS,
-            onSelect: (id) => onselect?.(id),
+            onSelect: (id, repeat) => onselect?.(id, repeat),
           },
         ),
       )

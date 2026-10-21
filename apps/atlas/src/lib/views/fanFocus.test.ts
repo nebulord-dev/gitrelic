@@ -2,7 +2,7 @@ import { buildEntityIndex, ids, lensTopEntities } from '@gitrelic/scene';
 import { describe, expect, it } from 'vitest';
 
 import reportJson from '../../../../../packages/scene/test/fixtures/report.small.json';
-import { nextFanFocus } from './fanFocus';
+import { fanFold, nextFanFocus } from './fanFocus';
 import type { GitrelicReport } from '@gitrelic/core';
 
 const report = reportJson as unknown as GitrelicReport;
@@ -41,5 +41,28 @@ describe('nextFanFocus', () => {
     expect(
       nextFanFocus(ids.view('code-health'), first.id, report, index),
     ).toBeNull();
+  });
+});
+
+describe('fanFold', () => {
+  const codeHealth = ids.view('code-health');
+
+  it('folds a file picked from a fan back to its lens', () => {
+    const [first] = lensTopEntities('hotspots', report, index);
+    expect(fanFold(first.id, hotspots, 'fan')).toBe(hotspots);
+    expect(fanFold(first.id, hotspots, 'ring')).toBe(hotspots);
+  });
+
+  it('folds a lens on the Fan to its own view, so the Fan stays on it', () => {
+    expect(fanFold(hotspots, hotspots, 'fan')).toBe(codeHealth);
+    expect(
+      fanFold(ids.analyzer('bus-factor'), ids.analyzer('bus-factor'), 'fan'),
+    ).toBe(ids.view('ownership-risk'));
+  });
+
+  it('folds a lens on the Ring, a view, or nothing, to nothing', () => {
+    expect(fanFold(hotspots, hotspots, 'ring')).toBeNull();
+    expect(fanFold(codeHealth, codeHealth, 'fan')).toBeNull();
+    expect(fanFold(null, null, 'fan')).toBeNull();
   });
 });
