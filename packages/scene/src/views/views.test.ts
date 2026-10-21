@@ -59,6 +59,20 @@ describe('overview ring', () => {
   });
 });
 
+describe('overview captions and focus kinds', () => {
+  const [fan, ring] = VIEWS.get('overview')!.layouts;
+
+  it('both forms carry a how-to-read caption', () => {
+    expect(fan.caption).toMatch(/loudest lens/);
+    expect(ring.caption).toMatch(/outside normal/);
+  });
+
+  it('the ring ignores a view focus; the fan re-forms around one', () => {
+    expect(ring.focusKinds).toEqual(['analyzer', 'file', 'dir', 'person']);
+    expect(fan.focusKinds).toContain('view');
+  });
+});
+
 describe('overview fan', () => {
   const overview = VIEWS.get('overview')!;
   const fan = overview.layouts[0];

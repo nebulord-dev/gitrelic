@@ -436,6 +436,26 @@ describe('planTransition: slots', () => {
     expect(t.delay).toBe(TIMING.retractLead);
   });
 
+  it('lets a third mark take over a taker caught mid-flight, from where it is now', () => {
+    // A→B put file:new.ts in slot s; it's half-way there when C arrives.
+    const midFlight = mark('file:new.ts', 180, 190, {
+      slot: 'fan:0',
+      alpha: 0.7,
+      r: 2,
+    });
+    const third = mark('file:third.ts', 600, 620, { slot: 'fan:0' });
+    const plan = planTransition(scene([root, third]), live([root, midFlight]));
+    const t = track(plan, 'file:third.ts');
+    expect(t.phase).toBe('update');
+    expect(t.takesOver).toBe('file:new.ts');
+    expect(t.from).toMatchObject({ x: 180, y: 190, r: 2, alpha: 0.7 });
+    expect(t.to).toMatchObject({ x: 600, y: 620 });
+    expect(track(plan, 'file:new.ts')).toMatchObject({
+      phase: 'exit',
+      takenBy: 'file:third.ts',
+    });
+  });
+
   it('leaves marks without a match as they were: grow in, fold out', () => {
     const plan = planTransition(
       scene([root, { ...taker, slot: 'lens:0' }]),
