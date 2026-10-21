@@ -95,6 +95,7 @@ async function setup(webgl = true) {
   const fc = fakeClock();
   const { renderer, frames } = fakeRenderer(webgl);
   const onSelect = vi.fn();
+  const onToggle = vi.fn();
   const onHover = vi.fn();
   const stage = await AtlasStage.create(
     host,
@@ -107,10 +108,21 @@ async function setup(webgl = true) {
       reducedMotion: () => false,
       clock: fc.clock,
       onSelect,
+      onToggle,
       onHover,
     },
   );
-  return { host, labelHost, fc, renderer, frames, stage, onSelect, onHover };
+  return {
+    host,
+    labelHost,
+    fc,
+    renderer,
+    frames,
+    stage,
+    onSelect,
+    onHover,
+    onToggle,
+  };
 }
 
 const settle = (fc: ReturnType<typeof fakeClock>) => {
@@ -228,6 +240,38 @@ describe('AtlasStage', () => {
       new PointerEvent('pointerup', { pointerId: 1, clientX: sx, clientY: sy }),
     );
     expect(onSelect).toHaveBeenCalledWith('file:a.ts', false);
+  });
+
+  it('a switch flips its key on click and selects nothing', async () => {
+    const { stage, fc, host, onSelect, onToggle } = await setup();
+    stage!.show(scene({ ...dot('toggle:calm', 200, 100), toggles: 'calm' }));
+    settle(fc);
+    const [sx, sy] = [
+      200 * stage!.transform.scale + stage!.transform.tx,
+      100 * stage!.transform.scale + stage!.transform.ty,
+    ];
+    const click = () => {
+      host.dispatchEvent(
+        new PointerEvent('pointerdown', {
+          pointerId: 1,
+          clientX: sx,
+          clientY: sy,
+        }),
+      );
+      host.dispatchEvent(
+        new PointerEvent('pointerup', {
+          pointerId: 1,
+          clientX: sx,
+          clientY: sy,
+        }),
+      );
+    };
+    click();
+    expect(onToggle).toHaveBeenCalledWith('calm');
+    expect(onSelect).not.toHaveBeenCalled();
+    // A double-click's second click doesn't flip it back.
+    click();
+    expect(onToggle).toHaveBeenCalledOnce();
   });
 
   it('pins the hovered mark’s label', async () => {

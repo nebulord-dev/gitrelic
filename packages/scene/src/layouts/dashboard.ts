@@ -22,6 +22,9 @@ import type { Vital } from '../overview/vitals';
 
 /** The lead's card, whichever lens it shows. */
 export const LEAD_ID = 'lead';
+/** The calm lenses' panel: the key its switch flips, and the switch. */
+export const CALM_PANEL = 'dashboard:calm';
+const CALM_TOGGLE = 'toggle:calm';
 /** The world's width; the stage fits it. */
 const WIDTH = 1400;
 const GAP = 16;
@@ -38,8 +41,8 @@ const BAR_H = 4;
 const FRAME_PAD = 14;
 const FRAME_ALPHA = 0.08;
 const OUTLIER_H = 84;
-/** The calm lenses' heading, and their chips. */
-const CALM_HEAD_H = 52;
+/** The calm lenses' switch, and their chips. */
+const CALM_BAR_H = 36;
 const CHIP_H = 30;
 const CHIP_GAP = 10;
 /**
@@ -126,6 +129,8 @@ export function dashboardScene(
   topOf: (preset: string) => readonly FannedEntity[],
   /** The lens picked to lead; the loudest leads when it's null. */
   picked: string | null,
+  /** Whether the viewer has opened the calm lenses' panel. */
+  calmOpen = false,
 ): Scene {
   const marks: Mark[] = [];
   const standIns = new Map<string, string>();
@@ -289,57 +294,66 @@ export function dashboardScene(
   });
   const colBottom = top + outliers.length * (OUTLIER_H + GAP) - GAP;
 
-  // Every calm lens as a chip, by name and reading, flowing in lens-bar order.
+  // The calm lenses, behind a switch: a bar naming how many there are, and,
+  // opened, every one as a chip, by name and reading, in lens-bar order.
+  // Closed by default: the outliers are the page; these are for looking up.
   const calm = readings.filter((r) => r.grade < 2 && r !== lead);
   const calmTop = Math.max(leadBottom, colBottom) + GAP * 2;
+  const count = `${calm.length} ${calm.length === 1 ? 'lens' : 'lenses'}`;
   marks.push({
-    id: 'heading:calm',
+    id: CALM_TOGGLE,
     shape: 'card',
     paint: '--muted',
-    x: 150,
-    y: calmTop + CALM_HEAD_H / 2,
+    x: WIDTH / 2,
+    y: calmTop + CALM_BAR_H / 2,
     r: 0,
     ...ZERO,
-    w: 300,
-    h: CALM_HEAD_H,
+    w: WIDTH,
+    h: CALM_BAR_H,
     alpha: 1,
-    label: 'Within normal',
-    labelSub: `${calm.length} ${calm.length === 1 ? 'lens' : 'lenses'}`,
-    labelClass: 'atlas-label--section',
+    toggles: CALM_PANEL,
+    label: `Within normal · ${count}`,
+    labelSub: calmOpen ? 'Hide ▴' : 'Show ▾',
+    labelClass: 'atlas-label--row',
     labelPriority: CALM_LABEL + 1,
     labelAnchor: 'center',
     z: 1,
   });
-  let x = 0;
-  let y = calmTop + CALM_HEAD_H + GAP / 2;
-  for (const r of calm) {
-    const w = Math.min(chipWidth(r), WIDTH);
-    if (x > 0 && x + w > WIDTH) {
-      x = 0;
-      y += CHIP_H + CHIP_GAP;
+  let bottom = calmTop + CALM_BAR_H;
+  if (calmOpen && calm.length > 0) {
+    let x = 0;
+    let y = bottom + GAP;
+    for (const r of calm) {
+      const w = Math.min(chipWidth(r), WIDTH);
+      if (x > 0 && x + w > WIDTH) {
+        x = 0;
+        y += CHIP_H + CHIP_GAP;
+      }
+      marks.push({
+        id: ids.analyzer(r.preset),
+        shape: 'card',
+        paint: RAMP[r.grade],
+        x: x + w / 2,
+        y: y + CHIP_H / 2,
+        r: 0,
+        ...ZERO,
+        w,
+        h: CHIP_H,
+        alpha: 1,
+        // Unfolding out of the bar, and folding back into it.
+        parent: CALM_TOGGLE,
+        label: r.label,
+        labelSub: r.value,
+        labelClass: 'atlas-label--row',
+        labelPriority: CALM_LABEL,
+        labelAnchor: 'center',
+        z: 2,
+        tip: [r.label, r.value, ...(r.reason ? [r.reason] : [])],
+      });
+      x += w + CHIP_GAP;
     }
-    marks.push({
-      id: ids.analyzer(r.preset),
-      shape: 'card',
-      paint: RAMP[r.grade],
-      x: x + w / 2,
-      y: y + CHIP_H / 2,
-      r: 0,
-      ...ZERO,
-      w,
-      h: CHIP_H,
-      alpha: 1,
-      label: r.label,
-      labelSub: r.value,
-      labelClass: 'atlas-label--row',
-      labelPriority: CALM_LABEL,
-      labelAnchor: 'center',
-      z: 2,
-      tip: [r.label, r.value, ...(r.reason ? [r.reason] : [])],
-    });
-    x += w + CHIP_GAP;
+    bottom = y + CHIP_H;
   }
-  const bottom = calm.length > 0 ? y + CHIP_H : calmTop + CALM_HEAD_H;
 
   return {
     marks,

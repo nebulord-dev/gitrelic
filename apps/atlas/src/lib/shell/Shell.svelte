@@ -121,6 +121,14 @@
     );
   });
   let lensView = $derived(nav.lens ? VIEWS.get(nav.lens) : undefined);
+  // The picture's collapsible panels the viewer has opened (Mark.toggles);
+  // view state, not navigation, so it stays out of the URL.
+  let openPanels = $state.raw<ReadonlySet<string>>(new Set());
+  function togglePanel(key: string) {
+    const next = new Set(openPanels);
+    if (!next.delete(key)) next.add(key);
+    openPanels = next;
+  }
   let layout = $derived(
     lensView?.layouts.find((l) => l.id === nav.form) ?? lensView?.layouts[0],
   );
@@ -155,6 +163,7 @@
             commits: layoutCommits,
             focus: layoutFocus,
             index,
+            open: openPanels,
           },
           WORLD,
         )
@@ -220,6 +229,7 @@
           {scene}
           selected={nav.selection}
           onselect={stageSelect}
+          ontoggle={togglePanel}
           caption={layout?.caption}
           docs={lensDocs}
           {forms}

@@ -6,7 +6,7 @@
 
 import { buildEntityIndex } from '../entities';
 import { entityKey, entityKind, type EntityKind } from '../ids';
-import { dashboardScene } from '../layouts/dashboard';
+import { CALM_PANEL, dashboardScene } from '../layouts/dashboard';
 import { fanScene } from '../layouts/fan';
 import { ringScene } from '../layouts/ring';
 import {
@@ -101,7 +101,7 @@ export const dashboardLayout: Layout = {
   // A view focus picks no lead, so a view selection doesn't rebuild it.
   focusKinds: ['analyzer', 'file', 'dir', 'person'],
   caption:
-    'The loudest lens leads, with what it points at. Click any tile or chip to put it in the lead; click it again to fold back.',
+    'The loudest lens leads, with what it points at. Click any card to put it in the lead, click it again to fold back; the calm lenses are under Within normal.',
   needsCommits: false,
   build: (input) => {
     const readings = lensReadings(input.report);
@@ -112,6 +112,7 @@ export const dashboardLayout: Layout = {
       readings,
       (preset) => lensTopEntities(preset, input.report, index),
       preview?.reading.preset ?? null,
+      input.open?.has(CALM_PANEL) ?? false,
     );
   },
 };

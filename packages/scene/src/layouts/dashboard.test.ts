@@ -9,6 +9,7 @@ import { lensTopEntities } from '../overview/topEntities';
 import { repoVitals } from '../overview/vitals';
 import { dashboardLayout } from '../views/overview';
 import {
+  CALM_PANEL,
   chipWidth,
   dashboardScene,
   loudestLens,
@@ -89,7 +90,7 @@ describe('outlierColumn', () => {
 
 describe('dashboardScene', () => {
   it('draws the vitals, then every lens once, soundly', () => {
-    const scene = dashboardScene(vitals, readings, topOf, null);
+    const scene = dashboardScene(vitals, readings, topOf, null, true);
     expect(checkScene(scene)).toEqual([]);
     const shown = scene.marks.filter((m) => m.id.startsWith('vital:'));
     expect(shown.map((m) => m.label)).toEqual([
@@ -148,7 +149,7 @@ describe('dashboardScene', () => {
   });
 
   it('puts the other outliers in a column beside the lead, the calm lenses in chips below', () => {
-    const scene = dashboardScene(vitals, readings, topOf, null);
+    const scene = dashboardScene(vitals, readings, topOf, null, true);
     const lead = shown(scene, 'cursed-files')!;
     const bus = shown(scene, 'bus-factor')!;
     expect(bus.x - bus.w / 2).toBeGreaterThan(lead.x + lead.w / 2);
@@ -163,13 +164,29 @@ describe('dashboardScene', () => {
       h: 30,
     });
     expect(chip.y).toBeGreaterThan(mark(scene, 'frame:lead')!.y);
-    expect(mark(scene, 'heading:calm')?.labelSub).toBe(
-      `${readings.length - 2} lenses`,
-    );
+    expect(mark(scene, 'toggle:calm')).toMatchObject({
+      label: `Within normal · ${readings.length - 2} lenses`,
+      labelSub: 'Hide ▴',
+    });
+    expect(chip.parent).toBe('toggle:calm');
+  });
+
+  it('folds the calm lenses behind a switch until it is opened', () => {
+    const closed = dashboardScene(vitals, readings, topOf, null);
+    expect(checkScene(closed)).toEqual([]);
+    expect(mark(closed, 'toggle:calm')).toMatchObject({
+      toggles: CALM_PANEL,
+      labelSub: 'Show ▾',
+    });
+    expect(mark(closed, ids.analyzer('churn'))).toBeUndefined();
+    const open = dashboardScene(vitals, readings, topOf, null, true);
+    expect(mark(open, ids.analyzer('churn'))).toBeDefined();
+    // Closed, the picture ends at the switch.
+    expect(closed.bounds.h).toBeLessThan(open.bounds.h);
   });
 
   it('wraps the chips within the width', () => {
-    const scene = dashboardScene(vitals, readings, topOf, null);
+    const scene = dashboardScene(vitals, readings, topOf, null, true);
     const chips = scene.marks.filter(
       (m) => m.id.startsWith('analyzer:') && m.h === 30,
     );
@@ -243,5 +260,17 @@ describe('dashboardLayout', () => {
         /^atlas-label--lead/,
       );
     expect(dashboardLayout.focusKinds).not.toContain('view');
+    // The shell's open panels reach it.
+    const opened = dashboardLayout.build(
+      {
+        report,
+        commits: null,
+        focus: null,
+        index,
+        open: new Set([CALM_PANEL]),
+      },
+      { width: 1200, height: 800 },
+    );
+    expect(mark(opened, 'toggle:calm')?.labelSub).toBe('Hide ▴');
   });
 });

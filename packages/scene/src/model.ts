@@ -77,6 +77,12 @@ export interface Mark extends MarkGeom {
    */
   selects?: EntityId;
   /**
+   * A layout-only switch: clicking this mark flips this key in the input's
+   * `open` set instead of selecting anything (a dashboard's collapsible
+   * panel). The shell keeps the set; the layout draws from it.
+   */
+  toggles?: string;
+  /**
    * Leaving, fold into its ancestor where that is now, before anything moves
    * (a fan closing into its root), instead of into the ancestor's place in
    * the next scene.
@@ -239,6 +245,8 @@ export interface ViewInput {
   focus?: EntityId | null;
   /** The entity index, for layouts that only draw selectable entities. */
   index?: EntityIndex;
+  /** The panels the viewer has opened, by the keys their marks toggle. */
+  open?: ReadonlySet<string>;
 }
 
 /** Text with entity chips: a chip selects its entity when clicked. */

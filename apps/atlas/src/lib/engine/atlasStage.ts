@@ -49,6 +49,8 @@ export interface AtlasStageOptions {
   onHover?: (id: EntityId | null) => void;
   /** A click on the stage: what it hit, and whether it is a double-click's second. */
   onSelect?: (id: EntityId | null, repeat: boolean) => void;
+  /** A click on a switch (`Mark.toggles`): the key it flips. Selects nothing. */
+  onToggle?: (key: string) => void;
   /** Each drawn frame's CPU cost, ms (the bench reads this). */
   onFrame?: (ms: number) => void;
 }
@@ -71,6 +73,8 @@ export class AtlasStage {
   private standIns: Scene['standIns'];
   /** Marks whose click selects another entity (`Mark.selects`). */
   private selects = new Map<EntityId, EntityId>();
+  /** Marks that are switches, and the keys they flip (`Mark.toggles`). */
+  private toggles = new Map<string, string>();
   /**
    * The pointer's mark first: a row that keeps keyboard focus mustn't
    * contradict what's under the cursor. A row whose entity has no mark of
@@ -134,6 +138,13 @@ export class AtlasStage {
       leave: () => this.setHovered(null),
       click: (sx, sy, repeat) => {
         const hit = this.pick(sx, sy);
+        const key = hit && this.toggles.get(hit);
+        if (key) {
+          // A switch leaves the selection as it is; a double-click on it
+          // flips it once.
+          if (!repeat) opts.onToggle?.(key);
+          return;
+        }
         const id = hit && (this.selects.get(hit) ?? hit);
         this.select(id);
         opts.onSelect?.(id, repeat);
@@ -208,6 +219,9 @@ export class AtlasStage {
     this.standIns = scene.standIns;
     this.selects = new Map(
       scene.marks.flatMap((m) => (m.selects ? [[m.id, m.selects]] : [])),
+    );
+    this.toggles = new Map(
+      scene.marks.flatMap((m) => (m.toggles ? [[m.id, m.toggles]] : [])),
     );
     const plan = planTransition(scene, this.engine.live(), {
       reducedMotion: this.opts.reducedMotion(),
