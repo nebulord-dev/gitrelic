@@ -229,7 +229,7 @@ Checkpoint boards: D and E on the checkpoint canvas, on React's last 12 months t
 
 **Planned alternate — Briefing** (not built; a third form only if it still earns one at its PR). A short list of findings across lenses; picking one re-forms the canvas around the files and people it names (e.g. the ten people who edited all seven `ReactFeatureFlags` forks, four of them ghosts). *Passes the checkpoint test:* it shows how findings connect across lenses and which entities they share — a different structure (finding → entities graph), which neither the ring, the time strip, the inspector chart nor the detail table can show.
 
-**Findings** (inspector): the loudest outlier stated in plain language, naming entities as chips. Ring: the loudest group ("who owns the code: 63% of files lean on one author, 39 of 77 contributors went quiet"). Briefing: one card per finding, across lenses.
+**Findings** (inspector): the loudest outlier stated in plain language, naming entities as chips. Fan and Ring: the loudest view (the one the Fan opens on: highest top grade, ties to rail order) stated in plain language ("who owns the code: 63% of files lean on one author, 39 of 77 contributors went quiet"). Briefing: one card per finding, across lenses.
 
 **Tooltips** (added with the drawer PR): a lens dot shows its name, reading and the reason it's graded; a fanned entity shows its name and its value in that lens.
 
@@ -250,7 +250,7 @@ Checkpoint boards: D and E on the checkpoint canvas, on React's last 12 months t
 
 Stale Files has no outlier rule: its count is every file untouched in the window, which measures the window, not decay. Its checkpoint defines a real one.
 
-**Next:** the Fan (RELIC-361): `layouts/fan.ts`, view headlines in `overview/`, the `view:` kind, and `fanFocus` accepting it. Briefing ships later in its own PR with its findings engine.
+**Next:** Briefing, the planned alternate, ships in its own PR with its findings engine (if it still earns a form; see the forms comparison planned after RELIC-361).
 
 ### Code Health › Hotspots (checkpoint 2026-10-18, PR 3.2)
 
