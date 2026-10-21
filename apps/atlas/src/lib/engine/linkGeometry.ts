@@ -73,11 +73,19 @@ export function tessellateLinks(
 
     // Quadratic Bézier through a control point bowed off the chord's midpoint
     // (to the chord's left, so A→B and B→A bow opposite ways and don't overlap).
-    const bow = link.curve === 'straight' ? 0 : (link.bow ?? BOW) * len;
+    const bow =
+      link.curve === 'straight' || link.curve === 's-curve'
+        ? 0
+        : (link.bow ?? BOW) * len;
     const nx = -(y2 - y1) / len;
     const ny = (x2 - x1) / len;
     const cx = (x1 + x2) / 2 + nx * bow;
     const cy = (y1 + y2) / 2 + ny * bow;
+
+    // An S-curve is a cubic whose control points sit level with its ends,
+    // halfway across, so it leaves and arrives horizontally.
+    const sCurve = link.curve === 's-curve';
+    const mx = (x1 + x2) / 2;
 
     const c = resolvePaint(link.paint, palette);
     const a = c.a * link.alpha;
@@ -86,11 +94,24 @@ export function tessellateLinks(
     for (let k = 0; k < points; k++) {
       const u = u0 + (k / (points - 1)) * link.progress * (u1 - u0);
       const v = 1 - u;
-      const px = v * v * x1 + 2 * v * u * cx + u * u * x2;
-      const py = v * v * y1 + 2 * v * u * cy + u * u * y2;
+      let px: number;
+      let py: number;
       // Tangent of the curve at u, for the strip's normal.
-      let tx = 2 * v * (cx - x1) + 2 * u * (x2 - cx);
-      let ty = 2 * v * (cy - y1) + 2 * u * (y2 - cy);
+      let tx: number;
+      let ty: number;
+      if (sCurve) {
+        const b1 = 3 * v * v * u + 3 * v * u * u;
+        px = v * v * v * x1 + b1 * mx + u * u * u * x2;
+        py =
+          (v * v * v + 3 * v * v * u) * y1 + (3 * v * u * u + u * u * u) * y2;
+        tx = 3 * v * v * (mx - x1) + 3 * u * u * (x2 - mx);
+        ty = 6 * v * u * (y2 - y1);
+      } else {
+        px = v * v * x1 + 2 * v * u * cx + u * u * x2;
+        py = v * v * y1 + 2 * v * u * cy + u * u * y2;
+        tx = 2 * v * (cx - x1) + 2 * u * (x2 - cx);
+        ty = 2 * v * (cy - y1) + 2 * u * (y2 - cy);
+      }
       const tl = Math.hypot(tx, ty) || 1;
       tx /= tl;
       ty /= tl;

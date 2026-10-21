@@ -142,6 +142,108 @@ describe('LabelLayer', () => {
     expect(span().style.maxWidth).toBe('120px');
   });
 
+  describe('a card (a centred label on a card mark with a size)', () => {
+    const card = (extra: Partial<Mark> = {}) =>
+      store({
+        id: 'view:code-health',
+        shape: 'card',
+        x: 200,
+        y: 100,
+        r: 0,
+        w: 260,
+        h: 84,
+        labelLead: '8',
+        label: 'Code Health',
+        labelSub: 'files',
+        labelAnchor: 'center',
+        ...extra,
+      });
+    const half = { scale: 0.5, tx: 0, ty: 0 };
+
+    it('is drawn as a box the card’s size on screen, its number set apart', () => {
+      const host = document.createElement('div');
+      new LabelLayer(host).update(card(), half, screen, new Set());
+      const [span] = spans(host);
+      expect(span.classList.contains('atlas-label--card')).toBe(true);
+      // Laid out at the card's world size, scaled with the view: 130 × 42
+      // on screen, centred on the card.
+      expect(span.style.width).toBe('260px');
+      expect(span.style.height).toBe('84px');
+      expect(span.style.maxWidth).toBe('');
+      expect(span.style.transform).toBe(
+        'translate(100px, 50px) translate(-50%, -50%) scale(0.500)',
+      );
+      // Not the inside-a-circle label: no wrapping, nothing dropped.
+      expect(span.classList.contains('atlas-label--center')).toBe(false);
+      expect(span.classList.contains('atlas-label--heading')).toBe(false);
+      const lead = span.querySelector('.atlas-label__lead') as HTMLElement;
+      expect(lead.textContent).toBe('8');
+      expect(lead.hidden).toBe(false);
+      expect(span.querySelector('.atlas-label__sub')!.textContent).toBe(
+        'files',
+      );
+      expect(span.textContent).toBe('8Code Healthfiles');
+      expect(span.querySelectorAll('*')).toHaveLength(2);
+    });
+
+    it('scales its text down, box and all, when the text outgrows the card', () => {
+      const host = document.createElement('div');
+      new LabelLayer(host).update(
+        card({ labelLead: '12,345', label: 'Ownership & Risk' }),
+        half,
+        screen,
+        new Set(),
+      );
+      const [span] = spans(host);
+      const k = Number(/scale\(([\d.]+)\)/.exec(span.style.transform)![1]);
+      expect(k).toBeLessThan(0.5);
+      // Still the card's size on screen.
+      expect(parseFloat(span.style.width) * k).toBeCloseTo(130, 0);
+      expect(parseFloat(span.style.height) * k).toBeCloseTo(42, 0);
+    });
+
+    it('shows a dimmed card dimmed, and the selected one selected', () => {
+      const host = document.createElement('div');
+      const layer = new LabelLayer(host);
+      layer.update(
+        card({ alpha: 0.6 }),
+        half,
+        screen,
+        new Set(['view:code-health']),
+        'view:code-health',
+      );
+      const [span] = spans(host);
+      expect(span.style.opacity).toBe('0.6');
+      expect(span.classList.contains('atlas-label--selected')).toBe(true);
+      layer.update(card(), half, screen, new Set(), null);
+      expect(span.style.opacity).toBe('');
+      expect(span.classList.contains('atlas-label--selected')).toBe(false);
+    });
+
+    it('collapses to a plain label at no size (the ring’s view names)', () => {
+      const host = document.createElement('div');
+      const layer = new LabelLayer(host);
+      layer.update(card(), half, screen, new Set());
+      layer.update(
+        card({ w: 0, h: 0, labelLead: undefined, labelSub: undefined }),
+        half,
+        screen,
+        new Set(),
+      );
+      const [span] = spans(host);
+      expect(span.classList.contains('atlas-label--card')).toBe(false);
+      expect(span.classList.contains('atlas-label--center')).toBe(true);
+      expect(span.style.width).toBe('');
+      expect(span.style.height).toBe('');
+      expect(
+        (span.querySelector('.atlas-label__lead') as HTMLElement).hidden,
+      ).toBe(true);
+      expect(span.style.transform).toBe(
+        'translate(100px, 50px) translate(-50%, -50%)',
+      );
+    });
+  });
+
   it('leans a label by a fraction of its height', () => {
     const host = document.createElement('div');
     new LabelLayer(host).update(
@@ -257,6 +359,29 @@ describe('LabelLayer', () => {
     const shown = spans(host);
     expect(shown[0].textContent).toBe('low');
     expect(shown[0].classList.contains('atlas-label--pinned')).toBe(true);
+  });
+
+  it('keeps a mark’s label on the same span while it stays shown', () => {
+    // So a CSS transition on it (a card's fill) runs on its own box, never
+    // from another mark's.
+    const host = document.createElement('div');
+    const layer = new LabelLayer(host);
+    const a = { id: 'view:a', label: 'a', labelPriority: 60, y: 100 };
+    const b = { id: 'view:b', label: 'b', labelPriority: 60, y: 300 };
+    layer.update(store(a, b), IDENTITY, screen, new Set());
+    const spanOf = (text: string) =>
+      spans(host).find((s) => s.textContent === text)!;
+    const before = [spanOf('a'), spanOf('b')];
+    // A label that outranks both arrives first in line.
+    layer.update(
+      store(a, b, { id: 'analyzer:x', label: 'x', labelPriority: 110, y: 500 }),
+      IDENTITY,
+      screen,
+      new Set(),
+    );
+    expect([spanOf('a'), spanOf('b')]).toEqual(before);
+    expect(spanOf('x')).toBeDefined();
+    expect(host.querySelectorAll('.atlas-label')).toHaveLength(3);
   });
 
   it('reuses its spans across frames and hides the spare ones', () => {

@@ -1,7 +1,8 @@
-// Which lens the Overview ring fans out. Selecting a lens dot fans it;
-// selecting one of the fanned entities keeps that fan (so the inspector can
-// describe the file without the ring collapsing under it); anything else
-// closes it.
+// What the Overview fans. Selecting a view opens its fan; selecting a lens
+// previews it (on the fan, inside its own view); selecting one of the
+// previewed lens's entities keeps that preview (so the inspector can describe
+// the file without the fan collapsing under it); anything else closes it,
+// back to the loudest view.
 
 import {
   entityKind,
@@ -20,8 +21,9 @@ export function nextFanFocus(
   index: EntityIndex,
 ): EntityId | null {
   if (!selection) return null;
-  if (entityKind(selection) === 'analyzer') return selection;
-  if (!previous) return null;
+  const kind = entityKind(selection);
+  if (kind === 'analyzer' || kind === 'view') return selection;
+  if (!previous || entityKind(previous) !== 'analyzer') return null;
   const fanned = lensTopEntities(entityKey(previous), report, index);
   return fanned.some((e) => e.id === selection) ? previous : null;
 }

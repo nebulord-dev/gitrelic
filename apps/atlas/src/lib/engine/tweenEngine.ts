@@ -114,11 +114,26 @@ export class TweenEngine {
   play(plan: TransitionPlan, palette: Palette): void {
     const { store } = this;
     this.colors = []; // a new plan sets every colour target itself
-    this.marks = plan.marks.map((t) => {
+    // Marks and links whose slot another took go at once, after the taker
+    // has read the colour they're drawn in.
+    const handedOver: EntityId[] = [];
+    const runs = plan.marks.flatMap((t) => {
+      if (t.takenBy !== undefined) {
+        handedOver.push(t.id);
+        return [];
+      }
       const toColor = resolvePaint(t.mark.paint, palette);
       let i = store.indexOf(t.id);
-      if (i === -1) i = store.upsert(t.mark, t.from, toColor);
-      else if (t.phase !== 'exit') store.upsert(t.mark, t.from, toColor);
+      if (i === -1) {
+        // Taking over a slot, start in the colour the old mark shows now.
+        const donor =
+          t.takesOver === undefined ? -1 : store.indexOf(t.takesOver);
+        i = store.upsert(
+          t.mark,
+          t.from,
+          donor === -1 ? toColor : store.color(donor),
+        );
+      } else if (t.phase !== 'exit') store.upsert(t.mark, t.from, toColor);
       const fromColor = store.color(i);
       // Pre-shift the arc's target by whole turns once, so the per-frame
       // interpolation is plain arithmetic and still goes the short way.
@@ -138,8 +153,14 @@ export class TweenEngine {
         exit: t.phase === 'exit',
       };
     });
+    store.removeAll(handedOver);
+    this.marks = runs;
 
-    this.linkRuns = plan.links.map((t) => {
+    this.linkRuns = plan.links.flatMap((t) => {
+      if (t.takenBy !== undefined) {
+        this.links.delete(t.id);
+        return [];
+      }
       const item: LiveLink = {
         ...t.link,
         progress: t.from.progress,

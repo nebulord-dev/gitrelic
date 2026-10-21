@@ -5,8 +5,17 @@
 // with the same entity ids the lens's own view will draw.
 
 import { PRESET_GROUPS } from '../catalog';
-import { ids, REPO_ID, type EntityId } from '../ids';
-import type { Guide, Link, Mark, Paint, Scene, Viewport } from '../model';
+import { ids, REPO_ID } from '../ids';
+import {
+  anchorFor,
+  DOT_R,
+  fanOut,
+  LABEL_CLASS,
+  labelledBounds,
+  RAMP,
+  ZERO,
+} from './overviewParts';
+import type { Guide, Link, Mark, Scene, Viewport } from '../model';
 import type { LensReading, RepoReading } from '../overview/readings';
 import type { FannedEntity } from '../overview/topEntities';
 
@@ -15,32 +24,11 @@ export interface RingFocus {
   entities: readonly FannedEntity[];
 }
 
-const DOT_R = [5, 7, 10, 14] as const;
-const RAMP = ['--risk-0', '--risk-1', '--risk-2', '--risk-3'] as const;
-/** Lenses graded 2+ (the ones that badge) get a label the CSS can heat. */
-const LABEL_CLASS = [
-  undefined,
-  undefined,
-  'atlas-label--hot',
-  'atlas-label--hot',
-] as const;
 /**
  * Wide enough to hold the repo's name and size ("7,009 files · 999K lines")
  * at full zoom; the size line drops out when the stage zooms out further.
  */
 const REPO_R = 104;
-const FAN_DOT = 5;
-/**
- * Room beside the outermost marks for their DOM labels, world units. Labels
- * are screen pixels, so at the ~0.65 zoom a 1440px window fits this world at,
- * a two-line label 20 characters wide needs about 220 units across and 55
- * down.
- */
-const LABEL_ROOM = 240;
-const LABEL_ROOM_Y = 64;
-const MARGIN = 32;
-
-const zero = { w: 0, h: 0, a0: 0, a1: 0 };
 
 /**
  * How far a side label leans away from the ring's horizontal axis, as a
@@ -83,20 +71,6 @@ function fannedLabel(
   return { labelAnchor: inward, labelLean: above ? -SPOKE_CLEAR : SPOKE_CLEAR };
 }
 
-/** Labels point away from the centre, so they never cross the ring. */
-function anchorFor(dx: number, dy: number): Mark['labelAnchor'] {
-  const len = Math.hypot(dx, dy) || 1;
-  if (dx / len > 0.35) return 'right';
-  if (dx / len < -0.35) return 'left';
-  return dy < 0 ? 'above' : 'below';
-}
-
-function entityPaint(id: EntityId): Paint {
-  if (id.startsWith('person:')) return '--person';
-  if (id.startsWith('dir:')) return '--dir';
-  return '--file';
-}
-
 export function ringScene(
   repo: RepoReading,
   readings: readonly LensReading[],
@@ -128,7 +102,7 @@ export function ringScene(
     x: cx,
     y: cy,
     r: REPO_R,
-    ...zero,
+    ...ZERO,
     alpha: focused ? 0.5 : 1,
     label: repo.label,
     labelSub: repo.sub,
@@ -159,17 +133,17 @@ export function ringScene(
       ry * 0.58,
     );
     // The view's name: a label-only mark (cards draw nothing on the canvas),
-    // since the canvas draws no text and labels are DOM. `group:` isn't an
-    // entity kind: parentOf sends it to the repo, the index never resolves
-    // it (so selecting it is ignored), and a 0×0 card can't be hit.
+    // since the canvas draws no text and labels are DOM. It carries the
+    // view's id, so the fan's view node travels to it when the form
+    // changes; a 0×0 card can't be hit, so clicking near it selects nothing.
     marks.push({
-      id: `group:${group.id}`,
+      id: ids.view(group.id),
       shape: 'card',
       paint: '--muted',
       x: gx,
       y: gy,
       r: 0,
-      ...zero,
+      ...ZERO,
       alpha: focused ? 0 : 1,
       label: group.label.toUpperCase(),
       labelPriority: 5,
@@ -188,8 +162,10 @@ export function ringScene(
         x,
         y,
         r: DOT_R[lens.grade],
-        ...zero,
+        ...ZERO,
         alpha: dim(lens.preset),
+        // Grows out of its view, so the fan's lenses travel to and from it.
+        parent: ids.view(group.id),
         label: lens.label,
         labelSub: lens.value,
         labelClass: LABEL_CLASS[lens.grade],
@@ -219,67 +195,18 @@ export function ringScene(
   // The fan: the focused lens's entities on an arc beyond it, pointing away
   // from the centre, so they never cross the ring.
   if (focus && angleOf.has(focus.preset) && focus.entities.length > 0) {
-    const d = angleOf.get(focus.preset)!;
-    const [lx, ly] = at(d, rx, ry);
-    const outward = Math.atan2(ly - cy, lx - cx);
-    const span = Math.min(Math.PI * 0.9, 0.32 * focus.entities.length);
-    const radius = Math.min(viewport.width, viewport.height) * 0.26;
-    const source = ids.analyzer(focus.preset);
-    focus.entities.forEach((e, i) => {
-      const t =
-        focus.entities.length === 1 ? 0 : i / (focus.entities.length - 1) - 0.5;
-      const a = outward + t * span;
-      const fx = lx + radius * Math.cos(a);
-      const fy = ly + radius * Math.sin(a);
-      marks.push({
-        id: e.id,
-        shape: 'dot',
-        paint: entityPaint(e.id),
-        x: fx,
-        y: fy,
-        r: FAN_DOT,
-        ...zero,
-        alpha: 1,
-        parent: source,
-        // The name only: the inspector lists each one's value beside it.
-        label: e.label,
-        labelPriority: 40 - i,
-        labelAnchor: anchorFor(fx - lx, fy - ly),
-        z: 4,
-        tip: [e.label, e.value],
-      });
-      links.push({
-        id: `fan:${e.id}`,
-        source,
-        target: e.id,
-        curve: 'arc',
-        width: 1.2,
-        paint: '--link-hot',
-        alpha: 0.7,
-      });
-    });
+    const [lx, ly] = at(angleOf.get(focus.preset)!, rx, ry);
+    const fan = fanOut(
+      focus.preset,
+      lx,
+      ly,
+      Math.atan2(ly - cy, lx - cx),
+      Math.min(viewport.width, viewport.height) * 0.26,
+      focus.entities,
+    );
+    marks.push(...fan.marks);
+    links.push(...fan.links);
   }
 
-  return { marks, links, guides, bounds: boundsOf(marks) };
-}
-
-/** Every mark, plus margin and room for the labels drawn beside them. */
-function boundsOf(marks: readonly Mark[]) {
-  let x0 = Infinity;
-  let y0 = Infinity;
-  let x1 = -Infinity;
-  let y1 = -Infinity;
-  for (const m of marks) {
-    x0 = Math.min(x0, m.x - m.r);
-    y0 = Math.min(y0, m.y - m.r);
-    x1 = Math.max(x1, m.x + m.r);
-    y1 = Math.max(y1, m.y + m.r);
-  }
-  if (!Number.isFinite(x0)) return { x: 0, y: 0, w: 0, h: 0 };
-  return {
-    x: x0 - MARGIN - LABEL_ROOM,
-    y: y0 - MARGIN - LABEL_ROOM_Y,
-    w: x1 - x0 + 2 * (MARGIN + LABEL_ROOM),
-    h: y1 - y0 + 2 * (MARGIN + LABEL_ROOM_Y),
-  };
+  return { marks, links, guides, bounds: labelledBounds(marks) };
 }

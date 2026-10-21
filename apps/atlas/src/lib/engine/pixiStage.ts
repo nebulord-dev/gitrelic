@@ -21,7 +21,7 @@ import {
   Texture,
 } from 'pixi.js';
 
-import { arcBand } from './arcBand';
+import { arcBand, circleDashes } from './arcBand';
 import { LinkBuffers, tessellateLinks } from './linkGeometry';
 import { SHAPE_CODES, type MarkStore } from './markStore';
 import { HALO, SPRITE, SPRITE_FRAMES, type SpriteFrame } from './spriteAtlas';
@@ -283,6 +283,19 @@ export class PixiStage implements StageRenderer {
       const stroke = { width, color: rgbOf(c), alpha: c.a * guide.alpha };
       if (guide.kind === 'line') {
         g.moveTo(guide.x1, guide.y1).lineTo(guide.x2, guide.y2).stroke(stroke);
+      } else if (guide.dash && guide.r > 0) {
+        // Dashes a constant length on screen: redrawn on zoom, like the
+        // hairline itself.
+        const n = circleDashes(guide.r, frame.view.scale, guide.dash);
+        const step = (Math.PI * 2) / n;
+        for (let k = 0; k < n; k++) {
+          const a = k * step;
+          g.moveTo(
+            guide.x + guide.r * Math.cos(a),
+            guide.y + guide.r * Math.sin(a),
+          ).arc(guide.x, guide.y, guide.r, a, a + step / 2);
+        }
+        g.stroke(stroke);
       } else {
         g.circle(guide.x, guide.y, guide.r).stroke(stroke);
       }

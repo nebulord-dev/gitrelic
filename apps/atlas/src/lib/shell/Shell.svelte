@@ -97,11 +97,12 @@
   );
 
   // An analyzer with an Atlas view opens its lens, with nothing selected so
-  // the inspector shows the lens itself. Anything else is selected: the
+  // the inspector shows the lens itself; a view opens the Overview with the
+  // view selected, so the fan opens it. Anything else is selected: the
   // inspector explains a classic-only analyzer and links there.
   function pick(entry: EntityEntry) {
-    const lens = palettePick(entry.id);
-    if (lens && nav.openLens(lens)) nav.select(null);
+    const to = palettePick(entry.id);
+    if (to && nav.openLens(to.lens)) nav.select(to.select);
     else nav.select(entry.id);
   }
   const openLens = (id: string) => void nav.openLens(id);
@@ -112,11 +113,11 @@
   let fanFocus = $state<EntityId | null>(null);
   $effect(() => {
     const selection = nav.selection;
-    // Only while Overview's ring is open; a lens picked elsewhere doesn't
+    // Only while the Overview is open; a lens picked elsewhere doesn't
     // leave a fan waiting for the next visit.
-    const onRing = nav.lens === 'overview';
+    const onOverview = nav.lens === 'overview';
     fanFocus = untrack(() =>
-      onRing ? nextFanFocus(fanFocus, selection, report, index) : null,
+      onOverview ? nextFanFocus(fanFocus, selection, report, index) : null,
     );
   });
   let lensView = $derived(nav.lens ? VIEWS.get(nav.lens) : undefined);
@@ -133,10 +134,10 @@
     const entry = nav.lens ? catalogEntry(nav.lens) : undefined;
     return entry ? (docsUrl(entry) ?? undefined) : undefined;
   });
-  // The ring fans its focused lens; other layouts re-form around a
-  // selection of a kind they declare (the field draws a selected file even
-  // when it's cool). Anything else gives them no focus, so a click they
-  // can't show doesn't rebuild and re-plan the scene.
+  // The Overview fans its focus (a view or a lens); other layouts re-form
+  // around a selection of a kind they declare (the field draws a selected
+  // file even when it's cool). Anything else gives them no focus, so a click
+  // they can't show doesn't rebuild and re-plan the scene.
   let layoutFocus = $derived.by(() => {
     if (!layout?.focusKinds) return null;
     if (nav.lens === 'overview') return fanFocus;

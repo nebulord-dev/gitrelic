@@ -2,6 +2,7 @@
   import {
     ids,
     lensReadings,
+    loudestView,
     PRESET_GROUPS,
     type EntityId,
   } from '@gitrelic/scene';
@@ -14,7 +15,7 @@
     onselect,
   }: {
     report: GitrelicReport;
-    /** Selecting a lens fans it out on the ring. */
+    /** Selecting a lens previews it on the Overview. */
     onselect?: (id: EntityId) => void;
   } = $props();
 
@@ -22,13 +23,11 @@
   let loud = $derived(
     readings.filter((r) => r.grade >= 2).sort((a, b) => b.grade - a.grade),
   );
-  // The view with the most grade, for the one-line finding.
-  let loudestView = $derived.by(() => {
-    const score = new Map<string, number>();
-    for (const r of loud)
-      score.set(r.group, (score.get(r.group) ?? 0) + r.grade);
-    const [top] = [...score].sort((a, b) => b[1] - a[1]);
-    return top ? PRESET_GROUPS.find((g) => g.id === top[0])?.label : undefined;
+  // The view the fan opens on, named only when something is loud.
+  let loudestLabel = $derived.by(() => {
+    if (loud.length === 0) return undefined;
+    const view = loudestView(readings);
+    return PRESET_GROUPS.find((g) => g.id === view)?.label;
   });
 </script>
 
@@ -41,15 +40,15 @@
       >of {readings.length} lenses read well outside normal</span
     >
   </div>
-  {#if loudestView}
+  {#if loudestLabel}
     <p class="m-0 text-[15px] leading-relaxed">
-      The loudest view is <span class="text-accent">{loudestView}</span>. Click
-      a lens on the ring to see what it points at.
+      The loudest view is <span class="text-accent">{loudestLabel}</span>. Click
+      a lens to see what it points at.
     </p>
   {:else}
     <p class="m-0 text-[15px] leading-relaxed">
-      No lens reads outside normal for a repo this size. Click any lens on the
-      ring to see what it points at.
+      No lens reads outside normal for a repo this size. Click any lens to see
+      what it points at.
     </p>
   {/if}
 </Card>

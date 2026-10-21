@@ -156,6 +156,25 @@ describe('ringScene', () => {
     expect(scene.marks.filter((m) => m.id.startsWith('file:'))).toHaveLength(3);
   });
 
+  it('puts fanned entities and their links in slots, so another lens’s fan morphs into them', () => {
+    const entities = lensTopEntities('hotspots', report, index, 3);
+    const scene = ringScene(
+      repo,
+      readings,
+      { preset: 'hotspots', entities },
+      viewport,
+    );
+    entities.forEach((e, i) => {
+      expect(scene.marks.find((m) => m.id === e.id)?.slot).toBe(`fan:${i}`);
+      expect(scene.links.find((l) => l.id === `fan:${e.id}`)?.slot).toBe(
+        `fan:${i}`,
+      );
+    });
+    // The lenses themselves stay put on the ring: no slot.
+    for (const m of scene.marks.filter((m) => m.id.startsWith('analyzer:')))
+      expect(m.slot).toBeUndefined();
+  });
+
   it('ignores a focus on a lens it does not draw', () => {
     const scene = ringScene(
       repo,
@@ -185,5 +204,24 @@ describe('ringScene', () => {
     expect(lens.tip?.slice(0, 2)).toEqual([reading.label, reading.value]);
     const first = scene.marks.find((m) => m.id === entities[0].id)!;
     expect(first.tip).toEqual([entities[0].label, entities[0].value]);
+  });
+
+  it("names each view with its view id, a label that can't be hit", () => {
+    const scene = ringScene(repo, readings, null, viewport);
+    const views = scene.marks.filter((m) => m.id.startsWith('view:'));
+    expect(views.map((m) => m.id)).toEqual(
+      [...new Set(readings.map((r) => r.group))].map((g) => ids.view(g)),
+    );
+    for (const m of views)
+      expect([m.shape, m.r, m.w, m.h]).toEqual(['card', 0, 0, 0]);
+  });
+
+  it('grows each lens out of its view, so the fan’s lenses travel to it', () => {
+    const scene = ringScene(repo, readings, null, viewport);
+    for (const r of readings) {
+      const lens = scene.marks.find((m) => m.id === ids.analyzer(r.preset))!;
+      expect(lens.parent).toBe(ids.view(r.group));
+      expect(scene.marks.some((m) => m.id === lens.parent)).toBe(true);
+    }
   });
 });

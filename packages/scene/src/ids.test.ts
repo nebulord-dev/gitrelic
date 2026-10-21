@@ -6,6 +6,7 @@ describe('entity ids', () => {
   it('builds and reads back every kind', () => {
     const cases = [
       [ids.analyzer('coupling'), 'analyzer', 'coupling'],
+      [ids.view('code-health'), 'view', 'code-health'],
       [ids.file('src/a.ts'), 'file', 'src/a.ts'],
       [ids.dir('src'), 'dir', 'src'],
       [ids.person('ann@corp.com'), 'person', 'ann@corp.com'],
@@ -50,6 +51,10 @@ describe('parentOf', () => {
       ids.person('ann@corp.com'),
     );
     expect(parentOf(ids.week('a:b@x', '2026-01-05'))).toBe(ids.person('a:b@x'));
+  });
+
+  it('puts a view under the repo', () => {
+    expect(parentOf(ids.view('structure'))).toBe(REPO_ID);
   });
 
   it('puts everything else directly under the repo', () => {

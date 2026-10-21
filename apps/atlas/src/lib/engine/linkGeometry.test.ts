@@ -52,6 +52,37 @@ const at = (out: LinkBuffers, k: number) => [
 ];
 
 describe('tessellateLinks', () => {
+  it('draws an S-curve that leaves and arrives level', () => {
+    const tall = store([
+      ['a', 0, 0],
+      ['b', 100, 80],
+    ]);
+    const out = tessellateLinks(
+      [link({ curve: 's-curve' })],
+      tall,
+      palette,
+      new LinkBuffers(),
+    );
+    expect(out.vertexCount).toBe((CURVE_SEGMENTS + 1) * 2);
+    const mid = (k: number) => {
+      const [x0, y0] = at(out, k * 2);
+      const [x1, y1] = at(out, k * 2 + 1);
+      return [(x0 + x1) / 2, (y0 + y1) / 2];
+    };
+    // Its ends sit on the marks; the strip is vertical there (level tangent).
+    expect(mid(0)).toEqual([0, 0]);
+    expect(mid(CURVE_SEGMENTS)[0]).toBeCloseTo(100);
+    expect(mid(CURVE_SEGMENTS)[1]).toBeCloseTo(80);
+    expect(at(out, 0)[0]).toBeCloseTo(0);
+    expect(at(out, CURVE_SEGMENTS * 2)[0]).toBeCloseTo(100);
+    // Halfway, it crosses the chord's midpoint.
+    const [hx, hy] = mid(CURVE_SEGMENTS / 2);
+    expect(hx).toBeCloseTo(50);
+    expect(hy).toBeCloseTo(40);
+    // A quarter in, it has dropped less than the chord has: level at first.
+    expect(mid(CURVE_SEGMENTS / 4)[1]).toBeLessThan(20);
+  });
+
   it('turns a straight link into one quad of the right width', () => {
     const out = tessellateLinks([link()], s, palette, new LinkBuffers());
     expect(out.vertexCount).toBe(4);

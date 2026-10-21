@@ -381,3 +381,180 @@ describe('planTransition: duration', () => {
     expect(planTransition(scene([]), EMPTY_LIVE).duration).toBe(0);
   });
 });
+
+describe('planTransition: slots', () => {
+  const root = mark('analyzer:a', 0, 0);
+  // A leaving fan entity, caught mid-flight (half faded, off its target).
+  const old = mark('file:old.ts', 100, 120, {
+    parent: 'analyzer:a',
+    foldOnExit: true,
+    slot: 'fan:0',
+    alpha: 0.6,
+    r: 3,
+  });
+  const taker = mark('file:new.ts', 300, 320, {
+    parent: 'analyzer:b',
+    slot: 'fan:0',
+  });
+
+  it('lets an entering mark take over a leaving one in its slot: it moves from there, the other just goes', () => {
+    const plan = planTransition(
+      scene([root, taker]),
+      live(
+        [root, old],
+        [{ ...link('analyzer:a', 'file:old.ts'), progress: 1 }],
+      ),
+    );
+    const t = track(plan, 'file:new.ts');
+    expect(t).toMatchObject({
+      phase: 'update',
+      takesOver: 'file:old.ts',
+      ease: 'out-cubic',
+      duration: TIMING.move,
+    });
+    expect(t.from).toEqual({
+      x: 100,
+      y: 120,
+      r: 3,
+      w: 0,
+      h: 0,
+      a0: 0,
+      a1: 0,
+      alpha: 0.6,
+    });
+    expect(t.to).toMatchObject({ x: 300, y: 320, r: 4, alpha: 1 });
+    // No fold, no shrink: gone at once, its place on screen taken.
+    const gone = track(plan, 'file:old.ts');
+    expect(gone).toMatchObject({
+      phase: 'exit',
+      takenBy: 'file:new.ts',
+      delay: 0,
+      duration: 0,
+    });
+    expect(gone.to).toMatchObject({ x: 100, y: 120, alpha: 0 });
+    // It didn't fold, so nothing waits for it (only the link retracts).
+    expect(t.delay).toBe(TIMING.retractLead);
+  });
+
+  it('lets a third mark take over a taker caught mid-flight, from where it is now', () => {
+    // A→B put file:new.ts in slot s; it's half-way there when C arrives.
+    const midFlight = mark('file:new.ts', 180, 190, {
+      slot: 'fan:0',
+      alpha: 0.7,
+      r: 2,
+    });
+    const third = mark('file:third.ts', 600, 620, { slot: 'fan:0' });
+    const plan = planTransition(scene([root, third]), live([root, midFlight]));
+    const t = track(plan, 'file:third.ts');
+    expect(t.phase).toBe('update');
+    expect(t.takesOver).toBe('file:new.ts');
+    expect(t.from).toMatchObject({ x: 180, y: 190, r: 2, alpha: 0.7 });
+    expect(t.to).toMatchObject({ x: 600, y: 620 });
+    expect(track(plan, 'file:new.ts')).toMatchObject({
+      phase: 'exit',
+      takenBy: 'file:third.ts',
+    });
+  });
+
+  it('leaves marks without a match as they were: grow in, fold out', () => {
+    const plan = planTransition(
+      scene([root, { ...taker, slot: 'lens:0' }]),
+      live([root, old]),
+    );
+    expect(track(plan, 'file:new.ts').phase).toBe('enter');
+    expect(track(plan, 'file:new.ts').takesOver).toBeUndefined();
+    const fold = track(plan, 'file:old.ts');
+    expect(fold).toMatchObject({ duration: TIMING.fold, delay: 0 });
+    expect(fold.takenBy).toBeUndefined();
+  });
+
+  it('never takes over a mark that stays', () => {
+    const plan = planTransition(
+      scene([root, { ...old, x: 50 }, taker]),
+      live([root, old]),
+    );
+    expect(track(plan, 'file:new.ts').phase).toBe('enter');
+    expect(track(plan, 'file:old.ts').phase).toBe('update');
+  });
+
+  it('pairs a shared slot in order: next scene’s marks against what is on screen', () => {
+    const leaving = ['x', 'y'].map((n, i) =>
+      mark(`file:${n}`, i * 10, 0, { slot: 's' }),
+    );
+    const entering = ['p', 'q', 'r'].map((n, i) =>
+      mark(`file:${n}`, 500 + i * 10, 0, { slot: 's' }),
+    );
+    const plan = planTransition(scene(entering), live(leaving));
+    expect(track(plan, 'file:p').takesOver).toBe('file:x');
+    expect(track(plan, 'file:q').takesOver).toBe('file:y');
+    expect(track(plan, 'file:r').phase).toBe('enter');
+  });
+
+  it('prefers the same slot, then any free one in its group', () => {
+    // The fans share an entity, so slot 1 is left over on both sides.
+    const leaving = [
+      mark('file:x', 0, 0, { slot: 'fan:0' }),
+      mark('file:shared', 10, 0, { slot: 'fan:1' }),
+      mark('file:z', 20, 0, { slot: 'fan:2' }),
+      mark('analyzer:q', 30, 0, { slot: 'lens:0' }),
+    ];
+    const entering = [
+      mark('file:shared', 500, 0, { slot: 'fan:0' }),
+      mark('file:w', 510, 0, { slot: 'fan:1' }),
+      mark('file:v', 520, 0, { slot: 'fan:2' }),
+      mark('file:u', 530, 0, { slot: 'other:0' }),
+    ];
+    const plan = planTransition(scene(entering), live(leaving));
+    expect(track(plan, 'file:shared').phase).toBe('update');
+    expect(track(plan, 'file:v').takesOver).toBe('file:z');
+    expect(track(plan, 'file:w').takesOver).toBe('file:x');
+    // Another group's leftovers are never taken.
+    expect(track(plan, 'file:u').phase).toBe('enter');
+    expect(track(plan, 'analyzer:q').takenBy).toBeUndefined();
+  });
+
+  it('lets a link take over a leaving link in its slot instead of retracting and redrawing', () => {
+    const fanLink = (target: string, slot: string): Link => ({
+      ...link('analyzer:a', target),
+      id: `fan:${target}`,
+      slot,
+    });
+    const plan = planTransition(
+      scene([root, taker], [fanLink('file:new.ts', 'fan:0')]),
+      live(
+        [root, old],
+        [{ ...fanLink('file:old.ts', 'fan:0'), progress: 0.7, alpha: 0.5 }],
+      ),
+    );
+    const t = plan.links.find((l) => l.id === 'fan:file:new.ts');
+    expect(t).toMatchObject({
+      phase: 'update',
+      takesOver: 'fan:file:old.ts',
+      from: { progress: 0.7, alpha: 0.5 },
+      to: { progress: 1, alpha: 0.8 },
+      delay: 0,
+    });
+    const gone = plan.links.find((l) => l.id === 'fan:file:old.ts');
+    expect(gone).toMatchObject({
+      phase: 'exit',
+      takenBy: 'fan:file:new.ts',
+      delay: 0,
+      duration: 0,
+    });
+    // Nothing retracted or folded, so the move starts at once.
+    expect(track(plan, 'file:new.ts').delay).toBe(0);
+  });
+
+  it('ignores slots under reduced motion: the old fades out, the new fades in', () => {
+    const plan = planTransition(scene([root, taker]), live([root, old]), {
+      reducedMotion: true,
+    });
+    const t = track(plan, 'file:new.ts');
+    expect(t.phase).toBe('enter');
+    expect(t.from).toMatchObject({ x: 300, alpha: 0 });
+    expect(track(plan, 'file:old.ts')).toMatchObject({
+      phase: 'exit',
+      duration: TIMING.fade,
+    });
+  });
+});

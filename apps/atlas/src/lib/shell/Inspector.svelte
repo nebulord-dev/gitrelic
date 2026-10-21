@@ -3,6 +3,7 @@
     catalogEntry,
     entityKey,
     entityKind,
+    isFanView,
     PRESET_GROUPS,
     type EntityId,
     type EntityIndex,
@@ -23,6 +24,7 @@
   import RepoMapCard from '../inspector/RepoMapCard.svelte';
   import RepositoryCard from '../inspector/RepositoryCard.svelte';
   import RiskCard from '../inspector/RiskCard.svelte';
+  import ViewCard from '../inspector/ViewCard.svelte';
   import { modalOpen, paletteShortcut, pressed } from './shortcut';
   import type { GitrelicReport } from '@gitrelic/core';
 
@@ -63,6 +65,15 @@
   let key = $derived(selection ? entityKey(selection) : '');
   let lensEntry = $derived(lens ? catalogEntry(lens) : undefined);
   let analyzer = $derived(kind === 'analyzer' ? catalogEntry(key) : undefined);
+  let selectedView = $derived(
+    kind === 'view' && isFanView(key) ? key : undefined,
+  );
+  // Opening a lens from a card replaces the selection that led there, so the
+  // lens's own inspector shows (the lens push is history; Back returns).
+  const openLens = (l: string) => {
+    onopen?.(l);
+    onselect?.(null);
+  };
   let viewLabel = $derived(PRESET_GROUPS.find((g) => g.id === view)?.label);
 
   // The strip's shortcuts into a selected file's sections.
@@ -250,6 +261,8 @@
     />
   {:else if kind === 'dir'}
     <DirCard dir={key} {report} {activity} {historyFailed} />
+  {:else if selectedView}
+    <ViewCard view={selectedView} {report} {onselect} onopen={openLens} />
   {:else if analyzer}
     <ExplainCard entry={analyzer} />
     <LensPreviewCard
@@ -257,8 +270,8 @@
       {report}
       {index}
       {onselect}
-      {onopen}
-      onRing={lens === 'overview'}
+      onopen={openLens}
+      onMap={lens === 'overview'}
     />
   {:else if lens === 'hotspots' && lensEntry}
     <ExplainCard entry={lensEntry} />
@@ -289,7 +302,7 @@
         Press <kbd class="rounded-chip border border-control-border px-1"
           >{paletteShortcut()}</kbd
         >
-        to find a file, person or analyzer, or
+        to find a view, file, person or analyzer, or
         <kbd class="rounded-chip border border-control-border px-1">?</kbd> for the
         guide.
       </p>

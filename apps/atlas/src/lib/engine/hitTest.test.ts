@@ -51,6 +51,15 @@ describe('HitTester', () => {
     expect(hit(s, 50, 61)).toBeNull();
   });
 
+  it('hits a fan card at its edge, not the invisible port there', () => {
+    const s = storeOf(
+      mark('view:code-health', { shape: 'card', x: 0, y: 0, w: 260, h: 84 }),
+      mark('port:code-health:out', { x: 130, y: 0, alpha: 0 }),
+    );
+    expect(hit(s, 129, 0, 4)).toBe('view:code-health');
+    expect(hit(s, 136, 0, 4)).toBeNull();
+  });
+
   it('hits arcs by radius band and angle (clockwise from 12)', () => {
     // A quarter ring from 12 to 3 o'clock, radii 100..120.
     const s = storeOf(

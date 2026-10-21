@@ -81,10 +81,11 @@ function prepared(entry: EntityEntry): Prepared[] {
 }
 
 const KIND_ORDER: Record<SearchKind, number> = {
-  analyzer: 0,
-  person: 1,
-  dir: 2,
-  file: 3,
+  view: 0,
+  analyzer: 1,
+  person: 2,
+  dir: 3,
+  file: 4,
 };
 
 export interface Ranked {
@@ -94,8 +95,8 @@ export interface Ranked {
 
 /**
  * The best `limit` entries for `query`. Labels count fully; keywords (full
- * paths, emails, aliases) at a small discount. Ties go to analyzers, then
- * people, directories, files; then the shorter label.
+ * paths, emails, aliases) at a small discount. Ties go to views, then
+ * analyzers, people, directories, files; then the shorter label.
  */
 export function rankEntities(
   query: string,

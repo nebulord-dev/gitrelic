@@ -174,6 +174,48 @@ describe('TweenEngine', () => {
     });
   });
 
+  it('hands a slot over: the new mark starts where and how the old one is drawn, which goes at once', () => {
+    const { fc, engine, store, go } = setup();
+    const link = (id: string, target: string): Link => ({
+      id,
+      source: 'person:root',
+      target,
+      curve: 'straight',
+      width: 1,
+      paint: '--link',
+      alpha: 1,
+      slot: 'fan:0',
+    });
+    go(
+      scene(
+        [mark('person:root', 0), mark('file:a', 100, { slot: 'fan:0' })],
+        [link('fan:a', 'file:a')],
+      ),
+    );
+    fc.advance(TIMING.move + TIMING.draw);
+    go(
+      scene(
+        [
+          mark('person:root', 0),
+          mark('person:b', 300, { slot: 'fan:0', paint: '--person' }),
+        ],
+        [link('fan:b', 'person:b')],
+      ),
+    );
+    // One mark in the slot from the first frame: no shrink, no second dot.
+    expect(store.has('file:a')).toBe(false);
+    expect(store.count).toBe(2);
+    const b = store.indexOf('person:b');
+    expect(store.geom(b)).toMatchObject({ x: 100, r: 4, alpha: 1 });
+    expect(store.color(b)).toEqual(rgba(1, 0, 0));
+    // The link carries on drawn, with nothing left of the old one.
+    expect(engine.links.has('fan:a')).toBe(false);
+    expect(engine.links.get('fan:b')?.progress).toBe(1);
+    fc.advance(TIMING.move);
+    expect(store.geom(store.indexOf('person:b'))).toMatchObject({ x: 300 });
+    expect(store.color(store.indexOf('person:b'))).toEqual(rgba(0, 0, 1));
+  });
+
   it('draws links in as the marks settle and retracts them on the way out', () => {
     const { fc, engine, go } = setup();
     const ab: Link = {

@@ -232,8 +232,17 @@ export {
 } from './time/activity';
 export { lensReadings, type LensReading } from './overview/readings';
 export { lensTopEntities, type FannedEntity } from './overview/topEntities';
+export { fanScene, type FanFocus } from './layouts/fan';
 export { ringScene, type RingFocus } from './layouts/ring';
-export { overviewView, ringLayout } from './views/overview';
+export { fanLayout, overviewView, ringLayout } from './views/overview';
+export {
+  FAN_VIEWS,
+  isFanView,
+  loudestView,
+  VIEW_BLURBS,
+  viewHeadline,
+  type FanView,
+} from './overview/viewHeadlines';
 export {
   commitsForScore,
   HOTSPOT_TIERS,

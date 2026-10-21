@@ -15,9 +15,19 @@ describe('buildEntityIndex', () => {
     for (const e of index.entries)
       kinds.set(e.kind, (kinds.get(e.kind) ?? 0) + 1);
     expect(kinds.get('analyzer')).toBe(22);
+    expect(kinds.get('view')).toBe(4);
     expect(kinds.get('person')).toBe(3);
     expect(kinds.get('dir')).toBe(3); // docs, src, src/__tests__
     expect(kinds.get('file')).toBe(10);
+  });
+
+  it('indexes the four views the fan draws, not the Overview itself', () => {
+    expect(index.get(ids.view('ownership-risk'))).toMatchObject({
+      kind: 'view',
+      label: 'Ownership & Risk',
+      detail: 'View',
+    });
+    expect(index.get(ids.view('overview'))).toBeUndefined();
   });
 
   it('resolves ids and rejects anything it does not know', () => {

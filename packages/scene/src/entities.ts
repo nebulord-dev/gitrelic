@@ -1,13 +1,13 @@
 // Everything a viewer can select or search for, keyed by entity id: files,
-// directories, people and analyzers. The URL's selection (`#s=`) is resolved
-// through this index — an id that isn't here selects nothing — so a crafted
-// link can never put arbitrary text in front of the viewer.
+// directories, people, analyzers and views. The URL's selection (`#s=`) is
+// resolved through this index — an id that isn't here selects nothing — so a
+// crafted link can never put arbitrary text in front of the viewer.
 
 import { CATALOG, PRESET_GROUPS } from './catalog';
 import { ids, type EntityId } from './ids';
 import type { GitrelicReport } from '@gitrelic/core';
 
-export type SearchKind = 'analyzer' | 'person' | 'dir' | 'file';
+export type SearchKind = 'view' | 'analyzer' | 'person' | 'dir' | 'file';
 
 export interface EntityEntry {
   id: EntityId;
@@ -41,6 +41,18 @@ export function buildEntityIndex(report: GitrelicReport): EntityIndex {
       label: entry.label,
       detail: group,
       keywords: [entry.id],
+    });
+  }
+
+  // The views the Overview fan draws, selectable like a lens.
+  for (const group of PRESET_GROUPS) {
+    if (group.id === 'overview') continue;
+    entries.push({
+      id: ids.view(group.id),
+      kind: 'view',
+      label: group.label,
+      detail: 'View',
+      keywords: [group.id],
     });
   }
 

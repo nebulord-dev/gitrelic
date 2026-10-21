@@ -98,4 +98,12 @@ describe('rankEntities', () => {
     );
     expect(rankEntities('file', many, 7)).toHaveLength(7);
   });
+
+  it('ranks a view ahead of an analyzer with the same label score', () => {
+    const tied = [
+      entry('analyzer:structure-x', 'analyzer', 'Structure'),
+      entry('view:structure', 'view', 'Structure'),
+    ];
+    expect(rankEntities('structure', tied)[0].entry.kind).toBe('view');
+  });
 });
