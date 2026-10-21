@@ -186,4 +186,14 @@ describe('ringScene', () => {
     const first = scene.marks.find((m) => m.id === entities[0].id)!;
     expect(first.tip).toEqual([entities[0].label, entities[0].value]);
   });
+
+  it("names each view with its view id, a label that can't be hit", () => {
+    const scene = ringScene(repo, readings, null, viewport);
+    const views = scene.marks.filter((m) => m.id.startsWith('view:'));
+    expect(views.map((m) => m.id)).toEqual(
+      [...new Set(readings.map((r) => r.group))].map((g) => ids.view(g)),
+    );
+    for (const m of views)
+      expect([m.shape, m.r, m.w, m.h]).toEqual(['card', 0, 0, 0]);
+  });
 });
