@@ -284,6 +284,36 @@ describe('fanScene', () => {
     }
   });
 
+  it('keeps the tucked repo and its orbit clear of every card, whatever is previewed', () => {
+    for (const view of FAN_VIEWS) {
+      const lenses = readings.filter((r) => r.group === view);
+      expect(lenses.length).toBeGreaterThan(0);
+      for (const lens of lenses) {
+        const scene = fanScene(
+          repo,
+          readings,
+          { view, lens: { preset: lens.preset, entities: eight } },
+          viewport,
+        );
+        const repoMark = markOf(scene, REPO_ID);
+        const orbit = scene.guides.find((g) => g.id === 'orbit:repo');
+        if (orbit?.kind !== 'circle') throw new Error('no orbit');
+        const cards = scene.marks.filter((m) => m.id.startsWith('view:'));
+        for (const c of cards) {
+          // The circle's distance to the card's rectangle.
+          const dx = Math.max(Math.abs(orbit.x - c.x) - c.w / 2, 0);
+          const dy = Math.max(Math.abs(orbit.y - c.y) - c.h / 2, 0);
+          const clear = Math.hypot(dx, dy) - Math.max(orbit.r, repoMark.r);
+          expect(clear, `${lens.preset}: orbit on ${c.id}`).toBeGreaterThan(24);
+        }
+        // Room for the trunks to curve, not hug the cards' edges.
+        const run =
+          markOf(scene, `port:${view}:in`).x - markOf(scene, 'port:repo:out').x;
+        expect(run, lens.preset).toBeGreaterThanOrEqual(60);
+      }
+    }
+  });
+
   it('spaces the nine lenses at least a two-line label apart', () => {
     const ys = fanScene(repo, readings, closed, viewport)
       .marks.filter((m) => m.id.startsWith('analyzer:'))

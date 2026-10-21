@@ -37,6 +37,13 @@ const REPO_R = 72;
 /** The repo while a lens is previewed: smaller, at the edge. */
 const REPO_R_TUCKED = 44;
 /**
+ * Tucked, the repo sits this far left of the cards' left edges (from its
+ * own edge), placed from the shifted column rather than the stage: room for
+ * its orbit (0.7 × its radius past its edge) to clear the cards by over 24,
+ * and for the trunks to curve into them instead of hugging their edges.
+ */
+const TUCK_RUN = 64;
+/**
  * A view's card, world units: wide enough for a number beside a two-line
  * name and caption at the ~0.7 zoom the world fits at (the label layer
  * scales the card's text with it).
@@ -117,8 +124,10 @@ export function fanScene(
       (cy + previewedDy)
     : 0;
 
-  const repoX = previewed ? w * 0.06 : w * 0.11;
   const repoR = previewed ? REPO_R_TUCKED : REPO_R;
+  const repoX = previewed
+    ? viewX - CARD_W / 2 - TUCK_RUN - REPO_R_TUCKED
+    : w * 0.11;
   marks.push({
     id: REPO_ID,
     shape: 'outline',
