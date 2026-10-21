@@ -23,7 +23,7 @@
     "@tailwindcss/vite": "^4.3.2",
     "@testing-library/svelte": "^5.4.2",
     "@types/node": "catalog:",
-    "happy-dom": "^20.10.6",
+    "happy-dom": "^20.14.6",
     "svelte": "catalog:",
     "svelte-check": "^4.7.7",
     "tailwindcss": "^4.3.2",
