@@ -196,4 +196,13 @@ describe('ringScene', () => {
     for (const m of views)
       expect([m.shape, m.r, m.w, m.h]).toEqual(['card', 0, 0, 0]);
   });
+
+  it('grows each lens out of its view, so the fan’s lenses travel to it', () => {
+    const scene = ringScene(repo, readings, null, viewport);
+    for (const r of readings) {
+      const lens = scene.marks.find((m) => m.id === ids.analyzer(r.preset))!;
+      expect(lens.parent).toBe(ids.view(r.group));
+      expect(scene.marks.some((m) => m.id === lens.parent)).toBe(true);
+    }
+  });
 });

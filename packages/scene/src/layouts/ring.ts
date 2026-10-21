@@ -164,6 +164,8 @@ export function ringScene(
         r: DOT_R[lens.grade],
         ...ZERO,
         alpha: dim(lens.preset),
+        // Grows out of its view, so the fan's lenses travel to and from it.
+        parent: ids.view(group.id),
         label: lens.label,
         labelSub: lens.value,
         labelClass: LABEL_CLASS[lens.grade],

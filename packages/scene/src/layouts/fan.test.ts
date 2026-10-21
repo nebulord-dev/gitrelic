@@ -8,6 +8,7 @@ import { lensReadings, type LensReading } from '../overview/readings';
 import { lensTopEntities } from '../overview/topEntities';
 import { FAN_VIEWS } from '../overview/viewHeadlines';
 import { fanScene } from './fan';
+import type { Link, Mark } from '../model';
 import type { GitrelicReport } from '@gitrelic/core';
 
 const report = reportJson as unknown as GitrelicReport;
@@ -110,7 +111,11 @@ describe('fanScene', () => {
     expect(fanned.map((m) => m.id)).toEqual(
       previewing.lens.entities.map((e) => e.id),
     );
-    for (const m of fanned) expect(m.x).toBeGreaterThan(lens.x);
+    // Outward, away from the open view.
+    const view = markOf(scene, ids.view('code-health'));
+    const far = (m: { x: number; y: number }) =>
+      Math.hypot(m.x - view.x, m.y - view.y);
+    for (const m of fanned) expect(far(m)).toBeGreaterThan(far(lens));
   });
 
   it('ignores a previewed lens outside the open view', () => {
@@ -137,5 +142,117 @@ describe('fanScene', () => {
     expect(fanScene(repo, readings, previewing, viewport)).toEqual(
       fanScene(repo, readings, previewing, viewport),
     );
+  });
+
+  // Geometry on the largest view: Code Health's nine lenses, each fanning
+  // eight entities (the sample repo has fewer).
+  const health = readings.filter((r) => r.group === 'code-health');
+  const eight = Array.from({ length: 8 }, (_, i) => ({
+    id: ids.file(`f${i}`),
+    label: `src/some/file${i}.ts`,
+    value: `${i}`,
+  }));
+  const preview = (p: string) =>
+    fanScene(
+      repo,
+      readings,
+      { view: 'code-health', lens: { preset: p, entities: eight } },
+      viewport,
+    );
+
+  it('ranks the previewed lens’s label above the views’ and the tucked repo’s', () => {
+    expect(health).toHaveLength(9);
+    for (const lens of health) {
+      const scene = preview(lens.preset);
+      const own = markOf(scene, ids.analyzer(lens.preset)).labelPriority ?? 0;
+      const repoPriority = markOf(scene, REPO_ID).labelPriority ?? 0;
+      const views = scene.marks.filter((m) => m.id.startsWith('view:'));
+      for (const v of views) {
+        expect(own).toBeGreaterThan(v.labelPriority ?? 0);
+        // Tucked, the repo gives way to the views beside it…
+        expect(repoPriority).toBeLessThan(v.labelPriority ?? 0);
+        // …and the dimmed views stay above the labels' alpha cutoff.
+        expect(v.alpha).toBeGreaterThan(0.5);
+      }
+      expect(own).toBeGreaterThan(repoPriority);
+    }
+  });
+
+  it('spaces the nine lenses at least a two-line label apart', () => {
+    const ys = fanScene(repo, readings, closed, viewport)
+      .marks.filter((m) => m.id.startsWith('analyzer:'))
+      .map((m) => m.y);
+    expect(ys).toHaveLength(9);
+    for (let i = 1; i < ys.length; i++)
+      expect(Math.abs(ys[i] - ys[i - 1])).toBeGreaterThanOrEqual(60);
+  });
+
+  /** Points along a link as the engine draws it (linkGeometry.ts). */
+  function curveOf(link: Link, a: Mark, b: Mark, steps = 64) {
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    const bow = link.curve === 'straight' ? 0 : (link.bow ?? 0.2) * len;
+    const cx = (a.x + b.x) / 2 + (-(b.y - a.y) / len) * bow;
+    const cy = (a.y + b.y) / 2 + ((b.x - a.x) / len) * bow;
+    return Array.from({ length: steps + 1 }, (_, k) => {
+      const u = k / steps;
+      const v = 1 - u;
+      return {
+        x: v * v * a.x + 2 * v * u * cx + u * u * b.x,
+        y: v * v * a.y + 2 * v * u * cy + u * u * b.y,
+      };
+    });
+  }
+
+  it('keeps every branch clear of the other views, whichever is open', () => {
+    for (const view of FAN_VIEWS) {
+      const scene = fanScene(repo, readings, { view, lens: null }, viewport);
+      const others = scene.marks.filter(
+        (m) => m.id.startsWith('view:') && m.id !== ids.view(view),
+      );
+      const branches = scene.links.filter((l) => l.id.startsWith('branch:'));
+      expect(branches.length).toBeGreaterThan(0);
+      for (const l of branches) {
+        const pts = curveOf(
+          l,
+          markOf(scene, l.source),
+          markOf(scene, l.target),
+        );
+        for (const o of others)
+          for (const p of pts)
+            expect(
+              Math.hypot(p.x - o.x, p.y - o.y),
+              `${view} ${l.id} near ${o.id}`,
+            ).toBeGreaterThan(o.r + 10);
+      }
+    }
+  });
+
+  it('keeps every lens’s fan in the world and off the other lenses', () => {
+    for (const lens of health) {
+      const scene = preview(lens.preset);
+      const own = ids.analyzer(lens.preset);
+      const fanned = scene.marks.filter((m) => m.parent === own);
+      expect(fanned).toHaveLength(8);
+      const lensMark = markOf(scene, own);
+      const view = markOf(scene, ids.view('code-health'));
+      const far = (m: Mark) => Math.hypot(m.x - view.x, m.y - view.y);
+      const others = scene.marks.filter(
+        (m) => m.id.startsWith('analyzer:') && m.id !== own,
+      );
+      for (const m of fanned) {
+        expect(far(m)).toBeGreaterThan(far(lensMark));
+        expect(m.x).toBeGreaterThanOrEqual(0);
+        expect(m.x).toBeLessThanOrEqual(viewport.width);
+        expect(m.y, `${lens.preset} ${m.id}`).toBeGreaterThanOrEqual(0);
+        expect(m.y, `${lens.preset} ${m.id}`).toBeLessThanOrEqual(
+          viewport.height,
+        );
+        for (const o of others)
+          expect(
+            Math.hypot(m.x - o.x, m.y - o.y),
+            `${lens.preset} ${m.id} near ${o.id}`,
+          ).toBeGreaterThan(30);
+      }
+    }
   });
 });

@@ -130,7 +130,8 @@ export interface Link {
   alpha: number;
   /**
    * How far an `arc` bows out, as a fraction of its length (the engine's
-   * default when absent). A layout sets it to keep short arcs readable.
+   * default when absent), to the chord's left; negative bows it to the
+   * right. A layout sets it to keep short arcs readable.
    */
   bow?: number;
 }

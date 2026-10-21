@@ -52,7 +52,10 @@ describe('overview ring', () => {
       { report, commits: null, focus: ids.file('src/api.ts'), index },
       viewport,
     );
-    expect(scene.marks.some((m) => m.parent)).toBe(false);
+    // Lenses have their view for a parent; fanned entities have a lens.
+    expect(scene.marks.some((m) => m.parent?.startsWith('analyzer:'))).toBe(
+      false,
+    );
   });
 });
 
@@ -72,7 +75,9 @@ describe('overview fan', () => {
 
   it('opens the loudest view by default, or the one named by focus', () => {
     const readings = lensReadings(report);
-    const loudest = loudestView(readings);
+    // The fixture's loudest view (loudestView: its top grade, ties to rail order).
+    const loudest = 'ownership-risk';
+    expect(loudestView(readings)).toBe(loudest);
     const ofView = (v: string) =>
       readings.filter((r) => r.group === v).map((r) => ids.analyzer(r.preset));
     expect(openLenses(build(null))).toEqual(ofView(loudest));
@@ -96,9 +101,13 @@ describe('overview fan', () => {
   });
 
   it('previews a focused lens with its fan', () => {
+    // The fixture has entities for Hotspots, so its fan can't be empty.
+    expect(lensTopEntities('hotspots', report, index).length).toBeGreaterThan(
+      0,
+    );
     const scene = build(ids.analyzer('hotspots'));
     expect(scene.marks.some((m) => m.parent === ids.analyzer('hotspots'))).toBe(
-      lensTopEntities('hotspots', report, index).length > 0,
+      true,
     );
   });
 });

@@ -4,7 +4,6 @@
 // fan, opens its view), and the shell keeps it while one of the previewed
 // lens's own entities is selected.
 
-import { isPresetGroup } from '../catalog';
 import { buildEntityIndex } from '../entities';
 import { entityKey, entityKind, type EntityKind } from '../ids';
 import { fanScene } from '../layouts/fan';
@@ -47,7 +46,7 @@ function previewOf(input: ViewInput, readings: readonly LensReading[]) {
 }
 
 const isFanView = (id: string): id is FanView =>
-  isPresetGroup(id) && (FAN_VIEWS as readonly string[]).includes(id);
+  (FAN_VIEWS as readonly string[]).includes(id);
 
 export const fanLayout: Layout = {
   id: 'fan',
