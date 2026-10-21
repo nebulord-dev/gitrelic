@@ -97,11 +97,12 @@
   );
 
   // An analyzer with an Atlas view opens its lens, with nothing selected so
-  // the inspector shows the lens itself. Anything else is selected: the
+  // the inspector shows the lens itself; a view opens the Overview with the
+  // view selected, so the fan opens it. Anything else is selected: the
   // inspector explains a classic-only analyzer and links there.
   function pick(entry: EntityEntry) {
-    const lens = palettePick(entry.id);
-    if (lens && nav.openLens(lens)) nav.select(null);
+    const to = palettePick(entry.id);
+    if (to && nav.openLens(to.lens)) nav.select(to.select);
     else nav.select(entry.id);
   }
   const openLens = (id: string) => void nav.openLens(id);
