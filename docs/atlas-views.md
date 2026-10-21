@@ -168,7 +168,7 @@ Fix rate, test co-change, truck factor and cross-owner coupling are new core wor
 
 | View | Lenses |
 |---|---|
-| Overview | Repo map (forms: Fan, Ring; Briefing planned) |
+| Overview | Repo map (forms: Fan, Ring, Dashboard on trial; Briefing planned) |
 | Code Health | Hotspots · Churn · Risk · Age · Fix rate · *Complexity growth (own lens or a Hotspots facet: decided at its checkpoint)* |
 | Ownership & Risk *(name revisited when Risk moves; see below)* | Ownership · Coupling |
 | Team & Activity | Contributors · Parallel Dev · Commit Timing · AI & Co-authors · *Release cadence* |
@@ -226,6 +226,8 @@ Checkpoint boards: D and E on the checkpoint canvas, on React's last 12 months t
 **Alternate form — Ring** (the primary from 2026-10-18 until RELIC-361). *Passes the checkpoint test:* it is the only picture of every lens at once, which the Fan gives up by design. The repo at the centre; every analyzer lens on an outer ellipse, grouped into the four other views (sector order: Code Health, Ownership & Risk, Team & Activity, Structure), sized and heated by how far its reading sits outside normal for a repo this size (the same outlier rules as the badges, graded 0–3). Outliers carry their number and name; quiet lenses stay small and grey. It answers "where is this repo unusual?" in one look and doubles as navigation to every lens (about 15; see *Lens inventory*).
 
 **The fan-out (the click behaviour of both forms, not a form).** Clicking a lens dims the others and fans its top entities out of its dot on an arc, each labelled (e.g. Bus Factor's most at-risk files with their owners). A second click folds it again (RELIC-367). The inspector's Open opens the lens: the view moves to it and those same marks fly to their places in the lens's layout, because they keep their entity ids. Back reverses it. The preview is the first frame of the real view. This replaces the mock's fan as a separate picture.
+
+**Trial form — Dashboard** (RELIC-368; built from board F of the forms bake-off so the three forms can be compared in the app; the bake-off keeps two, recorded here when it's decided). A vitals strip (files, lines, commits, active contributors, AI share, main language; scene `repoVitals`), then one section per view: its name and how many of its lenses read outside normal, and its lenses as `card` tiles five across (`analyzer:` ids), a grade-3 lens two wide, a loud one with its number in accent. Under each closed tile, a bar per top entity (`lensTopEntities`, weighted by the number in its reading, the heaviest full height). Clicking a tile opens it in place, two wide and as tall as its list, the other tiles dimming: its fanned entities as rows (name and reading; the fan's ids and `fan:<i>` slots, so a fan in another form morphs into them). A second click folds it; a row picks its entity, and the inspector's Open opens the lens, as on the Fan.
 
 **Planned alternate — Briefing** (not built; a third form only if it still earns one at its PR). A short list of findings across lenses; picking one re-forms the canvas around the files and people it names (e.g. the ten people who edited all seven `ReactFeatureFlags` forks, four of them ghosts). *Passes the checkpoint test:* it shows how findings connect across lenses and which entities they share — a different structure (finding → entities graph), which neither the ring, the time strip, the inspector chart nor the detail table can show.
 

@@ -82,8 +82,12 @@ describe('overview fan', () => {
   const openLenses = (scene: ReturnType<typeof build>) =>
     scene.marks.filter((m) => m.id.startsWith('analyzer:')).map((m) => m.id);
 
-  it('is the primary form, with the ring as its alternate', () => {
-    expect(overview.layouts.map((l) => l.id)).toEqual(['fan', 'ring']);
+  it('is the primary form, with the ring and the dashboard (on trial) as alternates', () => {
+    expect(overview.layouts.map((l) => l.id)).toEqual([
+      'fan',
+      'ring',
+      'dashboard',
+    ]);
     expect(fan.focusKinds).toContain('view');
   });
 

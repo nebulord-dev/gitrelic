@@ -234,7 +234,12 @@ export { lensReadings, type LensReading } from './overview/readings';
 export { lensTopEntities, type FannedEntity } from './overview/topEntities';
 export { fanScene, type FanFocus } from './layouts/fan';
 export { ringScene, type RingFocus } from './layouts/ring';
-export { fanLayout, overviewView, ringLayout } from './views/overview';
+export {
+  dashboardLayout,
+  fanLayout,
+  overviewView,
+  ringLayout,
+} from './views/overview';
 export {
   FAN_VIEWS,
   isFanView,

@@ -1,11 +1,12 @@
-// The Overview view: one lens (Repo map) drawn as the fan (primary) or the
-// ring. Both are driven by `input.focus`, which the shell keeps: a `view:` id
+// The Overview view: one lens (Repo map) drawn as the fan (primary), the
+// ring, or the dashboard (on trial). All three are driven by `input.focus`, which the shell keeps: a `view:` id
 // opens that view's fan, an `analyzer:` id previews that lens (and, on the
 // fan, opens its view), and the shell keeps it while one of the previewed
 // lens's own entities is selected.
 
 import { buildEntityIndex } from '../entities';
 import { entityKey, entityKind, type EntityKind } from '../ids';
+import { dashboardScene } from '../layouts/dashboard';
 import { fanScene } from '../layouts/fan';
 import { ringScene } from '../layouts/ring';
 import {
@@ -15,6 +16,7 @@ import {
 } from '../overview/readings';
 import { lensTopEntities } from '../overview/topEntities';
 import { isFanView, loudestView } from '../overview/viewHeadlines';
+import { repoVitals } from '../overview/vitals';
 import type { AnalyzerView, Layout, ViewInput } from '../model';
 
 const FOCUS_KINDS: readonly EntityKind[] = [
@@ -93,8 +95,31 @@ export const ringLayout: Layout = {
   },
 };
 
+export const dashboardLayout: Layout = {
+  id: 'dashboard',
+  label: 'Dashboard',
+  // A view focus opens no tile, so a view selection doesn't rebuild it.
+  focusKinds: ['analyzer', 'file', 'dir', 'person'],
+  caption:
+    'Every lens as a tile, by view; wider and in the accent where a repo this size is unusual. Click a tile to see what it points at; click it again to fold it.',
+  needsCommits: false,
+  build: (input) => {
+    const readings = lensReadings(input.report);
+    const preview = previewOf(input, readings);
+    const index = input.index ?? buildEntityIndex(input.report);
+    return dashboardScene(
+      repoVitals(input.report),
+      readings,
+      (preset) => lensTopEntities(preset, input.report, index),
+      preview
+        ? { preset: preview.reading.preset, entities: preview.entities }
+        : null,
+    );
+  },
+};
+
 export const overviewView: AnalyzerView = {
   id: 'overview',
-  layouts: [fanLayout, ringLayout],
+  layouts: [fanLayout, ringLayout, dashboardLayout],
   findings: () => [],
 };
