@@ -251,8 +251,10 @@ body {
   opacity: 0.75;
 }
 
-/* The selected card (the canvas draws nothing for cards to mark it). */
-.atlas-label--card.atlas-label--selected {
+/* The selected card (the canvas draws nothing for cards to mark it). The
+   open one is already filled: clicking a card opens it, and a frame round
+   the fill only doubles it. */
+.atlas-label--card.atlas-label--selected:not(.atlas-label--open) {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
   box-shadow: var(--selected-glow);

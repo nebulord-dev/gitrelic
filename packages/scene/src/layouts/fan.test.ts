@@ -129,10 +129,24 @@ describe('fanScene', () => {
     expect(health).toMatchObject({
       shape: 'card',
       labelAnchor: 'center',
-      // The number large, the view's name over the rest of the reading.
+      // The number large, the view's name over the lens it comes from and
+      // the rest of the reading.
       labelLead: lead,
       label: 'Code Health',
-      labelSub: rest.join(' '),
+      labelSub: `${cursed.label} · ${rest.join(' ')}`,
+    });
+    // A reading without a leading number is the caption whole, after its lens.
+    const worded = fanScene(
+      repo,
+      readings.map((r) =>
+        r.preset === 'cursed-files' ? { ...r, value: 'none cursed' } : r,
+      ),
+      closed,
+      viewport,
+    );
+    expect(markOf(worded, ids.view('code-health'))).toMatchObject({
+      labelLead: undefined,
+      labelSub: `${cursed.label} · none cursed`,
     });
     expect(health.w).toBeGreaterThan(2 * health.h);
     expect(health.r).toBe(0);

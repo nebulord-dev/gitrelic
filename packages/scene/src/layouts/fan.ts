@@ -172,8 +172,8 @@ export function fanScene(
   ];
 
   // The views in rail order, a column of cards; each headed by its loudest
-  // lens, its number set large beside the view's name over the rest of the
-  // reading. The open view's card is filled; a loud one keeps an accent touch.
+  // lens, its number set large beside the view's name over that lens's name
+  // and the rest of its reading. The open view's card is filled; a loud one keeps an accent touch.
   const gap = h * 0.15;
   FAN_VIEWS.forEach((view, i) => {
     const id = ids.view(view);
@@ -195,7 +195,10 @@ export function fanScene(
       alpha: previewed && !open ? DIM_VIEW : 1,
       labelLead: lead || undefined,
       label: labelOf(view),
-      labelSub: rest || undefined,
+      // The lens the number comes from, then the rest of its reading.
+      labelSub: head
+        ? [head.label, rest].filter(Boolean).join(' · ')
+        : undefined,
       labelClass: open ? 'atlas-label--open' : LABEL_CLASS[grade],
       labelPriority: VIEW_LABEL + grade,
       labelAnchor: 'center',
