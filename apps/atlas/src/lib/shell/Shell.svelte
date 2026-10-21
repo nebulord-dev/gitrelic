@@ -23,6 +23,7 @@
   import { loadCommits } from '../data/loadReport';
   import { initialCollapsed, rememberCollapsed } from '../state/inspectorPref';
   import { Nav } from '../state/nav.svelte';
+  import { initialPanels, rememberPanels } from '../state/panelsPref';
   import TableDrawer from '../table/TableDrawer.svelte';
   import TimeStrip from '../time/TimeStrip.svelte';
   import { fanFold, nextFanFocus } from '../views/fanFocus';
@@ -121,6 +122,15 @@
     );
   });
   let lensView = $derived(nav.lens ? VIEWS.get(nav.lens) : undefined);
+  // The picture's collapsible panels the viewer has opened (Mark.toggles);
+  // a viewer preference like the inspector's, remembered, never in the URL.
+  let openPanels = $state.raw(initialPanels());
+  $effect(() => rememberPanels(openPanels));
+  function togglePanel(key: string) {
+    const next = new Set(openPanels);
+    if (!next.delete(key)) next.add(key);
+    openPanels = next;
+  }
   let layout = $derived(
     lensView?.layouts.find((l) => l.id === nav.form) ?? lensView?.layouts[0],
   );
@@ -155,6 +165,7 @@
             commits: layoutCommits,
             focus: layoutFocus,
             index,
+            open: openPanels,
           },
           WORLD,
         )
@@ -220,6 +231,7 @@
           {scene}
           selected={nav.selection}
           onselect={stageSelect}
+          ontoggle={togglePanel}
           caption={layout?.caption}
           docs={lensDocs}
           {forms}

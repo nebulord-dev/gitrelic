@@ -49,6 +49,8 @@ export interface AtlasStageOptions {
   onHover?: (id: EntityId | null) => void;
   /** A click on the stage: what it hit, and whether it is a double-click's second. */
   onSelect?: (id: EntityId | null, repeat: boolean) => void;
+  /** A click on a switch (`Mark.toggles`): the key it flips. Selects nothing. */
+  onToggle?: (key: string) => void;
   /** Each drawn frame's CPU cost, ms (the bench reads this). */
   onFrame?: (ms: number) => void;
 }
@@ -71,14 +73,18 @@ export class AtlasStage {
   private standIns: Scene['standIns'];
   /** Marks whose click selects another entity (`Mark.selects`). */
   private selects = new Map<EntityId, EntityId>();
+  /** Marks that are switches, and the keys they flip (`Mark.toggles`). */
+  private toggles = new Map<string, string>();
   /**
    * The pointer's mark first: a row that keeps keyboard focus mustn't
    * contradict what's under the cursor. A row whose entity has no mark of
    * its own lights the mark holding it (a density cell).
    */
   private get hovered(): EntityId | null {
-    if (this.pointerHover) return this.pointerHover;
-    const id = this.rowHover;
+    return this.pointerHover ?? this.markFor(this.rowHover);
+  }
+  /** The mark showing an entity: its own, else the one standing in for it. */
+  private markFor(id: EntityId | null): EntityId | null {
     if (!id || this.store.indexOf(id) >= 0) return id;
     return this.standIns?.get(id) ?? id;
   }
@@ -132,6 +138,13 @@ export class AtlasStage {
       leave: () => this.setHovered(null),
       click: (sx, sy, repeat) => {
         const hit = this.pick(sx, sy);
+        const key = hit && this.toggles.get(hit);
+        if (key) {
+          // A switch leaves the selection as it is; a double-click on it
+          // flips it once.
+          if (!repeat) opts.onToggle?.(key);
+          return;
+        }
         const id = hit && (this.selects.get(hit) ?? hit);
         this.select(id);
         opts.onSelect?.(id, repeat);
@@ -206,6 +219,9 @@ export class AtlasStage {
     this.standIns = scene.standIns;
     this.selects = new Map(
       scene.marks.flatMap((m) => (m.selects ? [[m.id, m.selects]] : [])),
+    );
+    this.toggles = new Map(
+      scene.marks.flatMap((m) => (m.toggles ? [[m.id, m.toggles]] : [])),
     );
     const plan = planTransition(scene, this.engine.live(), {
       reducedMotion: this.opts.reducedMotion(),
@@ -363,8 +379,11 @@ export class AtlasStage {
     if (animated) this.hitsStale = true;
     const pinned = new Set<EntityId>();
     if (this.hovered) pinned.add(this.hovered);
-    if (this.selected) pinned.add(this.selected);
-    this.labels.update(this.store, this.view, this.size, pinned, this.selected);
+    // A selection the scene draws through a stand-in (a dashboard card in a
+    // slot) marks that stand-in.
+    const selected = this.markFor(this.selected);
+    if (selected) pinned.add(selected);
+    this.labels.update(this.store, this.view, this.size, pinned, selected);
     this.tooltip.update(this.store, this.view, this.size, this.hovered);
     this.opts.onFrame?.(this.clock.now() - start);
     // A plan can cut the engine's repaint short, or end before the camera

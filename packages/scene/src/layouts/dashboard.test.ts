@@ -1,0 +1,276 @@
+import { describe, expect, it } from 'vitest';
+
+import reportJson from '../../test/fixtures/report.small.json';
+import { buildEntityIndex } from '../entities';
+import { ids } from '../ids';
+import { checkScene, type Scene } from '../model';
+import { lensReadings, type LensReading } from '../overview/readings';
+import { lensTopEntities } from '../overview/topEntities';
+import { repoVitals } from '../overview/vitals';
+import { dashboardLayout } from '../views/overview';
+import {
+  CALM_PANEL,
+  chipWidth,
+  dashboardScene,
+  loudestLens,
+  outlierColumn,
+  readingWeight,
+} from './dashboard';
+import type { FannedEntity } from '../overview/topEntities';
+import type { GitrelicReport } from '@gitrelic/core';
+
+const report = reportJson as unknown as GitrelicReport;
+const index = buildEntityIndex(report);
+const vitals = repoVitals(report);
+const topOf = (preset: string) => lensTopEntities(preset, report, index);
+
+/** The fixture's lenses, two of them loud (Risk at 3, Bus Factor at 2). */
+const readings: LensReading[] = lensReadings(report).map((r) => ({
+  ...r,
+  grade: r.preset === 'cursed-files' ? 3 : r.preset === 'bus-factor' ? 2 : 0,
+  reason:
+    r.preset === 'cursed-files'
+      ? '8 files with a curse score of 50+'
+      : r.preset === 'bus-factor'
+        ? '63% of files rest on one author'
+        : undefined,
+}));
+const fanned: FannedEntity[] = [
+  { id: ids.file('src/a.ts'), label: 'a.ts', value: 'score 90' },
+  { id: ids.file('src/b.ts'), label: 'b.ts', value: 'score 45' },
+];
+const mark = (scene: Scene, id: string) => scene.marks.find((m) => m.id === id);
+/** The mark showing a lens: its own (a chip), or the slot standing in for it. */
+const shown = (scene: Scene, preset: string) => {
+  const id = ids.analyzer(preset);
+  return mark(scene, scene.standIns?.get(id) ?? id);
+};
+
+describe('readingWeight', () => {
+  it('reads a share, else the last number', () => {
+    expect(readingWeight('3 of 8 fixed')).toBeCloseTo(0.375, 9);
+    expect(readingWeight('3 of 0 fixed')).toBe(0);
+    expect(readingWeight('+3,695 lines a month')).toBe(3695);
+    expect(readingWeight('1.00 deleted per line added')).toBe(1);
+    expect(readingWeight('vmx, gone 182 days')).toBe(182);
+    expect(readingWeight('gone quiet')).toBe(0);
+  });
+});
+
+describe('loudestLens', () => {
+  it('is the highest grade, ties going to lens-bar order', () => {
+    expect(loudestLens(readings)?.preset).toBe('cursed-files');
+    const calm = readings.map((r) => ({ ...r, grade: 0 as const }));
+    expect(loudestLens(calm)).toBe(calm[0]);
+    expect(loudestLens([])).toBeUndefined();
+  });
+});
+
+describe('outlierColumn', () => {
+  const lens = (preset: string) => readings.find((r) => r.preset === preset)!;
+
+  it('lists the loud lenses but the loudest, loudest first', () => {
+    expect(
+      outlierColumn(readings, lens('cursed-files')).map((r) => r.preset),
+    ).toEqual(['bus-factor']);
+  });
+
+  it('puts the loudest in a picked outlier’s slot', () => {
+    expect(
+      outlierColumn(readings, lens('bus-factor')).map((r) => r.preset),
+    ).toEqual(['cursed-files']);
+  });
+
+  it('ends the column with the loudest when a calm lens is picked', () => {
+    expect(outlierColumn(readings, lens('churn')).map((r) => r.preset)).toEqual(
+      ['bus-factor', 'cursed-files'],
+    );
+  });
+});
+
+describe('dashboardScene', () => {
+  it('draws the vitals, then every lens once, soundly', () => {
+    const scene = dashboardScene(vitals, readings, topOf, null, true);
+    expect(checkScene(scene)).toEqual([]);
+    const shown = scene.marks.filter((m) => m.id.startsWith('vital:'));
+    expect(shown.map((m) => m.label)).toEqual([
+      'Files',
+      'Lines',
+      'Commits',
+      'Contributors',
+      'AI-assisted',
+      'Language',
+    ]);
+    // Context, not findings: plain cards, never the accent fill.
+    for (const v of shown) expect(v.labelClass).toBeUndefined();
+    // Every lens once: a chip of its own, or a card in a slot selecting it.
+    const lenses = scene.marks.flatMap((m) =>
+      m.id.startsWith('analyzer:')
+        ? [m.id]
+        : m.selects?.startsWith('analyzer:')
+          ? [m.selects]
+          : [],
+    );
+    expect(lenses.sort()).toEqual(
+      readings.map((r) => ids.analyzer(r.preset)).sort(),
+    );
+  });
+
+  it('leads with the loudest lens: its reason, and the rows of what it points at', () => {
+    const scene = dashboardScene(vitals, readings, () => fanned, null);
+    const lead = shown(scene, 'cursed-files')!;
+    expect(lead).toMatchObject({
+      labelClass: 'atlas-label--lead-hot',
+      labelSub: '8 files with a curse score of 50+',
+    });
+    const rows = fanned.map((e) => mark(scene, e.id)!);
+    rows.forEach((row, j) => {
+      expect(row).toMatchObject({
+        shape: 'card',
+        label: fanned[j].label,
+        labelSub: fanned[j].value,
+        labelClass: 'atlas-label--row',
+        parent: lead.id,
+        slot: `fan:${j}`,
+        w: lead.w,
+      });
+      expect(row.y).toBeGreaterThan(lead.y + lead.h / 2);
+    });
+    expect(rows[1].y).toBeGreaterThan(rows[0].y);
+    // A bar under each row, the heaviest full width, picking its entity.
+    const bars = [0, 1].map((j) => mark(scene, `weight:${j}`)!);
+    expect(bars[0].w).toBeCloseTo(lead.w, 9);
+    expect(bars[1].w).toBeCloseTo(lead.w / 2, 9);
+    expect(bars[0].selects).toBe(fanned[0].id);
+    // The lead's frame holds its card and rows, under them.
+    const frame = mark(scene, 'frame:lead')!;
+    expect(frame.z).toBe(0);
+    expect(frame.y + frame.h / 2).toBeGreaterThan(rows[1].y + rows[1].h / 2);
+  });
+
+  it('puts the other outliers in a column beside the lead, the calm lenses in chips below', () => {
+    const scene = dashboardScene(vitals, readings, topOf, null, true);
+    const lead = shown(scene, 'cursed-files')!;
+    const bus = shown(scene, 'bus-factor')!;
+    expect(bus.x - bus.w / 2).toBeGreaterThan(lead.x + lead.w / 2);
+    expect(bus).toMatchObject({
+      labelClass: 'atlas-label--hot',
+      labelSub: '63% of files rest on one author',
+    });
+    const chip = shown(scene, 'churn')!;
+    expect(chip).toMatchObject({
+      labelClass: 'atlas-label--row',
+      label: 'Churn',
+      h: 30,
+    });
+    expect(chip.y).toBeGreaterThan(mark(scene, 'frame:lead')!.y);
+    expect(mark(scene, 'toggle:calm')).toMatchObject({
+      label: `Within normal · ${readings.length - 2} lenses`,
+      labelSub: 'Hide ▴',
+    });
+    expect(chip.parent).toBe('toggle:calm');
+  });
+
+  it('folds the calm lenses behind a switch until it is opened', () => {
+    const closed = dashboardScene(vitals, readings, topOf, null);
+    expect(checkScene(closed)).toEqual([]);
+    expect(mark(closed, 'toggle:calm')).toMatchObject({
+      toggles: CALM_PANEL,
+      labelSub: 'Show ▾',
+    });
+    expect(mark(closed, ids.analyzer('churn'))).toBeUndefined();
+    const open = dashboardScene(vitals, readings, topOf, null, true);
+    expect(mark(open, ids.analyzer('churn'))).toBeDefined();
+    // Closed, the picture ends at the switch.
+    expect(closed.bounds.h).toBeLessThan(open.bounds.h);
+  });
+
+  it('wraps the chips within the width', () => {
+    const scene = dashboardScene(vitals, readings, topOf, null, true);
+    const chips = scene.marks.filter(
+      (m) => m.id.startsWith('analyzer:') && m.h === 30,
+    );
+    const rows = new Set(chips.map((c) => c.y));
+    expect(rows.size).toBeGreaterThan(1);
+    const right = Math.max(...scene.marks.map((m) => m.x + m.w / 2));
+    for (const c of chips) expect(c.x + c.w / 2).toBeLessThanOrEqual(right);
+    expect(chipWidth(readings[0])).toBeGreaterThan(readings[0].label.length);
+  });
+
+  it('swaps a picked outlier with the lead, the rest of the column staying put', () => {
+    const loud: LensReading[] = readings.map((r) => ({
+      ...r,
+      grade: ([
+        'cursed-files',
+        'bus-factor',
+        'fix-rate',
+        'test-coverage',
+      ].includes(r.preset)
+        ? r.preset === 'cursed-files'
+          ? 3
+          : 2
+        : 0) as LensReading['grade'],
+    }));
+    const before = dashboardScene(vitals, loud, topOf, null);
+    const after = dashboardScene(vitals, loud, topOf, 'fix-rate');
+    const at = (scene: Scene, preset: string) => shown(scene, preset)!;
+    // Risk takes Fix rate's slot; the others don't move.
+    expect(at(after, 'cursed-files').y).toBe(at(before, 'fix-rate').y);
+    expect(at(after, 'cursed-files').x).toBe(at(before, 'fix-rate').x);
+    expect(at(after, 'fix-rate').x).toBe(at(before, 'cursed-files').x);
+    for (const p of ['bus-factor', 'test-coverage'])
+      expect(at(after, p).y).toBe(at(before, p).y);
+    // In place, not across: the lead and Fix rate's slot keep their marks'
+    // ids, so the stage updates their contents where they are.
+    expect(at(after, 'fix-rate').id).toBe(at(before, 'cursed-files').id);
+    expect(at(after, 'cursed-files').id).toBe(at(before, 'fix-rate').id);
+    expect(after.standIns?.get(ids.analyzer('fix-rate'))).toBe('lead');
+    expect(checkScene(after)).toEqual([]);
+  });
+
+  it('puts a picked lens in the lead and returns the old lead to its column', () => {
+    const scene = dashboardScene(vitals, readings, () => fanned, 'churn');
+    expect(checkScene(scene)).toEqual([]);
+    const lead = shown(scene, 'churn')!;
+    // A calm lead: no accent, and its reading where a reason would be.
+    expect(lead.labelClass).toBe('atlas-label--lead');
+    expect(mark(scene, fanned[0].id)?.parent).toBe(lead.id);
+    const risk = shown(scene, 'cursed-files')!;
+    expect(risk.labelClass).toBe('atlas-label--hot');
+    expect(risk.x).toBeGreaterThan(lead.x + lead.w / 2);
+  });
+});
+
+describe('dashboardLayout', () => {
+  it('leads with the lens in focus, the loudest for a view or nothing', () => {
+    const preset = lensReadings(report).find(
+      (r) => topOf(r.preset).length > 0,
+    )!.preset;
+    const build = (focus: string | null) =>
+      dashboardLayout.build(
+        { report, commits: null, focus, index },
+        { width: 1200, height: 800 },
+      );
+    const picked = build(ids.analyzer(preset));
+    expect(shown(picked, preset)?.labelClass).toMatch(/^atlas-label--lead/);
+    expect(mark(picked, topOf(preset)[0].id)).toBeDefined();
+    const loudest = loudestLens(lensReadings(report))!;
+    for (const focus of [null, ids.view('code-health')])
+      expect(shown(build(focus), loudest.preset)?.labelClass).toMatch(
+        /^atlas-label--lead/,
+      );
+    expect(dashboardLayout.focusKinds).not.toContain('view');
+    // The shell's open panels reach it.
+    const opened = dashboardLayout.build(
+      {
+        report,
+        commits: null,
+        focus: null,
+        index,
+        open: new Set([CALM_PANEL]),
+      },
+      { width: 1200, height: 800 },
+    );
+    expect(mark(opened, 'toggle:calm')?.labelSub).toBe('Hide ▴');
+  });
+});

@@ -291,3 +291,65 @@ body {
     transition: none;
   }
 }
+
+/* --row: a line on the dashboard (layouts/dashboard.ts), a lead's fanned
+   entity or a calm lens's chip: its name, and its reading on the right. */
+.atlas-label--card.atlas-label--row {
+  grid-template-rows: auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: baseline;
+  padding: 0 12px;
+  font-size: 13px;
+  line-height: 22px;
+  font-weight: 400;
+}
+
+.atlas-label--card.atlas-label--row .atlas-label__sub {
+  font-size: 12px;
+  line-height: 22px;
+  color: var(--muted);
+}
+
+/* --section: a heading on the dashboard (the calm lenses'), a card with no
+   box, so its text scales with the view. */
+.atlas-label--card.atlas-label--section {
+  align-content: start;
+  padding: 4px 0 0;
+  background: transparent;
+  border-color: transparent;
+  font-weight: 600;
+}
+
+/* --lead: the dashboard's lead lens, its number set large over the reason it
+   leads; --lead-hot when it reads outside normal (number and reason in accent). */
+.atlas-label--card.atlas-label--lead,
+.atlas-label--card.atlas-label--lead-hot {
+  column-gap: 22px;
+  padding: 0 24px;
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 600;
+}
+
+.atlas-label--card.atlas-label--lead .atlas-label__lead,
+.atlas-label--card.atlas-label--lead-hot .atlas-label__lead {
+  font-size: 60px;
+  line-height: 64px;
+}
+
+.atlas-label--card.atlas-label--lead .atlas-label__sub,
+.atlas-label--card.atlas-label--lead-hot .atlas-label__sub {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 400;
+}
+
+.atlas-label--card.atlas-label--lead-hot {
+  border-color: var(--accent);
+}
+
+.atlas-label--lead-hot .atlas-label__lead,
+.atlas-label--card.atlas-label--lead-hot .atlas-label__sub {
+  color: var(--accent);
+}

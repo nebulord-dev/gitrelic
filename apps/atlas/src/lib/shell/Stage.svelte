@@ -17,6 +17,7 @@
     theme,
     selected = null,
     onselect,
+    ontoggle,
     empty,
     caption,
     docs,
@@ -33,6 +34,8 @@
     selected?: EntityId | null;
     /** A click: what it hit, and whether it is a double-click's second. */
     onselect?: (id: EntityId | null, repeat: boolean) => void;
+    /** A click on a switch in the picture (a collapsible panel): its key. */
+    ontoggle?: (key: string) => void;
     /** Shown while there's no scene (the lens has no Atlas view yet). */
     empty?: Snippet;
     /** One line on how to read the picture, under it. */
@@ -102,6 +105,7 @@
             // The corner controls (fit, form toggle) and the caption row.
             insets: STAGE_INSETS,
             onSelect: (id, repeat) => onselect?.(id, repeat),
+            onToggle: (key) => ontoggle?.(key),
           },
         ),
       )

@@ -50,7 +50,7 @@ describe('fanFold', () => {
   it('folds a file picked from a fan back to its lens', () => {
     const [first] = lensTopEntities('hotspots', report, index);
     expect(fanFold(first.id, hotspots, 'fan')).toBe(hotspots);
-    expect(fanFold(first.id, hotspots, 'ring')).toBe(hotspots);
+    expect(fanFold(first.id, hotspots, 'dashboard')).toBe(hotspots);
   });
 
   it('folds a lens on the Fan to its own view, so the Fan stays on it', () => {
@@ -60,8 +60,8 @@ describe('fanFold', () => {
     ).toBe(ids.view('ownership-risk'));
   });
 
-  it('folds a lens on the Ring, a view, or nothing, to nothing', () => {
-    expect(fanFold(hotspots, hotspots, 'ring')).toBeNull();
+  it('folds a lens on the dashboard, a view, or nothing, to nothing', () => {
+    expect(fanFold(hotspots, hotspots, 'dashboard')).toBeNull();
     expect(fanFold(codeHealth, codeHealth, 'fan')).toBeNull();
     expect(fanFold(null, null, 'fan')).toBeNull();
   });

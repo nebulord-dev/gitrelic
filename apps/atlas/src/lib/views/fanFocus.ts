@@ -35,7 +35,7 @@ export function nextFanFocus(
  * `foldTo`). A file picked from a lens's fan folds to that lens. In the Fan, a
  * lens folds to its view: the open view is the selection, so clearing it would
  * jump to the loudest view instead of closing the lens. Anything else (a view,
- * or a lens on the Ring, which has no open view) folds to nothing.
+ * or a lens on the dashboard, which has no open view) folds to nothing.
  */
 export function fanFold(
   selection: EntityId | null,
