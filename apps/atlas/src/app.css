@@ -315,3 +315,19 @@ body {
   line-height: 22px;
   color: var(--muted);
 }
+
+/* --section: a view's name beside its tiles on the dashboard, a card with no
+   box (so its text scales with the view and never outgrows its column);
+   --section-hot when any of its lenses reads outside normal. */
+.atlas-label--card.atlas-label--section,
+.atlas-label--card.atlas-label--section-hot {
+  align-content: start;
+  padding: 8px 0 0;
+  background: transparent;
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.atlas-label--section-hot .atlas-label__sub {
+  color: var(--accent);
+}

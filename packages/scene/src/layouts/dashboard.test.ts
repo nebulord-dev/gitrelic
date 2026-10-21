@@ -151,9 +151,13 @@ describe('dashboardScene', () => {
     const scene = dashboardScene(vitals, graded, topOf, null);
     expect(mark(scene, 'section:ownership-risk')).toMatchObject({
       label: 'Ownership & Risk',
+      shape: 'card',
       labelSub: '1 outside normal',
-      labelClass: 'atlas-label--hot',
+      labelClass: 'atlas-label--section-hot',
     });
+    expect(mark(scene, 'section:structure')?.labelClass).toBe(
+      'atlas-label--section',
+    );
     expect(mark(scene, 'section:structure')?.labelSub).toBe(
       'all within normal',
     );

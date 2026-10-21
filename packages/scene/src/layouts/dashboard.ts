@@ -150,21 +150,26 @@ export function dashboardScene(
   for (const view of FAN_VIEWS) {
     const lenses = readings.filter((r) => r.group === view);
     const loud = lenses.filter((r) => r.grade >= 2).length;
-    // The view's name, top left of its tiles; it selects nothing.
+    // The view's name, left of its tiles; it selects nothing. A card, so its
+    // text is in world units and scales with the view: a screen-px label
+    // outgrows the column when the fit zooms out, and the label layer then
+    // culls the first tile it overlaps.
     marks.push({
       id: `section:${view}`,
-      shape: 'dot',
+      shape: 'card',
       paint: '--muted',
-      x: 0,
-      y: top + 14,
+      x: (HEAD_W - GAP) / 2,
+      y: top + TILE_H / 2,
       r: 0,
       ...ZERO,
+      w: HEAD_W - GAP,
+      h: TILE_H,
       alpha: 1,
       label: viewLabel(view),
       labelSub: loud ? `${loud} outside normal` : 'all within normal',
-      labelClass: loud ? 'atlas-label--hot' : undefined,
+      labelClass: loud ? 'atlas-label--section-hot' : 'atlas-label--section',
       labelPriority: SECTION_LABEL,
-      labelAnchor: 'right',
+      labelAnchor: 'center',
       z: 1,
     });
 
