@@ -2,10 +2,15 @@
 // fan and the ring: a bento. The repo's vitals in a strip; then the lead, the
 // loudest lens (or the one picked) as a large card over the list of what it
 // points at, with the other outliers in a column beside it; then every calm
-// lens as a chip. Picking a tile or chip puts that lens in the lead. Every
-// lens keeps its `analyzer:` id wherever it sits, so a chip grows into the
-// lead and the old lead settles back into its place; the lead's rows are the
-// fanned entities, with the ids the other forms give them.
+// lens as a chip. Picking a tile or chip puts that lens in the lead.
+//
+// The lead and the outlier column are keyed by place (`lead`, `outlier:<i>`),
+// not by lens: each card selects its lens (`selects`, and the scene's
+// stand-ins mark it selected), so picking one replaces the lead's contents in
+// place rather than sliding a card across, and the loudest drops into the
+// picked one's slot. The lead's rows are the fanned entities, with the ids
+// and `fan:<i>` slots the other forms give them, so they morph from one lead
+// to the next. Chips keep their lenses' ids.
 
 import { ids } from '../ids';
 import { splitReading } from '../overview/viewHeadlines';
@@ -15,6 +20,8 @@ import type { LensReading } from '../overview/readings';
 import type { FannedEntity } from '../overview/topEntities';
 import type { Vital } from '../overview/vitals';
 
+/** The lead's card, whichever lens it shows. */
+export const LEAD_ID = 'lead';
 /** The world's width; the stage fits it. */
 const WIDTH = 1400;
 const GAP = 16;
@@ -84,8 +91,8 @@ function relativeWeights(entities: readonly FannedEntity[]): number[] {
 /**
  * The outliers beside the lead, loudest first when the loudest leads. A
  * picked outlier and the loudest swap places: the loudest takes the picked
- * one's slot, so the rest of the column stays put and only the two move. A
- * picked calm lens leaves no slot, so the loudest heads the column.
+ * one's slot, so the rest of the column stays put. A picked calm lens leaves
+ * no slot in the column, so the loudest joins its end.
  */
 export function outlierColumn(
   readings: readonly LensReading[],
@@ -101,7 +108,7 @@ export function outlierColumn(
     column[slot] = loudest;
     return column;
   }
-  return loudest.grade >= 2 ? [loudest, ...column] : column;
+  return loudest.grade >= 2 ? [...column, loudest] : column;
 }
 
 /** A chip's width for its name and reading. */
@@ -121,6 +128,7 @@ export function dashboardScene(
   picked: string | null,
 ): Scene {
   const marks: Mark[] = [];
+  const standIns = new Map<string, string>();
   const lead =
     readings.find((r) => r.preset === picked) ?? loudestLens(readings);
 
@@ -151,7 +159,8 @@ export function dashboardScene(
   const top = VITAL_H + GAP * 2;
   let leadBottom = top;
   if (lead) {
-    const id = ids.analyzer(lead.preset);
+    const id = LEAD_ID;
+    standIns.set(ids.analyzer(lead.preset), id);
     const hot = lead.grade >= 2;
     const { lead: num, rest } = splitReading(lead.value);
     const cardTop = top + FRAME_PAD;
@@ -167,6 +176,7 @@ export function dashboardScene(
       w: innerW,
       h: LEAD_H,
       alpha: 1,
+      selects: ids.analyzer(lead.preset),
       labelLead: num || undefined,
       label: lead.label,
       // Why it leads, when a rule graded it; else what the number counts.
@@ -253,8 +263,11 @@ export function dashboardScene(
   const colW = WIDTH - colX;
   outliers.forEach((r, i) => {
     const { lead: num, rest } = splitReading(r.value);
+    const id = `outlier:${i}`;
+    standIns.set(ids.analyzer(r.preset), id);
     marks.push({
-      id: ids.analyzer(r.preset),
+      id,
+      selects: ids.analyzer(r.preset),
       shape: 'card',
       paint: RAMP[r.grade],
       x: colX + colW / 2,
@@ -332,6 +345,7 @@ export function dashboardScene(
     marks,
     links: [],
     guides: [],
+    standIns,
     bounds: {
       x: -MARGIN,
       y: -MARGIN,

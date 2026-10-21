@@ -658,6 +658,26 @@ describe('AtlasStage', () => {
     expect(tip().hidden).toBe(true);
   });
 
+  it('a selection whose entity has no mark marks the mark holding it', async () => {
+    const { stage, fc, labelHost } = await setup();
+    stage!.show({
+      ...scene(
+        dot('lead:risk', 100, 100, {
+          label: 'Risk',
+          selects: 'analyzer:risk',
+        }),
+      ),
+      standIns: new Map([['analyzer:risk', 'lead:risk']]),
+    });
+    settle(fc);
+    stage!.select('analyzer:risk');
+    fc.frame();
+    const span = [...labelHost.querySelectorAll('.atlas-label')].find(
+      (s) => s.textContent === 'Risk',
+    );
+    expect(span?.classList.contains('atlas-label--selected')).toBe(true);
+  });
+
   it('a resize mid-glide frames for the new size, not the old target', async () => {
     const { stage, fc } = await setup();
     stage!.show(scene(dot('person:a', 100, 100)));

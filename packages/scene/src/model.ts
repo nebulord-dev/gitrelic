@@ -215,8 +215,9 @@ export interface Scene {
   bounds: Bounds;
   /**
    * Entities the layout scored but didn't draw a mark for, each mapped to the
-   * mark that holds it (a density cell, a package's disc). Hovering one from
-   * outside — a detail-table row — lights its stand-in instead of nothing.
+   * mark that holds it (a density cell, a package's disc, a dashboard card
+   * keyed by its slot). Hovering one from outside — a detail-table row —
+   * lights its stand-in instead of nothing, and selecting one marks it.
    */
   standIns?: ReadonlyMap<EntityId, string>;
 }

@@ -39,6 +39,11 @@ const fanned: FannedEntity[] = [
   { id: ids.file('src/b.ts'), label: 'b.ts', value: 'score 45' },
 ];
 const mark = (scene: Scene, id: string) => scene.marks.find((m) => m.id === id);
+/** The mark showing a lens: its own (a chip), or the slot standing in for it. */
+const shown = (scene: Scene, preset: string) => {
+  const id = ids.analyzer(preset);
+  return mark(scene, scene.standIns?.get(id) ?? id);
+};
 
 describe('readingWeight', () => {
   it('reads a share, else the last number', () => {
@@ -75,9 +80,9 @@ describe('outlierColumn', () => {
     ).toEqual(['cursed-files']);
   });
 
-  it('heads the column with the loudest when a calm lens is picked', () => {
+  it('ends the column with the loudest when a calm lens is picked', () => {
     expect(outlierColumn(readings, lens('churn')).map((r) => r.preset)).toEqual(
-      ['cursed-files', 'bus-factor'],
+      ['bus-factor', 'cursed-files'],
     );
   });
 });
@@ -97,15 +102,22 @@ describe('dashboardScene', () => {
     ]);
     // Context, not findings: plain cards, never the accent fill.
     for (const v of shown) expect(v.labelClass).toBeUndefined();
-    const lenses = scene.marks.filter((m) => m.id.startsWith('analyzer:'));
-    expect(lenses.map((m) => m.id).sort()).toEqual(
+    // Every lens once: a chip of its own, or a card in a slot selecting it.
+    const lenses = scene.marks.flatMap((m) =>
+      m.id.startsWith('analyzer:')
+        ? [m.id]
+        : m.selects?.startsWith('analyzer:')
+          ? [m.selects]
+          : [],
+    );
+    expect(lenses.sort()).toEqual(
       readings.map((r) => ids.analyzer(r.preset)).sort(),
     );
   });
 
   it('leads with the loudest lens: its reason, and the rows of what it points at', () => {
     const scene = dashboardScene(vitals, readings, () => fanned, null);
-    const lead = mark(scene, ids.analyzer('cursed-files'))!;
+    const lead = shown(scene, 'cursed-files')!;
     expect(lead).toMatchObject({
       labelClass: 'atlas-label--lead-hot',
       labelSub: '8 files with a curse score of 50+',
@@ -137,14 +149,14 @@ describe('dashboardScene', () => {
 
   it('puts the other outliers in a column beside the lead, the calm lenses in chips below', () => {
     const scene = dashboardScene(vitals, readings, topOf, null);
-    const lead = mark(scene, ids.analyzer('cursed-files'))!;
-    const bus = mark(scene, ids.analyzer('bus-factor'))!;
+    const lead = shown(scene, 'cursed-files')!;
+    const bus = shown(scene, 'bus-factor')!;
     expect(bus.x - bus.w / 2).toBeGreaterThan(lead.x + lead.w / 2);
     expect(bus).toMatchObject({
       labelClass: 'atlas-label--hot',
       labelSub: '63% of files rest on one author',
     });
-    const chip = mark(scene, ids.analyzer('churn'))!;
+    const chip = shown(scene, 'churn')!;
     expect(chip).toMatchObject({
       labelClass: 'atlas-label--row',
       label: 'Churn',
@@ -184,24 +196,29 @@ describe('dashboardScene', () => {
     }));
     const before = dashboardScene(vitals, loud, topOf, null);
     const after = dashboardScene(vitals, loud, topOf, 'fix-rate');
-    const at = (scene: Scene, preset: string) =>
-      mark(scene, ids.analyzer(preset))!;
+    const at = (scene: Scene, preset: string) => shown(scene, preset)!;
     // Risk takes Fix rate's slot; the others don't move.
     expect(at(after, 'cursed-files').y).toBe(at(before, 'fix-rate').y);
     expect(at(after, 'cursed-files').x).toBe(at(before, 'fix-rate').x);
     expect(at(after, 'fix-rate').x).toBe(at(before, 'cursed-files').x);
     for (const p of ['bus-factor', 'test-coverage'])
       expect(at(after, p).y).toBe(at(before, p).y);
+    // In place, not across: the lead and Fix rate's slot keep their marks'
+    // ids, so the stage updates their contents where they are.
+    expect(at(after, 'fix-rate').id).toBe(at(before, 'cursed-files').id);
+    expect(at(after, 'cursed-files').id).toBe(at(before, 'fix-rate').id);
+    expect(after.standIns?.get(ids.analyzer('fix-rate'))).toBe('lead');
+    expect(checkScene(after)).toEqual([]);
   });
 
   it('puts a picked lens in the lead and returns the old lead to its column', () => {
     const scene = dashboardScene(vitals, readings, () => fanned, 'churn');
     expect(checkScene(scene)).toEqual([]);
-    const lead = mark(scene, ids.analyzer('churn'))!;
+    const lead = shown(scene, 'churn')!;
     // A calm lead: no accent, and its reading where a reason would be.
     expect(lead.labelClass).toBe('atlas-label--lead');
     expect(mark(scene, fanned[0].id)?.parent).toBe(lead.id);
-    const risk = mark(scene, ids.analyzer('cursed-files'))!;
+    const risk = shown(scene, 'cursed-files')!;
     expect(risk.labelClass).toBe('atlas-label--hot');
     expect(risk.x).toBeGreaterThan(lead.x + lead.w / 2);
   });
@@ -218,15 +235,13 @@ describe('dashboardLayout', () => {
         { width: 1200, height: 800 },
       );
     const picked = build(ids.analyzer(preset));
-    expect(mark(picked, ids.analyzer(preset))?.labelClass).toMatch(
-      /^atlas-label--lead/,
-    );
+    expect(shown(picked, preset)?.labelClass).toMatch(/^atlas-label--lead/);
     expect(mark(picked, topOf(preset)[0].id)).toBeDefined();
     const loudest = loudestLens(lensReadings(report))!;
     for (const focus of [null, ids.view('code-health')])
-      expect(
-        mark(build(focus), ids.analyzer(loudest.preset))?.labelClass,
-      ).toMatch(/^atlas-label--lead/);
+      expect(shown(build(focus), loudest.preset)?.labelClass).toMatch(
+        /^atlas-label--lead/,
+      );
     expect(dashboardLayout.focusKinds).not.toContain('view');
   });
 });

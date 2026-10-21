@@ -77,8 +77,10 @@ export class AtlasStage {
    * its own lights the mark holding it (a density cell).
    */
   private get hovered(): EntityId | null {
-    if (this.pointerHover) return this.pointerHover;
-    const id = this.rowHover;
+    return this.pointerHover ?? this.markFor(this.rowHover);
+  }
+  /** The mark showing an entity: its own, else the one standing in for it. */
+  private markFor(id: EntityId | null): EntityId | null {
     if (!id || this.store.indexOf(id) >= 0) return id;
     return this.standIns?.get(id) ?? id;
   }
@@ -363,8 +365,11 @@ export class AtlasStage {
     if (animated) this.hitsStale = true;
     const pinned = new Set<EntityId>();
     if (this.hovered) pinned.add(this.hovered);
-    if (this.selected) pinned.add(this.selected);
-    this.labels.update(this.store, this.view, this.size, pinned, this.selected);
+    // A selection the scene draws through a stand-in (a dashboard card in a
+    // slot) marks that stand-in.
+    const selected = this.markFor(this.selected);
+    if (selected) pinned.add(selected);
+    this.labels.update(this.store, this.view, this.size, pinned, selected);
     this.tooltip.update(this.store, this.view, this.size, this.hovered);
     this.opts.onFrame?.(this.clock.now() - start);
     // A plan can cut the engine's repaint short, or end before the camera
