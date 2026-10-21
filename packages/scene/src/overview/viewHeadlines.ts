@@ -16,6 +16,10 @@ export const FAN_VIEWS: readonly FanView[] = [
   'structure',
 ];
 
+/** Narrows an id to a view the fan draws. */
+export const isFanView = (id: string): id is FanView =>
+  (FAN_VIEWS as readonly string[]).includes(id);
+
 /** What each view covers, in a line (the inspector's view card). */
 export const VIEW_BLURBS: Record<FanView, string> = {
   'code-health':

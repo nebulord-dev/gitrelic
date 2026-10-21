@@ -1,4 +1,4 @@
-import { buildEntityIndex, ids } from '@gitrelic/scene';
+import { buildEntityIndex, ids, lensReadings } from '@gitrelic/scene';
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -17,7 +17,9 @@ describe('Inspector', () => {
     expect(
       screen.getByText(/lenses open in the classic dashboard/),
     ).toBeTruthy();
-    expect(screen.getByText(/to find a file, person or analyzer/)).toBeTruthy();
+    expect(
+      screen.getByText(/to find a view, file, person or analyzer/),
+    ).toBeTruthy();
     expect(
       screen.queryByRole('button', { name: /Clear selection/ }),
     ).toBeNull();
@@ -279,7 +281,9 @@ describe('Inspector', () => {
     expect(
       screen.getByRole('heading', { name: 'Loudest signals' }),
     ).toBeTruthy();
-    expect(screen.getByText(/Click a view or a lens/)).toBeTruthy();
+    expect(
+      screen.getByText(/Click a lens to see what it points at\./),
+    ).toBeTruthy();
     await fireEvent.click(screen.getByRole('button', { name: /Ghost Files/ }));
     expect(onselect).toHaveBeenCalledWith('analyzer:ghost-files');
   });
@@ -372,11 +376,62 @@ describe('Inspector', () => {
     expect(
       screen.getByRole('heading', { name: 'Lenses, loudest first' }),
     ).toBeTruthy();
-    await fireEvent.click(screen.getByRole('button', { name: /^Hotspots/ }));
-    expect(onselect).toHaveBeenCalledWith('analyzer:hotspots');
+    const readings = lensReadings(report).filter(
+      (r) => r.group === 'code-health',
+    );
+    const headline = readings.reduce((a, b) => (b.grade > a.grade ? b : a));
+    const card = screen
+      .getByRole('heading', { name: 'Lenses, loudest first' })
+      .closest('section') as HTMLElement;
+    // The headline sits in the first card, outside the lens list.
+    const shownValue = screen
+      .getAllByText(headline.value)
+      .find((el) => !card.contains(el));
+    expect(shownValue).toBeTruthy();
+    const shown = within(card)
+      .getAllByRole('button')
+      .map((b) => b.textContent ?? '');
+    const expected = [...readings].sort((a, b) => b.grade - a.grade);
+    expect(shown).toHaveLength(expected.length);
+    expected.forEach((r, i) => expect(shown[i]).toContain(r.label));
+    await fireEvent.click(within(card).getAllByRole('button')[0]);
+    expect(onselect).toHaveBeenCalledWith(`analyzer:${expected[0].preset}`);
     await fireEvent.click(
       screen.getByRole('button', { name: 'Open Code Health' }),
     );
     expect(onopen).toHaveBeenCalledWith('hotspots');
+  });
+
+  it('clears the view selection when its Open button opens a lens', async () => {
+    const onselect = vi.fn();
+    const onopen = vi.fn();
+    render(Inspector, {
+      ...base,
+      lens: 'overview',
+      selection: ids.view('code-health'),
+      onselect,
+      onopen,
+    });
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'Open Code Health' }),
+    );
+    expect(onopen).toHaveBeenCalledWith('hotspots');
+    expect(onselect).toHaveBeenLastCalledWith(null);
+  });
+
+  it("clears a lens preview's selection when its Open button opens the lens", async () => {
+    const onselect = vi.fn();
+    const onopen = vi.fn();
+    render(Inspector, {
+      ...base,
+      selection: ids.analyzer('hotspots'),
+      onselect,
+      onopen,
+    });
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'Open Hotspots' }),
+    );
+    expect(onopen).toHaveBeenCalledWith('hotspots');
+    expect(onselect).toHaveBeenLastCalledWith(null);
   });
 });

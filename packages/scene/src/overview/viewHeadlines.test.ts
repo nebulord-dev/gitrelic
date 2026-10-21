@@ -5,6 +5,7 @@ import { PRESET_GROUPS } from '../catalog';
 import { lensReadings, type LensReading } from './readings';
 import {
   FAN_VIEWS,
+  isFanView,
   loudestView,
   splitReading,
   VIEW_BLURBS,
@@ -85,5 +86,13 @@ describe('splitReading', () => {
     });
     expect(splitReading('—')).toEqual({ lead: '', rest: '—' });
     expect(splitReading('12')).toEqual({ lead: '', rest: '12' });
+  });
+});
+
+describe('isFanView', () => {
+  it('accepts the fan views and nothing else', () => {
+    expect(isFanView('structure')).toBe(true);
+    expect(isFanView('overview')).toBe(false);
+    expect(isFanView('nope')).toBe(false);
   });
 });

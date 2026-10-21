@@ -43,12 +43,12 @@
   {#if loudestLabel}
     <p class="m-0 text-[15px] leading-relaxed">
       The loudest view is <span class="text-accent">{loudestLabel}</span>. Click
-      a view or a lens to see what it points at.
+      a lens to see what it points at.
     </p>
   {:else}
     <p class="m-0 text-[15px] leading-relaxed">
-      No lens reads outside normal for a repo this size. Click any view or lens
-      to see what it points at.
+      No lens reads outside normal for a repo this size. Click any lens to see
+      what it points at.
     </p>
   {/if}
 </Card>

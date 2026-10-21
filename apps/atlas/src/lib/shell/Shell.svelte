@@ -133,10 +133,10 @@
     const entry = nav.lens ? catalogEntry(nav.lens) : undefined;
     return entry ? (docsUrl(entry) ?? undefined) : undefined;
   });
-  // The Overview fans its focus (a view or a lens); other layouts re-form around a
-  // selection of a kind they declare (the field draws a selected file even
-  // when it's cool). Anything else gives them no focus, so a click they
-  // can't show doesn't rebuild and re-plan the scene.
+  // The Overview fans its focus (a view or a lens); other layouts re-form
+  // around a selection of a kind they declare (the field draws a selected
+  // file even when it's cool). Anything else gives them no focus, so a click
+  // they can't show doesn't rebuild and re-plan the scene.
   let layoutFocus = $derived.by(() => {
     if (!layout?.focusKinds) return null;
     if (nav.lens === 'overview') return fanFocus;

@@ -14,11 +14,7 @@ import {
   type LensReading,
 } from '../overview/readings';
 import { lensTopEntities } from '../overview/topEntities';
-import {
-  FAN_VIEWS,
-  loudestView,
-  type FanView,
-} from '../overview/viewHeadlines';
+import { isFanView, loudestView } from '../overview/viewHeadlines';
 import type { AnalyzerView, Layout, ViewInput } from '../model';
 
 const FOCUS_KINDS: readonly EntityKind[] = [
@@ -44,9 +40,6 @@ function previewOf(input: ViewInput, readings: readonly LensReading[]) {
     ),
   };
 }
-
-const isFanView = (id: string): id is FanView =>
-  (FAN_VIEWS as readonly string[]).includes(id);
 
 export const fanLayout: Layout = {
   id: 'fan',

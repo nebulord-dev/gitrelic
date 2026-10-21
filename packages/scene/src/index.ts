@@ -237,6 +237,7 @@ export { ringScene, type RingFocus } from './layouts/ring';
 export { fanLayout, overviewView, ringLayout } from './views/overview';
 export {
   FAN_VIEWS,
+  isFanView,
   loudestView,
   VIEW_BLURBS,
   viewHeadline,

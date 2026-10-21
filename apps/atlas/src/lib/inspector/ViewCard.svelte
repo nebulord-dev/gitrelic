@@ -21,7 +21,7 @@
   }: {
     view: FanView;
     report: GitrelicReport;
-    /** Selecting a lens previews it on the Overview. */
+    /** Selecting a lens previews it (on the Overview, on the stage too). */
     onselect?: (id: EntityId) => void;
     /** Opens a lens that has an Atlas view. */
     onopen?: (lens: string) => void;
