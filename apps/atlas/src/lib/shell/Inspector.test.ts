@@ -355,4 +355,27 @@ describe('Inspector', () => {
         .getAttribute('href'),
     ).toBe('/classic/#preset=dead-code');
   });
+
+  it('describes a selected view: its headline, its lenses loudest first, and a way in', async () => {
+    const onselect = vi.fn();
+    const onopen = vi.fn();
+    render(Inspector, {
+      ...base,
+      lens: 'overview',
+      selection: ids.view('code-health'),
+      onselect,
+      onopen,
+    });
+    expect(screen.getByRole('heading', { name: 'Code Health' })).toBeTruthy();
+    expect(screen.getByText(/under strain/)).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: 'Lenses, loudest first' }),
+    ).toBeTruthy();
+    await fireEvent.click(screen.getByRole('button', { name: /^Hotspots/ }));
+    expect(onselect).toHaveBeenCalledWith('analyzer:hotspots');
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'Open Code Health' }),
+    );
+    expect(onopen).toHaveBeenCalledWith('hotspots');
+  });
 });

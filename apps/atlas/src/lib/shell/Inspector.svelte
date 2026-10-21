@@ -3,6 +3,7 @@
     catalogEntry,
     entityKey,
     entityKind,
+    FAN_VIEWS,
     PRESET_GROUPS,
     type EntityId,
     type EntityIndex,
@@ -23,6 +24,7 @@
   import RepoMapCard from '../inspector/RepoMapCard.svelte';
   import RepositoryCard from '../inspector/RepositoryCard.svelte';
   import RiskCard from '../inspector/RiskCard.svelte';
+  import ViewCard from '../inspector/ViewCard.svelte';
   import { modalOpen, paletteShortcut, pressed } from './shortcut';
   import type { GitrelicReport } from '@gitrelic/core';
 
@@ -63,6 +65,11 @@
   let key = $derived(selection ? entityKey(selection) : '');
   let lensEntry = $derived(lens ? catalogEntry(lens) : undefined);
   let analyzer = $derived(kind === 'analyzer' ? catalogEntry(key) : undefined);
+  let selectedView = $derived(
+    kind === 'view' && (FAN_VIEWS as readonly string[]).includes(key)
+      ? (key as (typeof FAN_VIEWS)[number])
+      : undefined,
+  );
   let viewLabel = $derived(PRESET_GROUPS.find((g) => g.id === view)?.label);
 
   // The strip's shortcuts into a selected file's sections.
@@ -250,6 +257,8 @@
     />
   {:else if kind === 'dir'}
     <DirCard dir={key} {report} {activity} {historyFailed} />
+  {:else if selectedView}
+    <ViewCard view={selectedView} {report} {onselect} {onopen} />
   {:else if analyzer}
     <ExplainCard entry={analyzer} />
     <LensPreviewCard
