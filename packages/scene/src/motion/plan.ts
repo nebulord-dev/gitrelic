@@ -9,6 +9,10 @@
 //      other leaving marks shrink into their nearest ancestor in the next scene
 //   3. new links draw in, staggered, starting while the move settles
 //
+// A mark or link entering in the slot of one leaving (`Mark.slot`) skips all
+// that: it takes the other's place on screen and moves (or finishes drawing)
+// from there, and the one it replaces goes at once.
+//
 // Every track starts from the live (possibly mid-flight) state, so a
 // transition interrupted by another picks up where things actually are.
 
@@ -41,6 +45,10 @@ export interface MarkTrack {
   delay: number;
   duration: number;
   ease: EaseName;
+  /** An update that starts from the leaving mark it takes the slot of. */
+  takesOver?: EntityId;
+  /** An exit with no animation: this mark's slot went to that one. */
+  takenBy?: EntityId;
 }
 
 export interface LinkTrack {
@@ -52,6 +60,10 @@ export interface LinkTrack {
   delay: number;
   duration: number;
   ease: EaseName;
+  /** An update that starts from the leaving link it takes the slot of. */
+  takesOver?: string;
+  /** An exit with no animation: this link's slot went to that one. */
+  takenBy?: string;
 }
 
 export interface GuideTrack {
@@ -126,9 +138,40 @@ export function planTransition(
   const links: LinkTrack[] = [];
   const guides: GuideTrack[] = [];
 
-  // 1. Retract links that won't survive.
+  // Who takes over whose slot. Reduced motion only fades, so nothing does.
+  const markSlots = reduced
+    ? NO_SLOTS
+    : pairSlots(
+        next.marks.filter((m) => !live.marks.has(m.id)),
+        [...live.marks.values()].filter((m) => !nextMarks.has(m.id)),
+      );
+  const linkSlots = reduced
+    ? NO_SLOTS
+    : pairSlots(
+        next.links.filter((l) => !live.links.has(l.id)),
+        [...live.links.values()].filter((l) => !nextLinks.has(l.id)),
+      );
+
+  // 1. Retract links that won't survive; those whose slot is taken just go.
+  let retracting = 0;
   for (const link of live.links.values()) {
     if (nextLinks.has(link.id)) continue;
+    const takenBy = linkSlots.takenBy.get(link.id);
+    if (takenBy !== undefined) {
+      links.push({
+        id: link.id,
+        phase: 'exit',
+        link,
+        from: { progress: link.progress, alpha: link.alpha },
+        to: { progress: link.progress, alpha: 0 },
+        delay: 0,
+        duration: 0,
+        ease: 'linear',
+        takenBy,
+      });
+      continue;
+    }
+    retracting++;
     links.push({
       id: link.id,
       phase: 'exit',
@@ -142,10 +185,11 @@ export function planTransition(
       ease: reduced ? 'linear' : 'out-cubic',
     });
   }
-  const folding = (m: Mark) => !reduced && m.foldOnExit === true;
+  const folding = (m: Mark) =>
+    !reduced && m.foldOnExit === true && !markSlots.takenBy.has(m.id);
   let moveAt = 0;
   if (!reduced) {
-    if (links.length > 0) moveAt = TIMING.retractLead;
+    if (retracting > 0) moveAt = TIMING.retractLead;
     for (const m of live.marks.values())
       if (!nextMarks.has(m.id) && folding(m)) {
         moveAt = Math.max(moveAt, TIMING.foldLead);
@@ -170,6 +214,21 @@ export function planTransition(
       });
       continue;
     }
+    const donor = markSlots.takes.get(mark.id);
+    if (donor !== undefined) {
+      marks.push({
+        id: mark.id,
+        phase: 'update',
+        mark,
+        from: geomOf(live.marks.get(donor)!),
+        to,
+        delay: moveAt,
+        duration: TIMING.move,
+        ease: 'out-cubic',
+        takesOver: donor,
+      });
+      continue;
+    }
     const origin = reduced
       ? null
       : nearestAncestor(mark, nextMarks, live.marks, live.marks);
@@ -187,6 +246,21 @@ export function planTransition(
   for (const current of live.marks.values()) {
     if (nextMarks.has(current.id)) continue;
     const from = geomOf(current);
+    const takenBy = markSlots.takenBy.get(current.id);
+    if (takenBy !== undefined) {
+      marks.push({
+        id: current.id,
+        phase: 'exit',
+        mark: current,
+        from,
+        to: { ...from, alpha: 0 },
+        delay: 0,
+        duration: 0,
+        ease: 'linear',
+        takenBy,
+      });
+      continue;
+    }
     const folds = folding(current);
     // A folding mark closes into its ancestor where that is now, before the
     // ancestor moves on; any other goes where its ancestor is going.
@@ -214,7 +288,9 @@ export function planTransition(
 
   // 3. Links that stay finish drawing; new ones cascade in as the move settles.
   const drawAt = reduced ? 0 : moveAt + TIMING.drawAfter;
-  const entering = next.links.filter((l) => !live.links.has(l.id));
+  const entering = next.links.filter(
+    (l) => !live.links.has(l.id) && !linkSlots.takes.has(l.id),
+  );
   const step =
     entering.length > 1
       ? Math.min(TIMING.stagger, TIMING.maxStagger / (entering.length - 1))
@@ -232,6 +308,22 @@ export function planTransition(
         delay: moveAt,
         duration: reduced ? 0 : TIMING.draw,
         ease: 'out-cubic',
+      });
+      continue;
+    }
+    const donor = linkSlots.takes.get(link.id);
+    if (donor !== undefined) {
+      const was = live.links.get(donor)!;
+      links.push({
+        id: link.id,
+        phase: 'update',
+        link,
+        from: { progress: was.progress, alpha: was.alpha },
+        to: { progress: 1, alpha: link.alpha },
+        delay: moveAt,
+        duration: TIMING.draw,
+        ease: 'out-cubic',
+        takesOver: donor,
       });
       continue;
     }
@@ -285,6 +377,51 @@ export function planTransition(
     duration = Math.max(duration, t.delay + t.duration);
   }
   return { marks, links, guides, duration };
+}
+
+interface SlotPairs {
+  /** Entering id → the leaving id whose slot it takes. */
+  takes: ReadonlyMap<string, string>;
+  /** Leaving id → the entering id that takes its slot. */
+  takenBy: ReadonlyMap<string, string>;
+}
+
+const NO_SLOTS: SlotPairs = { takes: new Map(), takenBy: new Map() };
+
+/** A slot's group: the part before its last `:` (the whole slot without one). */
+const groupOf = (slot: string) => {
+  const k = slot.lastIndexOf(':');
+  return k === -1 ? slot : slot.slice(0, k);
+};
+
+/**
+ * Pairs entering items with leaving ones by `slot`: each entering one, in
+ * order, takes the first free leaving one in the same slot; those left over
+ * then take the first free one in the same group. Each is paired once.
+ */
+function pairSlots(
+  entering: readonly { id: string; slot?: string }[],
+  leaving: readonly { id: string; slot?: string }[],
+): SlotPairs {
+  const takes = new Map<string, string>();
+  const takenBy = new Map<string, string>();
+  const free = leaving.filter((l) => l.slot !== undefined);
+  if (free.length === 0) return NO_SLOTS;
+  const wanting = entering.filter((e) => e.slot !== undefined);
+  for (const same of [
+    (a: string, b: string) => a === b,
+    (a: string, b: string) => groupOf(a) === groupOf(b),
+  ])
+    for (const e of wanting) {
+      if (takes.has(e.id)) continue;
+      const donor = free.find(
+        (l) => !takenBy.has(l.id) && same(e.slot!, l.slot!),
+      );
+      if (!donor) continue;
+      takes.set(e.id, donor.id);
+      takenBy.set(donor.id, e.id);
+    }
+  return { takes, takenBy };
 }
 
 export function geomOf(m: MarkGeom): MarkGeom {

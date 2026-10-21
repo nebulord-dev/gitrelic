@@ -61,6 +61,8 @@ interface LabelSpan {
   lead: HTMLSpanElement | null;
   /** The mark's `labelClass` it carries now, removed when the span moves on. */
   cls: string;
+  /** The mark whose label it showed last frame, or null when hidden. */
+  owner: string | null;
 }
 
 /** What a shown label draws: its lines, its class and which way it reads. */
@@ -217,21 +219,41 @@ export class LabelLayer {
     const shown = planLabels(candidates, { pinned, view: screen });
     const byId = new Map(candidates.map((c) => [c.id, c]));
 
-    while (this.pool.length < shown.length) {
-      const span = document.createElement('span');
-      span.className = 'atlas-label';
-      const main = document.createTextNode('');
-      span.append(main);
-      this.host.append(span);
-      this.pool.push({ span, main, sub: null, lead: null, cls: '' });
+    // A label shown last frame keeps its span, so a CSS transition on it (a
+    // card's fill moving to another card) runs on its own box, never from
+    // another mark's. New labels take spare spans, hidden ones first.
+    const showing = new Set(shown);
+    const entries = new Map<string, LabelSpan>();
+    for (const entry of this.pool)
+      if (entry.owner !== null && showing.has(entry.owner))
+        entries.set(entry.owner, entry);
+    const used = new Set(entries.values());
+    const spare = this.pool
+      .filter((e) => !used.has(e))
+      .sort((a, b) => Number(!a.span.hidden) - Number(!b.span.hidden));
+    for (const id of shown) {
+      if (entries.has(id)) continue;
+      let entry = spare.shift();
+      if (!entry) {
+        const span = document.createElement('span');
+        span.className = 'atlas-label';
+        const main = document.createTextNode('');
+        span.append(main);
+        this.host.append(span);
+        entry = { span, main, sub: null, lead: null, cls: '', owner: null };
+        this.pool.push(entry);
+      }
+      entries.set(id, entry);
     }
-    shown.forEach((id, k) => {
-      const entry = this.pool[k];
+    for (const entry of this.pool) entry.owner = null;
+    for (const [id, entry] of entries) entry.owner = id;
+    for (const id of shown) {
+      const entry = entries.get(id)!;
       const { span, main } = entry;
       const c = byId.get(id);
-      if (!c) return;
+      if (!c) continue;
       const t = text.get(id);
-      if (!t) return;
+      if (!t) continue;
       const {
         label,
         sub: second,
@@ -312,9 +334,9 @@ export class LabelLayer {
             ? ` scale(${fit.toFixed(3)})`
             : '');
       span.hidden = false;
-    });
-    for (let k = shown.length; k < this.pool.length; k++)
-      this.pool[k].span.hidden = true;
+    }
+    for (const entry of this.pool)
+      if (entry.owner === null) entry.span.hidden = true;
     return shown;
   }
 

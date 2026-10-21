@@ -361,6 +361,29 @@ describe('LabelLayer', () => {
     expect(shown[0].classList.contains('atlas-label--pinned')).toBe(true);
   });
 
+  it('keeps a mark’s label on the same span while it stays shown', () => {
+    // So a CSS transition on it (a card's fill) runs on its own box, never
+    // from another mark's.
+    const host = document.createElement('div');
+    const layer = new LabelLayer(host);
+    const a = { id: 'view:a', label: 'a', labelPriority: 60, y: 100 };
+    const b = { id: 'view:b', label: 'b', labelPriority: 60, y: 300 };
+    layer.update(store(a, b), IDENTITY, screen, new Set());
+    const spanOf = (text: string) =>
+      spans(host).find((s) => s.textContent === text)!;
+    const before = [spanOf('a'), spanOf('b')];
+    // A label that outranks both arrives first in line.
+    layer.update(
+      store(a, b, { id: 'analyzer:x', label: 'x', labelPriority: 110, y: 500 }),
+      IDENTITY,
+      screen,
+      new Set(),
+    );
+    expect([spanOf('a'), spanOf('b')]).toEqual(before);
+    expect(spanOf('x')).toBeDefined();
+    expect(host.querySelectorAll('.atlas-label')).toHaveLength(3);
+  });
+
   it('reuses its spans across frames and hides the spare ones', () => {
     const host = document.createElement('div');
     const layer = new LabelLayer(host);

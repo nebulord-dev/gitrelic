@@ -192,6 +192,18 @@ body {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: min(var(--card-radius), 12px);
+  /* Opening another view hands the fill over rather than snapping it: the
+     label layer keeps each card on its own span, so this never runs from
+     another card's box. */
+  transition:
+    background-color 300ms ease-out,
+    border-color 300ms ease-out,
+    color 300ms ease-out;
+}
+
+.atlas-label--card .atlas-label__lead,
+.atlas-label--card .atlas-label__sub {
+  transition: color 300ms ease-out;
 }
 
 .atlas-label--card .atlas-label__lead {

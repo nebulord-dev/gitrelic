@@ -82,6 +82,18 @@ export interface Mark extends MarkGeom {
    * the next scene.
    */
   foldOnExit?: boolean;
+  /**
+   * A place in the picture that outlives whichever entity holds it (`fan:3`,
+   * the fourth entity a lens fans out). In a transition, a mark entering
+   * takes over a leaving mark in the same slot (or, failing that, any free
+   * one in its group, the part before the last `:`): it starts from where
+   * that mark is drawn now and moves to its own place, and the leaving mark
+   * goes at once, without shrinking or folding, so a fan swapped for another
+   * morphs instead of closing and regrowing. Pairs go in scene order against
+   * what is on screen; ids still win (a mark in both scenes just moves).
+   * Ignored under reduced motion.
+   */
+  slot?: string;
   label?: string;
   /**
    * A quieter second line under the label (a package's file count under its
@@ -144,6 +156,12 @@ export interface Link {
    * right. A layout sets it to keep short arcs readable.
    */
   bow?: number;
+  /**
+   * As a mark's `slot`: a link entering takes over a leaving link in the
+   * same slot, carrying on from how far it is drawn instead of retracting
+   * and drawing in again.
+   */
+  slot?: string;
 }
 
 /**

@@ -4,6 +4,7 @@ import reportJson from '../../test/fixtures/report.small.json';
 import { buildEntityIndex } from '../entities';
 import { ids, REPO_ID } from '../ids';
 import { checkScene } from '../model';
+import { planTransition, type LiveState } from '../motion/plan';
 import { lensReadings, type LensReading } from '../overview/readings';
 import { lensTopEntities } from '../overview/topEntities';
 import { FAN_VIEWS } from '../overview/viewHeadlines';
@@ -222,6 +223,101 @@ describe('fanScene', () => {
     const far = (m: { x: number; y: number }) =>
       Math.hypot(m.x - view.x, m.y - view.y);
     for (const m of fanned) expect(far(m)).toBeGreaterThan(far(lens));
+  });
+
+  it('puts the open view’s lenses, its port out and its branches in slots, so another view’s morph into them', () => {
+    for (const view of FAN_VIEWS) {
+      const scene = fanScene(repo, readings, { view, lens: null }, viewport);
+      const lenses = scene.marks.filter((m) => m.id.startsWith('analyzer:'));
+      expect(lenses.map((m) => m.slot)).toEqual(
+        lenses.map((_, i) => `lens:${i}`),
+      );
+      const branches = scene.links.filter((l) => l.id.startsWith('branch:'));
+      expect(branches.map((l) => l.slot)).toEqual(
+        branches.map((_, i) => `branch:${i}`),
+      );
+      expect(markOf(scene, `port:${view}:out`).slot).toBe('port:out');
+      // Views, the repo and the ports in stay themselves.
+      for (const m of scene.marks)
+        if (
+          m.id === REPO_ID ||
+          m.id.startsWith('view:') ||
+          m.id.endsWith(':in')
+        )
+          expect(m.slot).toBeUndefined();
+    }
+  });
+
+  it('puts the previewed lens’s fanned entities and links in slots', () => {
+    const scene = fanScene(repo, readings, previewing, viewport);
+    previewing.lens.entities.forEach((e, i) => {
+      expect(markOf(scene, e.id).slot).toBe(`fan:${i}`);
+      expect(scene.links.find((l) => l.id === `fan:${e.id}`)?.slot).toBe(
+        `fan:${i}`,
+      );
+    });
+  });
+
+  /** The screen once `scene` has settled. */
+  const settled = (scene: ReturnType<typeof fanScene>): LiveState => ({
+    marks: new Map(scene.marks.map((m) => [m.id, m])),
+    links: new Map(scene.links.map((l) => [l.id, { ...l, progress: 1 }])),
+    guides: new Map(scene.guides.map((g) => [g.id, g])),
+  });
+
+  it('morphs one view’s lenses into another’s instead of folding and regrowing', () => {
+    const from = fanScene(repo, readings, closed, viewport);
+    const to = fanScene(
+      repo,
+      readings,
+      { view: 'ownership-risk', lens: null },
+      viewport,
+    );
+    const plan = planTransition(to, settled(from));
+    const lensTracks = plan.marks.filter((t) => t.id.startsWith('analyzer:'));
+    const entering = lensTracks.filter((t) => to.marks.includes(t.mark));
+    const leaving = lensTracks.filter((t) => t.phase === 'exit');
+    // Code Health has more lenses: each of Ownership & Risk's takes one's
+    // place, and only the extras fold.
+    expect(leaving.length).toBeGreaterThan(entering.length);
+    for (const t of entering) {
+      expect(t.phase).toBe('update');
+      expect(t.takesOver).toMatch(/^analyzer:/);
+    }
+    expect(leaving.filter((t) => t.takenBy)).toHaveLength(entering.length);
+    // The port out glides to the new card, and the branches with it.
+    expect(
+      plan.marks.find((t) => t.id === 'port:ownership-risk:out'),
+    ).toMatchObject({ phase: 'update', takesOver: 'port:code-health:out' });
+    for (const t of plan.links.filter(
+      (l) => l.id.startsWith('branch:') && l.phase !== 'exit',
+    ))
+      expect(t.takesOver).toMatch(/^branch:/);
+  });
+
+  it('morphs one lens’s fan into another’s', () => {
+    const [a, b] = health;
+    const plan = planTransition(preview(b.preset), settled(preview(a.preset)));
+    // Same eight ids in both (the synthetic fan), so they just move…
+    for (const e of eight)
+      expect(plan.marks.find((t) => t.id === e.id)?.phase).toBe('update');
+    // …and a fan of other entities takes their places.
+    const others = eight.map((e) => ({ ...e, id: ids.file(`g${e.id}`) }));
+    const other = fanScene(
+      repo,
+      readings,
+      { view: 'code-health', lens: { preset: b.preset, entities: others } },
+      viewport,
+    );
+    const morph = planTransition(other, settled(preview(a.preset)));
+    for (const e of others) {
+      const t = morph.marks.find((m) => m.id === e.id)!;
+      expect(t.phase).toBe('update');
+      expect(t.takesOver).toBeDefined();
+    }
+    for (const e of eight)
+      expect(morph.marks.find((t) => t.id === e.id)?.duration).toBe(0);
+    expect(morph.links.filter((l) => l.phase === 'enter')).toEqual([]);
   });
 
   it('ignores a previewed lens outside the open view', () => {

@@ -208,7 +208,13 @@ export function fanScene(
     });
     const inPort = `port:${view}:in`;
     marks.push(port(inPort, viewX - CARD_W / 2, y, id));
-    if (open) marks.push(port(`port:${view}:out`, outX, y, id));
+    // One port out, whichever card is open: it glides to a newly opened one,
+    // carrying the branches with it.
+    if (open)
+      marks.push({
+        ...port(`port:${view}:out`, outX, y, id),
+        slot: 'port:out',
+      });
     links.push({
       id: `trunk:${view}`,
       source: 'port:repo:out',
@@ -222,7 +228,7 @@ export function fanScene(
 
   const parent = ids.view(focus.view);
   const source = `port:${focus.view}:out`;
-  for (const { lens, dx, dy } of placed) {
+  placed.forEach(({ lens, dx, dy }, i) => {
     const x = outX + dx;
     const y = cy + lift + dy;
     const id = ids.analyzer(lens.preset);
@@ -237,9 +243,11 @@ export function fanScene(
       r: DOT_R[lens.grade],
       ...ZERO,
       alpha: dim,
-      // Grows out of its view, and folds back into it when another opens.
+      // Opening another view slides its lenses into these places; any it has
+      // over grow out of it, and any short fold back into this one.
       parent,
       foldOnExit: true,
+      slot: `lens:${i}`,
       label: lens.label,
       labelSub: lens.value,
       labelClass: LABEL_CLASS[lens.grade],
@@ -261,6 +269,7 @@ export function fanScene(
       width: lens.grade >= 2 ? 1.5 : 1,
       paint: lens.grade >= 2 ? '--link-hot' : '--link',
       alpha: (lens.grade >= 2 ? 0.6 : 0.35) * dim,
+      slot: `branch:${i}`,
     });
     if (isPreviewed && focus.lens!.entities.length > 0) {
       // Away from the arc's centre, as the ring's fan points away from its
@@ -276,7 +285,7 @@ export function fanScene(
       marks.push(...fan.marks);
       links.push(...fan.links);
     }
-  }
+  });
 
   return { marks, links, guides, bounds: labelledBounds(marks) };
 }

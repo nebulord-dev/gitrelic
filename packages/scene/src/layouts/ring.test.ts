@@ -156,6 +156,25 @@ describe('ringScene', () => {
     expect(scene.marks.filter((m) => m.id.startsWith('file:'))).toHaveLength(3);
   });
 
+  it('puts fanned entities and their links in slots, so another lens’s fan morphs into them', () => {
+    const entities = lensTopEntities('hotspots', report, index, 3);
+    const scene = ringScene(
+      repo,
+      readings,
+      { preset: 'hotspots', entities },
+      viewport,
+    );
+    entities.forEach((e, i) => {
+      expect(scene.marks.find((m) => m.id === e.id)?.slot).toBe(`fan:${i}`);
+      expect(scene.links.find((l) => l.id === `fan:${e.id}`)?.slot).toBe(
+        `fan:${i}`,
+      );
+    });
+    // The lenses themselves stay put on the ring: no slot.
+    for (const m of scene.marks.filter((m) => m.id.startsWith('analyzer:')))
+      expect(m.slot).toBeUndefined();
+  });
+
   it('ignores a focus on a lens it does not draw', () => {
     const scene = ringScene(
       repo,

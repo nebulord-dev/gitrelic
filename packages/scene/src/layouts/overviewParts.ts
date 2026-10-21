@@ -45,7 +45,9 @@ function entityPaint(id: EntityId): Paint {
 /**
  * A lens's top entities on an arc of `radius` around the lens at (x, y),
  * centred on the `outward` angle (radians, 0 = right), each parented to the
- * lens so it grows out of it.
+ * lens so it grows out of it. Each entity and its link take the slot
+ * `fan:<i>`, so previewing another lens morphs one fan into the next instead
+ * of folding it and growing the other.
  */
 export function fanOut(
   preset: string,
@@ -74,6 +76,7 @@ export function fanOut(
       ...ZERO,
       alpha: 1,
       parent: source,
+      slot: `fan:${i}`,
       // The name only: the inspector lists each one's value beside it.
       label: e.label,
       labelPriority: 40 - i,
@@ -89,6 +92,7 @@ export function fanOut(
       width: 1.2,
       paint: '--link-hot',
       alpha: 0.7,
+      slot: `fan:${i}`,
     });
   });
   return { marks, links };
