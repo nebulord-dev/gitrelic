@@ -47,7 +47,7 @@ export const fanLayout: Layout = {
   // The shell's fan focus: a view, a lens, and the entities it fans out.
   focusKinds: FOCUS_KINDS,
   caption:
-    'Each view headed by its loudest lens. Click a lens to see what it points at; click it again to open it.',
+    'Each view headed by its loudest lens. Click a lens to see what it points at; click it again to fold it.',
   needsCommits: false,
   build: (input, viewport) => {
     const readings = lensReadings(input.report);
@@ -77,7 +77,7 @@ export const ringLayout: Layout = {
   // The ring draws nothing for a view focus, so a view selection doesn't rebuild it.
   focusKinds: ['analyzer', 'file', 'dir', 'person'],
   caption:
-    'Every lens around the repo, sized by how far outside normal it reads. Click a lens to see what it points at; click it again to open it.',
+    'Every lens around the repo, sized by how far outside normal it reads. Click a lens to see what it points at; click it again to fold it.',
   needsCommits: false,
   build: (input, viewport) => {
     const readings = lensReadings(input.report);

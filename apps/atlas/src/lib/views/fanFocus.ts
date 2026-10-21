@@ -5,7 +5,9 @@
 // back to the loudest view.
 
 import {
+  catalogEntry,
   entityKind,
+  ids,
   lensTopEntities,
   entityKey,
   type EntityId,
@@ -26,4 +28,23 @@ export function nextFanFocus(
   if (!previous || entityKind(previous) !== 'analyzer') return null;
   const fanned = lensTopEntities(entityKey(previous), report, index);
   return fanned.some((e) => e.id === selection) ? previous : null;
+}
+
+/**
+ * What a second click on the Overview's selection folds back to (stageClick's
+ * `foldTo`). A file picked from a lens's fan folds to that lens. In the Fan, a
+ * lens folds to its view: the open view is the selection, so clearing it would
+ * jump to the loudest view instead of closing the lens. Anything else (a view,
+ * or a lens on the Ring, which has no open view) folds to nothing.
+ */
+export function fanFold(
+  selection: EntityId | null,
+  fanFocus: EntityId | null,
+  form: string | undefined,
+): EntityId | null {
+  if (!selection) return null;
+  if (fanFocus && fanFocus !== selection) return fanFocus;
+  if (form !== 'fan' || entityKind(selection) !== 'analyzer') return null;
+  const group = catalogEntry(entityKey(selection))?.group;
+  return group && group !== 'overview' ? ids.view(group) : null;
 }

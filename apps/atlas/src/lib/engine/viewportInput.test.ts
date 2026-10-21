@@ -1,7 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { IDENTITY, ZOOM_STEP, type ViewTransform } from './viewport';
-import { attachViewportInput } from './viewportInput';
+import {
+  attachViewportInput,
+  CLICK_SLOP,
+  DOUBLE_CLICK_MS,
+} from './viewportInput';
 
 function setup() {
   const el = document.createElement('div');
@@ -88,7 +92,44 @@ describe('attachViewportInput', () => {
     const { pointer, opts } = setup();
     pointer('pointerdown', 1, 50, 50);
     pointer('pointerup', 1, 51, 50);
-    expect(opts.click).toHaveBeenCalledWith(41, 30);
+    expect(opts.click).toHaveBeenCalledWith(41, 30, false);
+  });
+
+  it("flags a double-click's second click as a repeat, and only that", () => {
+    const { pointer, opts } = setup();
+    const now = vi.spyOn(performance, 'now');
+    const tap = (t: number, x: number) => {
+      now.mockReturnValue(t);
+      pointer('pointerdown', 1, x, 50);
+      pointer('pointerup', 1, x, 50);
+    };
+    tap(1000, 50);
+    tap(1000 + DOUBLE_CLICK_MS - 1, 51); // quick, same spot: a double-click
+    tap(5000, 50); // slow: a click of its own
+    tap(5100, 50 + 3 * CLICK_SLOP); // quick but elsewhere: a new click
+    expect(opts.click.mock.calls.map((c) => c[2])).toEqual([
+      false,
+      true,
+      false,
+      false,
+    ]);
+    now.mockRestore();
+  });
+
+  it('never chains repeats: a triple click is a double-click, then a click', () => {
+    const { pointer, opts } = setup();
+    const now = vi.spyOn(performance, 'now');
+    for (const t of [1000, 1100, 1200]) {
+      now.mockReturnValue(t);
+      pointer('pointerdown', 1, 50, 50);
+      pointer('pointerup', 1, 50, 50);
+    }
+    expect(opts.click.mock.calls.map((c) => c[2])).toEqual([
+      false,
+      true,
+      false,
+    ]);
+    now.mockRestore();
   });
 
   it("ignores a pen's barrel button", () => {

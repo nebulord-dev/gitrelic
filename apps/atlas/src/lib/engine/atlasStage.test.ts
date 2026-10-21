@@ -196,14 +196,14 @@ describe('AtlasStage', () => {
     host.dispatchEvent(
       new PointerEvent('pointerup', { pointerId: 1, clientX: sx, clientY: sy }),
     );
-    expect(onSelect).toHaveBeenCalledWith('person:a');
+    expect(onSelect).toHaveBeenCalledWith('person:a', false);
     host.dispatchEvent(
       new PointerEvent('pointerdown', { pointerId: 1, clientX: 5, clientY: 5 }),
     );
     host.dispatchEvent(
       new PointerEvent('pointerup', { pointerId: 1, clientX: 5, clientY: 5 }),
     );
-    expect(onSelect).toHaveBeenLastCalledWith(null);
+    expect(onSelect).toHaveBeenLastCalledWith(null, false);
   });
 
   it('a mark that selects another entity reports that entity on click', async () => {
@@ -227,7 +227,7 @@ describe('AtlasStage', () => {
     host.dispatchEvent(
       new PointerEvent('pointerup', { pointerId: 1, clientX: sx, clientY: sy }),
     );
-    expect(onSelect).toHaveBeenCalledWith('file:a.ts');
+    expect(onSelect).toHaveBeenCalledWith('file:a.ts', false);
   });
 
   it('pins the hovered mark’s label', async () => {

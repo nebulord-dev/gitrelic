@@ -271,7 +271,6 @@
       {index}
       {onselect}
       onopen={openLens}
-      onMap={lens === 'overview'}
     />
   {:else if lens === 'hotspots' && lensEntry}
     <ExplainCard entry={lensEntry} />

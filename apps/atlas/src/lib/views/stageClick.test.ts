@@ -1,50 +1,38 @@
 import { ids } from '@gitrelic/scene';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { stageClick } from './stageClick';
 
-// Pretend Hotspots has an Atlas view; Churn doesn't.
-vi.mock('@gitrelic/scene', async (importOriginal) => {
-  const scene = await importOriginal<typeof import('@gitrelic/scene')>();
-  return {
-    ...scene,
-    catalogEntry: (id: string) => {
-      const e = scene.catalogEntry(id);
-      return e && { ...e, atlas: id === 'hotspots' };
-    },
-  };
-});
-
 const hotspots = ids.analyzer('hotspots');
-const churn = ids.analyzer('churn');
+const file = ids.file('a.ts');
+const person = ids.person('a@example.com');
 
 describe('stageClick', () => {
-  it('arms a lens dot on the first click and opens it on the second', () => {
-    const first = stageClick(null, null, hotspots);
-    expect(first).toEqual({ open: null, armed: hotspots });
-    expect(stageClick(first.armed, hotspots, hotspots)).toEqual({
-      open: 'hotspots',
-      armed: null,
-    });
+  it('selects what the click lands on, and clears on empty stage', () => {
+    expect(stageClick(null, hotspots, false)).toBe(hotspots);
+    expect(stageClick(hotspots, file, false)).toBe(file);
+    expect(stageClick(file, null, false)).toBeNull();
   });
 
-  it('never opens a lens the stage did not arm (inspector, palette, Back)', () => {
-    // Selected elsewhere: nothing armed, so this click only arms.
-    expect(stageClick(null, hotspots, hotspots)).toEqual({
-      open: null,
-      armed: hotspots,
-    });
+  it('folds what is already selected on a second click, whatever its kind', () => {
+    expect(stageClick(hotspots, hotspots, false)).toBeNull();
+    expect(stageClick(file, file, false)).toBeNull();
+    expect(stageClick(person, person, false)).toBeNull();
   });
 
-  it('never leaves for classic from the stage', () => {
-    expect(stageClick(churn, churn, churn)).toEqual({
-      open: null,
-      armed: churn,
-    });
+  it('never opens a lens: a second click on a lens dot only folds it', () => {
+    // Opening is the inspector's button; a repeat click must not leave the view.
+    expect(stageClick(hotspots, hotspots, false)).not.toBe(hotspots);
   });
 
-  it('disarms on anything that is not a lens', () => {
-    expect(stageClick(hotspots, hotspots, ids.file('a.ts')).armed).toBeNull();
-    expect(stageClick(hotspots, hotspots, null).armed).toBeNull();
+  it('folds back to what the selection was fanned from, when there is one', () => {
+    // The Overview: a file picked from Hotspots' fan folds back to Hotspots.
+    expect(stageClick(file, file, false, hotspots)).toBe(hotspots);
+  });
+
+  it("keeps the selection on a double-click's second click", () => {
+    // A double-click selects and fits; it must not select, fold, then fit.
+    expect(stageClick(hotspots, hotspots, true)).toBe(hotspots);
+    expect(stageClick(file, file, true, hotspots)).toBe(file);
   });
 });

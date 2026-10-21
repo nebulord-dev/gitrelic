@@ -47,7 +47,8 @@ export interface AtlasStageOptions {
   /** Room the stage's own controls take along its top and bottom edges. */
   insets?: Insets;
   onHover?: (id: EntityId | null) => void;
-  onSelect?: (id: EntityId | null) => void;
+  /** A click on the stage: what it hit, and whether it is a double-click's second. */
+  onSelect?: (id: EntityId | null, repeat: boolean) => void;
   /** Each drawn frame's CPU cost, ms (the bench reads this). */
   onFrame?: (ms: number) => void;
 }
@@ -129,11 +130,11 @@ export class AtlasStage {
       fit: () => this.fitView(),
       hover: (sx, sy) => this.setHovered(this.pick(sx, sy)),
       leave: () => this.setHovered(null),
-      click: (sx, sy) => {
+      click: (sx, sy, repeat) => {
         const hit = this.pick(sx, sy);
         const id = hit && (this.selects.get(hit) ?? hit);
         this.select(id);
-        opts.onSelect?.(id);
+        opts.onSelect?.(id, repeat);
       },
     });
   }
