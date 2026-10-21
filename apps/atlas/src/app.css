@@ -315,7 +315,7 @@ body {
    box, so its text scales with the view. */
 .atlas-label--card.atlas-label--section {
   align-content: start;
-  padding: 8px 0 0;
+  padding: 4px 0 0;
   background: transparent;
   border-color: transparent;
   font-weight: 600;

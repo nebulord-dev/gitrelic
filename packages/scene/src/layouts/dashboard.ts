@@ -32,16 +32,16 @@ const FRAME_PAD = 14;
 const FRAME_ALPHA = 0.08;
 const OUTLIER_H = 84;
 /** The calm lenses' heading, and their chips. */
-const CALM_HEAD_H = 44;
+const CALM_HEAD_H = 52;
 const CHIP_H = 30;
 const CHIP_GAP = 10;
 /**
  * A chip's width from its text, world units: the `--row` card style's name
  * (13px) and reading (12px) advances, its padding and the gap between.
  */
-const CHIP_NAME_CHAR = 7.4;
-const CHIP_VALUE_CHAR = 6.6;
-const CHIP_PAD = 24 + 12;
+const CHIP_NAME_CHAR = 7.8;
+const CHIP_VALUE_CHAR = 7;
+const CHIP_PAD = 24 + 12 + 8;
 const LEAD_LABEL = 120;
 const ROW_LABEL = 110;
 const OUTLIER_LABEL = 90;
@@ -79,6 +79,29 @@ function relativeWeights(entities: readonly FannedEntity[]): number[] {
   const ws = entities.map((e) => readingWeight(e.value));
   const top = Math.max(0, ...ws);
   return ws.map((w) => (top > 0 ? w / top : 0));
+}
+
+/**
+ * The outliers beside the lead, loudest first when the loudest leads. A
+ * picked outlier and the loudest swap places: the loudest takes the picked
+ * one's slot, so the rest of the column stays put and only the two move. A
+ * picked calm lens leaves no slot, so the loudest heads the column.
+ */
+export function outlierColumn(
+  readings: readonly LensReading[],
+  lead: LensReading | undefined,
+): LensReading[] {
+  const loudest = loudestLens(readings);
+  const column = readings
+    .filter((r) => r.grade >= 2 && r !== loudest)
+    .sort((a, b) => b.grade - a.grade);
+  if (!lead || !loudest || lead === loudest) return column;
+  const slot = column.indexOf(lead);
+  if (slot >= 0) {
+    column[slot] = loudest;
+    return column;
+  }
+  return loudest.grade >= 2 ? [loudest, ...column] : column;
 }
 
 /** A chip's width for its name and reading. */
@@ -201,8 +224,11 @@ export function dashboardScene(
         z: 2,
       });
     });
-    const rowsH = entities.length * ROW_STEP;
-    leadBottom = rowsTop + rowsH - (entities.length > 0 ? GAP : 0) + FRAME_PAD;
+    // The last row's bar, or the card when there are none, then the padding.
+    leadBottom =
+      (entities.length > 0
+        ? rowsTop + (entities.length - 1) * ROW_STEP + ROW_H + 3 + BAR_H
+        : cardTop + LEAD_H) + FRAME_PAD;
 
     // The lead's frame, under its card and rows, tinted by its grade: the
     // big section the eye goes to.
@@ -221,10 +247,8 @@ export function dashboardScene(
     });
   }
 
-  // The other outliers, a column beside the lead, loudest first.
-  const outliers = readings
-    .filter((r) => r.grade >= 2 && r !== lead)
-    .sort((a, b) => b.grade - a.grade);
+  // The other outliers, a column beside the lead.
+  const outliers = outlierColumn(readings, lead);
   const colX = LEAD_W + GAP;
   const colW = WIDTH - colX;
   outliers.forEach((r, i) => {

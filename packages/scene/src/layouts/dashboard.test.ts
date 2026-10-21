@@ -12,6 +12,7 @@ import {
   chipWidth,
   dashboardScene,
   loudestLens,
+  outlierColumn,
   readingWeight,
 } from './dashboard';
 import type { FannedEntity } from '../overview/topEntities';
@@ -56,6 +57,28 @@ describe('loudestLens', () => {
     const calm = readings.map((r) => ({ ...r, grade: 0 as const }));
     expect(loudestLens(calm)).toBe(calm[0]);
     expect(loudestLens([])).toBeUndefined();
+  });
+});
+
+describe('outlierColumn', () => {
+  const lens = (preset: string) => readings.find((r) => r.preset === preset)!;
+
+  it('lists the loud lenses but the loudest, loudest first', () => {
+    expect(
+      outlierColumn(readings, lens('cursed-files')).map((r) => r.preset),
+    ).toEqual(['bus-factor']);
+  });
+
+  it('puts the loudest in a picked outlier’s slot', () => {
+    expect(
+      outlierColumn(readings, lens('bus-factor')).map((r) => r.preset),
+    ).toEqual(['cursed-files']);
+  });
+
+  it('heads the column with the loudest when a calm lens is picked', () => {
+    expect(outlierColumn(readings, lens('churn')).map((r) => r.preset)).toEqual(
+      ['cursed-files', 'bus-factor'],
+    );
   });
 });
 
@@ -143,6 +166,32 @@ describe('dashboardScene', () => {
     const right = Math.max(...scene.marks.map((m) => m.x + m.w / 2));
     for (const c of chips) expect(c.x + c.w / 2).toBeLessThanOrEqual(right);
     expect(chipWidth(readings[0])).toBeGreaterThan(readings[0].label.length);
+  });
+
+  it('swaps a picked outlier with the lead, the rest of the column staying put', () => {
+    const loud: LensReading[] = readings.map((r) => ({
+      ...r,
+      grade: ([
+        'cursed-files',
+        'bus-factor',
+        'fix-rate',
+        'test-coverage',
+      ].includes(r.preset)
+        ? r.preset === 'cursed-files'
+          ? 3
+          : 2
+        : 0) as LensReading['grade'],
+    }));
+    const before = dashboardScene(vitals, loud, topOf, null);
+    const after = dashboardScene(vitals, loud, topOf, 'fix-rate');
+    const at = (scene: Scene, preset: string) =>
+      mark(scene, ids.analyzer(preset))!;
+    // Risk takes Fix rate's slot; the others don't move.
+    expect(at(after, 'cursed-files').y).toBe(at(before, 'fix-rate').y);
+    expect(at(after, 'cursed-files').x).toBe(at(before, 'fix-rate').x);
+    expect(at(after, 'fix-rate').x).toBe(at(before, 'cursed-files').x);
+    for (const p of ['bus-factor', 'test-coverage'])
+      expect(at(after, p).y).toBe(at(before, p).y);
   });
 
   it('puts a picked lens in the lead and returns the old lead to its column', () => {
