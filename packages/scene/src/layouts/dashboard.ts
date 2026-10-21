@@ -35,8 +35,12 @@ const SPARK_GAP = 6;
 const SPARK_PAD = 18;
 const CELL_H = TILE_H + SPARK_GAP + SPARK_H;
 const GAP = 12;
-/** The column of view names left of the tiles. */
-const HEAD_W = 160;
+/**
+ * The column of view names left of the tiles: room for the longest
+ * ("Ownership & Risk") at full size by the label layer's card estimate, so
+ * no name shrinks and the four read at one size.
+ */
+const HEAD_W = 210;
 const VITAL_H = 64;
 /** Between the vitals and the first view, and between views. */
 const SECTION_GAP = 28;
