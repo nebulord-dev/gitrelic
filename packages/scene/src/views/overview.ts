@@ -98,10 +98,10 @@ export const ringLayout: Layout = {
 export const dashboardLayout: Layout = {
   id: 'dashboard',
   label: 'Dashboard',
-  // A view focus opens no tile, so a view selection doesn't rebuild it.
+  // A view focus picks no lead, so a view selection doesn't rebuild it.
   focusKinds: ['analyzer', 'file', 'dir', 'person'],
   caption:
-    'Every lens as a tile, by view; wider and in the accent where a repo this size is unusual. Click a tile to see what it points at; click it again to fold it.',
+    'The loudest lens leads, with what it points at. Click any tile or chip to put it in the lead; click it again to fold back.',
   needsCommits: false,
   build: (input) => {
     const readings = lensReadings(input.report);
@@ -111,9 +111,7 @@ export const dashboardLayout: Layout = {
       repoVitals(input.report),
       readings,
       (preset) => lensTopEntities(preset, input.report, index),
-      preview
-        ? { preset: preview.reading.preset, entities: preview.entities }
-        : null,
+      preview?.reading.preset ?? null,
     );
   },
 };

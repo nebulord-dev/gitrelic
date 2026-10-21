@@ -1,103 +1,67 @@
 // The Overview dashboard (docs/atlas-views.md › Overview), on trial beside the
-// fan and the ring: the repo's vitals in a strip, then each view's lenses as
-// tiles in a grid, a loud lens wider and in the accent. Previewing a lens
-// opens its tile in place, two columns wide and as tall as it needs, over the list of what it points at;
-// those rows are the fanned entities, with the ids the other forms give them,
-// so they travel when the form or the lens changes.
+// fan and the ring: a bento. The repo's vitals in a strip; then the lead, the
+// loudest lens (or the one picked) as a large card over the list of what it
+// points at, with the other outliers in a column beside it; then every calm
+// lens as a chip. Picking a tile or chip puts that lens in the lead. Every
+// lens keeps its `analyzer:` id wherever it sits, so a chip grows into the
+// lead and the old lead settles back into its place; the lead's rows are the
+// fanned entities, with the ids the other forms give them.
 
-import { PRESET_GROUPS } from '../catalog';
 import { ids } from '../ids';
-import { FAN_VIEWS, splitReading } from '../overview/viewHeadlines';
+import { splitReading } from '../overview/viewHeadlines';
 import { LABEL_CLASS, RAMP, ZERO } from './overviewParts';
 import type { Mark, Scene } from '../model';
 import type { LensReading } from '../overview/readings';
 import type { FannedEntity } from '../overview/topEntities';
 import type { Vital } from '../overview/vitals';
 
-export interface DashboardFocus {
-  /** The lens whose tile is open, and what it fans out. */
-  preset: string;
-  entities: readonly FannedEntity[];
-}
-
-/** Columns of tiles per view. */
-export const COLS = 5;
-/**
- * A tile's card, world units: wide enough for a number beside a two-line
- * name and reading at the ~0.7 zoom the world fits at (the label layer
- * shrinks a card's text that would outgrow it).
- */
-const TILE_W = 230;
-const TILE_H = 84;
-/** The bars under a closed tile: its top entities, relative to the first. */
-const SPARK_H = 20;
-const SPARK_GAP = 6;
-const SPARK_PAD = 18;
-const CELL_H = TILE_H + SPARK_GAP + SPARK_H;
-const GAP = 12;
-/**
- * The column of view names left of the tiles: room for the longest
- * ("Ownership & Risk") at full size by the label layer's card estimate, so
- * no name shrinks and the four read at one size.
- */
-const HEAD_W = 210;
-const VITAL_H = 64;
-/** Between the vitals and the first view, and between views. */
-const SECTION_GAP = 28;
-/** An open tile's rows: one per fanned entity, under its card. */
-const ROW_H = 24;
-const ROW_STEP = 28;
+/** The world's width; the stage fits it. */
+const WIDTH = 1400;
+const GAP = 16;
 const MARGIN = 24;
-/** A section's band reaches this far past its tiles, into the gaps. */
-const BAND_PAD = 10;
-const BAND_ALPHA = 0.1;
-/** Other tiles while one is open: dimmed, still labeled (the cutoff is 0.5). */
-const DIM = 0.55;
-const OPEN_LABEL = 110;
-const ROW_LABEL = 100;
-const SECTION_LABEL = 80;
-const TILE_LABEL = 60;
+const VITAL_H = 64;
+/** The lead takes the left of the bento, the other outliers the right. */
+const LEAD_W = 780;
+const LEAD_H = 110;
+/** The lead's rows: a fanned entity each, a bar of its weight under it. */
+const ROW_H = 24;
+const ROW_STEP = 36;
+const BAR_H = 4;
+/** Room inside the lead's frame, round its card and rows. */
+const FRAME_PAD = 14;
+const FRAME_ALPHA = 0.08;
+const OUTLIER_H = 84;
+/** The calm lenses' heading, and their chips. */
+const CALM_HEAD_H = 44;
+const CHIP_H = 30;
+const CHIP_GAP = 10;
+/**
+ * A chip's width from its text, world units: the `--row` card style's name
+ * (13px) and reading (12px) advances, its padding and the gap between.
+ */
+const CHIP_NAME_CHAR = 7.4;
+const CHIP_VALUE_CHAR = 6.6;
+const CHIP_PAD = 24 + 12;
+const LEAD_LABEL = 120;
+const ROW_LABEL = 110;
+const OUTLIER_LABEL = 90;
+const CALM_LABEL = 60;
 const VITAL_LABEL = 50;
+
+/** The lead when nothing is picked: the highest grade, ties in lens-bar order. */
+export function loudestLens(
+  readings: readonly LensReading[],
+): LensReading | undefined {
+  let best: LensReading | undefined;
+  for (const r of readings) if (!best || r.grade > best.grade) best = r;
+  return best;
+}
 
 const SHARE = /^(\d+) of (\d+)/;
 const NUMBER = /\d+(?:\.\d+)?/g;
 
-/** Grid rows an open tile takes: two at least, more for a long list. */
-export const openRows = (entities: number) =>
-  Math.max(2, Math.ceil((TILE_H + GAP + entities * ROW_STEP) / (CELL_H + GAP)));
-
-const viewLabel = (id: string) =>
-  PRESET_GROUPS.find((g) => g.id === id)?.label ?? id;
-
 /**
- * Places tiles of the given spans (in cells) on a grid `cols` wide, each in
- * the first free spot reading row by row, so a small tile fills the hole a
- * wide one leaves (CSS grid's `dense` flow).
- */
-export function packTiles(
-  spans: readonly { w: number; h: number }[],
-  cols: number,
-): { col: number; row: number }[] {
-  const taken: boolean[][] = [];
-  const free = (row: number, col: number, w: number, h: number) => {
-    for (let r = row; r < row + h; r++)
-      for (let c = col; c < col + w; c++) if (taken[r]?.[c]) return false;
-    return true;
-  };
-  return spans.map(({ w, h }) => {
-    const width = Math.min(w, cols);
-    for (let row = 0; ; row++)
-      for (let col = 0; col + width <= cols; col++)
-        if (free(row, col, width, h)) {
-          for (let r = row; r < row + h; r++)
-            for (let c = col; c < col + width; c++) (taken[r] ??= [])[c] = true;
-          return { col, row };
-        }
-  });
-}
-
-/**
- * A fanned entity's reading as a number, for the bars: "3 of 8 fixed" is a
+ * A fanned entity's reading as a number, for its bar: "3 of 8 fixed" is a
  * share, anything else its last number ("+3,695 lines a month" is 3695).
  */
 export function readingWeight(value: string): number {
@@ -117,19 +81,29 @@ function relativeWeights(entities: readonly FannedEntity[]): number[] {
   return ws.map((w) => (top > 0 ? w / top : 0));
 }
 
+/** A chip's width for its name and reading. */
+export const chipWidth = (r: LensReading) =>
+  Math.round(
+    CHIP_PAD +
+      r.label.length * CHIP_NAME_CHAR +
+      r.value.length * CHIP_VALUE_CHAR,
+  );
+
 export function dashboardScene(
   vitals: readonly Vital[],
   readings: readonly LensReading[],
-  /** A lens's top entities: its bars when closed, its rows when open. */
+  /** A lens's top entities: the lead's rows. */
   topOf: (preset: string) => readonly FannedEntity[],
-  focus: DashboardFocus | null,
+  /** The lens picked to lead; the loudest leads when it's null. */
+  picked: string | null,
 ): Scene {
   const marks: Mark[] = [];
-  const gridW = COLS * TILE_W + (COLS - 1) * GAP;
-  const width = HEAD_W + gridW;
+  const lead =
+    readings.find((r) => r.preset === picked) ?? loudestLens(readings);
 
-  // The vitals, across the whole width.
-  const vitalW = (width - (vitals.length - 1) * GAP) / vitals.length;
+  // The vitals, across the whole width: plain cards, context rather than
+  // findings, so the lead is what the eye lands on.
+  const vitalW = (WIDTH - (vitals.length - 1) * GAP) / vitals.length;
   vitals.forEach((v, i) => {
     marks.push({
       id: `vital:${v.key}`,
@@ -145,153 +119,191 @@ export function dashboardScene(
       labelLead: v.lead,
       label: v.label,
       labelSub: v.sub,
-      // Filled with the accent, like the fan's open view.
-      labelClass: 'atlas-label--vital',
       labelPriority: VITAL_LABEL,
       labelAnchor: 'center',
       z: 1,
     });
   });
 
-  let top = VITAL_H + SECTION_GAP;
-  for (const view of FAN_VIEWS) {
-    const lenses = readings.filter((r) => r.group === view);
-    const loud = lenses.filter((r) => r.grade >= 2).length;
-    // The view's name, left of its tiles; it selects nothing. A card, so its
-    // text is in world units and scales with the view: a screen-px label
-    // outgrows the column when the fit zooms out, and the label layer then
-    // culls the first tile it overlaps.
+  const top = VITAL_H + GAP * 2;
+  let leadBottom = top;
+  if (lead) {
+    const id = ids.analyzer(lead.preset);
+    const hot = lead.grade >= 2;
+    const { lead: num, rest } = splitReading(lead.value);
+    const cardTop = top + FRAME_PAD;
+    const innerW = LEAD_W - 2 * FRAME_PAD;
     marks.push({
-      id: `section:${view}`,
+      id,
       shape: 'card',
-      paint: '--muted',
-      x: (HEAD_W - GAP) / 2,
-      y: top + TILE_H / 2,
+      paint: RAMP[lead.grade],
+      x: LEAD_W / 2,
+      y: cardTop + LEAD_H / 2,
       r: 0,
       ...ZERO,
-      w: HEAD_W - GAP,
-      h: TILE_H,
+      w: innerW,
+      h: LEAD_H,
       alpha: 1,
-      label: viewLabel(view),
-      labelSub: loud ? `${loud} outside normal` : 'all within normal',
-      labelClass: loud ? 'atlas-label--section-hot' : 'atlas-label--section',
-      labelPriority: SECTION_LABEL,
+      labelLead: num || undefined,
+      label: lead.label,
+      // Why it leads, when a rule graded it; else what the number counts.
+      labelSub: lead.reason ?? (rest || lead.value),
+      labelClass: hot ? 'atlas-label--lead-hot' : 'atlas-label--lead',
+      labelPriority: LEAD_LABEL,
       labelAnchor: 'center',
-      z: 1,
+      z: 3,
+      tip: [lead.label, lead.value, ...(lead.reason ? [lead.reason] : [])],
     });
 
-    const spans = lenses.map((r) =>
-      r.preset === focus?.preset
-        ? { w: 2, h: openRows(focus.entities.length) }
-        : { w: r.grade === 3 ? 2 : 1, h: 1 },
-    );
-    const places = packTiles(spans, COLS);
-    let rows = 1;
-    lenses.forEach((lens, i) => {
-      const { col, row } = places[i];
-      const span = spans[i];
-      rows = Math.max(rows, row + span.h);
-      const open = lens.preset === focus?.preset;
-      const w = span.w * TILE_W + (span.w - 1) * GAP;
-      const left = HEAD_W + col * (TILE_W + GAP);
-      const cellTop = top + row * (CELL_H + GAP);
-      const id = ids.analyzer(lens.preset);
-      const hot = lens.grade >= 2;
-      const { lead, rest } = splitReading(lens.value);
+    // Its rows: each a fanned entity by name and reading, in rank order,
+    // in the fan's slots so a fan in another form morphs into them.
+    const entities = topOf(lead.preset);
+    const weights = relativeWeights(entities);
+    const rowsTop = cardTop + LEAD_H + GAP;
+    entities.forEach((e, j) => {
+      const y = rowsTop + j * ROW_STEP;
       marks.push({
-        id,
+        id: e.id,
         shape: 'card',
-        paint: RAMP[lens.grade],
-        x: left + w / 2,
-        y: cellTop + TILE_H / 2,
+        paint: '--file',
+        x: LEAD_W / 2,
+        y: y + ROW_H / 2,
         r: 0,
         ...ZERO,
-        w,
-        h: TILE_H,
-        alpha: focus && !open ? DIM : 1,
-        labelLead: lead || undefined,
-        label: lens.label,
-        labelSub: rest || undefined,
-        labelClass: open ? 'atlas-label--open' : LABEL_CLASS[lens.grade],
-        labelPriority: open ? OPEN_LABEL : TILE_LABEL + lens.grade,
+        w: innerW,
+        h: ROW_H,
+        alpha: 1,
+        parent: id,
+        slot: `fan:${j}`,
+        label: e.label,
+        labelSub: e.value,
+        labelClass: 'atlas-label--row',
+        labelPriority: ROW_LABEL - j,
         labelAnchor: 'center',
-        z: 2,
-        tip: [lens.label, lens.value, ...(lens.reason ? [lens.reason] : [])],
+        z: 3,
+        tip: [e.label, e.value],
       });
-
-      if (open) {
-        // The rows: each a fanned entity, by name and reading, in rank order.
-        focus!.entities.forEach((e, j) => {
-          marks.push({
-            id: e.id,
-            shape: 'card',
-            paint: '--file',
-            x: left + w / 2,
-            y: cellTop + TILE_H + GAP + j * ROW_STEP + ROW_H / 2,
-            r: 0,
-            ...ZERO,
-            w,
-            h: ROW_H,
-            alpha: 1,
-            parent: id,
-            slot: `fan:${j}`,
-            label: e.label,
-            labelSub: e.value,
-            labelClass: 'atlas-label--row',
-            labelPriority: ROW_LABEL - j,
-            labelAnchor: 'center',
-            z: 3,
-            tip: [e.label, e.value],
-          });
-        });
-        return;
-      }
-      // Closed: a bar per top entity under the card, the heaviest full height.
-      const weights = relativeWeights(topOf(lens.preset));
-      const n = weights.length;
-      const bw = n > 0 ? (w - 2 * SPARK_PAD - (n - 1) * 3) / n : 0;
-      weights.forEach((wt, j) => {
-        const h = Math.max(2, SPARK_H * wt);
-        marks.push({
-          id: `spark:${lens.preset}:${j}`,
-          shape: 'bar',
-          paint: hot ? '--accent' : '--muted',
-          x: left + SPARK_PAD + j * (bw + 3) + bw / 2,
-          y: cellTop + CELL_H - h / 2,
-          r: 0,
-          ...ZERO,
-          w: bw,
-          h,
-          alpha: (focus ? DIM : 1) * 0.8,
-          parent: id,
-          // A bar is part of its tile: a click on it picks the lens.
-          selects: id,
-          z: 1,
-        });
+      const bw = Math.max(2, innerW * weights[j]);
+      marks.push({
+        id: `weight:${j}`,
+        shape: 'bar',
+        paint: hot ? '--accent' : '--muted',
+        x: FRAME_PAD + bw / 2,
+        y: y + ROW_H + 3 + BAR_H / 2,
+        r: 0,
+        ...ZERO,
+        w: bw,
+        h: BAR_H,
+        alpha: 0.9,
+        parent: e.id,
+        // Part of its row: a click on it picks the entity.
+        selects: e.id,
+        z: 2,
       });
     });
-    const height = rows * CELL_H + (rows - 1) * GAP;
-    // The section's band, under everything: tinted by its loudest lens's
-    // grade (color means grade here, as everywhere), so the views read
-    // apart and the loud ones warm.
-    const loudest = Math.max(0, ...lenses.map((r) => r.grade));
+    const rowsH = entities.length * ROW_STEP;
+    leadBottom = rowsTop + rowsH - (entities.length > 0 ? GAP : 0) + FRAME_PAD;
+
+    // The lead's frame, under its card and rows, tinted by its grade: the
+    // big section the eye goes to.
     marks.push({
-      id: `band:${view}`,
+      id: 'frame:lead',
       shape: 'bar',
-      paint: RAMP[loudest],
-      x: width / 2,
-      y: top + height / 2,
+      paint: RAMP[lead.grade],
+      x: LEAD_W / 2,
+      y: (top + leadBottom) / 2,
       r: 0,
       ...ZERO,
-      w: width + 2 * BAND_PAD,
-      h: height + 2 * BAND_PAD,
-      alpha: BAND_ALPHA,
+      w: LEAD_W,
+      h: leadBottom - top,
+      alpha: FRAME_ALPHA,
       z: 0,
     });
-    top += height + SECTION_GAP;
   }
 
-  const bottom = top - SECTION_GAP;
+  // The other outliers, a column beside the lead, loudest first.
+  const outliers = readings
+    .filter((r) => r.grade >= 2 && r !== lead)
+    .sort((a, b) => b.grade - a.grade);
+  const colX = LEAD_W + GAP;
+  const colW = WIDTH - colX;
+  outliers.forEach((r, i) => {
+    const { lead: num, rest } = splitReading(r.value);
+    marks.push({
+      id: ids.analyzer(r.preset),
+      shape: 'card',
+      paint: RAMP[r.grade],
+      x: colX + colW / 2,
+      y: top + i * (OUTLIER_H + GAP) + OUTLIER_H / 2,
+      r: 0,
+      ...ZERO,
+      w: colW,
+      h: OUTLIER_H,
+      alpha: 1,
+      labelLead: num || undefined,
+      label: r.label,
+      labelSub: r.reason ?? (rest || r.value),
+      labelClass: LABEL_CLASS[r.grade],
+      labelPriority: OUTLIER_LABEL + r.grade,
+      labelAnchor: 'center',
+      z: 2,
+      tip: [r.label, r.value, ...(r.reason ? [r.reason] : [])],
+    });
+  });
+  const colBottom = top + outliers.length * (OUTLIER_H + GAP) - GAP;
+
+  // Every calm lens as a chip, by name and reading, flowing in lens-bar order.
+  const calm = readings.filter((r) => r.grade < 2 && r !== lead);
+  const calmTop = Math.max(leadBottom, colBottom) + GAP * 2;
+  marks.push({
+    id: 'heading:calm',
+    shape: 'card',
+    paint: '--muted',
+    x: 150,
+    y: calmTop + CALM_HEAD_H / 2,
+    r: 0,
+    ...ZERO,
+    w: 300,
+    h: CALM_HEAD_H,
+    alpha: 1,
+    label: 'Within normal',
+    labelSub: `${calm.length} ${calm.length === 1 ? 'lens' : 'lenses'}`,
+    labelClass: 'atlas-label--section',
+    labelPriority: CALM_LABEL + 1,
+    labelAnchor: 'center',
+    z: 1,
+  });
+  let x = 0;
+  let y = calmTop + CALM_HEAD_H + GAP / 2;
+  for (const r of calm) {
+    const w = Math.min(chipWidth(r), WIDTH);
+    if (x > 0 && x + w > WIDTH) {
+      x = 0;
+      y += CHIP_H + CHIP_GAP;
+    }
+    marks.push({
+      id: ids.analyzer(r.preset),
+      shape: 'card',
+      paint: RAMP[r.grade],
+      x: x + w / 2,
+      y: y + CHIP_H / 2,
+      r: 0,
+      ...ZERO,
+      w,
+      h: CHIP_H,
+      alpha: 1,
+      label: r.label,
+      labelSub: r.value,
+      labelClass: 'atlas-label--row',
+      labelPriority: CALM_LABEL,
+      labelAnchor: 'center',
+      z: 2,
+      tip: [r.label, r.value, ...(r.reason ? [r.reason] : [])],
+    });
+    x += w + CHIP_GAP;
+  }
+  const bottom = calm.length > 0 ? y + CHIP_H : calmTop + CALM_HEAD_H;
+
   return {
     marks,
     links: [],
@@ -299,7 +311,7 @@ export function dashboardScene(
     bounds: {
       x: -MARGIN,
       y: -MARGIN,
-      w: width + 2 * MARGIN,
+      w: WIDTH + 2 * MARGIN,
       h: bottom + 2 * MARGIN,
     },
   };

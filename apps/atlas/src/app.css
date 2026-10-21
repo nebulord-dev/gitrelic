@@ -235,24 +235,19 @@ body {
   color: var(--muted);
 }
 
-/* --open: the fan's open view, filled with the accent; --vital, the
-   dashboard's vitals strip, takes the same fill. */
-.atlas-label--card.atlas-label--open,
-.atlas-label--card.atlas-label--vital {
+/* --open: the fan's open view, filled with the accent. */
+.atlas-label--card.atlas-label--open {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
 }
 
 .atlas-label--open .atlas-label__lead,
-.atlas-label--open .atlas-label__sub,
-.atlas-label--vital .atlas-label__lead,
-.atlas-label--vital .atlas-label__sub {
+.atlas-label--open .atlas-label__sub {
   color: var(--accent-ink);
 }
 
-.atlas-label--open .atlas-label__sub,
-.atlas-label--vital .atlas-label__sub {
+.atlas-label--open .atlas-label__sub {
   opacity: 0.75;
 }
 
@@ -297,8 +292,8 @@ body {
   }
 }
 
-/* --row: a line in the dashboard's open tile (layouts/dashboard.ts), one
-   fanned entity: its name, and its reading on the right. */
+/* --row: a line on the dashboard (layouts/dashboard.ts), a lead's fanned
+   entity or a calm lens's chip: its name, and its reading on the right. */
 .atlas-label--card.atlas-label--row {
   grid-template-rows: auto;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -316,11 +311,9 @@ body {
   color: var(--muted);
 }
 
-/* --section: a view's name beside its tiles on the dashboard, a card with no
-   box (so its text scales with the view and never outgrows its column);
-   --section-hot when any of its lenses reads outside normal. */
-.atlas-label--card.atlas-label--section,
-.atlas-label--card.atlas-label--section-hot {
+/* --section: a heading on the dashboard (the calm lenses'), a card with no
+   box, so its text scales with the view. */
+.atlas-label--card.atlas-label--section {
   align-content: start;
   padding: 8px 0 0;
   background: transparent;
@@ -328,6 +321,35 @@ body {
   font-weight: 600;
 }
 
-.atlas-label--section-hot .atlas-label__sub {
+/* --lead: the dashboard's lead lens, its number set large over the reason it
+   leads; --lead-hot when it reads outside normal (number and reason in accent). */
+.atlas-label--card.atlas-label--lead,
+.atlas-label--card.atlas-label--lead-hot {
+  column-gap: 22px;
+  padding: 0 24px;
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 600;
+}
+
+.atlas-label--card.atlas-label--lead .atlas-label__lead,
+.atlas-label--card.atlas-label--lead-hot .atlas-label__lead {
+  font-size: 60px;
+  line-height: 64px;
+}
+
+.atlas-label--card.atlas-label--lead .atlas-label__sub,
+.atlas-label--card.atlas-label--lead-hot .atlas-label__sub {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 400;
+}
+
+.atlas-label--card.atlas-label--lead-hot {
+  border-color: var(--accent);
+}
+
+.atlas-label--lead-hot .atlas-label__lead,
+.atlas-label--card.atlas-label--lead-hot .atlas-label__sub {
   color: var(--accent);
 }
