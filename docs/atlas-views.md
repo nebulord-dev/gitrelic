@@ -168,7 +168,7 @@ Fix rate, test co-change, truck factor and cross-owner coupling are new core wor
 
 | View | Lenses |
 |---|---|
-| Overview | Repo map (form: Briefing) |
+| Overview | Repo map (forms: Fan, Ring; Briefing planned) |
 | Code Health | Hotspots · Churn · Risk · Age · Fix rate · *Complexity growth (own lens or a Hotspots facet: decided at its checkpoint)* |
 | Ownership & Risk *(name revisited when Risk moves; see below)* | Ownership · Coupling |
 | Team & Activity | Contributors · Parallel Dev · Commit Timing · AI & Co-authors · *Release cadence* |
@@ -212,11 +212,21 @@ Each section records:
 
 **Lenses:** Repo map (new; the view's default), then Risk ↗ and Tech debt ↗ until they get checkpoints.
 
-**Primary form — Ring.** The repo at the centre; every analyzer lens on an outer ellipse, grouped into the four other views (sector order: Code Health, Ownership & Risk, Team & Activity, Structure), sized and heated by how far its reading sits outside normal for a repo this size (the same outlier rules as the badges, graded 0–3). Outliers carry their number and name; quiet lenses stay small and grey. It answers "where is this repo unusual?" in one look and doubles as navigation to every lens (about 15; see *Lens inventory*).
+**Primary form — Fan (revisited 2026-10-20, RELIC-361).** The Ring was striking but too much for a first look: every lens at once, most of them grey. The landing is the mock's fan, mapped to the five views: the repo, then the four other views as cards, then the open view's lenses on an arc.
+- **View cards** (`view:<group>` marks, a new entity kind; the Ring's sector labels take the same ids, so a card and its sector morph into each other). A card's headline is its loudest lens: the highest grade, ties going to lens-bar order, shown as the reading's number over "<lens>: <rest of the reading>" (React: Code Health "8" over "Risk: files"). It is in accent at grade 2 and up. When every lens in the view is grade 0 the card shows its first lens's reading in grey (React: Team & Activity, "40 ghosts of 77").
+- **Which view is open.** The loudest view (the highest top grade, ties going to rail order; React: Code Health, tied with Ownership & Risk at 3). Clicking a card fans its lenses instead. The open view is the selection: `s=view:ownership-risk`, or `s=analyzer:<preset>` for one of its lenses, whose group says which view is open. The loudest view is the default and stays out of the URL.
+- **Lenses** sit on the arc in lens-bar order, sized and heated by grade (the Ring's ramp and labels: name over reading, the reading in accent when the lens badges).
+- **Clicking a lens is the fan-out grammar every lens uses.** The other lenses dim and its `lensTopEntities` fan out of its dot on an arc, with the same ids as the Ring's fan. The tree slides left and the repo tucks to the edge to make room. A second click or Enter opens the lens and carries those marks into it; Back reverses each step.
+- **Inspector.** View mode: the view's name, its headline, a line on what the view covers, and its lenses loudest first. Lens mode is the Ring's (reading, reason, what it measures, the fanned list, Open).
+- *Why not the Tree* (board E: all four views open, quiet lenses folded into "+N quiet"): it had the better feel, but with every view open it crowded the stage. The Fan keeps one view in focus.
 
-**The fan-out (the ring's click behaviour, not a form).** Clicking a lens dims the others and fans its top entities out of its dot on an arc, each labelled (e.g. Bus Factor's most at-risk files with their owners). A second click or Enter opens the lens: the view moves to it and those same marks fly to their places in the lens's layout, because they keep their entity ids. Back reverses it. The preview is the first frame of the real view. This replaces the mock's fan as a separate picture.
+Checkpoint boards: D and E on the checkpoint canvas, on React's last 12 months through scene's own `lensReadings` and `lensTopEntities`.
 
-**Alternate form — Briefing.** A short list of findings across lenses; picking one re-forms the canvas around the files and people it names (e.g. the ten people who edited all seven `ReactFeatureFlags` forks, four of them ghosts). *Passes the checkpoint test:* it shows how findings connect across lenses and which entities they share — a different structure (finding → entities graph), which neither the ring, the time strip, the inspector chart nor the detail table can show.
+**Alternate form — Ring** (the primary from 2026-10-18 until RELIC-361). *Passes the checkpoint test:* it is the only picture of every lens at once, which the Fan gives up by design. The repo at the centre; every analyzer lens on an outer ellipse, grouped into the four other views (sector order: Code Health, Ownership & Risk, Team & Activity, Structure), sized and heated by how far its reading sits outside normal for a repo this size (the same outlier rules as the badges, graded 0–3). Outliers carry their number and name; quiet lenses stay small and grey. It answers "where is this repo unusual?" in one look and doubles as navigation to every lens (about 15; see *Lens inventory*).
+
+**The fan-out (the click behaviour of both forms, not a form).** Clicking a lens dims the others and fans its top entities out of its dot on an arc, each labelled (e.g. Bus Factor's most at-risk files with their owners). A second click or Enter opens the lens: the view moves to it and those same marks fly to their places in the lens's layout, because they keep their entity ids. Back reverses it. The preview is the first frame of the real view. This replaces the mock's fan as a separate picture.
+
+**Planned alternate — Briefing** (not built; a third form only if it still earns one at its PR). A short list of findings across lenses; picking one re-forms the canvas around the files and people it names (e.g. the ten people who edited all seven `ReactFeatureFlags` forks, four of them ghosts). *Passes the checkpoint test:* it shows how findings connect across lenses and which entities they share — a different structure (finding → entities graph), which neither the ring, the time strip, the inspector chart nor the detail table can show.
 
 **Findings** (inspector): the loudest outlier stated in plain language, naming entities as chips. Ring: the loudest group ("who owns the code: 63% of files lean on one author, 39 of 77 contributors went quiet"). Briefing: one card per finding, across lenses.
 
@@ -239,7 +249,7 @@ Each section records:
 
 Stale Files has no outlier rule: its count is every file untouched in the window, which measures the window, not decay. Its checkpoint defines a real one.
 
-**Next:** Briefing, the alternate form, ships in its own PR with its findings engine.
+**Next:** the Fan (RELIC-361): `layouts/fan.ts`, view headlines in `overview/`, the `view:` kind, and `fanFocus` accepting it. Briefing ships later in its own PR with its findings engine.
 
 ### Code Health › Hotspots (checkpoint 2026-10-18, PR 3.2)
 
@@ -419,3 +429,4 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 - **2026-10-20 — Fix rate draws a funnel against chance, and retires Shame.** *Why:* on React only 3 of the 12 rated files with a fix are beyond what a 1.2% repo rate explains; a ranked list would have put the other nine beside them.
 - **2026-10-20 — Fix rate's lane is spaced by commit order, not time, and repair arcs rise at least 18 units.** *Why:* on React a fix often lands the same day as the changes it repairs (`Pipeline.ts`'s fix and its four causes all on 2026-02-23), so a time axis stacked them into one dot with flat arcs. Months are named where they start; exact dates stay in the tooltips. Links gained an optional `bow` for it.
 - **2026-10-20 — Risk's fix-commits reason comes from fix rate.** A file fixed more often than chance earns 20 points (Shame's top tier) and becomes a candidate; Shame's tiers and leaderboard no longer feed Risk. *Why:* Shame's reason never fired on React's risky files, and its score was mostly small-sample noise. On React's year, `snap/src/runner.ts` becomes cursed (ownership 30 + fixes 20) and `Pipeline.ts` a near miss (40).
+- **2026-10-20 — Overview lands on the Fan; the Ring becomes its alternate** (RELIC-361, reversing part of 2026-10-18). Four view cards headlined by their loudest lens, the loudest view open, its lenses on an arc; clicking a lens fans out its top entities as before. Views become entities (`view:<group>`). *Why:* the Ring answers "where is this repo unusual" but asks a first-time viewer to read 20 dots at once; the Fan says it in four numbers and one open view. A Tree with every view open felt better but crowded the stage.

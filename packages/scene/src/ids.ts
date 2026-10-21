@@ -4,6 +4,7 @@
 //
 //   repo                       the repository root
 //   analyzer:<preset id>       an analyzer card (Overview fan)
+//   view:<group id>            one of the five views (Overview fan's nodes)
 //   file:<path>                a tracked file
 //   dir:<path>                 a directory
 //   person:<canonical email>   a contributor (after identity merging)
@@ -14,6 +15,7 @@
 export const ENTITY_KINDS = [
   'repo',
   'analyzer',
+  'view',
   'file',
   'dir',
   'person',
@@ -30,6 +32,7 @@ export const REPO_ID: EntityId = 'repo';
 
 export const ids = {
   analyzer: (preset: string): EntityId => `analyzer:${preset}`,
+  view: (group: string): EntityId => `view:${group}`,
   file: (path: string): EntityId => `file:${path}`,
   dir: (path: string): EntityId => `dir:${path}`,
   person: (email: string): EntityId => `person:${email}`,
