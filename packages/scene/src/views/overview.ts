@@ -1,14 +1,13 @@
-// The Overview view: one lens (Repo map) drawn as the fan (primary), the
-// ring, or the dashboard (on trial). All three are driven by `input.focus`, which the shell keeps: a `view:` id
-// opens that view's fan, an `analyzer:` id previews that lens (and, on the
-// fan, opens its view), and the shell keeps it while one of the previewed
-// lens's own entities is selected.
+// The Overview view: one lens (Repo map) drawn as the dashboard (primary) or
+// the fan. Both are driven by `input.focus`, which the shell keeps: an
+// `analyzer:` id puts that lens in the dashboard's lead (on the fan, it
+// previews the lens inside its view), a `view:` id opens that view's fan, and
+// the shell keeps the focus while one of the lens's own entities is selected.
 
 import { buildEntityIndex } from '../entities';
 import { entityKey, entityKind, type EntityKind } from '../ids';
 import { CALM_PANEL, dashboardScene } from '../layouts/dashboard';
 import { fanScene } from '../layouts/fan';
-import { ringScene } from '../layouts/ring';
 import {
   lensReadings,
   repoReading,
@@ -73,28 +72,6 @@ export const fanLayout: Layout = {
   },
 };
 
-export const ringLayout: Layout = {
-  id: 'ring',
-  label: 'Ring',
-  // The ring draws nothing for a view focus, so a view selection doesn't rebuild it.
-  focusKinds: ['analyzer', 'file', 'dir', 'person'],
-  caption:
-    'Every lens around the repo, sized by how far outside normal it reads. Click a lens to see what it points at; click it again to fold it.',
-  needsCommits: false,
-  build: (input, viewport) => {
-    const readings = lensReadings(input.report);
-    const preview = previewOf(input, readings);
-    return ringScene(
-      repoReading(input.report),
-      readings,
-      preview
-        ? { preset: preview.reading.preset, entities: preview.entities }
-        : null,
-      viewport,
-    );
-  },
-};
-
 export const dashboardLayout: Layout = {
   id: 'dashboard',
   label: 'Dashboard',
@@ -119,6 +96,6 @@ export const dashboardLayout: Layout = {
 
 export const overviewView: AnalyzerView = {
   id: 'overview',
-  layouts: [fanLayout, ringLayout, dashboardLayout],
+  layouts: [dashboardLayout, fanLayout],
   findings: () => [],
 };

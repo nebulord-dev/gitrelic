@@ -33,7 +33,7 @@ export const CATALOG: readonly CatalogEntry[] = [
     label: 'Repo map',
     group: 'overview',
     explain:
-      'Every lens around the repository, sized by how far outside normal it reads: where to look first.',
+      'The loudest lens up front with what it points at, and every other lens beside it: where to look first.',
     atlas: true,
   },
   {

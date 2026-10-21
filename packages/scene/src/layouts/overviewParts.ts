@@ -1,6 +1,6 @@
-// What the Overview's two forms (fan.ts, ring.ts) share: how a lens looks for
-// its outlier grade, how a lens fans its top entities out, and the room their
-// labels need. A lens previews the same way in either form.
+// What the Overview's forms (dashboard.ts, fan.ts) and the lenses that borrow
+// their grammar share: how a lens looks for its outlier grade, how a lens fans
+// its top entities out, and the room their labels need.
 
 import { ids, type EntityId } from '../ids';
 import type { Link, Mark, Paint } from '../model';
@@ -28,8 +28,8 @@ const LABEL_ROOM = 240;
 const LABEL_ROOM_Y = 64;
 const MARGIN = 32;
 
-/** Labels point away from the centre, so they never cross the ring. */
-export function anchorFor(dx: number, dy: number): Mark['labelAnchor'] {
+/** Labels point away from the fan's source, so they never cross it. */
+function anchorFor(dx: number, dy: number): Mark['labelAnchor'] {
   const len = Math.hypot(dx, dy) || 1;
   if (dx / len > 0.35) return 'right';
   if (dx / len < -0.35) return 'left';

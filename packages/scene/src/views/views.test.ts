@@ -33,61 +33,31 @@ describe('VIEWS', () => {
   });
 });
 
-describe('overview ring', () => {
-  const ring = VIEWS.get('overview')!.layouts.find((l) => l.id === 'ring')!;
-  const index = buildEntityIndex(report);
-
-  it('fans out the lens named by focus', () => {
-    const scene = ring.build(
-      { report, commits: null, focus: ids.analyzer('hotspots'), index },
-      viewport,
-    );
-    expect(scene.marks.some((m) => m.parent === ids.analyzer('hotspots'))).toBe(
-      true,
-    );
-  });
-
-  it('draws no fan for any other focus', () => {
-    const scene = ring.build(
-      { report, commits: null, focus: ids.file('src/api.ts'), index },
-      viewport,
-    );
-    // Lenses have their view for a parent; fanned entities have a lens.
-    expect(scene.marks.some((m) => m.parent?.startsWith('analyzer:'))).toBe(
-      false,
-    );
-  });
-});
-
 describe('overview captions and focus kinds', () => {
-  const [fan, ring] = VIEWS.get('overview')!.layouts;
+  const [dashboard, fan] = VIEWS.get('overview')!.layouts;
 
   it('both forms carry a how-to-read caption', () => {
+    expect(dashboard.caption).toMatch(/loudest lens leads/);
     expect(fan.caption).toMatch(/loudest lens/);
-    expect(ring.caption).toMatch(/outside normal/);
   });
 
-  it('the ring ignores a view focus; the fan re-forms around one', () => {
-    expect(ring.focusKinds).toEqual(['analyzer', 'file', 'dir', 'person']);
+  it('the dashboard ignores a view focus; the fan re-forms around one', () => {
+    expect(dashboard.focusKinds).toEqual(['analyzer', 'file', 'dir', 'person']);
     expect(fan.focusKinds).toContain('view');
   });
 });
 
 describe('overview fan', () => {
   const overview = VIEWS.get('overview')!;
-  const fan = overview.layouts[0];
+  const fan = overview.layouts.find((l) => l.id === 'fan')!;
   const index = buildEntityIndex(report);
   const build = (focus: string | null) =>
     fan.build({ report, commits: null, focus, index }, viewport);
   const openLenses = (scene: ReturnType<typeof build>) =>
     scene.marks.filter((m) => m.id.startsWith('analyzer:')).map((m) => m.id);
 
-  it('is the primary form, with the ring and the dashboard (on trial) as alternates', () => {
-    expect(overview.layouts.map((l) => l.id)).toEqual([
-      'fan',
-      'ring',
-      'dashboard',
-    ]);
+  it('is the alternate form, the dashboard leading', () => {
+    expect(overview.layouts.map((l) => l.id)).toEqual(['dashboard', 'fan']);
     expect(fan.focusKinds).toContain('view');
   });
 
