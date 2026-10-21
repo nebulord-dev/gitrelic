@@ -23,6 +23,7 @@
   import { loadCommits } from '../data/loadReport';
   import { initialCollapsed, rememberCollapsed } from '../state/inspectorPref';
   import { Nav } from '../state/nav.svelte';
+  import { initialPanels, rememberPanels } from '../state/panelsPref';
   import TableDrawer from '../table/TableDrawer.svelte';
   import TimeStrip from '../time/TimeStrip.svelte';
   import { fanFold, nextFanFocus } from '../views/fanFocus';
@@ -122,8 +123,9 @@
   });
   let lensView = $derived(nav.lens ? VIEWS.get(nav.lens) : undefined);
   // The picture's collapsible panels the viewer has opened (Mark.toggles);
-  // view state, not navigation, so it stays out of the URL.
-  let openPanels = $state.raw<ReadonlySet<string>>(new Set());
+  // a viewer preference like the inspector's, remembered, never in the URL.
+  let openPanels = $state.raw(initialPanels());
+  $effect(() => rememberPanels(openPanels));
   function togglePanel(key: string) {
     const next = new Set(openPanels);
     if (!next.delete(key)) next.add(key);
