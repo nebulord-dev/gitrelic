@@ -279,6 +279,7 @@ describe('Inspector', () => {
     expect(
       screen.getByRole('heading', { name: 'Loudest signals' }),
     ).toBeTruthy();
+    expect(screen.getByText(/Click a view or a lens/)).toBeTruthy();
     await fireEvent.click(screen.getByRole('button', { name: /Ghost Files/ }));
     expect(onselect).toHaveBeenCalledWith('analyzer:ghost-files');
   });
@@ -292,7 +293,7 @@ describe('Inspector', () => {
       onselect,
       onopen,
     });
-    expect(screen.getByRole('heading', { name: 'On the ring' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'On the map' })).toBeTruthy();
     // Hotspots has an Atlas view: the button opens it in place.
     await fireEvent.click(
       screen.getByRole('button', { name: 'Open Hotspots' }),
