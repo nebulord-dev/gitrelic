@@ -44,6 +44,9 @@ const SECTION_GAP = 28;
 const ROW_H = 24;
 const ROW_STEP = 28;
 const MARGIN = 24;
+/** A section's band reaches this far past its tiles, into the gaps. */
+const BAND_PAD = 10;
+const BAND_ALPHA = 0.1;
 /** Other tiles while one is open: dimmed, still labelled (the cutoff is 0.5). */
 const DIM = 0.55;
 const OPEN_LABEL = 110;
@@ -263,7 +266,25 @@ export function dashboardScene(
         });
       });
     });
-    top += rows * CELL_H + (rows - 1) * GAP + SECTION_GAP;
+    const height = rows * CELL_H + (rows - 1) * GAP;
+    // The section's band, under everything: tinted by its loudest lens's
+    // grade (colour means grade here, as everywhere), so the views read
+    // apart and the loud ones warm.
+    const loudest = Math.max(0, ...lenses.map((r) => r.grade));
+    marks.push({
+      id: `band:${view}`,
+      shape: 'bar',
+      paint: RAMP[loudest],
+      x: width / 2,
+      y: top + height / 2,
+      r: 0,
+      ...ZERO,
+      w: width + 2 * BAND_PAD,
+      h: height + 2 * BAND_PAD,
+      alpha: BAND_ALPHA,
+      z: 0,
+    });
+    top += height + SECTION_GAP;
   }
 
   const bottom = top - SECTION_GAP;

@@ -163,6 +163,24 @@ describe('dashboardScene', () => {
     );
   });
 
+  it('bands each view under its tiles, tinted by its loudest grade', () => {
+    const graded = readings.map((r) => ({
+      ...r,
+      grade: (r.preset === 'bus-factor' ? 3 : 0) as LensReading['grade'],
+    }));
+    const scene = dashboardScene(vitals, graded, topOf, null);
+    const band = mark(scene, 'band:ownership-risk')!;
+    expect(band).toMatchObject({ shape: 'bar', paint: '--risk-3', z: 0 });
+    expect(band.alpha).toBeLessThan(0.2);
+    expect(mark(scene, 'band:structure')?.paint).toBe('--risk-0');
+    // It holds every one of the view's tiles.
+    for (const r of graded.filter((r) => r.group === 'ownership-risk')) {
+      const t = mark(scene, ids.analyzer(r.preset))!;
+      expect(t.y - t.h / 2).toBeGreaterThan(band.y - band.h / 2);
+      expect(t.y + t.h / 2).toBeLessThan(band.y + band.h / 2);
+    }
+  });
+
   it('bars a closed tile’s top entities, the heaviest full height, picking the lens', () => {
     const preset = readings[0].preset;
     const scene = dashboardScene(vitals, readings, () => fanned, null);
