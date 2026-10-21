@@ -3,8 +3,8 @@
 // disappearing and reappearing.
 //
 //   repo                       the repository root
-//   analyzer:<preset id>       an analyzer card (Overview fan)
-//   view:<group id>            one of the five views (Overview fan's nodes)
+//   analyzer:<preset id>       an analyzer (a lens; the Overview's dots)
+//   view:<group id>            a view the Overview fan draws (not Overview itself)
 //   file:<path>                a tracked file
 //   dir:<path>                 a directory
 //   person:<canonical email>   a contributor (after identity merging)

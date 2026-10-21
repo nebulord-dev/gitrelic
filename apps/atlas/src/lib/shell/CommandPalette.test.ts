@@ -29,6 +29,17 @@ describe('CommandPalette', () => {
     expect(screen.getByRole('dialog')).toBeTruthy();
   });
 
+  it('labels a view result "View"', async () => {
+    render(CommandPalette, { index, onpick: vi.fn() });
+    const input = await openWithShortcut();
+    await fireEvent.input(input, { target: { value: 'structure' } });
+    const row = screen
+      .getAllByRole('option')
+      .find((o) => o.textContent?.includes('Structure'));
+    expect(row).toBeTruthy();
+    expect(row!.querySelector('span')!.textContent!.trim()).toBe('View');
+  });
+
   it('sets itself up when a parent opens it (the Search button)', async () => {
     const button = document.createElement('button');
     document.body.append(button);

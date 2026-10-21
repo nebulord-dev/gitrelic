@@ -19,12 +19,14 @@
   } = $props();
 
   const KIND_LABEL = {
+    view: 'View',
     analyzer: 'Analyzer',
     person: 'Person',
     dir: 'Directory',
     file: 'File',
   } as const;
   const KIND_CLASS = {
+    view: 'text-text',
     analyzer: 'text-accent',
     person: 'text-person',
     dir: 'text-dir',
