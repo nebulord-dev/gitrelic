@@ -138,6 +138,8 @@ export function dashboardScene(
       labelLead: v.lead,
       label: v.label,
       labelSub: v.sub,
+      // Filled with the accent, like the fan's open view.
+      labelClass: 'atlas-label--vital',
       labelPriority: VITAL_LABEL,
       labelAnchor: 'center',
       z: 1,

@@ -112,6 +112,8 @@ describe('dashboardScene', () => {
       'AI-assisted',
       'Language',
     ]);
+    for (const v of scene.marks.filter((m) => m.id.startsWith('vital:')))
+      expect(v.labelClass).toBe('atlas-label--vital');
     const tiles = scene.marks.filter((m) => m.id.startsWith('analyzer:'));
     expect(tiles.map((m) => m.id)).toEqual(
       readings.map((r) => ids.analyzer(r.preset)),

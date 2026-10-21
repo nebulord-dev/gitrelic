@@ -235,19 +235,24 @@ body {
   color: var(--muted);
 }
 
-/* --open: the fan's open view, filled with the accent. */
-.atlas-label--card.atlas-label--open {
+/* --open: the fan's open view, filled with the accent; --vital, the
+   dashboard's vitals strip, takes the same fill. */
+.atlas-label--card.atlas-label--open,
+.atlas-label--card.atlas-label--vital {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
 }
 
 .atlas-label--open .atlas-label__lead,
-.atlas-label--open .atlas-label__sub {
+.atlas-label--open .atlas-label__sub,
+.atlas-label--vital .atlas-label__lead,
+.atlas-label--vital .atlas-label__sub {
   color: var(--accent-ink);
 }
 
-.atlas-label--open .atlas-label__sub {
+.atlas-label--open .atlas-label__sub,
+.atlas-label--vital .atlas-label__sub {
   opacity: 0.75;
 }
 
