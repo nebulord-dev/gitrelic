@@ -233,7 +233,14 @@ export {
 export { lensReadings, type LensReading } from './overview/readings';
 export { lensTopEntities, type FannedEntity } from './overview/topEntities';
 export { ringScene, type RingFocus } from './layouts/ring';
-export { overviewView, ringLayout } from './views/overview';
+export { fanLayout, overviewView, ringLayout } from './views/overview';
+export {
+  FAN_VIEWS,
+  loudestView,
+  VIEW_BLURBS,
+  viewHeadline,
+  type FanView,
+} from './overview/viewHeadlines';
 export {
   commitsForScore,
   HOTSPOT_TIERS,
