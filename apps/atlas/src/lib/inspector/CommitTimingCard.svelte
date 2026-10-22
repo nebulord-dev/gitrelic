@@ -1,7 +1,8 @@
 <script lang="ts">
   import {
     commitTimingFindings,
-    offHoursRegulars,
+    offHoursLine,
+    offHoursPeople,
     regularLine,
     timingPackageId,
     timingPackageName,
@@ -31,7 +32,12 @@
   let findings = $derived(commitTimingFindings({ report, commits: null }));
   // Core's order: above chance first, then by off-hours share.
   let top = $derived(offHours.packages.slice(0, 5));
-  let regulars = $derived(offHoursRegulars(report));
+  // Every regular, then the most off-hours up to five, so there are always
+  // names to select.
+  let people = $derived(offHoursPeople(report));
+  let regulars = $derived(
+    people.filter((p) => p.regularWeekends || p.regularLateNights).length,
+  );
   // Only reports with regularity counted can say nobody qualifies.
   let counted = $derived(
     report.commitTiming.authorStress.some((a) => a.activeWeeks > 0),
@@ -96,24 +102,29 @@
 {/if}
 
 {#if counted}
-  <Card eyebrow="Working off-hours regularly">
-    {#each regulars as r (r.id)}
+  <Card eyebrow="Off-hours, by person">
+    <p class="m-0 text-[13px] text-soft">
+      {regulars === 0
+        ? 'Nobody works weekends or late nights regularly (in a third or more of their active weeks).' +
+          (people.length > 0 ? ' The most off-hours:' : '')
+        : `${regulars === 1 ? 'One person works' : `${n(regulars)} people work`} off-hours regularly (in a third or more of their active weeks).`}
+    </p>
+    {#each people as p (p.id)}
+      {@const regular = p.regularWeekends || p.regularLateNights}
       <div
-        class="flex flex-col gap-1 border-t border-panel-border py-1.5 first:border-t-0"
+        class="flex flex-col items-start gap-1 border-t border-panel-border py-1.5 first-of-type:border-t-0"
       >
-        <EntityChip id={r.id} text={r.name} {index} {onselect} />
-        <span class="text-[13px] text-soft">{regularLine(r)}</span>
+        <EntityChip id={p.id} text={p.name} {index} {onselect} />
+        <span class={['text-[13px]', regular ? 'text-accent' : 'text-soft']}
+          >{regular ? regularLine(p) : offHoursLine(p)}</span
+        >
       </div>
-    {:else}
-      <p class="m-0 text-[13px] text-soft">
-        Nobody works weekends or late nights regularly (in a third or more of
-        their active weeks).
-      </p>
     {/each}
     <p class="m-0 text-[12px] text-muted">
       Times are from each author's own machine, so travel or a clock set to UTC
       can look like night work, and weekends can be a choice. A reason to check
-      in, not a verdict. Select someone to see their hours.
+      in, not a verdict. Select someone to see their hours on the punch card;
+      hover a cell to see who committed in it.
     </p>
   </Card>
 {/if}

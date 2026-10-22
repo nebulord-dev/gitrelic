@@ -8,8 +8,12 @@ import {
   selectionHours,
   selectionHoursOf,
   selectionRule,
+  cellAuthors,
+  offHoursLine,
+  offHoursPeople,
   offHoursRegulars,
   regularLine,
+  topAuthors,
   SWEEPING_COMMIT_FILES,
   touchesSelection,
   workingHoursShare,
@@ -164,6 +168,88 @@ describe('offHoursRegulars', () => {
       'weekends in 9 of 12 active weeks; late nights in 5 of 12 active weeks (6 nights)',
     );
     expect(regularLine(r[1])).toBe('weekends in 4 of 10 active weeks');
+  });
+
+  it('ranks everyone with off-hours after the regulars, never the new or bots', () => {
+    const more = {
+      ...report,
+      commitTiming: {
+        authorStress: [
+          ...report.commitTiming.authorStress,
+          // One weekend is all of a two-week contributor: too few to rank.
+          {
+            ...base,
+            email: 'new@x',
+            name: 'New',
+            activeWeeks: 2,
+            weekendWeeks: 2,
+            regularWeekends: false,
+          },
+          {
+            ...base,
+            email: 'dependabot[bot]@users.noreply.github.com',
+            name: 'dependabot',
+            activeWeeks: 20,
+            weekendWeeks: 20,
+            regularWeekends: false,
+          },
+          {
+            ...base,
+            email: 'zed@x',
+            name: 'Zed',
+            activeWeeks: 6,
+            weekendWeeks: 0,
+            lateNightWeeks: 1,
+            lateNights: 1,
+            regularWeekends: false,
+          },
+        ],
+      },
+    } as unknown as GitrelicReport;
+    const people = offHoursPeople(more);
+    expect(people.map((p) => p.name)).toEqual(['Joe', 'Ann', 'Zed', 'Cy']);
+    expect(offHoursLine(people[3])).toBe(
+      'weekends in 1 of 12 active weeks · 0 late nights',
+    );
+    expect(offHoursLine(people[2])).toBe(
+      'weekends in 0 of 6 active weeks · 1 late night',
+    );
+    // Every regular shows, past the count.
+    expect(offHoursPeople(more, 1).map((p) => p.name)).toEqual(['Joe', 'Ann']);
+  });
+});
+
+describe('cellAuthors', () => {
+  const at = (iso: string, author: string, files = ['src/a.ts']) => ({
+    timeMs: Date.parse(iso),
+    author,
+    files,
+    tz: 0,
+  });
+  const commits = [
+    at('2025-06-07T02:00:00Z', 'ann@x'), // Sat 2am
+    at('2025-06-07T02:30:00Z', 'ann@x'),
+    at('2025-06-07T02:10:00Z', 'joe@x', ['lib/b.ts']),
+    at(
+      '2025-06-07T02:20:00Z',
+      'cy@x',
+      Array.from({ length: 30 }, (_, i) => `src/f${i}.ts`),
+    ),
+  ];
+
+  it('counts each cell’s authors, busiest first', () => {
+    const cell = cellAuthors(commits, null)[6][2];
+    expect(topAuthors(cell)).toEqual([
+      { author: 'ann@x', commits: 2 },
+      { author: 'cy@x', commits: 1 },
+      { author: 'joe@x', commits: 1 },
+    ]);
+    expect(topAuthors(cell, 1)).toHaveLength(1);
+  });
+
+  it('follows a package’s rule: its commits, less sweeping ones', () => {
+    const cell = cellAuthors(commits, selectionRule('dir:src')!)[6][2];
+    expect([...cell]).toEqual([['ann@x', 2]]);
   });
 });
 

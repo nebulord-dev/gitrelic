@@ -271,7 +271,7 @@ describe('CommitTimingCard', () => {
     const onselect = vi.fn();
     render(CommitTimingCard, { report, index, onselect });
     const section = screen.getByRole('heading', {
-      name: 'Working off-hours regularly',
+      name: 'Off-hours, by person',
     }).parentElement!;
     // The sample repo's Alice: weekends in 5 of her 10 active weeks.
     expect(section.textContent).toContain('weekends in 5 of 10 active weeks');
@@ -282,7 +282,7 @@ describe('CommitTimingCard', () => {
     expect(onselect).toHaveBeenCalledWith('person:alice@example.com');
   });
 
-  it('says so when nobody works off-hours regularly', () => {
+  it('says so when nobody works off-hours regularly, and still names people', async () => {
     const calm = {
       ...report,
       commitTiming: {
@@ -294,10 +294,21 @@ describe('CommitTimingCard', () => {
         })),
       },
     } as GitrelicReport;
-    render(CommitTimingCard, { report: calm, index });
+    const onselect = vi.fn();
+    render(CommitTimingCard, { report: calm, index, onselect });
     expect(
       screen.getByText(/Nobody works weekends or late nights regularly/),
     ).toBeTruthy();
+    // Still names the most off-hours, so there's someone to select.
+    const section = screen.getByRole('heading', {
+      name: 'Off-hours, by person',
+    }).parentElement!;
+    expect(section.textContent).toContain('The most off-hours:');
+    expect(section.textContent).toContain(
+      'weekends in 5 of 10 active weeks · ',
+    );
+    await fireEvent.click(screen.getByRole('button', { name: 'Alice' }));
+    expect(onselect).toHaveBeenCalledWith('person:alice@example.com');
   });
 
   it('lists packages by off-hours, each selecting its directory, and opens the table', async () => {

@@ -70,6 +70,22 @@ describe('punchCardScene', () => {
     );
   });
 
+  it('adds who committed to a cell’s tooltip when given', () => {
+    const s = punchCardScene(
+      {
+        grid,
+        who: (day, hour) => (day === 6 && hour === 12 ? 'by Ann 2' : null),
+      },
+      VIEWPORT,
+    );
+    expect(cell(s, 6, 12).tip).toEqual([
+      'Sat 12pm · off-hours',
+      '2 commits (15% of the repo’s)',
+      'by Ann 2',
+    ]);
+    expect(cell(s, 1, 12).tip).toHaveLength(2);
+  });
+
   it('says so when there are no commits', () => {
     const empty = punchCardScene({ grid: emptyGrid() }, VIEWPORT);
     expect(checkScene(empty)).toEqual([]);

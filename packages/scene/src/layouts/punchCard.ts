@@ -7,7 +7,8 @@
 //
 // Selecting a package (a `dir:`, or `repo` for the root's files) or a file
 // redraws the grid from its own commits, its off-hours in the accent: "this
-// module changes at 2am". Cells and bands are layout-only (`punch:`, `punch-band:`), so a
+// module changes at 2am". A cell's tooltip names who committed in it.
+// Cells and bands are layout-only (`punch:`, `punch-band:`), so a
 // click on one selects nothing.
 
 import {
@@ -35,10 +36,15 @@ export interface PunchCardInput {
    * they committed).
    */
   selection?: { name: string; hours: SelectionHours; note: string } | null;
+  /**
+   * Who committed in a cell, for its tooltip ("by Ann 3, Joe 1"), or
+   * null to leave the line out (no commits loaded, or a person's own hours).
+   */
+  who?: ((day: number, hour: number) => string | null) | null;
 }
 
 export function punchCardScene(
-  { grid, selection = null }: PunchCardInput,
+  { grid, selection = null, who = null }: PunchCardInput,
   viewport: Viewport,
 ): Scene {
   const total = grid.flat().reduce((s, v) => s + v, 0);
@@ -146,6 +152,7 @@ export function punchCardScene(
                 `${plural(sel.grid[day][hour], 'commit')} touching ${selection.name}`,
               ]
             : []),
+          ...(who?.(day, hour) ? [who(day, hour)!] : []),
         ],
       });
     }
