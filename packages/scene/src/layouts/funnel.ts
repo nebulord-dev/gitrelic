@@ -55,13 +55,13 @@ export interface FunnelInput {
   commits?: readonly CommitLike[] | null;
 }
 
-/** The smallest of 1, 2, 3, 5 × 10ᵏ at or above `v`. */
-function niceCeil(v: number): number {
+/** The smallest of 1, 2, 3, 5 × 10ᵏ at or above `v` (a log axis's end). */
+export function niceCeil(v: number): number {
   for (let step = 1; ; step *= 10)
     for (const m of [1, 2, 3, 5]) if (step * m >= v) return step * m;
 }
 
-function ticksBetween(lo: number, hi: number): number[] {
+export function ticksBetween(lo: number, hi: number): number[] {
   const out: number[] = [];
   for (let step = 1; step <= hi; step *= 10)
     for (const m of [1, 2, 3, 5]) {

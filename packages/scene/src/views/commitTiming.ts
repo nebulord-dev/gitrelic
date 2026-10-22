@@ -1,9 +1,13 @@
 // Team & Activity › Commit Timing: when the code changes, and which code
 // changes off-hours more than the team's own rate explains
-// (docs/atlas-views.md › Commit Timing). The packages-against-chance funnel,
-// its alternate form, is its own PR.
+// (docs/atlas-views.md › Commit Timing). The punch card is the primary
+// form; packages against chance, a funnel, the alternate.
 
 import { entityKey, entityKind, ids, REPO_ID, type EntityId } from '../ids';
+import {
+  offHoursFunnelScene,
+  type OffHoursPoint,
+} from '../layouts/offHoursFunnel';
 import { punchCardScene } from '../layouts/punchCard';
 import {
   busiestCells,
@@ -99,6 +103,41 @@ export const punchCardLayout: Layout = {
                     : 'its hours, with sweeping and bot commits left out',
               }
             : null,
+      },
+      viewport,
+    );
+  },
+};
+
+/** Core's tested packages, as the funnel draws them. */
+export function offHoursPoints(input: ViewInput): OffHoursPoint[] {
+  const { offHours } = input.report.commitTiming;
+  return offHours.packages.map((p) => ({
+    id: timingPackageId(p.package),
+    name: timingPackageName(p.package),
+    commits: p.commits,
+    offHours: p.offHours,
+    allowed: p.allowed,
+    aboveChance: p.aboveChance,
+    tier: timingTier(p, offHours.rate),
+  }));
+}
+
+export const offHoursFunnelLayout: Layout = {
+  id: 'against-chance',
+  label: 'Against chance',
+  caption:
+    'Packages by commits and the share of them off-hours. The band is what chance alone gives at the repo’s rate (the line), narrowing as packages grow; packages above it change off-hours more than the team’s own habits explain.',
+  focusKinds: ['dir', 'repo'],
+  needsCommits: false,
+  build: (input, viewport) => {
+    const { offHours } = input.report.commitTiming;
+    return offHoursFunnelScene(
+      {
+        points: offHoursPoints(input),
+        rate: offHours.rate,
+        minCommits: offHours.minCommits,
+        focus: input.focus,
       },
       viewport,
     );
@@ -224,7 +263,7 @@ export function commitTimingTable(input: ViewInput): LensTable {
 
 export const commitTimingView: AnalyzerView = {
   id: 'commit-timing',
-  layouts: [punchCardLayout],
+  layouts: [punchCardLayout, offHoursFunnelLayout],
   findings: commitTimingFindings,
   table: commitTimingTable,
 };

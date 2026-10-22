@@ -6,6 +6,8 @@ import {
   commitTimingFindings,
   commitTimingTable,
   commitTimingView,
+  offHoursFunnelLayout,
+  offHoursPoints,
   punchCardLayout,
   timingTier,
 } from './commitTiming';
@@ -199,5 +201,25 @@ describe('commitTimingView', () => {
     expect(plain.marks.find((m) => m.id === 'punch-head')!.label).toMatch(
       /each in its author’s local time/,
     );
+  });
+});
+
+describe('offHoursFunnelLayout', () => {
+  it('is the alternate form, drawing core’s tested packages', () => {
+    expect(commitTimingView.layouts).toEqual([
+      punchCardLayout,
+      offHoursFunnelLayout,
+    ]);
+    const r = report([pkg('packages/server', 66, 15, true), pkg('', 20, 3)]);
+    expect(offHoursPoints({ report: r, commits: null })).toMatchObject([
+      { id: 'dir:packages/server', name: 'server', tier: 3 },
+      { id: 'repo', name: '(root)', tier: 1 },
+    ]);
+    const s = offHoursFunnelLayout.build(
+      { report: r, commits: null, focus: 'repo' },
+      { width: 1200, height: 800 },
+    );
+    expect(checkScene(s)).toEqual([]);
+    expect(s.marks.some((m) => m.id === 'home:repo')).toBe(true);
   });
 });

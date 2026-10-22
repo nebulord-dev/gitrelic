@@ -41,6 +41,10 @@ Hover a cell for the day and hour, its commits and their share of the repo's, an
 
 With nothing selected, the inspector leads with the off-hours share. Its findings name the packages above chance, when the team works (the share of commits on weekdays 9am–7pm, and the busiest hour), and the most regular package, when one keeps well under the repo's rate. A list of the packages with the most off-hours follows; each selects its package.
 
+### Packages against chance
+
+The lens's corner toggle switches to **Against chance**: every tested package as a dot, by its commits (across, log scale) and the share of them off-hours (up). The shaded band is what chance alone gives at the repo's off-hours rate, the line across the plot: small packages can drift well above the rate by luck, so the band is wide on the left and narrows as packages grow. A package above the band changes off-hours more than the team's own habits explain, and takes the risk color. On React's last 12 months, `react-server` sits well clear of it and `react-dom` just over its edge; `react-server-dom-parcel`, at 20% of only 10 commits, is still inside it. Hover a dot for its count and what chance allows at its size; click one to select its package.
+
 The detail table (`T`) lists every tested package: commits, off-hours, the share, what chance allows and whether it's above chance, tiered from below the repo's rate to above chance at twice the rate.
 
 ### People who work off-hours regularly
