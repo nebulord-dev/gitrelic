@@ -95,37 +95,67 @@ export const PARALLEL_TIER_NAMES = [
   'Critical',
 ] as const;
 
+/** People named in the table's People column before "+N more". */
+export const TABLE_PEOPLE_NAMED = 3;
+
+/**
+ * Who collided on a file, most collision weeks first (ties by name): every
+ * person in its windows, each with the weeks they were in.
+ */
+export function filePeople(
+  file: { windows: { authors: string[] }[] },
+  nameOf: ReadonlyMap<string, string>,
+): { name: string; weeks: number }[] {
+  const weeks = new Map<string, number>();
+  for (const w of file.windows)
+    for (const a of w.authors) weeks.set(a, (weeks.get(a) ?? 0) + 1);
+  return [...weeks]
+    .map(([email, k]) => ({ name: nameOf.get(email) ?? email, weeks: k }))
+    .sort((x, y) => y.weeks - x.weeks || x.name.localeCompare(y.name));
+}
+
 /** The files people collided on (two or more weeks), most weeks first. */
 export function parallelDevTable(input: ViewInput): LensTable {
+  const nameOf = new Map(
+    input.report.contributors.contributors.map((c) => [c.email, c.name]),
+  );
   return {
     columns: [
       { id: 'file', label: 'File' },
+      { id: 'people', label: 'People' },
       { id: 'weeks', label: 'Weeks with 2+ people', numeric: true },
       { id: 'active', label: 'Active weeks', numeric: true },
       { id: 'peak', label: 'Most people in a week', numeric: true },
       { id: 'score', label: 'Score', numeric: true },
       { id: 'package', label: 'Package' },
     ],
-    rows: input.report.parallelDev.files.map((f) => ({
-      id: ids.file(f.file),
-      tier:
-        f.parallelScore >= 75
-          ? 3
-          : f.parallelScore >= 50
-            ? 2
-            : f.parallelScore >= 25
-              ? 1
-              : 0,
-      search: f.file.toLowerCase(),
-      cells: {
-        file: f.file,
-        weeks: f.parallelWeeks,
-        active: f.totalActiveWeeks,
-        peak: f.peakAuthors,
-        score: f.parallelScore,
-        package: packageOf(f.file) || '(root)',
-      },
-    })),
+    rows: input.report.parallelDev.files.map((f) => {
+      const people = filePeople(f, nameOf);
+      const named = people.slice(0, TABLE_PEOPLE_NAMED).map((p) => p.name);
+      const more = people.length - named.length;
+      return {
+        id: ids.file(f.file),
+        tier:
+          f.parallelScore >= 75
+            ? 3
+            : f.parallelScore >= 50
+              ? 2
+              : f.parallelScore >= 25
+                ? 1
+                : 0,
+        // Names too, so filtering by a person finds the files they met on.
+        search: [f.file, ...people.map((p) => p.name)].join(' ').toLowerCase(),
+        cells: {
+          file: f.file,
+          people: named.join(', ') + (more > 0 ? ` +${n(more)}` : ''),
+          weeks: f.parallelWeeks,
+          active: f.totalActiveWeeks,
+          peak: f.peakAuthors,
+          score: f.parallelScore,
+          package: packageOf(f.file) || '(root)',
+        },
+      };
+    }),
     tierNames: PARALLEL_TIER_NAMES,
     sort: { column: 'weeks', descending: true },
   };

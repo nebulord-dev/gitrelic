@@ -429,6 +429,7 @@ export {
 } from './parallel/pairs';
 export { pairsScene } from './layouts/pairs';
 export {
+  filePeople,
   PARALLEL_TIER_NAMES,
   pairsLayout,
   parallelDevFindings,

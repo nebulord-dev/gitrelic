@@ -4,6 +4,7 @@ import { parallelReport } from '../../test/parallelReport';
 import { ids } from '../ids';
 import { checkScene } from '../model';
 import {
+  filePeople,
   pairsLayout,
   parallelDevFindings,
   parallelDevTable,
@@ -45,12 +46,46 @@ describe('parallelDevTable', () => {
       [ids.file('src/loop.ts'), 0],
     ]);
     expect(table.rows[0].cells).toMatchObject({
+      people: 'ann, bob',
       weeks: 3,
       active: 8,
       peak: 2,
       score: 40,
       package: 'src',
     });
+  });
+});
+
+describe('the table’s People column', () => {
+  it('names who collided on a file, most weeks first, and lets the filter find them', () => {
+    const report = parallelReport();
+    const w = (authors: string[]) => ({
+      weekStart: '2026-01-05T00:00:00.000Z',
+      authors,
+      commitCount: authors.length,
+    });
+    report.parallelDev.files[0].windows = [
+      w(['ann@x', 'bob@x']),
+      w(['bob@x', 'cy@x']),
+      w(['bob@x', 'dee@x', 'eve@x']),
+    ];
+    const [row] = parallelDevTable(input(report)).rows;
+    // bob in all three weeks; the rest once each, by name; past three, +N.
+    expect(row.cells.people).toBe('bob, ann, cy +2');
+    expect(row.search).toContain('eve');
+  });
+
+  it('counts each person’s weeks on the file', () => {
+    expect(
+      filePeople(
+        { windows: [{ authors: ['a@x', 'b@x'] }, { authors: ['a@x', 'c@x'] }] },
+        new Map([['a@x', 'Ann']]),
+      ),
+    ).toEqual([
+      { name: 'Ann', weeks: 2 },
+      { name: 'b@x', weeks: 1 },
+      { name: 'c@x', weeks: 1 },
+    ]);
   });
 });
 
