@@ -500,6 +500,15 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 
 **Dropped:** the "stressed contributors" leaderboard (it frames people, which the inventory ruled out; a person's off-hours share stays on their inspector card); per-file stress (small samples); the monthly Trend (the time strip).
 
+**As built (Punch card, RELIC-352):**
+
+- **Data** is `timing/punchCard.ts`. The repo's grid is core's `repoHourDayMatrix` (every commit). A selection's grid comes from the commit index: `CommitLike` gained `tz` (the author's UTC offset, which the index already stored; `fromRawCommits` parses it), and `localDayHour` gives a commit's local day and hour. `selectionHours` leaves out sweeping commits (`SWEEPING_COMMIT_FILES`, core's `MAX_FIX_FILES`: keep in step) and bot commits, so a package's lit cells add up to core's count. `touchesSelection` matches a file, a directory's files, or the root package (`repo`).
+- **Layout** is `layouts/punchCard.ts`: 7 × 24 `bar` cells (`punch:<day>:<hour>`, layout-only), Monday first and the weekend last, painted as a mix from `--cell-base` by log count: working hours toward `--soft`, off-hours toward `--risk-2`, over faint `--risk-2` bands for the weekend rows and late-night columns. A selection redraws from its own grid, its off-hours in the accent and its working hours grey (so on React `react-server` reads as weekends, not nights). A heading card names the selection's commits and off-hours share. `focusKinds` are `dir`, `file` and `repo`; `needsCommits` is true for the selection, though the repo's grid needs only the report.
+- **Inspector (lens mode):** `CommitTimingCard`: the off-hours share of the counted commits, the findings (packages above chance; weekdays 9am–7pm share and the busiest hour; the most regular package, when one has 3× the minimum commits and under half the repo's rate), the five packages with the most off-hours, and the table link.
+- **Table:** tested packages (core's order), tiers: below the repo's rate, above it within chance, above chance, above chance at twice the rate.
+- **Badge.** On React the rule fires: 2 of 19 tested packages above chance is 10.5%, just over its 10% bar (the checkpoint's "no badge" counted the canvas's 25 packages). Left for the maintainer, with RELIC-354 (badge tuning).
+- **React (last 12 months):** 10% of 490 counted commits off-hours; `react-server` (15 of 66) and `react-dom` (16 of 86) above chance; 67% of commits on weekdays 9am–7pm, busiest Monday 4pm. Selecting `react-server` lights its Saturday and Sunday cells: its off-hours are weekends. The packages-against-chance funnel, the alternate form, is the next PR.
+
 ---
 
 ## Decision log

@@ -14,6 +14,7 @@
   import { tick } from 'svelte';
 
   import ChurnCard from '../inspector/ChurnCard.svelte';
+  import CommitTimingCard from '../inspector/CommitTimingCard.svelte';
   import ContributorsCard from '../inspector/ContributorsCard.svelte';
   import DirCard from '../inspector/DirCard.svelte';
   import ExplainCard from '../inspector/ExplainCard.svelte';
@@ -296,6 +297,9 @@
   {:else if lens === 'parallel-dev' && lensEntry}
     <ExplainCard entry={lensEntry} />
     <ParallelDevCard {report} {index} {onselect} {ontable} />
+  {:else if lens === 'commit-timing' && lensEntry}
+    <ExplainCard entry={lensEntry} />
+    <CommitTimingCard {report} {index} {onselect} {ontable} />
   {:else if lens === 'overview'}
     <RepoMapCard {report} {onselect} />
     {#if lensEntry}<ExplainCard entry={lensEntry} />{/if}

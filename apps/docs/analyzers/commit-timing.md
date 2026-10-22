@@ -30,6 +30,19 @@ Per-file stress scores are rated from three commits, so one 2am commit in a thre
 
 On React's last 12 months, 10.4% of commits are off-hours. `react-server` (15 of 66, 23%) and `react-dom` (16 of 86, 19%) are above chance; the compiler is the most regular package (5 of 87). The test adapts to each team: a repo that works evenings has a higher rate, and only packages unusual for that team stand out.
 
+## In Atlas: the punch card
+
+Atlas (`gitrelic --ui atlas`) draws Commit Timing as a **punch card** under **Team & Activity**: days down (Monday first, the weekend last), hours across, each cell a day and hour's commits in their authors' local time, shaded by how many (log scale, so a few late commits still show beside a busy afternoon).
+
+- **Off-hours cells take the risk color**, over a faint band marking where off-hours are: the weekend's rows and the 11pm–5am columns. Working hours stay grey.
+- **Select a package or a file** (from the inspector, the table, another lens or the Overview) and the grid redraws from its own commits, with its off-hours in the accent: where "this module changes at 2am" shows up. A selection's hours leave out sweeping and bot commits, as the package test does, so the lit cells add up to the count beside them.
+
+Hover a cell for the day and hour, its commits and their share of the repo's, and, with a selection, how many of them touched it.
+
+With nothing selected, the inspector leads with the off-hours share. Its findings name the packages above chance, when the team works (the share of commits on weekdays 9am–7pm, and the busiest hour), and the most regular package, when one keeps well under the repo's rate. A list of the packages with the most off-hours follows; each selects its package.
+
+The detail table (`T`) lists every tested package: commits, off-hours, the share, what chance allows and whether it's above chance, tiered from below the repo's rate to above chance at twice the rate.
+
 ## How to read the punch card
 
 The default hero is a **7×24 heatmap** — rows are days (Sun–Sat), columns are hours (0–23). Each cell's intensity is the repo-wide commit count for that (day, hour) bucket, **log-scaled** so rare-but-meaningful off-hours commits don't get washed out next to a busy weekday-afternoon peak.

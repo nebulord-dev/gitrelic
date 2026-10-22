@@ -448,4 +448,30 @@ export {
   parallelDevTable,
   parallelDevView,
 } from './views/parallelDev';
+export {
+  busiestCells,
+  DAY_NAMES,
+  DAY_ORDER,
+  hourName,
+  isOffHours,
+  repoGrid,
+  selectionHours,
+  selectionHoursOf,
+  touchesSelection,
+  workingHoursShare,
+  type DayHourGrid,
+  type SelectionHours,
+} from './timing/punchCard';
+export { punchCardScene } from './layouts/punchCard';
+export {
+  commitTimingFindings,
+  commitTimingTable,
+  commitTimingView,
+  punchCardLayout,
+  TIMING_TIER_NAMES,
+  timingPackageId,
+  timingPackageName,
+  timingTier,
+} from './views/commitTiming';
+export { localDayHour, utcOffsetMinutes } from './commits/commitLike';
 export { VIEWS } from './views/index';
