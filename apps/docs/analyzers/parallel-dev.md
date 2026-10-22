@@ -71,6 +71,15 @@ Point at a person, or their name, to light their chords while the rest fade. Cli
 
 With nothing selected, the inspector leads with how many pairs there are. Its findings name the pair who meet most and their files, the file with the most weeks of two or more people (and its family, when it changes in lockstep with others), and how many sweeping and bot commits were left out. A list of the pairs who meet most follows; each name selects that person.
 
+### Collision lanes
+
+The **Collision lanes** toggle in the stage's corner answers where and when. It shows the files people collided on as rows, with weeks across (the same weeks as the commit strip under the stage; months past two years). Each week two or more people committed to a file is a stack of dots, one per person, in their status color.
+
+- **Files that nearly always change together share a row**, named after the family (`ReactFeatureFlags.*`). A flag flipped across seven forks is one collision, not seven rows of the same dots.
+- **The 14 rows with the most collision weeks are drawn.** The rest are in the table.
+
+Hover a dot for the person, the week, and who else was on that file then. Click a dot to select that person: their dots light up across every row and the rest fade. Click a row to select its file.
+
 The detail table (`T`) lists the files people collided on in two or more weeks: **who** (the people who met on it, most weeks first: the first three by name, then how many more), weeks with two or more people, active weeks, the most people in one week, the score and the package. Its filter matches people's names too, so typing a name lists the files that person met others on.
 
 ## The score formula

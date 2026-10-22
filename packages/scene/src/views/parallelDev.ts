@@ -1,11 +1,12 @@
 // Team & Activity › Parallel Dev: who committed to the same files in the same
-// weeks, as a circle of pairs (docs/atlas-views.md › Parallel Dev). The
-// Collision lanes form (where and when) is its own PR.
+// weeks, as a circle of pairs (docs/atlas-views.md › Parallel Dev), with
+// Collision lanes (where and when) as its one alternate form.
 
-import { lockstepGroups } from '../churn/lockstep';
 import { packageOf } from '../hotspots/points';
 import { ids } from '../ids';
+import { collisionsScene } from '../layouts/collisions';
 import { pairsScene } from '../layouts/pairs';
+import { collisionsOf } from '../parallel/collisions';
 import { parallelPairsOf } from '../parallel/pairs';
 import type {
   AnalyzerView,
@@ -29,6 +30,19 @@ export const pairsLayout: Layout = {
   needsCommits: false,
   build: (input, viewport) =>
     pairsScene(parallelPairsOf(input.report), viewport, { focus: input.focus }),
+};
+
+export const collisionsLayout: Layout = {
+  id: 'collisions',
+  label: 'Collision lanes',
+  caption:
+    'The files people collided on, weeks across: each mark is a week two or more people committed to the file, one dot per person in their status colour. Files that nearly always change together share a row.',
+  focusKinds: ['person', 'file'],
+  needsCommits: false,
+  build: (input, viewport) =>
+    collisionsScene(collisionsOf(input.report), viewport, {
+      focus: input.focus,
+    }),
 };
 
 export function parallelDevFindings(input: ViewInput): Finding[] {
@@ -56,22 +70,24 @@ export function parallelDevFindings(input: ViewInput): Finding[] {
     findings.push({ id: 'top-pair', tone: 'notable', segments });
   }
 
-  // The file people meet on most, and its lockstep family if it has one.
+  // The file people meet on most, and its family if it has one (the same
+  // row Collision lanes draws it in).
   const hot = [...report.parallelDev.files].sort(
     (a, b) =>
       b.parallelWeeks - a.parallelWeeks || b.parallelScore - a.parallelScore,
   )[0];
   if (hot) {
-    const family = lockstepGroups(report).find((g) => g.includes(hot.file));
+    const family = collisionsOf(report).rows.find((r) =>
+      r.members.includes(hot.file),
+    );
+    const size = family?.members.length ?? 1;
     findings.push({
       id: 'hot-file',
       tone: 'neutral',
       segments: [
         { ref: ids.file(hot.file), text: baseName(hot.file) },
         ` had two or more people in ${n(hot.parallelWeeks)} of its ${plural(hot.totalActiveWeeks, 'active week')}` +
-          (family
-            ? `, one of ${n(family.length)} files that change together.`
-            : '.'),
+          (size > 1 ? `, one of ${n(size)} files that change together.` : '.'),
       ],
     });
   }
@@ -164,7 +180,7 @@ export function parallelDevTable(input: ViewInput): LensTable {
 
 export const parallelDevView: AnalyzerView = {
   id: 'parallel-dev',
-  layouts: [pairsLayout],
+  layouts: [pairsLayout, collisionsLayout],
   findings: parallelDevFindings,
   table: parallelDevTable,
 };
