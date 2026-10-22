@@ -7,6 +7,9 @@ import type {
   LocReport,
 } from '../types.js';
 
+// The analyzed commit's time; nothing here reads the wall clock.
+const NOW = Date.parse('2026-03-08T12:00:00Z');
+
 function makeBusReport(
   files: {
     file: string;
@@ -116,7 +119,7 @@ describe('analyzeGhostFiles', () => {
     ]);
     const loc = makeLocReport([{ file: 'auth.ts', lines: 200 }]);
 
-    const result = analyzeGhostFiles(bus, contribs, loc);
+    const result = analyzeGhostFiles(bus, contribs, loc, NOW);
 
     expect(result.files).toHaveLength(1);
     expect(result.files[0].file).toBe('auth.ts');
@@ -137,7 +140,7 @@ describe('analyzeGhostFiles', () => {
     ]);
     const loc = makeLocReport([{ file: 'safe.ts', lines: 100 }]);
 
-    const result = analyzeGhostFiles(bus, contribs, loc);
+    const result = analyzeGhostFiles(bus, contribs, loc, NOW);
 
     expect(result.files).toHaveLength(0);
   });
@@ -155,7 +158,7 @@ describe('analyzeGhostFiles', () => {
     ]);
     const loc = makeLocReport([{ file: 'shared.ts', lines: 100 }]);
 
-    const result = analyzeGhostFiles(bus, contribs, loc);
+    const result = analyzeGhostFiles(bus, contribs, loc, NOW);
 
     expect(result.files).toHaveLength(0);
   });
@@ -181,7 +184,7 @@ describe('analyzeGhostFiles', () => {
       { file: 'b.ts', lines: 100 },
     ]);
 
-    const result = analyzeGhostFiles(bus, contribs, loc);
+    const result = analyzeGhostFiles(bus, contribs, loc, NOW);
 
     expect(result.files[0].file).toBe('b.ts');
     expect(result.files[1].file).toBe('a.ts');
@@ -192,6 +195,7 @@ describe('analyzeGhostFiles', () => {
       makeBusReport([]),
       makeContributors([]),
       makeLocReport([]),
+      NOW,
     );
     expect(result.totalGhostFiles).toBe(0);
   });
@@ -209,7 +213,7 @@ describe('analyzeGhostFiles', () => {
     ]);
     const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
 
-    const result = analyzeGhostFiles(bus, contribs, loc);
+    const result = analyzeGhostFiles(bus, contribs, loc, NOW);
     expect(result.summary).toBeTruthy();
   });
 
@@ -219,6 +223,7 @@ describe('analyzeGhostFiles', () => {
         makeBusReport([]),
         makeContributors([]),
         makeLocReport([]),
+        NOW,
       );
       expect(result.ghostOwners).toBe(0);
     });
@@ -250,7 +255,7 @@ describe('analyzeGhostFiles', () => {
         { file: 'b.ts', lines: 200 },
         { file: 'c.ts', lines: 50 },
       ]);
-      const result = analyzeGhostFiles(bus, contribs, loc);
+      const result = analyzeGhostFiles(bus, contribs, loc, NOW);
       expect(result.files).toHaveLength(3);
       expect(result.ghostOwners).toBe(2);
     });
@@ -258,7 +263,7 @@ describe('analyzeGhostFiles', () => {
 
   describe('tierMix', () => {
     function daysAgo(days: number): string {
-      return new Date(Date.now() - days * 86_400_000).toISOString();
+      return new Date(NOW - days * 86_400_000).toISOString();
     }
 
     it('classifies authorInactiveDays >= 365 as trueGhost', () => {
@@ -275,9 +280,35 @@ describe('analyzeGhostFiles', () => {
         },
       ]);
       const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
-      const result = analyzeGhostFiles(bus, contribs, loc);
+      const result = analyzeGhostFiles(bus, contribs, loc, NOW);
       expect(result.tierMix.trueGhost).toBe(1);
       expect(result.tierMix.fading).toBe(0);
+    });
+
+    it('counts inactivity back from the analyzed commit, not today', () => {
+      const bus = makeBusReport([
+        { file: 'a.ts', dominantAuthor: 'g@co.com', dominantAuthorPercent: 90 },
+      ]);
+      const contribs = makeContributors([
+        {
+          email: 'g@co.com',
+          name: 'G',
+          isActive: false,
+          isGhost: true,
+          lastCommit: daysAgo(400),
+        },
+      ]);
+      const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
+      // A report on a commit 200 days before NOW: the author went quiet 200
+      // days before it, not 400.
+      const result = analyzeGhostFiles(
+        bus,
+        contribs,
+        loc,
+        NOW - 200 * 86_400_000,
+      );
+      expect(result.files[0].authorInactiveDays).toBe(200);
+      expect(result.tierMix.fading).toBe(1);
     });
 
     it('classifies 180 <= authorInactiveDays < 365 as fading', () => {
@@ -294,7 +325,7 @@ describe('analyzeGhostFiles', () => {
         },
       ]);
       const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
-      const result = analyzeGhostFiles(bus, contribs, loc);
+      const result = analyzeGhostFiles(bus, contribs, loc, NOW);
       expect(result.tierMix.trueGhost).toBe(0);
       expect(result.tierMix.fading).toBe(1);
     });
@@ -313,7 +344,7 @@ describe('analyzeGhostFiles', () => {
         },
       ]);
       const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
-      const result = analyzeGhostFiles(bus, contribs, loc);
+      const result = analyzeGhostFiles(bus, contribs, loc, NOW);
       expect(result.tierMix.trueGhost).toBe(1);
       expect(result.tierMix.fading).toBe(0);
     });
@@ -351,7 +382,7 @@ describe('analyzeGhostFiles', () => {
         { file: 'a.ts', lines: 100 },
         { file: 'b.ts', lines: 50 },
       ]);
-      const result = analyzeGhostFiles(bus, contribs, loc);
+      const result = analyzeGhostFiles(bus, contribs, loc, NOW);
       expect(result.tierMix.trueGhost + result.tierMix.fading).toBe(
         result.totalGhostFiles,
       );
@@ -364,6 +395,7 @@ describe('analyzeGhostFiles', () => {
         makeBusReport([]),
         makeContributors([]),
         makeLocReport([]),
+        NOW,
       );
       expect(result.ghostLoc).toBe(0);
     });
@@ -380,7 +412,7 @@ describe('analyzeGhostFiles', () => {
         { file: 'a.ts', lines: 100 },
         { file: 'b.ts', lines: 250 },
       ]);
-      const result = analyzeGhostFiles(bus, contribs, loc);
+      const result = analyzeGhostFiles(bus, contribs, loc, NOW);
       expect(result.ghostLoc).toBe(350);
     });
 
@@ -392,7 +424,7 @@ describe('analyzeGhostFiles', () => {
         { email: 'g@co.com', name: 'G', isActive: false, isGhost: true },
       ]);
       const loc = makeLocReport([]); // no LOC data
-      const result = analyzeGhostFiles(bus, contribs, loc);
+      const result = analyzeGhostFiles(bus, contribs, loc, NOW);
       expect(result.ghostLoc).toBe(0);
     });
   });
@@ -411,7 +443,7 @@ describe('analyzeGhostFiles', () => {
         { email: 'mid@co.com', name: 'M', isActive: false, isGhost: false },
       ]);
       const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
-      const result = analyzeGhostFiles(bus, contribs, loc);
+      const result = analyzeGhostFiles(bus, contribs, loc, NOW);
       expect(result.files).toHaveLength(0);
     });
 
@@ -427,7 +459,7 @@ describe('analyzeGhostFiles', () => {
         { email: 'g@co.com', name: 'G', isActive: false, isGhost: true },
       ]);
       const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
-      const result = analyzeGhostFiles(bus, contribs, loc);
+      const result = analyzeGhostFiles(bus, contribs, loc, NOW);
       expect(result.files).toHaveLength(0);
     });
 
@@ -443,7 +475,7 @@ describe('analyzeGhostFiles', () => {
         { email: 'g@co.com', name: 'G', isActive: false, isGhost: true },
       ]);
       const loc = makeLocReport([{ file: 'a.ts', lines: 100 }]);
-      const result = analyzeGhostFiles(bus, contribs, loc);
+      const result = analyzeGhostFiles(bus, contribs, loc, NOW);
       expect(result.files).toHaveLength(1);
     });
   });

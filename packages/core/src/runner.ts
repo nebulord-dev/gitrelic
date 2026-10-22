@@ -365,6 +365,10 @@ export async function runGitrelic(
         86_400_000,
     ),
   );
+  // "Now" for every age and activity window: the analyzed commit's history
+  // ends here, so a report on an older commit (or run months later) says what
+  // was true at that commit, not on the day it ran.
+  const asOf = Date.parse(lastCommit);
   const uniqueAuthors = new Set(commits.map((c) => c.authorEmail)).size;
 
   onProgress?.('Analyzing churn...');
@@ -387,14 +391,14 @@ export async function runGitrelic(
   onProgress?.('Building age map...');
   const ageMap = safeRun(
     'ageMap',
-    () => analyzeAgeMap(commits, trackedFiles, ageInDays),
+    () => analyzeAgeMap(commits, trackedFiles, ageInDays, asOf),
     EMPTY_AGE_MAP,
   );
 
   onProgress?.('Profiling contributors...');
   const contributors = safeRun(
     'contributors',
-    () => analyzeContributors(commits, ageInDays),
+    () => analyzeContributors(commits, ageInDays, asOf),
     EMPTY_CONTRIBUTORS,
   );
 
@@ -491,7 +495,7 @@ export async function runGitrelic(
   onProgress?.('Detecting ghost files...');
   const ghostFiles = safeRun(
     'ghostFiles',
-    () => analyzeGhostFiles(busFactors, contributors, loc),
+    () => analyzeGhostFiles(busFactors, contributors, loc, asOf),
     EMPTY_GHOST_FILES,
   );
 

@@ -36,7 +36,7 @@ Both must be true. If either fails, the file is not a ghost.
 
 **Concentration** uses an 80% ownership floor: at 80%+ of commits to a file, the dominant author *wrote* the file. At lower percentages, you still have enough distributed knowledge that someone else can plausibly carry the file forward.
 
-**Owner silence** uses the contributors-analyzer `isGhost` flag, defined as `lastCommit < ghostCutoff` where `ghostCutoff = max(180 days, repoAgeDays * 0.5)`. The window scales with the analysis range — a 6-month window catches more "ghosts" than a 5-year window because the relative cutoff is tighter.
+**Owner silence** uses the contributors-analyzer `isGhost` flag, defined as `lastCommit < ghostCutoff` where `ghostCutoff = max(180 days, repoAgeDays * 0.5)` before the analyzed commit (the newest in the analyzed history, not today). Days inactive count back from the same commit. The window scales with the analysis range — a 6-month window catches more "ghosts" than a 5-year window because the relative cutoff is tighter.
 
 ## The metrics strip
 

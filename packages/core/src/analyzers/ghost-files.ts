@@ -12,6 +12,8 @@ export function analyzeGhostFiles(
   busFactorReport: BusFactorReport,
   contributorReport: ContributorReport,
   locReport: LocReport,
+  // The analyzed commit's time (ms): inactivity counts back from it.
+  asOf: number,
 ): GhostFilesReport {
   const contributorMap = new Map(
     contributorReport.contributors.map((c) => [c.email, c]),
@@ -32,7 +34,7 @@ export function analyzeGhostFiles(
       dominantAuthorPercent: fileBus.dominantAuthorPercent,
       lastAuthorCommitDate: author.lastCommit,
       authorInactiveDays: Math.floor(
-        (Date.now() - new Date(author.lastCommit).getTime()) / 86_400_000,
+        (asOf - new Date(author.lastCommit).getTime()) / 86_400_000,
       ),
       loc: locMap.get(fileBus.file) ?? 0,
     });

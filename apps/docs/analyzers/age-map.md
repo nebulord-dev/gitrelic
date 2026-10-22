@@ -43,11 +43,11 @@ flowchart LR
     B2 -.click row.-> I
 ```
 
-For each tracked file, the analyzer scans the commit log to find the most recent commit that touched it, then computes the integer day delta between that commit and `now`. That delta becomes `ageInDays`, and the file's repo-age-relative tier becomes its `status`.
+For each tracked file, the analyzer scans the commit log to find the most recent commit that touched it, then computes the integer day delta between that commit and the analyzed commit (the newest in the analyzed history), not today: a report on an older commit gives the ages it had then, and a repo nobody has touched in a year doesn't age every file by that year. That delta becomes `ageInDays`, and the file's repo-age-relative tier becomes its `status`.
 
 A few specifics worth knowing:
 
-- **Window:** the full reachable history of the analyzed branch, bounded by `--since=<date>` if provided. The `repoAgeDays` value used for threshold scaling comes from the analysis-window length (first commit to today), not the full git history.
+- **Window:** the full reachable history of the analyzed branch, bounded by `--since=<date>` if provided. The `repoAgeDays` value used for threshold scaling comes from the analysis-window length (its first commit to its last), not the full git history.
 - **Merge commits are excluded** (`--no-merges`). A merge that re-touches 50 files via merge mechanics doesn't refresh those files' ages — only the original commits on the merged branches count.
 - **Only currently-tracked files appear.** Files that don't exist in the analyzed commit (deleted before it) are filtered out — even if their old commits are still in the log. They live in the raw `report.commits` array but don't surface in the analyzer's output.
 - **Renames are *not* followed.** A file's `ageInDays` reflects only commits made under its current name. Pre-rename history is attributed to the old path and won't bring the current path's age down. The [Rename Tracking](/analyzers/renames) analyzer surfaces these chains explicitly when you need continuity.

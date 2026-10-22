@@ -140,7 +140,7 @@ export interface BusFactorReport {
 export interface FileAge {
   file: string;
   lastCommitDate: string; // ISO date
-  ageInDays: number;
+  ageInDays: number; // days before the analyzed commit (the newest in the window), not today
   status: AgeStatus;
 }
 
@@ -174,6 +174,7 @@ export interface Contributor {
   linesChanged: number;
   activeDays: number;
   focusAreas: string[]; // top directories they work in
+  // Windows count back from the analyzed commit (the newest in the window), not today.
   isActive: boolean; // last commit within the active window (≥ max(90, repoAge * 0.25) days)
   isGhost: boolean; // last commit predates the ghost cutoff (max(180, repoAge * 0.5) days). Mutually exclusive with isActive; both false = intermediate zone.
 }
@@ -185,7 +186,7 @@ export interface ContributorReport {
   topContributor: Contributor;
   summary: string;
   top3CommitShare: number; // % (0-100), top-3 commit-count concentration
-  newcomers90d: number; // count of contributors whose firstCommit is ≤ 90d ago
+  newcomers90d: number; // count of contributors whose firstCommit is ≤ 90d before the analyzed commit
 }
 
 // ─── Cursed files ──────────────────────────────────────────────────────────────
@@ -512,7 +513,7 @@ export interface GhostFile {
   dominantAuthor: string;
   dominantAuthorPercent: number;
   lastAuthorCommitDate: string; // ISO date of dominant author's last commit anywhere
-  authorInactiveDays: number;
+  authorInactiveDays: number; // days from that commit to the analyzed commit
   loc: number;
 }
 
