@@ -126,25 +126,55 @@ describe('lanesScene', () => {
     expect(bars(OTHER_PEOPLE_ID)[0].selects).toBeUndefined();
   });
 
-  it('marks both status cutoffs inside the window', () => {
-    const lines = scene.guides.filter(
-      (g) => g.id.startsWith('lanes-a') || g.id === 'lanes-gone',
+  it('names the three zones a last commit can fall in, under the rows', () => {
+    const zone = (status: string) => markOf(`lanes-zone:${status}`);
+    // Gone, then quiet, then active, left to right, edge to edge.
+    expect(zone('ghost').x).toBeLessThan(zone('quiet').x);
+    expect(zone('quiet').x).toBeLessThan(zone('active').x);
+    expect(zone('ghost').paint).toBe('--risk-2');
+    expect(markOf('lanes-zone-label:ghost')).toMatchObject({
+      label: 'gone',
+      labelSub: 'last commit before Jul 7',
+    });
+    expect(markOf('lanes-zone-label:quiet').labelSub).toBe(
+      'last commit between',
     );
-    expect(lines.map((g) => g.id).sort()).toEqual([
-      'lanes-active',
-      'lanes-gone',
+    expect(markOf('lanes-zone-label:active').labelSub).toBe(
+      'last commit after Oct 6',
+    );
+    expect(zone('ghost').tip).toEqual([
+      'Gone if the last commit falls here',
+      'No commit in the 182 days before the newest',
     ]);
-    const x = (id: string) => {
-      const g = scene.guides.find((q) => q.id === id)!;
-      return g.kind === 'line' ? g.x1 : NaN;
-    };
-    // Gone is further back than active.
-    expect(x('lanes-gone')).toBeLessThan(x('lanes-active'));
-    // Bob's March week is left of "gone"; ann's last week right of "active".
-    expect(bars(ids.person('bob@x'))[0].x).toBeLessThan(x('lanes-gone'));
-    expect(bars(ids.person('ann@x')).at(-1)!.x).toBeGreaterThan(
-      x('lanes-active'),
+    // Faint lines carry the zones' edges up through the rows.
+    expect(scene.guides.map((g) => g.id)).toEqual(
+      expect.arrayContaining(['lanes-gone', 'lanes-active']),
     );
+  });
+
+  it('ends a row that isn’t active at its last commit, with a mark there', () => {
+    const end = markOf(`lane-end:${ids.person('bob@x')}`);
+    // Right of bob's last week, left of the gone zone's edge.
+    expect(end.x).toBeGreaterThanOrEqual(bars(ids.person('bob@x')).at(-1)!.x);
+    expect(end.x).toBeLessThan(markOf('lanes-zone:quiet').x);
+    expect(end).toMatchObject({
+      selects: ids.person('bob@x'),
+      paint: '--risk-2',
+    });
+    expect(end.tip).toEqual([
+      'bob',
+      'Last commit Mar 3, 2025',
+      'Gone: no commit in the 182 days before the newest',
+    ]);
+    // Bob's row stops there; ann's (active) runs to the end, with no mark.
+    const row = (id: string) => markOf(`lane-row:${id}`);
+    const rightEdge = (m: Mark) => m.x + m.w / 2;
+    expect(rightEdge(row(ids.person('bob@x')))).toBeLessThan(
+      rightEdge(row(ids.person('ann@x'))),
+    );
+    expect(
+      scene.marks.find((m) => m.id === `lane-end:${ids.person('ann@x')}`),
+    ).toBeUndefined();
   });
 
   it('says each person’s status and last commit at the right', () => {

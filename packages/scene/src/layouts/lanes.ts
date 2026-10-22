@@ -1,9 +1,12 @@
 // Contributors' Lanes form (docs/atlas-views.md › Contributors): one row per
 // person (the Flow's people, then everyone else), their commits bin by bin
 // over the time strip's weeks, on one square-root height scale and in their
-// status's colour. Two lines mark where the statuses split: a last commit
-// right of "active" keeps someone active; one left of "gone" makes them gone.
-// At the right, each row says its status and when its last commit was.
+// status's colour. A ruler under the rows names the three zones a last commit
+// can fall in (gone, quiet, active), and faint lines carry its edges up
+// through the rows. Anyone not active gets an end mark at their last commit,
+// where their row stops: each row says by itself when that person went quiet
+// (classic's "inactive" marker). At the right, each row says its status and
+// when its last commit was.
 //
 // Each person keeps their `person:` mark (the bar at the start of the row),
 // so switching from the Flow, people travel into the column. Rows and bars
@@ -85,7 +88,8 @@ export function lanesScene(
   const bottom = top + rowH * rows.length;
   // As wide as the stage is (about twice its height), not the world: the
   // weeks get the room, and a fit fills the stage across, as the Flow does.
-  const width = Math.max(viewport.width, Math.round((bottom + 40) * WIDE));
+  const height = bottom + 64;
+  const width = Math.max(viewport.width, Math.round(height * WIDE));
   const headX = 230;
   const left = 250;
   const right = width - 170;
@@ -140,30 +144,105 @@ export function lanesScene(
     );
   }
 
-  // The status cutoffs, where they fall inside the window.
-  const cutoff = (
-    id: string,
-    ms: number,
-    label: string,
-    anchor: 'left' | 'right',
-    paint: ColorRole,
-  ) => {
-    if (!Number.isFinite(ms) || ms <= binStarts[0]) return;
-    const x = xOfTime(ms);
+  // The zones a last commit can fall in, as a ruler under the rows, with
+  // faint lines carrying its edges up through them. A cutoff before the
+  // window (a short history) leaves its zone out.
+  const inside = (ms: number) =>
+    Number.isFinite(ms) && ms > binStarts[0] ? xOfTime(ms) : null;
+  const goneX = inside(lanes.goneBefore);
+  const activeX = inside(lanes.activeSince);
+  const days = (ms: number) =>
+    Number.isFinite(now) ? Math.round((now - ms) / DAY) : null;
+  const goneDays = days(lanes.goneBefore);
+  const activeDays = days(lanes.activeSince);
+  const zones: {
+    status: PersonStatus;
+    from: number;
+    to: number;
+    sub: string;
+    tip: string;
+  }[] = [];
+  if (goneX !== null)
+    zones.push({
+      status: 'ghost',
+      from: left,
+      to: goneX,
+      sub: `last commit before ${shortDay(lanes.goneBefore)}`,
+      tip: `No commit in the ${goneDays ?? '—'} days before the newest`,
+    });
+  if (activeX !== null)
+    zones.push({
+      status: 'quiet',
+      from: goneX ?? left,
+      to: activeX,
+      sub:
+        goneX === null
+          ? `last commit before ${shortDay(lanes.activeSince)}`
+          : 'last commit between',
+      tip:
+        goneX === null
+          ? `No commit in the ${activeDays ?? '—'} days before the newest`
+          : `Committed in the ${goneDays ?? '—'} days before the newest, but not the last ${activeDays ?? '—'}`,
+    });
+  zones.push({
+    status: 'active',
+    from: activeX ?? goneX ?? left,
+    to: right,
+    sub:
+      activeX !== null
+        ? `last commit after ${shortDay(lanes.activeSince)}`
+        : 'last commit in the window',
+    tip: `A commit in the ${activeDays ?? '—'} days before the newest`,
+  });
+  const rulerY = bottom + 12;
+  for (const z of zones) {
+    if (z.to - z.from < 1) continue;
+    const name = STATUS_TEXT[z.status];
+    marks.push({
+      id: `lanes-zone:${z.status}`,
+      shape: 'bar',
+      paint: STATUS_PAINT[z.status],
+      x: (z.from + z.to) / 2,
+      y: rulerY,
+      ...zero,
+      w: z.to - z.from - 2,
+      h: 4,
+      alpha: 0.8,
+      z: 1,
+      tip: [
+        `${name[0].toUpperCase()}${name.slice(1)} if the last commit falls here`,
+        z.tip,
+      ],
+    });
+    marks.push({
+      ...card(
+        `lanes-zone-label:${z.status}`,
+        (z.from + z.to) / 2,
+        rulerY + 22,
+        name,
+        'center',
+        3,
+      ),
+      labelSub: z.sub,
+      labelClass: z.status === 'ghost' ? 'atlas-label--hot' : undefined,
+    });
+  }
+  for (const [id, x] of [
+    ['lanes-gone', goneX],
+    ['lanes-active', activeX],
+  ] as const) {
+    if (x === null) continue;
     guides.push({
       id,
       kind: 'line',
       x1: x,
       y1: top - 4,
       x2: x,
-      y2: bottom + 4,
-      paint,
-      alpha: 0.7,
+      y2: rulerY,
+      paint: '--muted',
+      alpha: 0.35,
     });
-    marks.push(card(`${id}-label`, x, bottom + 16, label, anchor, 3));
-  };
-  cutoff('lanes-active', lanes.activeSince, 'active →', 'right', '--soft');
-  cutoff('lanes-gone', lanes.goneBefore, '← gone', 'left', '--risk-2');
+  }
 
   rows.forEach((row, k) => {
     const id = rowId(row);
@@ -182,6 +261,14 @@ export function lanesScene(
         ]
       : [name, `${plural(total, 'commit')} between them`];
 
+    // Where a person who isn't active stopped: their row ends there.
+    const lastMs = row.person ? Date.parse(row.person.lastCommit) : Number.NaN;
+    const endX =
+      row.person && row.person.status !== 'active' && Number.isFinite(lastMs)
+        ? Math.min(right, Math.max(left, xOfTime(lastMs) + colW / 2))
+        : null;
+    const rowEnd = endX ?? right;
+
     // The row: hovering anywhere shows its person, a click selects them.
     marks.push({
       id: `lane-row:${id}`,
@@ -189,10 +276,10 @@ export function lanesScene(
       ...(row.person ? { selects: id } : {}),
       shape: 'bar',
       paint: '--cell-base',
-      x: (headX + right) / 2,
+      x: (headX + rowEnd) / 2,
       y,
       ...zero,
-      w: right - headX + 8,
+      w: rowEnd - headX + 8,
       h: rowH - 4,
       alpha: lit ? 1 : 0.6,
       z: 0,
@@ -247,6 +334,31 @@ export function lanesScene(
       });
     });
 
+    if (row.person && endX !== null) {
+      const status = row.person.status;
+      marks.push({
+        id: `lane-end:${id}`,
+        parent: id,
+        selects: id,
+        shape: 'bar',
+        paint: lit ? '--accent' : STATUS_PAINT[status],
+        x: endX,
+        y,
+        ...zero,
+        w: 2,
+        h: rowH - 6,
+        alpha: dim ? 0.3 : 0.95,
+        z: 2,
+        tip: [
+          name,
+          `Last commit ${dayLabel(lastMs)}`,
+          status === 'ghost'
+            ? `Gone: no commit in the ${goneDays ?? '—'} days before the newest`
+            : `Quiet: no commit in the ${activeDays ?? '—'} days before the newest`,
+        ],
+      });
+    }
+
     if (row.person) {
       marks.push({
         ...card(
@@ -271,8 +383,8 @@ export function lanesScene(
     marks,
     links: [],
     guides,
-    // Hugging the rows, their ticks and the cutoffs' names.
-    bounds: { x: 0, y: 0, w: width, h: bottom + 40 },
+    // Hugging the rows, their ticks and the zones' names.
+    bounds: { x: 0, y: 0, w: width, h: height },
   };
 }
 
@@ -284,6 +396,11 @@ function lastCommitLine(iso: string, now: number): string {
       : null;
   const age = formatRelative(days);
   return age === 'today' ? 'last commit today' : `last commit ${age}`;
+}
+
+function shortDay(ms: number): string {
+  const d = new Date(ms);
+  return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
 }
 
 function monthLabel(ms: number): string {
