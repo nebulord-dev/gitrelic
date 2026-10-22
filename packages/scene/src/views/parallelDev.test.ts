@@ -16,7 +16,7 @@ const text = (segments: (string | { text: string })[]) =>
   segments.map((s) => (typeof s === 'string' ? s : s.text)).join('');
 
 describe('parallelDevFindings', () => {
-  it('names the top pair and their files, the hot file and its family, and what was left out', () => {
+  it('names the top pair and their files, the hot file, and what was left out', () => {
     const [pair, hot, left] = parallelDevFindings(input());
     expect(text(pair.segments)).toBe(
       'ann and bob committed to the same files in 3 weeks: flags.js, flags.www.js.',
@@ -26,9 +26,28 @@ describe('parallelDevFindings', () => {
       text: 'ann',
     });
     expect(text(hot.segments)).toBe(
-      'flags.js had two or more people in 3 of its 8 active weeks, one of 3 files that change together.',
+      // Its family-mates aren't among the files people collided on twice,
+      // so it's a row of its own in the lanes, and alone here.
+      'flags.js had two or more people in 3 of its 8 active weeks.',
     );
     expect(text(left.segments)).toMatch(/^Left out 3 sweeping commits/);
+  });
+
+  it('names the hot file’s family when its family-mates are listed too', () => {
+    const report = parallelReport();
+    const base = report.parallelDev.files[0];
+    // All three flag files listed: one family in the lanes, one here.
+    report.parallelDev.files = [
+      base,
+      { ...base, file: 'src/flags.www.js', parallelWeeks: 2 },
+      { ...base, file: 'src/flags.native.js', parallelWeeks: 2 },
+    ];
+    const hot = parallelDevFindings(input(report)).find(
+      (f) => f.id === 'hot-file',
+    )!;
+    expect(text(hot.segments)).toBe(
+      'flags.js had two or more people in 3 of its 8 active weeks, one of 3 files that change together.',
+    );
   });
 
   it('says nothing about pairs or files when there are none', () => {

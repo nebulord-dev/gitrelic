@@ -71,8 +71,12 @@ export interface RootCauses {
   hubCount: number;
 }
 
-/** A pair shares at least `strength`% of the busier file's commits over `commits`. */
-function together(p: CoupledPair, strength: number, commits: number): boolean {
+/** A pair shares at least `strength`% of the busier file's commits, over `commits`. */
+export function together(
+  p: CoupledPair,
+  strength: number,
+  commits: number,
+): boolean {
   return (
     p.coCommits >= commits &&
     p.coCommits * 100 >= strength * Math.max(p.totalCommitsA, p.totalCommitsB)

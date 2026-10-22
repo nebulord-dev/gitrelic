@@ -429,6 +429,17 @@ export {
 } from './parallel/pairs';
 export { pairsScene } from './layouts/pairs';
 export {
+  COLLISION_ROWS,
+  collisions,
+  collisionsOf,
+  type CollisionMark,
+  type CollisionPerson,
+  type CollisionRow,
+  type Collisions,
+} from './parallel/collisions';
+export { collisionsScene } from './layouts/collisions';
+export {
+  collisionsLayout,
   filePeople,
   PARALLEL_TIER_NAMES,
   PARALLEL_TIERS,
