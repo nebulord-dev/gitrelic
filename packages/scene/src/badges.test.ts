@@ -23,6 +23,22 @@ const items = <T>(n: number, make: (i: number) => T): T[] =>
 const fires = (r: GitrelicReport, preset: string) =>
   computeOutlierBadges(r).get(preset)?.count ?? null;
 
+/** Off-hours by package: `above` of `tested` packages above chance. */
+const offHoursWith = (above: number, tested: number) => ({
+  commits: 0,
+  offHours: 0,
+  rate: 0.1,
+  minCommits: 10,
+  packages: items(tested, (i) => ({
+    package: `p${i}`,
+    commits: 10,
+    offHours: 1,
+    percent: 10,
+    allowed: 3,
+    aboveChance: i < above,
+  })),
+});
+
 describe('computeOutlierBadges', () => {
   it.each([
     // [preset, patch that sits just under the threshold, patch just over, expected count]
@@ -122,18 +138,16 @@ describe('computeOutlierBadges', () => {
       {
         commitTiming: {
           ...base.commitTiming,
-          highStress: 1,
-          files: items(21, () => ({})),
+          offHours: offHoursWith(2, 21),
         },
       },
       {
         commitTiming: {
           ...base.commitTiming,
-          highStress: 1,
-          files: items(20, () => ({})),
+          offHours: offHoursWith(2, 20),
         },
       },
-      1,
+      2,
     ],
     [
       'test-coverage',

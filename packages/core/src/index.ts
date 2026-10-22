@@ -91,6 +91,8 @@ export type {
   FileGrowthBucket,
   GrowthTrend,
   CommitTimingReport,
+  CommitTimingOffHours,
+  PackageOffHours,
   CommitTimingTierMix,
   CommitTimingMonthlyBucket,
   AuthorStressProfile,

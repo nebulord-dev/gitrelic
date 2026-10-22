@@ -29,6 +29,63 @@ describe('lensTopEntities', () => {
     expect(new Set(files.map((f) => f.id)).size).toBe(3);
   });
 
+  it('fans Commit Timing’s packages, above chance first, leaving out the root', () => {
+    const withOffHours = {
+      ...report,
+      commitTiming: {
+        ...report.commitTiming,
+        offHours: {
+          commits: 100,
+          offHours: 12,
+          rate: 0.12,
+          minCommits: 10,
+          packages: [
+            {
+              package: 'packages/server',
+              commits: 40,
+              offHours: 12,
+              percent: 30,
+              allowed: 8,
+              aboveChance: true,
+            },
+            {
+              package: '',
+              commits: 20,
+              offHours: 2,
+              percent: 10,
+              allowed: 5,
+              aboveChance: false,
+            },
+            {
+              package: 'src',
+              commits: 30,
+              offHours: 3,
+              percent: 10,
+              allowed: 7,
+              aboveChance: false,
+            },
+          ],
+        },
+      },
+      loc: {
+        ...report.loc,
+        files: [
+          { file: 'packages/server/a.ts', lines: 1, language: 'TypeScript' },
+          { file: 'src/b.ts', lines: 1, language: 'TypeScript' },
+        ],
+      },
+    } as GitrelicReport;
+    const top = lensTopEntities(
+      'commit-timing',
+      withOffHours,
+      buildEntityIndex(withOffHours),
+    );
+    expect(top.map((e) => [e.id, e.value])).toEqual([
+      ['dir:packages/server', '30% off-hours'],
+      ['dir:src', '10% off-hours'],
+    ]);
+  });
+
   it('returns nothing for lenses without entities, or unknown ones', () => {
     expect(lensTopEntities('languages', report, index)).toEqual([]);
     expect(lensTopEntities('nope', report, index)).toEqual([]);

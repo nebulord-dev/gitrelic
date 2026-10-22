@@ -393,4 +393,15 @@ describe('normalizeReport', () => {
     // Missing entirely: empty.
     expect(normalizeReport({}).parallelDev.files).toEqual([]);
   });
+
+  it('backfills Commit Timing’s off-hours on reports from before it', () => {
+    const r = normalizeReport({ commitTiming: { files: [] } } as never);
+    expect(r.commitTiming.offHours).toEqual({
+      commits: 0,
+      offHours: 0,
+      rate: 0,
+      minCommits: 10,
+      packages: [],
+    });
+  });
 });

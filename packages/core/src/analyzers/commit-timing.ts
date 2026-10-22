@@ -1,10 +1,107 @@
+import { classifyAuthor } from '../utils/authorClassification.js';
+import { binomialUpperTail, CHANCE_TAIL, MAX_FIX_FILES } from './fix-rate.js';
 import type {
   AuthorStressProfile,
   CommitTimingMonthlyBucket,
+  CommitTimingOffHours,
   CommitTimingReport,
   FileTimingProfile,
+  PackageOffHours,
 } from '../types.js';
 import type { RawCommit } from '../utils/git.js';
+
+/** A package needs this many commits to be tested against chance. */
+export const MIN_PACKAGE_COMMITS = 10;
+
+/**
+ * The package a file belongs to: `packages/<name>` inside a `packages/`
+ * monorepo folder, else its top-level directory; '' for files at the root.
+ * Scene's `packageOf` (hotspots/points.ts) is the same rule, which Atlas
+ * groups by everywhere: keep the two in step.
+ */
+export function packageOf(path: string): string {
+  const parts = path.split('/');
+  if (parts.length === 1) return '';
+  if (parts[0] === 'packages' && parts.length > 2)
+    return `packages/${parts[1]}`;
+  return parts[0];
+}
+
+/** The most off-hours commits chance explains out of `n` at `rate`. */
+export function chanceAllows(n: number, rate: number): number {
+  let k = 0;
+  while (k < n && binomialUpperTail(n, k + 1, rate) >= CHANCE_TAIL) k++;
+  return k;
+}
+
+/**
+ * Off-hours (late night or weekend) by package, against the repo's own
+ * rate: which code changes off-hours more than chance explains. Classic's
+ * per-file stress score rated files from three commits, so its leaders were
+ * one 2am commit in a three-commit test file; a package-level count with
+ * Fix rate's chance test asks the same question with enough commits to
+ * answer it.
+ *
+ * Sweeping commits (Fix rate's size) and bot commits are left out of both
+ * the rate and the counts: a 300-file Flow bump at 1am isn't three hundred
+ * files changing at night, and a bot's schedule isn't anyone's evening. A
+ * commit counts once in each package it touches.
+ */
+export function offHoursByPackage(
+  commits: RawCommit[],
+  trackedSet: ReadonlySet<string>,
+): CommitTimingOffHours {
+  let total = 0;
+  let off = 0;
+  const byPackage = new Map<string, { commits: number; offHours: number }>();
+  for (const c of commits) {
+    if (classifyAuthor(c.authorEmail) === 'bot') continue;
+    if (c.files.length > MAX_FIX_FILES) continue;
+    const { hour, day } = parseLocalTime(c.date);
+    const isOff = isLateNight(hour) || isWeekend(day);
+    total++;
+    if (isOff) off++;
+    const packages = new Set(
+      c.files.filter((f) => trackedSet.has(f)).map(packageOf),
+    );
+    for (const p of packages) {
+      const acc = byPackage.get(p) ?? { commits: 0, offHours: 0 };
+      acc.commits++;
+      if (isOff) acc.offHours++;
+      byPackage.set(p, acc);
+    }
+  }
+  const rate = total === 0 ? 0 : off / total;
+  const packages: PackageOffHours[] = [...byPackage]
+    .filter(([, v]) => v.commits >= MIN_PACKAGE_COMMITS)
+    .map(([pkg, v]) => {
+      const allowed = chanceAllows(v.commits, rate);
+      return {
+        package: pkg,
+        commits: v.commits,
+        offHours: v.offHours,
+        percent: Math.round((v.offHours / v.commits) * 100),
+        allowed,
+        aboveChance:
+          v.offHours > 0 &&
+          binomialUpperTail(v.commits, v.offHours, rate) < CHANCE_TAIL,
+      };
+    })
+    .sort(
+      (a, b) =>
+        Number(b.aboveChance) - Number(a.aboveChance) ||
+        b.offHours / b.commits - a.offHours / a.commits ||
+        b.commits - a.commits ||
+        a.package.localeCompare(b.package),
+    );
+  return {
+    commits: total,
+    offHours: off,
+    rate,
+    minCommits: MIN_PACKAGE_COMMITS,
+    packages,
+  };
+}
 
 /**
  * Parses an ISO date string and returns the hour (0-23), day-of-week (0-6, Sun=0),
@@ -76,6 +173,13 @@ export function analyzeCommitTiming(
       tierMix: { low: 0, medium: 0, high: 0, critical: 0 },
       byMonth: [],
       authorStress: [],
+      offHours: {
+        commits: 0,
+        offHours: 0,
+        rate: 0,
+        minCommits: MIN_PACKAGE_COMMITS,
+        packages: [],
+      },
     };
   }
 
@@ -307,5 +411,6 @@ export function analyzeCommitTiming(
     tierMix,
     byMonth,
     authorStress,
+    offHours: offHoursByPackage(commits, trackedSet),
   };
 }

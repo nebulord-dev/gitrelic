@@ -122,14 +122,20 @@ export const RULES: readonly Rule[] = [
   },
   {
     preset: 'commit-timing',
+    // Packages changed off-hours more than the repo's rate explains (core's
+    // binomial test, as Fix rate's), of the packages with enough commits to
+    // test. Classic's per-file stress counted files from three commits.
     measure: (r) => ({
-      count: r.commitTiming.highStress,
-      of: r.commitTiming.files.length,
+      count: r.commitTiming.offHours.packages.filter((p) => p.aboveChance)
+        .length,
+      of: r.commitTiming.offHours.packages.length,
     }),
-    share: 0.05,
-    min: 1,
-    reason: (c, of) => `${pct(c, of)} of files changed mostly off-hours`,
+    share: 0.1,
+    min: 2,
+    reason: (c) =>
+      `${c} package${c === 1 ? '' : 's'} changed off-hours more than chance explains`,
   },
+
   {
     preset: 'test-coverage',
     measure: (r) => ({

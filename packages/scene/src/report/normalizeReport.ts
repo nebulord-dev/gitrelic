@@ -213,6 +213,14 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       },
       byMonth: raw.commitTiming?.byMonth ?? [],
       authorStress: raw.commitTiming?.authorStress ?? [],
+      // Reports from before off-hours by package: nothing tested.
+      offHours: raw.commitTiming?.offHours ?? {
+        commits: 0,
+        offHours: 0,
+        rate: 0,
+        minCommits: 10,
+        packages: [],
+      },
     },
     renameTracking: raw.renameTracking ?? {
       renames: [],

@@ -54,7 +54,7 @@ const VALUE: Record<string, (r: GitrelicReport) => string> = {
     `${n(r.contributors.ghostContributors.length)} ghosts of ${n(r.contributors.contributors.length)}`,
   'parallel-dev': (r) => `${n(r.parallelDev.totalParallelFiles)} files`,
   'commit-timing': (r) =>
-    `${pct(r.commitTiming.repoLateNightPercent)} late night`,
+    `${pct(r.commitTiming.offHours.rate * 100)} off-hours`,
   'co-authors': (r) => `${pct(r.coAuthors.aiAdoptionPercent)} AI-assisted`,
   languages: (r) => {
     const top = r.loc.languages[0];

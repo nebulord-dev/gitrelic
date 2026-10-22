@@ -735,6 +735,25 @@ export interface CommitTimingReport {
   tierMix: CommitTimingTierMix; // file-score band counts
   byMonth: CommitTimingMonthlyBucket[]; // disjoint, sorted ascending by month
   authorStress: AuthorStressProfile[]; // sorted desc by stressScore, post-floor and post-disambiguation
+  offHours: CommitTimingOffHours; // which code changes off-hours, against chance
+}
+
+/** One package's off-hours commits against the repo's rate. */
+export interface PackageOffHours {
+  package: string; // `packages/<name>`, else the top-level directory; '' for the root
+  commits: number; // commits touching it (sweeping and bot commits left out)
+  offHours: number; // of those, late night (11pm–5am) or weekend, author's local time
+  percent: number; // 0–100, rounded
+  allowed: number; // the most off-hours commits chance explains at the repo's rate
+  aboveChance: boolean; // under a 2.5% chance at the repo's rate (Fix rate's test)
+}
+
+export interface CommitTimingOffHours {
+  commits: number; // commits counted (sweeping and bot commits left out)
+  offHours: number; // of those, off-hours
+  rate: number; // offHours / commits, 0–1
+  minCommits: number; // a package needs this many commits to be tested
+  packages: PackageOffHours[]; // above chance first, then by share
 }
 
 // ─── Rename tracking ─────────────────────────────────────────────────────────

@@ -1843,7 +1843,23 @@
         "weekendPercent": 38,
         "stressScore": 15
       }
-    ]
+    ],
+    "offHours": {
+      "commits": 20,
+      "offHours": 8,
+      "rate": 0.4,
+      "minCommits": 10,
+      "packages": [
+        {
+          "package": "src",
+          "commits": 18,
+          "offHours": 8,
+          "percent": 44,
+          "allowed": 11,
+          "aboveChance": false
+        }
+      ]
+    }
   },
   "renameTracking": {
     "renames": [
