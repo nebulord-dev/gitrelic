@@ -112,6 +112,8 @@ function parseLocalTime(isoDate: string): {
   hour: number;
   day: number;
   isoMonth: string;
+  /** Days since 1970-01-01 in local time, for week and night keys. */
+  localDay: number;
 } {
   const match = isoDate.match(/([+-])(\d{2}):(\d{2})$/);
   const date = new Date(isoDate);
@@ -124,6 +126,7 @@ function parseLocalTime(isoDate: string): {
       hour: date.getUTCHours(),
       day: date.getUTCDay(),
       isoMonth: `${year}-${month}`,
+      localDay: Math.floor(date.getTime() / 86_400_000),
     };
   }
 
@@ -142,8 +145,17 @@ function parseLocalTime(isoDate: string): {
     hour: local.getUTCHours(),
     day: local.getUTCDay(),
     isoMonth: `${year}-${month}`,
+    localDay: Math.floor(localMs / 86_400_000),
   };
 }
+
+/**
+ * Someone works off-hours regularly when weekend (or late-night) commits
+ * fall in at least this share of the weeks they committed at all…
+ */
+export const REGULAR_SHARE = 1 / 3;
+/** …over at least this many active weeks: fewer is too short to call. */
+export const REGULAR_MIN_WEEKS = 6;
 
 function isLateNight(hour: number): boolean {
   return hour === 23 || hour <= 4; // 11pm to 4am (hours 23, 0, 1, 2, 3, 4)
@@ -213,6 +225,12 @@ export function analyzeCommitTiming(
       totalCommits: number;
       lateNightCommits: number;
       weekendCommits: number;
+      // Monday-start local weeks, and local nights (an evening and the
+      // early hours after it), as day numbers.
+      weeks: Set<number>;
+      weekendWeeks: Set<number>;
+      lateNightWeeks: Set<number>;
+      lateNights: Set<number>;
     }
   >();
 
@@ -223,7 +241,7 @@ export function analyzeCommitTiming(
   >();
 
   for (const commit of commits) {
-    const { hour, day, isoMonth } = parseLocalTime(commit.date);
+    const { hour, day, isoMonth, localDay } = parseLocalTime(commit.date);
     const late = isLateNight(hour);
     const wknd = isWeekend(day);
 
@@ -240,6 +258,10 @@ export function analyzeCommitTiming(
         totalCommits: 0,
         lateNightCommits: 0,
         weekendCommits: 0,
+        weeks: new Set(),
+        weekendWeeks: new Set(),
+        lateNightWeeks: new Set(),
+        lateNights: new Set(),
       });
     }
     const aData = authorData.get(emailLower)!;
@@ -247,6 +269,14 @@ export function analyzeCommitTiming(
     aData.totalCommits++;
     if (late) aData.lateNightCommits++;
     if (wknd) aData.weekendCommits++;
+    const week = localDay - ((day + 6) % 7);
+    aData.weeks.add(week);
+    if (wknd) aData.weekendWeeks.add(week);
+    if (late) {
+      aData.lateNightWeeks.add(week);
+      // 1am belongs to the night that started the evening before.
+      aData.lateNights.add(hour <= 4 ? localDay - 1 : localDay);
+    }
 
     // Per-month (commit-level, disjoint XOR)
     if (!monthData.has(isoMonth)) {
@@ -348,6 +378,13 @@ export function analyzeCommitTiming(
       100,
       Math.max(0, Math.round(lateNightPercent * 0.6 + weekendPercent * 0.4)),
     );
+    const activeWeeks = data.weeks.size;
+    // A bot's schedule isn't anyone's evening: never named as regular.
+    const person = classifyAuthor(email) !== 'bot';
+    const regular = (weeks: number) =>
+      person &&
+      activeWeeks >= REGULAR_MIN_WEEKS &&
+      weeks >= REGULAR_SHARE * activeWeeks;
     authorStress.push({
       email,
       name: data.name,
@@ -357,6 +394,12 @@ export function analyzeCommitTiming(
       lateNightPercent,
       weekendPercent,
       stressScore,
+      activeWeeks,
+      weekendWeeks: data.weekendWeeks.size,
+      lateNightWeeks: data.lateNightWeeks.size,
+      lateNights: data.lateNights.size,
+      regularWeekends: regular(data.weekendWeeks.size),
+      regularLateNights: regular(data.lateNightWeeks.size),
     });
   }
   authorStress.sort((a, b) => {

@@ -707,6 +707,17 @@ export interface AuthorStressProfile {
   lateNightPercent: number; // 0–100, rounded
   weekendPercent: number; // 0–100, rounded
   stressScore: number; // round(lateNightPercent × 0.6 + weekendPercent × 0.4), 0–100
+  // Regularity, which a single crunch can't fake: weeks (Monday-start, local
+  // time) with any commit, with a weekend commit, with a late-night commit,
+  // and distinct late nights (a 1am commit counts toward the evening before).
+  activeWeeks: number;
+  weekendWeeks: number;
+  lateNightWeeks: number;
+  lateNights: number;
+  // Off-hours in at least REGULAR_SHARE (a third) of active weeks, over at
+  // least REGULAR_MIN_WEEKS (6); never for bots.
+  regularWeekends: boolean;
+  regularLateNights: boolean;
 }
 
 export interface CommitTimingMonthlyBucket {
