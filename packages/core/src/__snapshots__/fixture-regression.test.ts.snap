@@ -735,14 +735,20 @@ exports[`fixture regression > commit timing report is stable 1`] = `
 {
   "authorStress": [
     {
+      "activeWeeks": 10,
       "email": "alice@example.com",
       "lateNightCommits": 0,
       "lateNightPercent": 0,
+      "lateNightWeeks": 0,
+      "lateNights": 0,
       "name": "Alice",
+      "regularLateNights": false,
+      "regularWeekends": true,
       "stressScore": 15,
       "totalCommits": 13,
       "weekendCommits": 5,
       "weekendPercent": 38,
+      "weekendWeeks": 5,
     },
   ],
   "byMonth": [

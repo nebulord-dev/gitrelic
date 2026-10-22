@@ -4,6 +4,7 @@ import {
   analyzeCommitTiming,
   chanceAllows,
   MIN_PACKAGE_COMMITS,
+  REGULAR_MIN_WEEKS,
   offHoursByPackage,
   packageOf,
 } from './commit-timing.js';
@@ -553,5 +554,79 @@ describe('packageOf', () => {
     expect(packageOf('packages/react-dom/src/x.js')).toBe('packages/react-dom');
     expect(packageOf('compiler/crates/a.rs')).toBe('compiler');
     expect(packageOf('README.md')).toBe('');
+  });
+});
+
+describe('off-hours regularity per person', () => {
+  // Week k's Tuesday 2pm and Saturday 11am, and a Wednesday 1am, in UTC.
+  const base = Date.UTC(2026, 0, 6); // Tue 6 Jan 2026
+  const iso = (ms: number) => new Date(ms).toISOString().replace('.000Z', 'Z');
+  const tue = (k: number) => iso(base + k * 7 * 86_400_000 + 14 * 3_600_000);
+  const sat = (k: number) =>
+    iso(base + (k * 7 + 4) * 86_400_000 + 11 * 3_600_000);
+  const wedLate = (k: number) =>
+    iso(base + (k * 7 + 1) * 86_400_000 + 1 * 3_600_000);
+  let h = 0;
+  const c = (date: string, authorEmail = 'joe@x') =>
+    makeCommit({ hash: String(++h), date, authorEmail, files: ['a.ts'] });
+  const profile = (commits: RawCommit[], email = 'joe@x') =>
+    analyzeCommitTiming(commits, ['a.ts']).authorStress.find(
+      (a) => a.email === email,
+    )!;
+
+  it('names someone who works most Saturdays', () => {
+    const weeks = Array.from({ length: 8 }, (_, k) => k);
+    const joe = profile([
+      ...weeks.map((k) => c(tue(k))),
+      ...weeks.filter((k) => k % 2 === 0).map((k) => c(sat(k))),
+    ]);
+    expect(joe).toMatchObject({
+      activeWeeks: 8,
+      weekendWeeks: 4,
+      regularWeekends: true,
+      regularLateNights: false,
+    });
+  });
+
+  it('doesn’t name one crunch weekend, however many commits it holds', () => {
+    const weeks = Array.from({ length: 10 }, (_, k) => k);
+    const joe = profile([
+      ...weeks.map((k) => c(tue(k))),
+      ...Array.from({ length: 6 }, () => c(sat(3))),
+    ]);
+    expect(joe.weekendCommits).toBe(6);
+    expect(joe.weekendWeeks).toBe(1);
+    expect(joe.regularWeekends).toBe(false);
+  });
+
+  it('needs enough active weeks to call anything regular', () => {
+    const weeks = Array.from({ length: REGULAR_MIN_WEEKS - 1 }, (_, k) => k);
+    const joe = profile(weeks.flatMap((k) => [c(tue(k)), c(sat(k))]));
+    expect(joe.weekendWeeks).toBe(REGULAR_MIN_WEEKS - 1);
+    expect(joe.regularWeekends).toBe(false);
+  });
+
+  it('counts a 1am commit toward the night before, and late-night weeks', () => {
+    const weeks = Array.from({ length: 6 }, (_, k) => k);
+    const joe = profile([
+      ...weeks.map((k) => c(tue(k))),
+      ...weeks.slice(0, 2).map((k) => c(wedLate(k))),
+      // Two commits the same night count once.
+      c(wedLate(0)),
+    ]);
+    expect(joe.lateNights).toBe(2);
+    expect(joe.lateNightWeeks).toBe(2);
+    expect(joe.regularLateNights).toBe(true);
+  });
+
+  it('never names a bot', () => {
+    const bot = '49699333+dependabot[bot]@users.noreply.github.com';
+    const weeks = Array.from({ length: 8 }, (_, k) => k);
+    const b = profile(
+      weeks.map((k) => c(sat(k), bot)),
+      bot,
+    );
+    expect(b.weekendWeeks).toBe(8);
+    expect(b.regularWeekends).toBe(false);
   });
 });

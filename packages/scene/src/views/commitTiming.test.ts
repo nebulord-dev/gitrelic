@@ -127,9 +127,73 @@ describe('commitTimingView', () => {
     expect(s.marks.find((m) => m.id === 'punch-head')!.label).toBe(
       'src: 1 commit, 100% off-hours',
     );
-    // Unknown selection kinds draw the repo.
+    // A cell's tooltip names who committed in it (Sat 2am, UTC).
+    expect(s.marks.find((m) => m.id === 'punch:6:2')!.tip).toContain(
+      'by a@x 1',
+    );
+    // A person's own hours, named from the index.
+    const ann = punchCardLayout.build(
+      {
+        report: r,
+        commits,
+        focus: 'person:a@x',
+        index: {
+          entries: [],
+          get: (id: string) =>
+            id === 'person:a@x'
+              ? {
+                  id,
+                  kind: 'person' as const,
+                  label: 'Ann',
+                  detail: '',
+                  keywords: [],
+                }
+              : undefined,
+        },
+      },
+      { width: 1200, height: 800 },
+    );
+    expect(ann.marks.find((m) => m.id === 'punch-head')).toMatchObject({
+      label: 'Ann: 1 commit, 100% off-hours',
+      labelSub: 'their hours: every commit they made, in their local time',
+    });
+    // Their own hours don't name them again.
+    expect(
+      ann.marks
+        .find((m) => m.id === 'punch:6:2')!
+        .tip!.some((l) => l.startsWith('by ')),
+    ).toBe(false);
+    // Unselected, the repo's cells name their authors by name.
+    const repoWide = punchCardLayout.build(
+      {
+        report: r,
+        commits,
+        focus: null,
+        index: {
+          entries: [],
+          get: (id: string) =>
+            id === 'person:a@x'
+              ? {
+                  id,
+                  kind: 'person' as const,
+                  label: 'Ann',
+                  detail: '',
+                  keywords: [],
+                }
+              : undefined,
+        },
+      },
+      { width: 1200, height: 800 },
+    );
+    expect(repoWide.marks.find((m) => m.id === 'punch:6:2')!.tip).toContain(
+      'by Ann 1',
+    );
+    expect(repoWide.marks.find((m) => m.id === 'punch:1:9')!.tip).toHaveLength(
+      2,
+    );
+    // Kinds it doesn't draw: the repo.
     const plain = punchCardLayout.build(
-      { report: r, commits, focus: 'person:a@x' },
+      { report: r, commits, focus: 'analyzer:churn' },
       { width: 1200, height: 800 },
     );
     expect(plain.marks.find((m) => m.id === 'punch-head')!.label).toMatch(

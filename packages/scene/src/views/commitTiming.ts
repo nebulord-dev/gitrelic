@@ -7,10 +7,12 @@ import { entityKey, entityKind, ids, REPO_ID, type EntityId } from '../ids';
 import { punchCardScene } from '../layouts/punchCard';
 import {
   busiestCells,
+  cellAuthorsOf,
   DAY_NAMES,
   hourName,
   repoGrid,
   selectionHoursOf,
+  topAuthors,
   workingHoursShare,
 } from '../timing/punchCard';
 import type {
@@ -33,18 +35,49 @@ export const timingPackageId = (pkg: string): EntityId =>
   pkg === '' ? REPO_ID : ids.dir(pkg);
 
 /** What a selection is called beside its hours. */
-function selectionName(id: EntityId): string {
+function selectionName(id: EntityId, input: ViewInput): string {
   if (id === REPO_ID) return '(root)';
+  if (entityKind(id) === 'person')
+    return input.index?.get(id)?.label ?? entityKey(id);
   const key = entityKey(id);
   return entityKind(id) === 'file' ? baseName(key) : timingPackageName(key);
+}
+
+/**
+ * A cell tooltip's "by" line: the busiest authors in it, of the
+ * selection's commits when one is drawn, else the repo's. None for a
+ * person's own hours (it would only name them).
+ */
+function cellWho(
+  input: ViewInput,
+  drawn: boolean | null,
+): ((day: number, hour: number) => string | null) | null {
+  if (!input.commits) return null;
+  const focus = drawn ? input.focus! : '';
+  if (focus && entityKind(focus) === 'person') return null;
+  const cells = cellAuthorsOf(input.commits, focus);
+  if (!cells) return null;
+  const name = (email: string) =>
+    input.index?.get(`person:${email}`)?.label ?? email;
+  return (day, hour) => {
+    const cell = cells[day][hour];
+    const top = topAuthors(cell);
+    if (top.length === 0) return null;
+    const more = cell.size - top.length;
+    return (
+      'by ' +
+      top.map((a) => `${name(a.author)} ${a.commits}`).join(', ') +
+      (more > 0 ? ` +${more} more` : '')
+    );
+  };
 }
 
 export const punchCardLayout: Layout = {
   id: 'punch-card',
   label: 'Punch card',
   caption:
-    'Commits by day and hour, in each author’s local time. Off-hours (the shaded weekend rows and 11pm–5am columns) take the risk colour. Select a package or file to see its own hours.',
-  focusKinds: ['dir', 'file', 'repo'],
+    'Commits by day and hour, in each author’s local time. Off-hours (the shaded weekend rows and 11pm–5am columns) take the risk colour. Select a package, a file or a person to see their own hours.',
+  focusKinds: ['dir', 'file', 'repo', 'person'],
   needsCommits: true,
   build: (input, viewport) => {
     const hours =
@@ -54,9 +87,17 @@ export const punchCardLayout: Layout = {
     return punchCardScene(
       {
         grid: repoGrid(input.report),
+        who: cellWho(input, hours && hours.commits > 0),
         selection:
           hours && hours.commits > 0
-            ? { name: selectionName(input.focus!), hours }
+            ? {
+                name: selectionName(input.focus!, input),
+                hours,
+                note:
+                  entityKind(input.focus!) === 'person'
+                    ? 'their hours: every commit they made, in their local time'
+                    : 'its hours, with sweeping and bot commits left out',
+              }
             : null,
       },
       viewport,

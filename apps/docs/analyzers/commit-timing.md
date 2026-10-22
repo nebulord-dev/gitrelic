@@ -43,6 +43,20 @@ With nothing selected, the inspector leads with the off-hours share. Its finding
 
 The detail table (`T`) lists every tested package: commits, off-hours, the share, what chance allows and whether it's above chance, tiered from below the repo's rate to above chance at twice the rate.
 
+### People who work off-hours regularly
+
+A share of someone's commits can't tell one crunch weekend from every Saturday: on React's last 12 months, Josh Story's six weekend commits were all from one weekend, 1 of the 11 weeks he committed. So the report measures **regularity** instead, per person (in their local time):
+
+- **Active weeks** — Monday-start weeks with any commit.
+- **Weekend weeks** and **late-night weeks** — of those, the weeks with a weekend commit, or a late-night one.
+- **Late nights** — distinct nights with a late commit (a 1am commit counts toward the evening before).
+
+Someone works off-hours **regularly** when weekend (or late-night) commits fall in **at least a third of their active weeks, over at least 6 active weeks**. Bots are never named.
+
+In Atlas, the Commit Timing lens's **Off-hours, by person** list names every regular first, each with a line like "weekends in 9 of 12 active weeks", then fills up to five with the people who have the most off-hours (among those with 6 or more active weeks), and says so when nobody is regular (as on React). Hover a cell of the punch card to see who committed in it ("by Ann 3, Joe 1 +2 more"; for a selected package, its own commits). Select a person, from that list or anywhere else, and the punch card redraws from every commit they made, their off-hours in the accent: someone working most Saturdays lights up the Saturday row. Every person card shows the same measure ("weekends in 5 of 29 weeks · 6 late nights"), flagged when it's regular.
+
+Read it as a reason to check in, not a verdict: times come from each author's own machine, so travel or a clock set to UTC can look like night work, and weekend commits can be a choice, especially in open source.
+
 ## How to read the punch card
 
 The default hero is a **7×24 heatmap** — rows are days (Sun–Sat), columns are hours (0–23). Each cell's intensity is the repo-wide commit count for that (day, hour) bucket, **log-scaled** so rare-but-meaningful off-hours commits don't get washed out next to a busy weekday-afternoon peak.

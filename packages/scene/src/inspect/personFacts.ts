@@ -66,9 +66,23 @@ export function personFacts(
     },
   ];
   const stress = report.commitTiming.authorStress.find(
-    (a) => a.email === email,
+    (a) => a.email.toLowerCase() === email.toLowerCase(),
   );
-  if (stress) {
+  if (stress && stress.activeWeeks > 0) {
+    // How regularly, not what share of commits: one crunch weekend can be
+    // half someone's commits without being a pattern.
+    rows.push({
+      label: 'Off-hours',
+      value:
+        `weekends in ${fmt(stress.weekendWeeks)} of ${fmt(stress.activeWeeks)} weeks · ` +
+        `${fmt(stress.lateNights)} late night${stress.lateNights === 1 ? '' : 's'}`,
+      tier:
+        stress.regularWeekends || stress.regularLateNights
+          ? 'warning'
+          : undefined,
+    });
+  } else if (stress) {
+    // Reports from before regularity: the shares, as before.
     const tier: FactTier | undefined =
       stress.stressScore >= STRESS_WARNING ? 'warning' : undefined;
     rows.push({

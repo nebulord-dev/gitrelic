@@ -4,9 +4,10 @@
 // `repoHourDayMatrix`; a selection's comes from the commit index (each
 // commit carries its author's UTC offset).
 //
-// A selection's hours leave out what core's package test leaves out:
-// sweeping commits (over `SWEEPING_COMMIT_FILES`) and bot commits, so a
-// package's lit cells add up to the count beside it.
+// A package's or file's hours leave out what core's package test leaves
+// out: sweeping commits (over `SWEEPING_COMMIT_FILES`) and bot commits, so a
+// package's lit cells add up to the count beside it. A person's hours are
+// every commit they made: a mass rename at 2am is still them working at 2am.
 
 import { classifyAuthor } from '../authors/authorClassification';
 import { localDayHour, type CommitLike } from '../commits/commitLike';
@@ -51,30 +52,95 @@ export function touchesSelection(
   return null;
 }
 
+/** Which commits a selection's hours count. */
+export interface SelectionRule {
+  match: (c: CommitLike) => boolean;
+  /** Leave out sweeping and bot commits, as core's package test does. */
+  asPackages: boolean;
+}
+
+/** The rule for a selection the punch card draws, or null. */
+export function selectionRule(id: EntityId): SelectionRule | null {
+  if (entityKind(id) === 'person') {
+    const email = entityKey(id).toLowerCase();
+    return {
+      match: (c) => c.author.toLowerCase() === email,
+      asPackages: false,
+    };
+  }
+  const touches = touchesSelection(id);
+  return touches ? { match: (c) => touches(c.files), asPackages: true } : null;
+}
+
 export interface SelectionHours {
   grid: DayHourGrid;
   commits: number;
   offHours: number;
 }
 
-/** The hours a selection's commits landed in, as core counts them. */
+/**
+ * Calls `fn` with each commit a rule counts (every commit when null), and
+ * the local day and hour it landed in.
+ */
+function eachCommitHour(
+  commits: readonly CommitLike[],
+  rule: SelectionRule | null,
+  fn: (c: CommitLike, day: number, hour: number) => void,
+): void {
+  for (const c of commits) {
+    if (rule?.asPackages) {
+      if (c.files.length > SWEEPING_COMMIT_FILES) continue;
+      if (classifyAuthor(c.author) === 'bot') continue;
+    }
+    if (rule && !rule.match(c)) continue;
+    const { day, hour } = localDayHour(c);
+    fn(c, day, hour);
+  }
+}
+
+/** The hours a selection's commits landed in. */
 export function selectionHours(
   commits: readonly CommitLike[],
-  touches: (files: readonly string[]) => boolean,
+  rule: SelectionRule,
 ): SelectionHours {
   const grid = emptyGrid();
   let n = 0;
   let off = 0;
-  for (const c of commits) {
-    if (c.files.length > SWEEPING_COMMIT_FILES) continue;
-    if (classifyAuthor(c.author) === 'bot') continue;
-    if (!touches(c.files)) continue;
-    const { day, hour } = localDayHour(c);
+  eachCommitHour(commits, rule, (_, day, hour) => {
     grid[day][hour]++;
     n++;
     if (isOffHours(day, hour)) off++;
-  }
+  });
   return { grid, commits: n, offHours: off };
+}
+
+/** Commits per author in each cell, `[day][hour]`, author email → count. */
+export type CellAuthors = Map<string, number>[][];
+
+/** Who committed in each cell: the repo's commits, or a rule's. */
+export function cellAuthors(
+  commits: readonly CommitLike[],
+  rule: SelectionRule | null,
+): CellAuthors {
+  const grid = Array.from({ length: 7 }, () =>
+    Array.from({ length: 24 }, () => new Map<string, number>()),
+  );
+  eachCommitHour(commits, rule, (c, day, hour) => {
+    const cell = grid[day][hour];
+    cell.set(c.author, (cell.get(c.author) ?? 0) + 1);
+  });
+  return grid;
+}
+
+/** A cell's busiest authors, most commits first (ties by email). */
+export function topAuthors(
+  cell: ReadonlyMap<string, number>,
+  count = 3,
+): { author: string; commits: number }[] {
+  return [...cell]
+    .map(([author, commits]) => ({ author, commits }))
+    .sort((a, b) => b.commits - a.commits || a.author.localeCompare(b.author))
+    .slice(0, count);
 }
 
 /** The repo's grid, as core counted it (every commit). */
@@ -130,8 +196,130 @@ export function selectionHoursOf(
   let byId = cache.get(commits);
   if (!byId) cache.set(commits, (byId = new Map()));
   if (!byId.has(id)) {
-    const touches = touchesSelection(id);
-    byId.set(id, touches ? selectionHours(commits, touches) : null);
+    const rule = selectionRule(id);
+    byId.set(id, rule ? selectionHours(commits, rule) : null);
   }
   return byId.get(id)!;
+}
+
+const authorsCache = new WeakMap<
+  readonly CommitLike[],
+  Map<EntityId | '', CellAuthors | null>
+>();
+/** `cellAuthors` for a selection ('' for the repo), once per commit list. */
+export function cellAuthorsOf(
+  commits: readonly CommitLike[],
+  id: EntityId | '',
+): CellAuthors | null {
+  let byId = authorsCache.get(commits);
+  if (!byId) authorsCache.set(commits, (byId = new Map()));
+  if (!byId.has(id)) {
+    const rule = id === '' ? null : selectionRule(id);
+    byId.set(id, id === '' || rule ? cellAuthors(commits, rule) : null);
+  }
+  return byId.get(id)!;
+}
+
+export interface OffHoursRegular {
+  /** The person's entity id (the contributors report's email). */
+  id: EntityId;
+  name: string;
+  activeWeeks: number;
+  weekendWeeks: number;
+  lateNightWeeks: number;
+  lateNights: number;
+  regularWeekends: boolean;
+  regularLateNights: boolean;
+}
+
+/** Core's `REGULAR_MIN_WEEKS`: fewer active weeks is too few to judge. */
+export const OFF_HOURS_MIN_WEEKS = 6;
+
+function asPerson(
+  a: GitrelicReport['commitTiming']['authorStress'][number],
+  idOf: Map<string, string>,
+): OffHoursRegular {
+  return {
+    id: `person:${idOf.get(a.email.toLowerCase()) ?? a.email}`,
+    name: a.name,
+    activeWeeks: a.activeWeeks,
+    weekendWeeks: a.weekendWeeks,
+    lateNightWeeks: a.lateNightWeeks,
+    lateNights: a.lateNights,
+    regularWeekends: a.regularWeekends,
+    regularLateNights: a.regularLateNights,
+  };
+}
+
+/** The larger of someone's weekend and late-night shares of active weeks. */
+const offHoursShare = (a: OffHoursRegular) =>
+  Math.max(a.weekendWeeks, a.lateNightWeeks) / Math.max(1, a.activeWeeks);
+
+/**
+ * The people with the most off-hours, as a share of their active weeks:
+ * every regular (core's rule: in at least a third of their active weeks,
+ * over at least six), then the rest up to `count`. Only people with
+ * `OFF_HOURS_MIN_WEEKS` active weeks are ranked (one weekend is 100% of a
+ * one-week contributor), and bots never.
+ */
+export function offHoursPeople(
+  report: GitrelicReport,
+  count = 5,
+): OffHoursRegular[] {
+  // Core keys authors by lower-cased email; ids use the contributors
+  // report's spelling.
+  const idOf = new Map(
+    report.contributors.contributors.map((c) => [
+      c.email.toLowerCase(),
+      c.email,
+    ]),
+  );
+  const regular = (a: OffHoursRegular) =>
+    a.regularWeekends || a.regularLateNights;
+  const ranked = report.commitTiming.authorStress
+    .filter(
+      (a) =>
+        a.activeWeeks >= OFF_HOURS_MIN_WEEKS &&
+        a.weekendWeeks + a.lateNightWeeks > 0 &&
+        classifyAuthor(a.email) !== 'bot',
+    )
+    .map((a) => asPerson(a, idOf))
+    .sort(
+      (x, y) =>
+        Number(regular(y)) - Number(regular(x)) ||
+        offHoursShare(y) - offHoursShare(x) ||
+        x.name.localeCompare(y.name),
+    );
+  const regulars = ranked.filter(regular).length;
+  return ranked.slice(0, Math.max(regulars, count));
+}
+
+/** People who work off-hours regularly, most regular first. */
+export function offHoursRegulars(report: GitrelicReport): OffHoursRegular[] {
+  return offHoursPeople(report, 0);
+}
+
+/**
+ * Someone's off-hours, in words: "weekends in 5 of 29 active weeks ·
+ * 3 late nights" (the person card's line).
+ */
+export function offHoursLine(r: OffHoursRegular): string {
+  return (
+    `weekends in ${r.weekendWeeks} of ${r.activeWeeks} active weeks · ` +
+    `${r.lateNights} late night${r.lateNights === 1 ? '' : 's'}`
+  );
+}
+
+/** Why a regular is one, in words: "weekends in 9 of 12 active weeks". */
+export function regularLine(r: OffHoursRegular): string {
+  const parts: string[] = [];
+  if (r.regularWeekends)
+    parts.push(
+      `weekends in ${r.weekendWeeks} of ${r.activeWeeks} active weeks`,
+    );
+  if (r.regularLateNights)
+    parts.push(
+      `late nights in ${r.lateNightWeeks} of ${r.activeWeeks} active weeks (${r.lateNights} nights)`,
+    );
+  return parts.join('; ');
 }

@@ -15,6 +15,28 @@ describe('personFacts', () => {
       (p?.rows ?? []).map((r) => [r.label, r.value]),
     );
     expect(rows.Commits).toBe('13');
+    // How regularly: Alice committed on weekends in half her active weeks.
+    expect(rows['Off-hours']).toBe('weekends in 5 of 10 weeks · 0 late nights');
+    expect(p?.rows.find((r) => r.label === 'Off-hours')?.tier).toBe('warning');
+  });
+
+  it('falls back to the shares on reports from before regularity', () => {
+    const old = {
+      ...report,
+      commitTiming: {
+        ...report.commitTiming,
+        authorStress: report.commitTiming.authorStress.map((a) => ({
+          ...a,
+          activeWeeks: 0,
+        })),
+      },
+    } as GitrelicReport;
+    const rows = Object.fromEntries(
+      (personFacts('alice@example.com', old)?.rows ?? []).map((r) => [
+        r.label,
+        r.value,
+      ]),
+    );
     expect(rows['Off-hours commits']).toBe('0% late · 38% weekend');
   });
 
@@ -58,6 +80,7 @@ describe('personFacts', () => {
   it('omits the off-hours row for people without a stress profile', () => {
     const p = personFacts('bob@example.com', report);
     expect(p?.rows.map((r) => r.label)).not.toContain('Off-hours commits');
+    expect(p?.rows.map((r) => r.label)).not.toContain('Off-hours');
   });
 
   it('flags a ghost’s last commit and lists merged aliases', () => {

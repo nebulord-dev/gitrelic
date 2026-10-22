@@ -49,7 +49,7 @@ describe('punchCardScene', () => {
     sel[1][12] = 3;
     const hours: SelectionHours = { grid: sel, commits: 4, offHours: 1 };
     const s = punchCardScene(
-      { grid, selection: { name: 'server', hours } },
+      { grid, selection: { name: 'server', hours, note: 'its hours' } },
       VIEWPORT,
     );
     expect(checkScene(s)).toEqual([]);
@@ -65,6 +65,25 @@ describe('punchCardScene', () => {
     expect(s.marks.find((m) => m.id === 'punch-head')!.label).toBe(
       'server: 4 commits, 25% off-hours',
     );
+    expect(s.marks.find((m) => m.id === 'punch-head')!.labelSub).toBe(
+      'its hours',
+    );
+  });
+
+  it('adds who committed to a cell’s tooltip when given', () => {
+    const s = punchCardScene(
+      {
+        grid,
+        who: (day, hour) => (day === 6 && hour === 12 ? 'by Ann 2' : null),
+      },
+      VIEWPORT,
+    );
+    expect(cell(s, 6, 12).tip).toEqual([
+      'Sat 12pm · off-hours',
+      '2 commits (15% of the repo’s)',
+      'by Ann 2',
+    ]);
+    expect(cell(s, 1, 12).tip).toHaveLength(2);
   });
 
   it('says so when there are no commits', () => {
