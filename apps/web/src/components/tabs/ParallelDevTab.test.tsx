@@ -21,6 +21,7 @@ function f(
       commitCount: 2,
     },
     topWindows: [],
+    windows: [],
     narrative: '',
     ...overrides,
   };

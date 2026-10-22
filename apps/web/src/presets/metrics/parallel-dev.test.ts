@@ -27,6 +27,7 @@ function makeFile(overrides: Partial<FileParallelDev> = {}): FileParallelDev {
     peakAuthors: 2,
     peakWindow: makeWindow(),
     topWindows: [],
+    windows: [],
     narrative: '',
     ...overrides,
   };

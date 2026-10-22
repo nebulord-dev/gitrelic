@@ -355,4 +355,42 @@ describe('normalizeReport', () => {
     const fixRate = { files: [], rate: 0.02, windowDays: 30 };
     expect(normalizeReport({ fixRate } as any).fixRate).toBe(fixRate);
   });
+
+  it('backfills parallel dev’s pairs, left-out counts and windows on older reports', () => {
+    const window = {
+      weekStart: '2026-01-05T00:00:00.000Z',
+      authors: ['a@x', 'b@x'],
+      commitCount: 2,
+    };
+    const old = {
+      file: 'a.ts',
+      parallelScore: 40,
+      totalActiveWeeks: 5,
+      parallelWeeks: 2,
+      peakAuthors: 2,
+      peakWindow: window,
+      topWindows: [window],
+      narrative: '',
+    };
+    const r = normalizeReport({
+      parallelDev: {
+        files: [old],
+        hotFiles: [old],
+        totalParallelFiles: 1,
+        highParallel: 0,
+        tierMix: { low: 0, medium: 1, high: 0, critical: 0 },
+        byMonth: [],
+        summary: 'x',
+      },
+    } as never);
+    expect(r.parallelDev.pairs).toEqual([]);
+    expect(r.parallelDev.leftOut).toEqual({
+      sweepingCommits: 0,
+      botCommits: 0,
+    });
+    expect(r.parallelDev.files[0].windows).toEqual([window]);
+    expect(r.parallelDev.totalParallelFiles).toBe(1);
+    // Missing entirely: empty.
+    expect(normalizeReport({}).parallelDev.files).toEqual([]);
+  });
 });

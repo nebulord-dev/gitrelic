@@ -16,6 +16,7 @@ function f(path: string): FileParallelDev {
       commitCount: 0,
     },
     topWindows: [],
+    windows: [],
     narrative: '',
   };
 }

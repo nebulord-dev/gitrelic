@@ -124,6 +124,8 @@ function makeEmptyParallelDev(): ParallelDevReport {
     highParallel: 0,
     tierMix: { low: 0, medium: 0, high: 0, critical: 0 },
     byMonth: [],
+    pairs: [],
+    leftOut: { sweepingCommits: 0, botCommits: 0 },
     summary: '',
   };
 }
@@ -506,6 +508,7 @@ describe('findCursedFiles', () => {
             commitCount: 5,
           },
           topWindows: [],
+          windows: [],
           narrative: 'test',
         },
       ],
@@ -522,6 +525,7 @@ describe('findCursedFiles', () => {
             commitCount: 5,
           },
           topWindows: [],
+          windows: [],
           narrative: 'test',
         },
       ],
@@ -529,6 +533,8 @@ describe('findCursedFiles', () => {
       highParallel: 0,
       tierMix: { low: 0, medium: 0, high: 0, critical: 0 },
       byMonth: [],
+      pairs: [],
+      leftOut: { sweepingCommits: 0, botCommits: 0 },
       summary: '',
     };
 
@@ -587,6 +593,7 @@ describe('findCursedFiles', () => {
             commitCount: 5,
           },
           topWindows: [],
+          windows: [],
           narrative: 'test',
         },
       ],
@@ -603,6 +610,7 @@ describe('findCursedFiles', () => {
             commitCount: 5,
           },
           topWindows: [],
+          windows: [],
           narrative: 'test',
         },
       ],
@@ -610,6 +618,8 @@ describe('findCursedFiles', () => {
       highParallel: 0,
       tierMix: { low: 0, medium: 0, high: 0, critical: 0 },
       byMonth: [],
+      pairs: [],
+      leftOut: { sweepingCommits: 0, botCommits: 0 },
       summary: '',
     };
 
@@ -902,6 +912,7 @@ describe('findCursedFiles', () => {
           commitCount: 5,
         },
         topWindows: [],
+        windows: [],
         narrative: '',
       };
       const parallel: ParallelDevReport = {

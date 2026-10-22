@@ -815,6 +815,8 @@
     "highParallel": 0,
     "tierMix": { "low": 0, "medium": 0, "high": 0, "critical": 0 },
     "byMonth": [],
+    "pairs": [],
+    "leftOut": { "sweepingCommits": 0, "botCommits": 0 },
     "summary": "No significant parallel development detected."
   },
   "loc": {

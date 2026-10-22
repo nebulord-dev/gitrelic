@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { analyzeParallelDev } from './parallel-dev.js';
+import { analyzeParallelDev, SWEEPING_COMMIT_FILES } from './parallel-dev.js';
 import type { RawCommit } from '../utils/git.js';
 
 function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
@@ -56,6 +56,12 @@ describe('analyzeParallelDev', () => {
   it('detects two authors committing to the same file in the same week', () => {
     const commits = [
       makeCommit({
+        hash: '5',
+        authorEmail: 'bob@x.com',
+        date: weekDate(2),
+        files: ['a.ts'],
+      }),
+      makeCommit({
         hash: '1',
         authorEmail: 'alice@x.com',
         date: weekDate(0),
@@ -82,7 +88,7 @@ describe('analyzeParallelDev', () => {
     ];
     const result = analyzeParallelDev(commits, ['a.ts']);
     expect(result.files).toHaveLength(1);
-    expect(result.files[0].parallelWeeks).toBe(1);
+    expect(result.files[0].parallelWeeks).toBe(2);
     expect(result.files[0].totalActiveWeeks).toBe(3);
   });
 
@@ -111,8 +117,8 @@ describe('analyzeParallelDev', () => {
     expect(result.files).toHaveLength(0);
   });
 
-  it('excludes files with parallel score below MIN_PARALLEL_SCORE (20)', () => {
-    // 1 parallel week out of 10 active weeks → base score 10, severity 1.0 → score 10 < 20
+  it('excludes files with a single collision week: one overlap is chance', () => {
+    // 1 parallel week out of 10 active weeks
     const commits = Array.from({ length: 10 }, (_, week) =>
       makeCommit({
         hash: `a${week}`,
@@ -132,7 +138,7 @@ describe('analyzeParallelDev', () => {
     );
 
     const result = analyzeParallelDev(commits, ['a.ts']);
-    expect(result.files).toHaveLength(0); // score 10 < 20 threshold
+    expect(result.files).toHaveLength(0); // 1 < MIN_COLLISION_WEEKS
   });
 
   it('scores higher when more authors overlap in parallel weeks', () => {
@@ -162,6 +168,12 @@ describe('analyzeParallelDev', () => {
         hash: 'a4',
         authorEmail: 'alice@x.com',
         date: weekDate(2),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: 'a5',
+        authorEmail: 'bob@x.com',
+        date: weekDate(1),
         files: ['a.ts'],
       }),
       // File B: weeks 0-2, parallel in week 0 (4 authors)
@@ -201,6 +213,14 @@ describe('analyzeParallelDev', () => {
         date: weekDate(2),
         files: ['b.ts'],
       }),
+      ...['bob', 'charlie', 'dave'].map((who) =>
+        makeCommit({
+          hash: `b7${who}`,
+          authorEmail: `${who}@x.com`,
+          date: weekDate(1),
+          files: ['b.ts'],
+        }),
+      ),
     ];
     const result = analyzeParallelDev(commits, ['a.ts', 'b.ts']);
     const aScore =
@@ -649,5 +669,113 @@ describe('byMonth aggregate', () => {
     const result = analyzeParallelDev(commits, ['a.ts', 'b.ts']);
     expect(result.byMonth[0].parallelEvents).toBe(2);
     expect(result.byMonth[0].uniqueFiles).toBe(2);
+  });
+});
+
+describe('analyzeParallelDev: what counts', () => {
+  // Alice and Bob share a.ts in weeks 0 and 1; Alice alone in week 2.
+  const together = (files: string[], extra: Partial<RawCommit> = {}) => [
+    makeCommit({
+      hash: 'a0',
+      authorEmail: 'alice@x.com',
+      date: weekDate(0),
+      files,
+      ...extra,
+    }),
+    makeCommit({
+      hash: 'b0',
+      authorEmail: 'bob@x.com',
+      date: weekDate(0),
+      files,
+      ...extra,
+    }),
+    makeCommit({
+      hash: 'a1',
+      authorEmail: 'alice@x.com',
+      date: weekDate(1),
+      files,
+      ...extra,
+    }),
+    makeCommit({
+      hash: 'b1',
+      authorEmail: 'bob@x.com',
+      date: weekDate(1),
+      files,
+      ...extra,
+    }),
+    makeCommit({
+      hash: 'a2',
+      authorEmail: 'alice@x.com',
+      date: weekDate(2),
+      files,
+      ...extra,
+    }),
+  ];
+
+  it('lists every collision week, oldest first', () => {
+    const [a] = analyzeParallelDev(together(['a.ts']), ['a.ts']).files;
+    expect(a.windows.map((w) => w.weekStart.slice(0, 10))).toEqual([
+      '2025-06-02',
+      '2025-06-09',
+    ]);
+    expect(a.windows[0].authors.sort()).toEqual(['alice@x.com', 'bob@x.com']);
+  });
+
+  it('leaves out sweeping commits, and counts them', () => {
+    const many = Array.from(
+      { length: SWEEPING_COMMIT_FILES + 1 },
+      (_, i) => `f${i}.ts`,
+    );
+    const result = analyzeParallelDev(together(many), many);
+    expect(result.files).toHaveLength(0);
+    expect(result.pairs).toHaveLength(0);
+    expect(result.leftOut.sweepingCommits).toBe(5);
+  });
+
+  it('leaves out bot commits, and counts them', () => {
+    const commits = [
+      ...together(['a.ts']).filter((c) => c.authorEmail === 'alice@x.com'),
+      makeCommit({
+        hash: 'd0',
+        authorEmail: '49699333+dependabot[bot]@users.noreply.github.com',
+        date: weekDate(0),
+        files: ['a.ts'],
+      }),
+      makeCommit({
+        hash: 'd1',
+        authorEmail: '49699333+dependabot[bot]@users.noreply.github.com',
+        date: weekDate(1),
+        files: ['a.ts'],
+      }),
+    ];
+    const result = analyzeParallelDev(commits, ['a.ts']);
+    expect(result.files).toHaveLength(0);
+    expect(result.leftOut.botCommits).toBe(2);
+  });
+
+  it('leaves out files that aren’t source', () => {
+    const snap = 'src/__snapshots__/a.snap';
+    const result = analyzeParallelDev(
+      together([snap]),
+      [snap],
+      new Set([snap]),
+    );
+    expect(result.files).toHaveLength(0);
+    expect(result.pairs).toHaveLength(0);
+  });
+
+  it('counts a pair’s shared weeks, not file-weeks, and names the files', () => {
+    // A flag flipped across three forks, two weeks running: 6 file-weeks,
+    // 2 weeks.
+    const forks = ['flags.js', 'flags.www.js', 'flags.native.js'];
+    const result = analyzeParallelDev(together(forks), forks);
+    expect(result.pairs).toEqual([
+      {
+        a: 'alice@x.com',
+        b: 'bob@x.com',
+        weeks: 2,
+        files: ['flags.js', 'flags.native.js', 'flags.www.js'],
+      },
+    ]);
   });
 });

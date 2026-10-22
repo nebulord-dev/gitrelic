@@ -105,15 +105,7 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       minChanges: 0,
       summary: 'Not available',
     },
-    parallelDev: raw.parallelDev ?? {
-      files: [],
-      hotFiles: [],
-      totalParallelFiles: 0,
-      highParallel: 0,
-      tierMix: { low: 0, medium: 0, high: 0, critical: 0 },
-      byMonth: [],
-      summary: 'Not available',
-    },
+    parallelDev: normalizeParallelDev(raw.parallelDev),
     loc: raw.loc ?? {
       totalFiles: 0,
       totalLines: 0,
@@ -260,5 +252,30 @@ function normalizeCursedFiles(
     threshold: report.threshold ?? 50,
     nearMisses: (report.nearMisses ?? []).map(withBreakdown),
     summary: report.summary ?? 'Not available',
+  };
+}
+
+/**
+ * Reports from before parallel dev left out sweeping commits had no pairs,
+ * no left-out counts and only each file's top three windows: those stand in
+ * for its windows.
+ */
+function normalizeParallelDev(
+  raw: Partial<GitrelicReport['parallelDev']> | undefined,
+): GitrelicReport['parallelDev'] {
+  const withWindows = (f: GitrelicReport['parallelDev']['files'][number]) => ({
+    ...f,
+    windows: f.windows ?? f.topWindows ?? [],
+  });
+  return {
+    files: (raw?.files ?? []).map(withWindows),
+    hotFiles: (raw?.hotFiles ?? []).map(withWindows),
+    totalParallelFiles: raw?.totalParallelFiles ?? 0,
+    highParallel: raw?.highParallel ?? 0,
+    tierMix: raw?.tierMix ?? { low: 0, medium: 0, high: 0, critical: 0 },
+    byMonth: raw?.byMonth ?? [],
+    pairs: raw?.pairs ?? [],
+    leftOut: raw?.leftOut ?? { sweepingCommits: 0, botCommits: 0 },
+    summary: raw?.summary ?? 'Not available',
   };
 }
