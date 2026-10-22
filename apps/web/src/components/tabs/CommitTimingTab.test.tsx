@@ -20,6 +20,12 @@ function makeAuthor(
     lateNightPercent: 40,
     weekendPercent: 20,
     stressScore: 32,
+    activeWeeks: 0,
+    weekendWeeks: 0,
+    lateNightWeeks: 0,
+    lateNights: 0,
+    regularWeekends: false,
+    regularLateNights: false,
     ...overrides,
   };
 }

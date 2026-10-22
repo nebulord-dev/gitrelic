@@ -1841,7 +1841,13 @@
         "weekendCommits": 5,
         "lateNightPercent": 0,
         "weekendPercent": 38,
-        "stressScore": 15
+        "stressScore": 15,
+        "activeWeeks": 10,
+        "weekendWeeks": 5,
+        "lateNightWeeks": 0,
+        "lateNights": 0,
+        "regularWeekends": true,
+        "regularLateNights": false
       }
     ],
     "offHours": {

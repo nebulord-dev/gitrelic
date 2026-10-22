@@ -33,8 +33,10 @@ export const timingPackageId = (pkg: string): EntityId =>
   pkg === '' ? REPO_ID : ids.dir(pkg);
 
 /** What a selection is called beside its hours. */
-function selectionName(id: EntityId): string {
+function selectionName(id: EntityId, input: ViewInput): string {
   if (id === REPO_ID) return '(root)';
+  if (entityKind(id) === 'person')
+    return input.index?.get(id)?.label ?? entityKey(id);
   const key = entityKey(id);
   return entityKind(id) === 'file' ? baseName(key) : timingPackageName(key);
 }
@@ -43,8 +45,8 @@ export const punchCardLayout: Layout = {
   id: 'punch-card',
   label: 'Punch card',
   caption:
-    'Commits by day and hour, in each author’s local time. Off-hours (the shaded weekend rows and 11pm–5am columns) take the risk colour. Select a package or file to see its own hours.',
-  focusKinds: ['dir', 'file', 'repo'],
+    'Commits by day and hour, in each author’s local time. Off-hours (the shaded weekend rows and 11pm–5am columns) take the risk colour. Select a package, a file or a person to see their own hours.',
+  focusKinds: ['dir', 'file', 'repo', 'person'],
   needsCommits: true,
   build: (input, viewport) => {
     const hours =
@@ -56,7 +58,14 @@ export const punchCardLayout: Layout = {
         grid: repoGrid(input.report),
         selection:
           hours && hours.commits > 0
-            ? { name: selectionName(input.focus!), hours }
+            ? {
+                name: selectionName(input.focus!, input),
+                hours,
+                note:
+                  entityKind(input.focus!) === 'person'
+                    ? 'their hours: every commit they made, in their local time'
+                    : 'its hours, with sweeping and bot commits left out',
+              }
             : null,
       },
       viewport,

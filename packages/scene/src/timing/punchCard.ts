@@ -4,9 +4,10 @@
 // `repoHourDayMatrix`; a selection's comes from the commit index (each
 // commit carries its author's UTC offset).
 //
-// A selection's hours leave out what core's package test leaves out:
-// sweeping commits (over `SWEEPING_COMMIT_FILES`) and bot commits, so a
-// package's lit cells add up to the count beside it.
+// A package's or file's hours leave out what core's package test leaves
+// out: sweeping commits (over `SWEEPING_COMMIT_FILES`) and bot commits, so a
+// package's lit cells add up to the count beside it. A person's hours are
+// every commit they made: a mass rename at 2am is still them working at 2am.
 
 import { classifyAuthor } from '../authors/authorClassification';
 import { localDayHour, type CommitLike } from '../commits/commitLike';
@@ -51,24 +52,46 @@ export function touchesSelection(
   return null;
 }
 
+/** Which commits a selection's hours count. */
+export interface SelectionRule {
+  match: (c: CommitLike) => boolean;
+  /** Leave out sweeping and bot commits, as core's package test does. */
+  asPackages: boolean;
+}
+
+/** The rule for a selection the punch card draws, or null. */
+export function selectionRule(id: EntityId): SelectionRule | null {
+  if (entityKind(id) === 'person') {
+    const email = entityKey(id).toLowerCase();
+    return {
+      match: (c) => c.author.toLowerCase() === email,
+      asPackages: false,
+    };
+  }
+  const touches = touchesSelection(id);
+  return touches ? { match: (c) => touches(c.files), asPackages: true } : null;
+}
+
 export interface SelectionHours {
   grid: DayHourGrid;
   commits: number;
   offHours: number;
 }
 
-/** The hours a selection's commits landed in, as core counts them. */
+/** The hours a selection's commits landed in. */
 export function selectionHours(
   commits: readonly CommitLike[],
-  touches: (files: readonly string[]) => boolean,
+  rule: SelectionRule,
 ): SelectionHours {
   const grid = emptyGrid();
   let n = 0;
   let off = 0;
   for (const c of commits) {
-    if (c.files.length > SWEEPING_COMMIT_FILES) continue;
-    if (classifyAuthor(c.author) === 'bot') continue;
-    if (!touches(c.files)) continue;
+    if (rule.asPackages) {
+      if (c.files.length > SWEEPING_COMMIT_FILES) continue;
+      if (classifyAuthor(c.author) === 'bot') continue;
+    }
+    if (!rule.match(c)) continue;
     const { day, hour } = localDayHour(c);
     grid[day][hour]++;
     n++;
@@ -130,8 +153,65 @@ export function selectionHoursOf(
   let byId = cache.get(commits);
   if (!byId) cache.set(commits, (byId = new Map()));
   if (!byId.has(id)) {
-    const touches = touchesSelection(id);
-    byId.set(id, touches ? selectionHours(commits, touches) : null);
+    const rule = selectionRule(id);
+    byId.set(id, rule ? selectionHours(commits, rule) : null);
   }
   return byId.get(id)!;
+}
+
+export interface OffHoursRegular {
+  /** The person's entity id (the contributors report's email). */
+  id: EntityId;
+  name: string;
+  activeWeeks: number;
+  weekendWeeks: number;
+  lateNightWeeks: number;
+  lateNights: number;
+  regularWeekends: boolean;
+  regularLateNights: boolean;
+}
+
+/**
+ * People who work off-hours regularly (core's rule: in at least a third of
+ * their active weeks, over at least six), most regular first: the larger of
+ * their weekend and late-night shares of active weeks.
+ */
+export function offHoursRegulars(report: GitrelicReport): OffHoursRegular[] {
+  // Core keys authors by lower-cased email; ids use the contributors
+  // report's spelling.
+  const idOf = new Map(
+    report.contributors.contributors.map((c) => [
+      c.email.toLowerCase(),
+      c.email,
+    ]),
+  );
+  const share = (a: OffHoursRegular) =>
+    Math.max(a.weekendWeeks, a.lateNightWeeks) / Math.max(1, a.activeWeeks);
+  return report.commitTiming.authorStress
+    .filter((a) => a.regularWeekends || a.regularLateNights)
+    .map((a) => ({
+      id: `person:${idOf.get(a.email.toLowerCase()) ?? a.email}`,
+      name: a.name,
+      activeWeeks: a.activeWeeks,
+      weekendWeeks: a.weekendWeeks,
+      lateNightWeeks: a.lateNightWeeks,
+      lateNights: a.lateNights,
+      regularWeekends: a.regularWeekends,
+      regularLateNights: a.regularLateNights,
+    }))
+    .sort((x, y) => share(y) - share(x) || x.name.localeCompare(y.name));
+}
+
+/** What a regular's pattern is, in words: "weekends in 9 of 12 active weeks". */
+export function regularLine(r: OffHoursRegular): string {
+  const parts: string[] = [];
+  if (r.regularWeekends)
+    parts.push(
+      `weekends in ${r.weekendWeeks} of ${r.activeWeeks} active weeks`,
+    );
+  if (r.regularLateNights)
+    parts.push(
+      `late nights in ${r.lateNightWeeks} of ${r.activeWeeks} active weeks (${r.lateNights} nights)`,
+    );
+  return parts.join('; ');
 }

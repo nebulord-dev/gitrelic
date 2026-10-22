@@ -267,6 +267,39 @@ describe('CommitTimingCard', () => {
     ).toBeTruthy();
   });
 
+  it('names people who work off-hours regularly, with a caveat', async () => {
+    const onselect = vi.fn();
+    render(CommitTimingCard, { report, index, onselect });
+    const section = screen.getByRole('heading', {
+      name: 'Working off-hours regularly',
+    }).parentElement!;
+    // The sample repo's Alice: weekends in 5 of her 10 active weeks.
+    expect(section.textContent).toContain('weekends in 5 of 10 active weeks');
+    expect(section.textContent?.replace(/\s+/g, ' ')).toContain(
+      'A reason to check in, not a verdict.',
+    );
+    await fireEvent.click(screen.getByRole('button', { name: 'Alice' }));
+    expect(onselect).toHaveBeenCalledWith('person:alice@example.com');
+  });
+
+  it('says so when nobody works off-hours regularly', () => {
+    const calm = {
+      ...report,
+      commitTiming: {
+        ...report.commitTiming,
+        authorStress: report.commitTiming.authorStress.map((a) => ({
+          ...a,
+          regularWeekends: false,
+          regularLateNights: false,
+        })),
+      },
+    } as GitrelicReport;
+    render(CommitTimingCard, { report: calm, index });
+    expect(
+      screen.getByText(/Nobody works weekends or late nights regularly/),
+    ).toBeTruthy();
+  });
+
   it('lists packages by off-hours, each selecting its directory, and opens the table', async () => {
     const onselect = vi.fn();
     const ontable = vi.fn();

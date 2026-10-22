@@ -7,11 +7,15 @@ import {
   isOffHours,
   selectionHours,
   selectionHoursOf,
+  selectionRule,
+  offHoursRegulars,
+  regularLine,
   SWEEPING_COMMIT_FILES,
   touchesSelection,
   workingHoursShare,
 } from './punchCard';
 import type { CommitLike } from '../commits/commitLike';
+import type { GitrelicReport } from '@gitrelic/core';
 
 // Tue 3 Jun 2025 at 02:00 and 14:00 UTC; Sat 7 Jun at 12:00 UTC.
 const at = (
@@ -59,7 +63,7 @@ describe('selectionHours', () => {
         '49699333+dependabot[bot]@users.noreply.github.com',
       ),
     ];
-    const s = selectionHours(commits, touchesSelection('dir:packages/server')!);
+    const s = selectionHours(commits, selectionRule('dir:packages/server')!);
     expect(s.commits).toBe(3);
     expect(s.offHours).toBe(2);
     expect(s.grid[2][2]).toBe(1);
@@ -81,7 +85,85 @@ describe('selectionHours', () => {
     expect(selectionHoursOf(commits, 'dir:src')).toBe(
       selectionHoursOf(commits, 'dir:src'),
     );
-    expect(selectionHoursOf(commits, 'person:a@x')).toBeNull();
+    expect(selectionHoursOf(commits, 'analyzer:churn')).toBeNull();
+  });
+});
+
+describe('a person’s hours', () => {
+  it('count every commit they made, sweeping ones too, whatever the case of the email', () => {
+    const commits = [
+      at('2025-06-07T12:00:00Z', ['src/a.ts'], 'Joe@X'),
+      at(
+        '2025-06-03T02:00:00Z',
+        Array.from({ length: SWEEPING_COMMIT_FILES + 5 }, (_, i) => `f${i}.ts`),
+        'joe@x',
+      ),
+      at('2025-06-03T14:00:00Z', ['src/a.ts'], 'ann@x'),
+    ];
+    const s = selectionHoursOf(commits, 'person:joe@x')!;
+    expect(s.commits).toBe(2);
+    expect(s.offHours).toBe(2);
+    expect(s.grid[6][12]).toBe(1);
+  });
+});
+
+describe('offHoursRegulars', () => {
+  const base = {
+    totalCommits: 30,
+    lateNightCommits: 0,
+    weekendCommits: 0,
+    lateNightPercent: 0,
+    weekendPercent: 0,
+    stressScore: 0,
+    lateNightWeeks: 0,
+    lateNights: 0,
+    regularLateNights: false,
+  };
+  const report = {
+    contributors: { contributors: [{ email: 'Joe@X' }, { email: 'ann@x' }] },
+    commitTiming: {
+      authorStress: [
+        {
+          ...base,
+          email: 'ann@x',
+          name: 'Ann',
+          activeWeeks: 10,
+          weekendWeeks: 4,
+          regularWeekends: true,
+        },
+        {
+          ...base,
+          email: 'joe@x',
+          name: 'Joe',
+          activeWeeks: 12,
+          weekendWeeks: 9,
+          regularWeekends: true,
+          lateNightWeeks: 5,
+          lateNights: 6,
+          regularLateNights: true,
+        },
+        {
+          ...base,
+          email: 'cy@x',
+          name: 'Cy',
+          activeWeeks: 12,
+          weekendWeeks: 1,
+          regularWeekends: false,
+        },
+      ],
+    },
+  } as unknown as GitrelicReport;
+
+  it('lists the regulars, most regular first, as their people', () => {
+    const r = offHoursRegulars(report);
+    expect(r.map((x) => [x.id, x.name])).toEqual([
+      ['person:Joe@X', 'Joe'],
+      ['person:ann@x', 'Ann'],
+    ]);
+    expect(regularLine(r[0])).toBe(
+      'weekends in 9 of 12 active weeks; late nights in 5 of 12 active weeks (6 nights)',
+    );
+    expect(regularLine(r[1])).toBe('weekends in 4 of 10 active weeks');
   });
 });
 

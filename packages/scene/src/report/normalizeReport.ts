@@ -212,7 +212,16 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
         critical: 0,
       },
       byMonth: raw.commitTiming?.byMonth ?? [],
-      authorStress: raw.commitTiming?.authorStress ?? [],
+      // Reports from before regularity: nothing counted, nobody regular.
+      authorStress: (raw.commitTiming?.authorStress ?? []).map((a) => ({
+        ...a,
+        activeWeeks: a.activeWeeks ?? 0,
+        weekendWeeks: a.weekendWeeks ?? 0,
+        lateNightWeeks: a.lateNightWeeks ?? 0,
+        lateNights: a.lateNights ?? 0,
+        regularWeekends: a.regularWeekends ?? false,
+        regularLateNights: a.regularLateNights ?? false,
+      })),
       // Reports from before off-hours by package: nothing tested.
       offHours: raw.commitTiming?.offHours ?? {
         commits: 0,

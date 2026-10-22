@@ -49,7 +49,7 @@ describe('punchCardScene', () => {
     sel[1][12] = 3;
     const hours: SelectionHours = { grid: sel, commits: 4, offHours: 1 };
     const s = punchCardScene(
-      { grid, selection: { name: 'server', hours } },
+      { grid, selection: { name: 'server', hours, note: 'its hours' } },
       VIEWPORT,
     );
     expect(checkScene(s)).toEqual([]);
@@ -64,6 +64,9 @@ describe('punchCardScene', () => {
     expect(cell(s, 6, 12).tip?.[2]).toBe('1 commit touching server');
     expect(s.marks.find((m) => m.id === 'punch-head')!.label).toBe(
       'server: 4 commits, 25% off-hours',
+    );
+    expect(s.marks.find((m) => m.id === 'punch-head')!.labelSub).toBe(
+      'its hours',
     );
   });
 

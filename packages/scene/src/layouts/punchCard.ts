@@ -29,8 +29,12 @@ const pct = (v: number, of: number) =>
 
 export interface PunchCardInput {
   grid: DayHourGrid;
-  /** The selection's own hours, and its name, when it has some. */
-  selection?: { name: string; hours: SelectionHours } | null;
+  /**
+   * The selection's own hours, its name, and what its hours count (a
+   * package's leave out sweeping and bot commits; a person's are everything
+   * they committed).
+   */
+  selection?: { name: string; hours: SelectionHours; note: string } | null;
 }
 
 export function punchCardScene(
@@ -172,9 +176,10 @@ export function punchCardScene(
       'right',
       3,
     ),
-    labelSub: sel
-      ? 'its hours, with sweeping and bot commits left out'
-      : 'shaded rows and columns are off-hours: the weekend, and 11pm–5am',
+    labelSub:
+      sel && selection
+        ? selection.note
+        : 'shaded rows and columns are off-hours: the weekend, and 11pm–5am',
   });
 
   return {
