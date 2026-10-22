@@ -146,4 +146,21 @@ describe('contributorsView', () => {
     );
     expect(checkScene(scene)).toEqual([]);
   });
+
+  it('has Lanes as its one alternate form, from the same history', () => {
+    expect(contributorsView.layouts.map((l) => l.id)).toEqual([
+      'flow',
+      'lanes',
+    ]);
+    const lanes = contributorsView.layouts[1];
+    expect(lanes.needsCommits).toBe(true);
+    const scene = lanes.build(
+      {
+        report: reportOf(team),
+        commits: [commit('ann@x', 'packages/ui/a.ts')],
+      },
+      { width: 1200, height: 800 },
+    );
+    expect(checkScene(scene)).toEqual([]);
+  });
 });

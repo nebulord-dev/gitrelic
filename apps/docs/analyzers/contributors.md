@@ -48,6 +48,16 @@ With nothing selected, the inspector leads with how many people are active. Its 
 
 The detail table (`T`) lists every contributor with their status, commits, files owned, lines changed, first and last commit, and focus areas. Its tiers are active, quiet, gone, and gone but still owning files.
 
+### Lanes
+
+The **Lanes** toggle in the stage's corner shows the same people as rows, with their commits week by week. The weeks match the commit strip under the stage, and over a window longer than two years (such as `--since all`) the bars are months instead. Where the commit strip shows one selection's weeks, Lanes shows everyone's at once, so arrivals, departures and handoffs line up.
+
+- **Bars** share one height scale and take the person's status color. A last row holds everyone else together.
+- **Two lines** mark the status cutoffs. A last commit right of **active** keeps someone active; one left of **gone** makes them gone. Anyone in between is quiet.
+- **At the right**, each row says its status and how long ago the last commit was.
+
+Hover a week's bar for its date, its commits and the package most of them touched. Click anywhere on a row to select its person; their bars take the accent and the other rows fade.
+
 ## How contributors are measured
 
 The full pipeline, from raw git output to the dashboard surfaces:

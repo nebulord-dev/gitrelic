@@ -1,6 +1,6 @@
 // Team & Activity › Contributors: who commits into which package, as a flow
-// (docs/atlas-views.md › Contributors). Lanes, its alternate form, lands in
-// its own PR.
+// (docs/atlas-views.md › Contributors). Lanes, its alternate form, is the
+// same people week by week.
 
 import {
   contributorFlowOf,
@@ -8,6 +8,7 @@ import {
   notActiveShare,
   personStatus,
 } from '../contributors/flow';
+import { contributorLanesOf } from '../contributors/lanes';
 import { ids } from '../ids';
 import { reportNow } from '../inspect/personFacts';
 import {
@@ -16,6 +17,7 @@ import {
   packageName,
   STATUS_TEXT,
 } from '../layouts/flow';
+import { lanesScene } from '../layouts/lanes';
 import type {
   AnalyzerView,
   Finding,
@@ -45,6 +47,24 @@ export const flowLayout: Layout = {
       focus: input.focus,
       now: reportNow(input.report),
     }),
+};
+
+export const lanesLayout: Layout = {
+  id: 'lanes',
+  label: 'Lanes',
+  caption:
+    'The same people week by week (by month past two years), in their status’s colour. A last commit right of “active” keeps someone active; one left of “gone” makes them gone.',
+  focusKinds: ['person'],
+  needsCommits: true,
+  build: (input, viewport) =>
+    lanesScene(
+      contributorLanesOf(input.report, input.commits ?? []),
+      viewport,
+      {
+        focus: input.focus,
+        now: reportNow(input.report),
+      },
+    ),
 };
 
 export function contributorsFindings(input: ViewInput): Finding[] {
@@ -158,7 +178,7 @@ export function contributorsTable(input: ViewInput): LensTable {
 
 export const contributorsView: AnalyzerView = {
   id: 'contributors',
-  layouts: [flowLayout],
+  layouts: [flowLayout, lanesLayout],
   findings: contributorsFindings,
   table: contributorsTable,
 };

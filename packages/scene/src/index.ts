@@ -408,5 +408,15 @@ export {
   contributorsTable,
   contributorsView,
   flowLayout,
+  lanesLayout,
 } from './views/contributors';
+export {
+  contributorLanes,
+  contributorLanesOf,
+  statusCutoffs,
+  type LaneRow,
+  type Lanes,
+} from './contributors/lanes';
+export { lanesScene } from './layouts/lanes';
+export { timeBins, type TimeBins } from './time/bins';
 export { VIEWS } from './views/index';
