@@ -625,6 +625,48 @@ describe('AtlasStage', () => {
     expect(label()).toBeTruthy();
   });
 
+  it('shows a link’s tip by the pointer when no mark is under it', async () => {
+    const { stage, fc, host, labelHost, onHover } = await setup();
+    stage!.show({
+      ...scene(dot('person:a', 50, 100), dot('dir:src', 350, 100)),
+      links: [
+        {
+          id: 'a-src',
+          source: 'person:a',
+          target: 'dir:src',
+          curve: 'straight',
+          width: 6,
+          paint: '--link',
+          alpha: 0.5,
+          tip: ['a → src', '12 commits'],
+        },
+      ],
+    });
+    settle(fc);
+    const tip = () => labelHost.querySelector('.atlas-tip') as HTMLElement;
+    const move = (wx: number, wy: number) => {
+      host.dispatchEvent(
+        new PointerEvent('pointermove', {
+          pointerId: 1,
+          clientX: wx * stage!.transform.scale + stage!.transform.tx,
+          clientY: wy * stage!.transform.scale + stage!.transform.ty,
+        }),
+      );
+      fc.frame();
+    };
+    move(200, 100);
+    expect(tip().hidden).toBe(false);
+    expect(tip().textContent).toBe('a → src12 commits');
+    // A link selects nothing and isn't reported as a hover.
+    expect(onHover).not.toHaveBeenCalled();
+    expect(host.style.cursor).toBe('');
+    // A mark on top wins (this one has no tip, so the card goes).
+    move(50, 100);
+    expect(tip().hidden).toBe(true);
+    move(200, 180);
+    expect(tip().hidden).toBe(true);
+  });
+
   it('a row letting go of its hover leaves the pointer’s alone', async () => {
     const { stage, fc, host, labelHost } = await setup();
     stage!.show(
