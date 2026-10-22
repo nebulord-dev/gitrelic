@@ -36,9 +36,15 @@
  * `pairs` counts, for each two people, the weeks they committed to the same
  * file: weeks, not file-weeks, so a flag flipped across eight forks in one
  * week counts once.
+ *
+ * `pairs` and `byMonth` count every collision, including files with a single
+ * one, which `MIN_COLLISION_WEEKS` keeps off the file list. That floor is
+ * about files: one overlap on a file is chance. A pair who overlapped once on
+ * each of four files met four times, which is the pattern pairs exist to show.
  */
 
 import { classifyAuthor } from '../utils/authorClassification.js';
+import { MAX_FIX_FILES } from './fix-rate.js';
 import type {
   ParallelDevReport,
   FileParallelDev,
@@ -48,8 +54,12 @@ import type {
 } from '../types.js';
 import type { RawCommit } from '../utils/git.js';
 
-/** Commits touching more files than this are sweeping, and left out. */
-export const SWEEPING_COMMIT_FILES = 20;
+/**
+ * Commits touching more files than this are sweeping, and left out: Fix
+ * rate's rule, shared so the two can't drift apart. It counts every path the
+ * commit touched, source or not: a commit is sweeping by its breadth.
+ */
+export const SWEEPING_COMMIT_FILES = MAX_FIX_FILES;
 /** A file needs this many collision weeks to be listed. */
 export const MIN_COLLISION_WEEKS = 2;
 /** Files a pair lists, most shared first. */
