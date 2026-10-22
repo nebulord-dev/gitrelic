@@ -9,7 +9,7 @@
 // is matched by its current path: bins before a rename are empty, as in
 // churn's own count.
 
-import { startOfUtcWeek, WEEK_MS } from '../time/week';
+import { timeBins } from '../time/bins';
 import { lockstepGroups } from './lockstep';
 import { churnSwarmOf, type SwarmFile } from './swarm';
 import type { CommitLike } from '../commits/commitLike';
@@ -17,8 +17,7 @@ import type { GitrelicReport } from '@gitrelic/core';
 
 /** Files Rhythm draws, most commits first. */
 export const RHYTHM_ROWS = 16;
-/** Windows longer than this many weeks are binned by month. */
-export const MONTHLY_AFTER = 104;
+export { MONTHLY_AFTER } from '../time/bins';
 
 export interface RhythmRow {
   file: SwarmFile;
@@ -57,31 +56,7 @@ export function churnRhythm(
   limit = RHYTHM_ROWS,
 ): Rhythm {
   const files = topChurnFiles(report, limit);
-  let min = Infinity;
-  let max = -Infinity;
-  for (const c of commits) {
-    if (c.timeMs < min) min = c.timeMs;
-    if (c.timeMs > max) max = c.timeMs;
-  }
-  const start = commits.length > 0 ? startOfUtcWeek(min) : 0;
-  const weekCount =
-    commits.length > 0 ? Math.floor((max - start) / WEEK_MS) + 1 : 0;
-  const unit = weekCount > MONTHLY_AFTER ? 'month' : 'week';
-  const binStarts: number[] = [];
-  let binOf: (ms: number) => number;
-  if (unit === 'week') {
-    for (let w = 0; w < weekCount; w++) binStarts.push(start + w * WEEK_MS);
-    binOf = (ms) => Math.floor((ms - start) / WEEK_MS);
-  } else {
-    const monthIndex = (ms: number) => {
-      const d = new Date(ms);
-      return d.getUTCFullYear() * 12 + d.getUTCMonth();
-    };
-    const first = monthIndex(min);
-    for (let m = first; m <= monthIndex(max); m++)
-      binStarts.push(Date.UTC(Math.floor(m / 12), m % 12, 1));
-    binOf = (ms) => monthIndex(ms) - first;
-  }
+  const { unit, binStarts, binOf } = timeBins(commits);
 
   const slot = new Map(files.map((f, i) => [f.file, i]));
   const bins = files.map(() => new Array<number>(binStarts.length).fill(0));
