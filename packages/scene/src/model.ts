@@ -240,6 +240,12 @@ export interface Scene {
    * lights its stand-in instead of nothing, and selecting one marks it.
    */
   standIns?: ReadonlyMap<EntityId, string>;
+  /**
+   * Hovering a mark lights its links and fades the rest, until the pointer
+   * leaves it (a flow, where one person's bands are lost among everyone's).
+   * Drawn by the stage alone: the scene isn't rebuilt per hover.
+   */
+  hoverLinks?: boolean;
 }
 
 export interface Viewport {

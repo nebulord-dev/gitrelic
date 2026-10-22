@@ -310,6 +310,7 @@ export class PixiStage implements StageRenderer {
       frame.store,
       frame.palette,
       this.linkBuffers,
+      frame.linkFocus,
     );
     // Unused tail indices become degenerate triangles, so the index buffer
     // keeps one size and the GPU buffer isn't reallocated every frame.

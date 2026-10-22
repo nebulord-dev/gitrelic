@@ -80,6 +80,10 @@ export class AtlasStage {
   private selects = new Map<EntityId, EntityId>();
   /** Marks that are switches, and the keys they flip (`Mark.toggles`). */
   private toggles = new Map<string, string>();
+  /** The scene lights a hovered mark's links (`Scene.hoverLinks`). */
+  private hoverLinks = false;
+  /** The link focus drawn last frame, so a change re-tessellates links. */
+  private drawnLinkFocus: EntityId | null = null;
   /**
    * The pointer's mark first: a row that keeps keyboard focus mustn't
    * contradict what's under the cursor. A row whose entity has no mark of
@@ -229,6 +233,7 @@ export class AtlasStage {
     }
     this.lastEmpty = empty;
     this.standIns = scene.standIns;
+    this.hoverLinks = scene.hoverLinks ?? false;
     this.selects = new Map(
       scene.marks.flatMap((m) => (m.selects ? [[m.id, m.selects]] : [])),
     );
@@ -309,7 +314,12 @@ export class AtlasStage {
       this.hitsStale = false;
     }
     const [wx, wy] = screenToWorld(this.view, sx, sy);
-    return this.hits.hitMark(this.store, wx, wy, HIT_SLOP / this.view.scale);
+    return (
+      this.hits.hitMark(this.store, wx, wy, HIT_SLOP / this.view.scale) ??
+      // A mark's name stands for it: clicking or hovering the label is the
+      // mark (a flow's names are wider than its 8-unit bars).
+      this.labels.hit(sx, sy)
+    );
   }
 
   /** The link with a tooltip under a screen point (links aren't clickable). */
@@ -390,7 +400,10 @@ export class AtlasStage {
     // Read before shownPalette(), which clears it on the fade's last frame.
     const fading = this.paletteFrom !== null;
     const palette = this.shownPalette();
-    const dirty = this.dirty || animated || fading;
+    const linkFocus = this.hoverLinks ? this.hovered : null;
+    const dirty =
+      this.dirty || animated || fading || linkFocus !== this.drawnLinkFocus;
+    this.drawnLinkFocus = linkFocus;
     this.opts.renderer.render({
       store: this.store,
       links: this.engine.links.values(),
@@ -398,6 +411,7 @@ export class AtlasStage {
       palette,
       view: this.view,
       glow: this.glow,
+      linkFocus,
       dirty,
       guidesDirty: dirty || this.view.scale !== this.guideScale,
     });

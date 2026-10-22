@@ -33,12 +33,14 @@ If you only have ten seconds:
 Atlas (`gitrelic --ui atlas`) draws Contributors as a **flow** from people to the code they work in. It's the first lens under **Team & Activity**.
 
 - **People on the left.** These are the 14 people with the most commits, most first. Everyone else shares one **others** node at the bottom, which also says how many people made a single commit.
-- **Packages on the right.** Packages are `packages/<name>` in a `packages/` monorepo, otherwise the top-level directory; files at the root are **(root)**. These are the same rows Churn uses. The 11 packages with the most commits are drawn, and the rest share an **other packages** node.
+- **Packages on the right.** Packages are `packages/<name>` in a `packages/` monorepo, otherwise the top-level directory; files at the root are **(root)**. These are the same rows Churn uses. The 11 packages with the most commits are drawn, and the rest share an **other packages** node. Each package sits level with the people who commit to it most, so a team's bands run straight across; its height shows its size.
 - **One band per person and package**, as wide as that person's commits touching the package. A commit that touches two packages counts once in each, so a person's bands can add up to more than their commit count. Each node is as tall as its bands, and the bands stack along it.
 - **Band color is the person's status:** grey for active, brown for quiet, orange for gone (see the cutoffs under [How contributors are measured](#how-contributors-are-measured)). Bands from people no longer active are drawn stronger, because they show which code was left behind.
 - **A package is flagged** when at least half of its commits came from people who are no longer active. Its second line then gives that share, in the accent color.
 
-Click a person to light their bands: the packages they never touched dim, and the rest say how many of their commits went there. The commit strip under the stage lights their weeks. Click a package to light the people who work in it.
+Point at a person, or their name, to light their bands while the rest fade; point at a package to light its people's bands. Moving along a column reads the flow one node at a time.
+
+Click a person (or their name) to keep their bands lit: the packages they never touched dim, and the rest say how many of their commits went there. The commit strip under the stage lights their weeks. Click a package to light the people who work in it.
 
 Hover a person for their commits, status, when they last committed, the packages they commit to most and the files they own. Hover a package for its commits and people, how those commits split across active, quiet and gone people, and who committed most. Hover a band for the person, the package and the commits between them.
 

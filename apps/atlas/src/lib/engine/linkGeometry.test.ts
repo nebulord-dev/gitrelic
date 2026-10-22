@@ -195,6 +195,36 @@ describe('tessellateLinks', () => {
     expect((y1a + y1b) / 2).toBeCloseTo(100);
   });
 
+  it('lights a focused mark’s links and fades the rest', () => {
+    const three = store([
+      ['a', 0, 0],
+      ['b', 100, 0],
+      ['c', 100, 50],
+    ]);
+    const alphaOf = (focus: string | null) => {
+      const out = tessellateLinks(
+        [
+          link({ id: 'ab', alpha: 0.2 }),
+          link({ id: 'cb', source: 'c', alpha: 0.2 }),
+        ],
+        three,
+        palette,
+        new LinkBuffers(),
+        focus,
+      );
+      // First vertex of each link (2 vertices per point, straight: 2 points).
+      return [out.colors[3], out.colors[4 * 4 + 3]];
+    };
+    const [plainA, plainB] = alphaOf(null);
+    expect(plainA).toBeCloseTo(0.1);
+    expect(plainB).toBeCloseTo(0.1);
+    const [lit, faded] = alphaOf('a');
+    expect(lit).toBeCloseTo(0.5 * 0.75);
+    expect(faded).toBeCloseTo(0.5 * 0.2 * 0.15);
+    // A target counts as much as a source.
+    expect(alphaOf('b').map((v) => +v.toFixed(4))).toEqual([0.375, 0.375]);
+  });
+
   it('tapers ribbons towards the target', () => {
     const out = tessellateLinks(
       [link({ curve: 'ribbon', width: 10 })],

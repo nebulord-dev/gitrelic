@@ -34,7 +34,7 @@
   const STATUS = {
     active: { text: 'Active', class: 'text-person' },
     quiet: { text: 'Quiet', class: 'text-soft' },
-    ghost: { text: 'Gone quiet', class: 'text-ghost' },
+    ghost: { text: 'Gone', class: 'text-ghost' },
   } as const;
 
   // Focus areas are files or directories; link whichever the report knows.

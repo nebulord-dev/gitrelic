@@ -152,6 +152,47 @@ describe('flowScene', () => {
     expect(markOf(focused.marks, ids.person('cy@x')).alpha).toBeLessThan(0.95);
   });
 
+  it('lets the stage light a hovered node’s bands', () => {
+    expect(scene.hoverLinks).toBe(true);
+  });
+
+  it('places each package level with the people who commit to it', () => {
+    // A team of two people per package, listed against their commit rank:
+    // p0/p1 → late, p2/p3 → early. By size, late leads; by people, early.
+    const team = {
+      contributors: {
+        contributors: [
+          person('p0@x', 9),
+          person('p1@x', 8),
+          person('p2@x', 2),
+          person('p3@x', 1),
+        ],
+      },
+    } as unknown as GitrelicReport;
+    const history = [
+      ...Array.from({ length: 4 }, () => commit('p0@x', 'late/a.ts')),
+      ...Array.from({ length: 4 }, () => commit('p1@x', 'late/a.ts')),
+      ...Array.from({ length: 2 }, () => commit('p2@x', 'early/a.ts')),
+      commit('p3@x', 'early/a.ts'),
+      // One stray commit from the bottom of the list pulls `late` a little.
+      commit('p3@x', 'late/a.ts'),
+    ];
+    const s = flowScene(contributorFlow(team, history), VIEWPORT);
+    const y = (id: string) => markOf(s.marks, id).y;
+    expect(y(ids.dir('late'))).toBeLessThan(y(ids.dir('early')));
+    // And an all-lower team sorts below an all-upper one even when bigger.
+    const flipped = flowScene(
+      contributorFlow(team, [
+        ...Array.from({ length: 2 }, () => commit('p0@x', 'up/a.ts')),
+        ...Array.from({ length: 9 }, () => commit('p3@x', 'down/a.ts')),
+      ]),
+      VIEWPORT,
+    );
+    expect(markOf(flipped.marks, ids.dir('up')).y).toBeLessThan(
+      markOf(flipped.marks, ids.dir('down')).y,
+    );
+  });
+
   it('ignores a focus it doesn’t draw', () => {
     const focused = flowScene(flow, VIEWPORT, { focus: ids.file('README.md') });
     expect(focused.links.map((l) => [l.paint, l.alpha])).toEqual(
