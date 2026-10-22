@@ -1,7 +1,12 @@
 import { buildCommitIndex } from '@gitrelic/core';
 import { describe, expect, it } from 'vitest';
 
-import { fromCommitIndex, fromRawCommits } from './commitLike';
+import {
+  fromCommitIndex,
+  fromRawCommits,
+  localDayHour,
+  utcOffsetMinutes,
+} from './commitLike';
 import type { CommitIndex, RawCommit } from '@gitrelic/core';
 
 // Uses core's real encoder (vitest aliases @gitrelic/core to its source, so
@@ -44,20 +49,39 @@ describe('fromRawCommits', () => {
         author: 'ann@corp.com',
         files: ['src/a.ts'],
         hash: 'a'.repeat(12),
+        tz: -480,
       },
       {
         timeMs: Date.parse('2026-01-02T09:00:00Z'),
         author: 'bob@corp.com',
         files: ['src/a.ts', 'src/b.ts'],
         hash: 'b'.repeat(12),
+        tz: 0,
       },
       {
         timeMs: Date.parse('2026-01-03T12:00:00Z'),
         author: 'ann@corp.com',
         files: [],
         hash: 'c'.repeat(12),
+        tz: 0,
       },
     ]);
+  });
+});
+
+describe('localDayHour', () => {
+  it('reads the day and hour in the author’s own time zone', () => {
+    // 07:30Z on Fri 2 Jan is 23:30 on Thu 1 Jan in -08:00.
+    expect(
+      localDayHour({ timeMs: Date.parse('2026-01-02T07:30:00Z'), tz: -480 }),
+    ).toEqual({ day: 4, hour: 23 });
+    expect(
+      localDayHour({ timeMs: Date.parse('2026-01-02T07:30:00Z') }),
+    ).toEqual({
+      day: 5,
+      hour: 7,
+    });
+    expect(utcOffsetMinutes('2026-01-02T07:30:00+05:30')).toBe(330);
   });
 });
 

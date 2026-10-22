@@ -2,6 +2,7 @@
 // be `atlas: true` in the catalog; views.test.ts keeps the two in step.
 
 import { churnView } from './churn';
+import { commitTimingView } from './commitTiming';
 import { contributorsView } from './contributors';
 import { fixRateView } from './fixRate';
 import { hotspotsView } from './hotspots';
@@ -18,4 +19,5 @@ export const VIEWS: ReadonlyMap<string, AnalyzerView> = new Map([
   ['fix-rate', fixRateView],
   ['contributors', contributorsView],
   ['parallel-dev', parallelDevView],
+  ['commit-timing', commitTimingView],
 ]);

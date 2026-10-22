@@ -181,7 +181,7 @@ export const CATALOG: readonly CatalogEntry[] = [
     explain:
       'Late-night and weekend commit patterns; a lot of off-hours work can signal stress.',
     docsPath: 'analyzers/commit-timing',
-    atlas: false,
+    atlas: true,
   },
   {
     id: 'co-authors',

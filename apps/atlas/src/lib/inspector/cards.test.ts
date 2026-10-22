@@ -10,6 +10,7 @@ import { fixesReport } from '../../../../../packages/scene/test/riskFixesReport'
 import ActivityCard from './ActivityCard.svelte';
 import Card from './Card.svelte';
 import ChurnCard from './ChurnCard.svelte';
+import CommitTimingCard from './CommitTimingCard.svelte';
 import ContributorsCard from './ContributorsCard.svelte';
 import FindingCard from './FindingCard.svelte';
 import FixRateCard from './FixRateCard.svelte';
@@ -216,6 +217,72 @@ describe('ParallelDevCard', () => {
     await fireEvent.click(
       screen.getByRole('button', {
         name: 'All 2 files people collided on in the table (T) ▸',
+      }),
+    );
+    expect(ontable).toHaveBeenCalled();
+  });
+});
+
+describe('CommitTimingCard', () => {
+  const base = reportJson as unknown as GitrelicReport;
+  const report = {
+    ...base,
+    commitTiming: {
+      ...base.commitTiming,
+      offHours: {
+        commits: 100,
+        offHours: 12,
+        rate: 0.12,
+        minCommits: 10,
+        packages: [
+          {
+            package: 'src',
+            commits: 40,
+            offHours: 12,
+            percent: 30,
+            allowed: 8,
+            aboveChance: true,
+          },
+          {
+            package: '',
+            commits: 20,
+            offHours: 1,
+            percent: 5,
+            allowed: 5,
+            aboveChance: false,
+          },
+        ],
+      },
+    },
+  } as GitrelicReport;
+
+  it('leads with the off-hours share, then the findings', () => {
+    render(CommitTimingCard, { report, index });
+    expect(
+      screen.getByText(/of 100 commits off-hours/).previousElementSibling
+        ?.textContent,
+    ).toBe('12%');
+    expect(
+      screen.getByText(/off-hours more than chance explains/),
+    ).toBeTruthy();
+  });
+
+  it('lists packages by off-hours, each selecting its directory, and opens the table', async () => {
+    const onselect = vi.fn();
+    const ontable = vi.fn();
+    render(CommitTimingCard, { report, index, onselect, ontable });
+    const list = screen.getByRole('heading', {
+      name: 'Most off-hours, by package',
+    }).parentElement!;
+    const rows = list.querySelectorAll('li button');
+    expect(rows).toHaveLength(2);
+    await fireEvent.click(rows[0]);
+    expect(onselect).toHaveBeenCalledWith('dir:src');
+    await fireEvent.click(rows[1]);
+    expect(onselect).toHaveBeenLastCalledWith('repo');
+    await fireEvent.click(
+      screen.getByRole('button', {
+        name: 'All 2 tested packages in the table (T) ▸',
       }),
     );
     expect(ontable).toHaveBeenCalled();
