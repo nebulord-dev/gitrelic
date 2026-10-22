@@ -476,9 +476,16 @@ export {
 } from './timing/punchCard';
 export { punchCardScene } from './layouts/punchCard';
 export {
+  offHoursFunnelScene,
+  type OffHoursFunnelInput,
+  type OffHoursPoint,
+} from './layouts/offHoursFunnel';
+export {
   commitTimingFindings,
   commitTimingTable,
   commitTimingView,
+  offHoursFunnelLayout,
+  offHoursPoints,
   punchCardLayout,
   TIMING_TIER_NAMES,
   timingPackageId,
