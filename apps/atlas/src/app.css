@@ -130,7 +130,8 @@ body {
 }
 
 /* Mark.labelClass roles. --hot: an Overview lens or view that badges (grade
-   2+); --open (with the card rules below): the fan's open view. */
+   2+), or a Contributors package left behind; --open (with the card rules
+   below): the fan's open view. */
 .atlas-label--hot .atlas-label__sub {
   color: var(--accent);
 }

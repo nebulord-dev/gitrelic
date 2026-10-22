@@ -163,7 +163,7 @@ export const CATALOG: readonly CatalogEntry[] = [
     group: 'team-activity',
     explain: 'Who works on what, when, and who has gone quiet.',
     docsPath: 'analyzers/contributors',
-    atlas: false,
+    atlas: true,
   },
   {
     id: 'parallel-dev',

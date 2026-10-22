@@ -3,6 +3,7 @@
 // near the point. Marks move while tweening, so the stage rebuilds the grid
 // lazily — on the first pointer query after anything changed.
 
+import { BOW, CURVE_SEGMENTS } from './linkGeometry';
 import { SHAPE_CODES, type MarkStore } from './markStore';
 import type { EntityId, LiveLink } from '@gitrelic/scene';
 
@@ -70,8 +71,10 @@ export class HitTester {
 
 /**
  * The closest link within `tolerance` of (wx, wy), measured to the drawn part
- * of the straight segment between its endpoints. Curves are hit-tested as
- * their chord, which is close enough for the gentle arcs the layouts draw.
+ * of the link: its chord when straight, else the curve as linkGeometry draws
+ * it, sampled into segments (a flow's S-shaped bands are nowhere near their
+ * chord). Width counts as linkGeometry's does: across the curve, or upright
+ * for a band.
  */
 export function hitLink(
   links: Iterable<LiveLink>,
@@ -87,25 +90,94 @@ export function hitLink(
     const s = store.indexOf(link.source);
     const t = store.indexOf(link.target);
     if (s === -1 || t === -1) continue;
-    // Edge to edge, as linkGeometry draws it.
-    const dx = store.x[t] - store.x[s];
-    const dy = store.y[t] - store.y[s];
-    const len = Math.hypot(dx, dy);
+    const x1 = store.x[s];
+    const y1 = store.y[s] + (link.ends?.[0] ?? 0);
+    const x2 = store.x[t];
+    const y2 = store.y[t] + (link.ends?.[1] ?? 0);
+    const len = Math.hypot(x2 - x1, y2 - y1);
     if (len === 0) continue;
+    // Edge to edge, as linkGeometry draws it.
     const u0 = store.r[s] / len;
     const u1 = u0 + (1 - store.r[t] / len - u0) * link.progress;
     if (u1 <= u0) continue;
-    const x1 = store.x[s] + dx * u0;
-    const y1 = store.y[s] + dy * u0;
-    const x2 = store.x[s] + dx * u1;
-    const y2 = store.y[s] + dy * u1;
-    const d = segmentDistance(wx, wy, x1, y1, x2, y2) - link.width / 2;
+
+    const steps = link.curve === 'straight' ? 1 : CURVE_SEGMENTS;
+    let [px, py] = linkPoint(link, x1, y1, x2, y2, len, u0);
+    let d = Infinity;
+    for (let k = 1; k <= steps; k++) {
+      const [qx, qy] = linkPoint(
+        link,
+        x1,
+        y1,
+        x2,
+        y2,
+        len,
+        u0 + (k / steps) * (u1 - u0),
+      );
+      d = Math.min(
+        d,
+        link.curve === 'band'
+          ? bandDistance(wx, wy, px, py, qx, qy)
+          : segmentDistance(wx, wy, px, py, qx, qy),
+      );
+      px = qx;
+      py = qy;
+    }
+    d -= link.width / 2;
     if (d <= tolerance && d < bestDist) {
       best = link.id;
       bestDist = d;
     }
   }
   return best;
+}
+
+/** A point on a link's curve at parameter u, as linkGeometry computes it. */
+function linkPoint(
+  link: LiveLink,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  len: number,
+  u: number,
+): [number, number] {
+  const v = 1 - u;
+  if (link.curve === 's-curve' || link.curve === 'band') {
+    const mx = (x1 + x2) / 2;
+    return [
+      v * v * v * x1 + (3 * v * v * u + 3 * v * u * u) * mx + u * u * u * x2,
+      (v * v * v + 3 * v * v * u) * y1 + (3 * v * u * u + u * u * u) * y2,
+    ];
+  }
+  const bow = link.curve === 'straight' ? 0 : (link.bow ?? BOW) * len;
+  const cx = (x1 + x2) / 2 - ((y2 - y1) / len) * bow;
+  const cy = (y1 + y2) / 2 + ((x2 - x1) / len) * bow;
+  return [
+    v * v * x1 + 2 * v * u * cx + u * u * x2,
+    v * v * y1 + 2 * v * u * cy + u * u * y2,
+  ];
+}
+
+/**
+ * Vertical distance from (px, py) to a segment, for a band, whose width is
+ * upright: within the segment's x span, the gap to the line at that x;
+ * outside it, the distance to the nearer end.
+ */
+function bandDistance(
+  px: number,
+  py: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): number {
+  const lo = Math.min(x1, x2);
+  const hi = Math.max(x1, x2);
+  if (px < lo || px > hi || hi === lo)
+    return segmentDistance(px, py, x1, y1, x2, y2);
+  const y = y1 + ((px - x1) / (x2 - x1)) * (y2 - y1);
+  return Math.abs(py - y);
 }
 
 export function segmentDistance(

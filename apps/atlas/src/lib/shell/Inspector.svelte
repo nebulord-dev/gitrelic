@@ -5,6 +5,7 @@
     entityKind,
     isFanView,
     PRESET_GROUPS,
+    type CommitLike,
     type EntityId,
     type EntityIndex,
     type PresetGroup,
@@ -13,6 +14,7 @@
   import { tick } from 'svelte';
 
   import ChurnCard from '../inspector/ChurnCard.svelte';
+  import ContributorsCard from '../inspector/ContributorsCard.svelte';
   import DirCard from '../inspector/DirCard.svelte';
   import ExplainCard from '../inspector/ExplainCard.svelte';
   import FileCard from '../inspector/FileCard.svelte';
@@ -36,6 +38,7 @@
     selection = null,
     activity = null,
     historyFailed = false,
+    commits = null,
     collapsed = $bindable(false),
     onselect,
     onopen,
@@ -51,6 +54,8 @@
     /** Weekly commits with the selection's marked; null while loading. */
     activity?: WeeklyActivity | null;
     historyFailed?: boolean;
+    /** The commit history, once loaded (lens cards that read it). */
+    commits?: CommitLike[] | null;
     /** Docked from 1200px: the 52px strip instead of the full column. */
     collapsed?: boolean;
     onselect?: (id: EntityId | null) => void;
@@ -284,6 +289,9 @@
   {:else if lens === 'fix-rate' && lensEntry}
     <ExplainCard entry={lensEntry} />
     <FixRateCard {report} {index} {onselect} {ontable} />
+  {:else if lens === 'contributors' && lensEntry}
+    <ExplainCard entry={lensEntry} />
+    <ContributorsCard {report} {index} {commits} {onselect} {ontable} />
   {:else if lens === 'overview'}
     <RepoMapCard {report} {onselect} />
     {#if lensEntry}<ExplainCard entry={lensEntry} />{/if}

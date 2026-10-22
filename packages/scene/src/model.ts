@@ -149,9 +149,12 @@ export interface Link {
   target: EntityId;
   /**
    * `s-curve` leaves its source and meets its target horizontally (a tree's
-   * edges, from port to port); `arc` bows off its chord (see `bow`).
+   * edges, from port to port); `arc` bows off its chord (see `bow`). `band`
+   * is an s-curve whose width is measured vertically rather than across the
+   * curve, so bands stacked along a node (with `ends`) meet edge to edge all
+   * the way across (a flow).
    */
-  curve: 'straight' | 'arc' | 'ribbon' | 's-curve';
+  curve: 'straight' | 'arc' | 'ribbon' | 's-curve' | 'band';
   /** Stroke width (ribbon: width at the source end), world units. */
   width: number;
   paint: Paint;
@@ -162,6 +165,17 @@ export interface Link {
    * right. A layout sets it to keep short arcs readable.
    */
   bow?: number;
+  /**
+   * How far each end sits below its mark's centre (negative: above), world
+   * units, so links stack along a node instead of meeting at its middle (a
+   * flow's bands). Absent: both ends at the centres.
+   */
+  ends?: readonly [source: number, target: number];
+  /**
+   * The hover tooltip, as a mark's `tip`: plain-text lines, the first one the
+   * title. Shown when the pointer is on the link and on no mark.
+   */
+  tip?: readonly string[];
   /**
    * As a mark's `slot`: a link entering takes over a leaving link in the
    * same slot, carrying on from how far it is drawn instead of retracting
@@ -226,6 +240,12 @@ export interface Scene {
    * lights its stand-in instead of nothing, and selecting one marks it.
    */
   standIns?: ReadonlyMap<EntityId, string>;
+  /**
+   * Hovering a mark lights its links and fades the rest, until the pointer
+   * leaves it (a flow, where one person's bands are lost among everyone's).
+   * Drawn by the stage alone: the scene isn't rebuilt per hover.
+   */
+  hoverLinks?: boolean;
 }
 
 export interface Viewport {

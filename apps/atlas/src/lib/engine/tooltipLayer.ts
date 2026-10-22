@@ -1,5 +1,6 @@
 // The hover tooltip: a small card by the hovered mark with the lines its
-// layout wrote in `mark.tip` (docs/atlas-views.md › The inspector: hover never
+// layout wrote in `mark.tip`, or by the pointer for a link's `tip`
+// (docs/atlas-views.md › The inspector: hover never
 // changes the inspector). Drawn into the label host, updated every frame from
 // the store like the labels, so it follows its mark through pans, zooms and
 // morphs. Text goes in through textContent only: tips hold file paths and
@@ -16,7 +17,8 @@ const EDGE = 8;
 
 export class TooltipLayer {
   private card: HTMLDivElement;
-  private shownFor: EntityId | null = null;
+  /** The mark or link the card shows the tip of. */
+  private shownFor: string | null = null;
   private shownText = '';
   /** The card's size, measured once per change of text: reading it every
    * frame would force a layout after the labels' writes, mid-animation. */
@@ -43,10 +45,52 @@ export class TooltipLayer {
     const i = id ? store.indexOf(id) : -1;
     const tip = i >= 0 ? store.marks[i].tip : undefined;
     if (!id || !tip || tip.length === 0 || store.alpha[i] <= 0) {
-      this.card.hidden = true;
-      this.shownFor = null;
+      this.hide();
       return;
     }
+    const size = this.show(id, tip);
+
+    const [sx, sy] = worldToScreen(view, store.x[i], store.y[i]);
+    // A dot's radius, or a box's half-width and half-height.
+    const r = store.r[i];
+    const edge: [number, number] = [
+      (r || store.w[i] / 2) * view.scale,
+      (r || store.h[i] / 2) * view.scale,
+    ];
+    const [x, y] = placeTip(
+      store.marks[i].label ? (store.marks[i].labelAnchor ?? 'right') : null,
+      sx,
+      sy,
+      edge,
+      size.w,
+      size.h,
+      screen,
+    );
+    this.place(x, y);
+  }
+
+  /**
+   * Shows a link's tip (`Link.tip`) beside the pointer at (sx, sy), screen
+   * px: a link has no one point to stand by, so the card follows the pointer.
+   */
+  updateAt(
+    id: string,
+    tip: readonly string[],
+    sx: number,
+    sy: number,
+    screen: ScreenSize,
+  ): void {
+    if (tip.length === 0) {
+      this.hide();
+      return;
+    }
+    const size = this.show(id, tip);
+    const [x, y] = placeTip(null, sx, sy, [0, 0], size.w, size.h, screen);
+    this.place(x, y);
+  }
+
+  /** Fills the card with `tip` (unless it already shows it); its size. */
+  private show(id: string, tip: readonly string[]): { w: number; h: number } {
     const text = tip.join('\n');
     if (id !== this.shownFor || text !== this.shownText) {
       this.card.replaceChildren(
@@ -64,23 +108,15 @@ export class TooltipLayer {
     this.card.hidden = false;
     // Measured visible: a hidden card has no size.
     this.size ??= { w: this.card.offsetWidth, h: this.card.offsetHeight };
+    return this.size;
+  }
 
-    const [sx, sy] = worldToScreen(view, store.x[i], store.y[i]);
-    // A dot's radius, or a box's half-width and half-height.
-    const r = store.r[i];
-    const edge: [number, number] = [
-      (r || store.w[i] / 2) * view.scale,
-      (r || store.h[i] / 2) * view.scale,
-    ];
-    const [x, y] = placeTip(
-      store.marks[i].label ? (store.marks[i].labelAnchor ?? 'right') : null,
-      sx,
-      sy,
-      edge,
-      this.size.w,
-      this.size.h,
-      screen,
-    );
+  private hide(): void {
+    this.card.hidden = true;
+    this.shownFor = null;
+  }
+
+  private place(x: number, y: number): void {
     this.card.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
   }
 

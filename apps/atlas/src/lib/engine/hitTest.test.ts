@@ -203,6 +203,21 @@ describe('hitLink', () => {
     expect(hitLink([spoke], ringed, 60, 0, 1)).toBe('ab');
   });
 
+  it('follows a band through its bend, at its offset ends', () => {
+    const tall = storeOf(
+      mark('person:a', { x: 0, y: 0, r: 0 }),
+      mark('person:b', { x: 100, y: 100, r: 0 }),
+    );
+    const band = link({ curve: 'band', width: 4, ends: [10, 10] });
+    // Near the ends the band runs level at y 10 and 110, far from the
+    // chord; at the middle it crosses (50, 60).
+    expect(hitLink([band], tall, 5, 10, 1)).toBe('ab');
+    expect(hitLink([band], tall, 95, 110, 1)).toBe('ab');
+    expect(hitLink([band], tall, 50, 60, 1)).toBe('ab');
+    // On the chord near the start, the band isn't there.
+    expect(hitLink([band], tall, 20, 30, 1)).toBeNull();
+  });
+
   it('skips undrawn links and links to missing marks', () => {
     expect(hitLink([link({ progress: 0 })], s, 50, 0, 5)).toBeNull();
     expect(hitLink([link({ target: 'person:x' })], s, 50, 0, 5)).toBeNull();

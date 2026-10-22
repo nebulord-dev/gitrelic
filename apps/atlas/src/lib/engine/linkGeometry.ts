@@ -12,6 +12,10 @@ export const CURVE_SEGMENTS = 16;
 export const BOW = 0.2;
 /** A ribbon narrows to this fraction of its width at the target end. */
 export const RIBBON_TAPER = 0.35;
+/** With a link focus, its links are drawn at least this strong… */
+export const FOCUS_LIT = 0.75;
+/** …and the others at this share of their own alpha. */
+export const FOCUS_FADE = 0.15;
 
 export class LinkBuffers {
   /** x, y per vertex. */
@@ -43,6 +47,8 @@ export function tessellateLinks(
   store: MarkStore,
   palette: Palette,
   out: LinkBuffers,
+  /** A mark whose links are lit while the rest fade (`Scene.hoverLinks`). */
+  focus: string | null = null,
 ): LinkBuffers {
   out.vertexCount = 0;
   out.indexCount = 0;
@@ -53,9 +59,9 @@ export function tessellateLinks(
     if (s === -1 || t === -1) continue;
 
     const x1 = store.x[s];
-    const y1 = store.y[s];
+    const y1 = store.y[s] + (link.ends?.[0] ?? 0);
     const x2 = store.x[t];
-    const y2 = store.y[t];
+    const y2 = store.y[t] + (link.ends?.[1] ?? 0);
     const len = Math.hypot(x2 - x1, y2 - y1);
     if (len === 0) continue;
     // Where the curve leaves the source's edge and meets the target's, as
@@ -73,10 +79,9 @@ export function tessellateLinks(
 
     // Quadratic Bézier through a control point bowed off the chord's midpoint
     // (to the chord's left, so A→B and B→A bow opposite ways and don't overlap).
+    const sCurve = link.curve === 's-curve' || link.curve === 'band';
     const bow =
-      link.curve === 'straight' || link.curve === 's-curve'
-        ? 0
-        : (link.bow ?? BOW) * len;
+      link.curve === 'straight' || sCurve ? 0 : (link.bow ?? BOW) * len;
     const nx = -(y2 - y1) / len;
     const ny = (x2 - x1) / len;
     const cx = (x1 + x2) / 2 + nx * bow;
@@ -84,11 +89,18 @@ export function tessellateLinks(
 
     // An S-curve is a cubic whose control points sit level with its ends,
     // halfway across, so it leaves and arrives horizontally.
-    const sCurve = link.curve === 's-curve';
     const mx = (x1 + x2) / 2;
+    // A band's width is vertical, so stacked bands share their edges.
+    const band = link.curve === 'band';
 
     const c = resolvePaint(link.paint, palette);
-    const a = c.a * link.alpha;
+    const shown =
+      focus === null
+        ? link.alpha
+        : link.source === focus || link.target === focus
+          ? Math.max(link.alpha, FOCUS_LIT)
+          : link.alpha * FOCUS_FADE;
+    const a = c.a * shown;
     const base = out.vertexCount;
 
     for (let k = 0; k < points; k++) {
@@ -112,9 +124,14 @@ export function tessellateLinks(
         tx = 2 * v * (cx - x1) + 2 * u * (x2 - cx);
         ty = 2 * v * (cy - y1) + 2 * u * (y2 - cy);
       }
-      const tl = Math.hypot(tx, ty) || 1;
-      tx /= tl;
-      ty /= tl;
+      if (band) {
+        tx = 1;
+        ty = 0;
+      } else {
+        const tl = Math.hypot(tx, ty) || 1;
+        tx /= tl;
+        ty /= tl;
+      }
       const half =
         (link.curve === 'ribbon'
           ? link.width * (1 - (1 - RIBBON_TAPER) * u)

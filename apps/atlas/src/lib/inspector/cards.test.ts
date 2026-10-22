@@ -9,6 +9,7 @@ import { fixesReport } from '../../../../../packages/scene/test/riskFixesReport'
 import ActivityCard from './ActivityCard.svelte';
 import Card from './Card.svelte';
 import ChurnCard from './ChurnCard.svelte';
+import ContributorsCard from './ContributorsCard.svelte';
 import FindingCard from './FindingCard.svelte';
 import FixRateCard from './FixRateCard.svelte';
 import HotspotsCard from './HotspotsCard.svelte';
@@ -148,6 +149,38 @@ describe('ChurnCard', () => {
     expect(list.querySelectorAll('li button')).toHaveLength(3);
     await fireEvent.click(
       screen.getByRole('button', { name: 'All 9 files in the table (T) ▸' }),
+    );
+    expect(ontable).toHaveBeenCalled();
+  });
+});
+
+describe('ContributorsCard', () => {
+  const report = reportJson as unknown as GitrelicReport;
+
+  it('leads with how many are active, then the team’s shape', () => {
+    render(ContributorsCard, { report, index });
+    expect(
+      screen.getByText('active, of 3').previousElementSibling?.textContent,
+    ).toBe('3');
+    expect(
+      screen.getByText(/3 of 3 contributors are active, and 1 joined/),
+    ).toBeTruthy();
+  });
+
+  it('lists the people with the most commits and opens the table', async () => {
+    const onselect = vi.fn();
+    const ontable = vi.fn();
+    render(ContributorsCard, { report, index, onselect, ontable });
+    const list = screen.getByRole('heading', {
+      name: 'Most commits',
+    }).parentElement!;
+    expect(list.querySelectorAll('li button')).toHaveLength(3);
+    await fireEvent.click(screen.getByRole('button', { name: /^Alice/ }));
+    expect(onselect).toHaveBeenCalledWith('person:alice@example.com');
+    await fireEvent.click(
+      screen.getByRole('button', {
+        name: 'All 3 contributors in the table (T) ▸',
+      }),
     );
     expect(ontable).toHaveBeenCalled();
   });

@@ -167,6 +167,64 @@ describe('tessellateLinks', () => {
     expect(peak(1)).toBeCloseTo(50, 0);
   });
 
+  it('draws a band with upright width from its offset ends', () => {
+    const tall = store([
+      ['a', 0, 0],
+      ['b', 100, 80],
+    ]);
+    const out = tessellateLinks(
+      [link({ curve: 'band', width: 10, ends: [-5, 20] })],
+      tall,
+      palette,
+      new LinkBuffers(),
+    );
+    // Every vertex pair is stacked straight up and down, 10 apart, even
+    // mid-bend, so bands stacked along a node keep meeting edge to edge.
+    for (let k = 0; k <= CURVE_SEGMENTS; k++) {
+      const [ax, ay] = at(out, k * 2);
+      const [bx, by] = at(out, k * 2 + 1);
+      expect(ax).toBeCloseTo(bx, 9);
+      expect(ay - by).toBeCloseTo(10, 9);
+    }
+    // Its middle line starts 5 above a and ends 20 below b.
+    const [, y0a] = at(out, 0);
+    const [, y0b] = at(out, 1);
+    expect((y0a + y0b) / 2).toBeCloseTo(-5);
+    const [, y1a] = at(out, CURVE_SEGMENTS * 2);
+    const [, y1b] = at(out, CURVE_SEGMENTS * 2 + 1);
+    expect((y1a + y1b) / 2).toBeCloseTo(100);
+  });
+
+  it('lights a focused mark’s links and fades the rest', () => {
+    const three = store([
+      ['a', 0, 0],
+      ['b', 100, 0],
+      ['c', 100, 50],
+    ]);
+    const alphaOf = (focus: string | null) => {
+      const out = tessellateLinks(
+        [
+          link({ id: 'ab', alpha: 0.2 }),
+          link({ id: 'cb', source: 'c', alpha: 0.2 }),
+        ],
+        three,
+        palette,
+        new LinkBuffers(),
+        focus,
+      );
+      // First vertex of each link (2 vertices per point, straight: 2 points).
+      return [out.colors[3], out.colors[4 * 4 + 3]];
+    };
+    const [plainA, plainB] = alphaOf(null);
+    expect(plainA).toBeCloseTo(0.1);
+    expect(plainB).toBeCloseTo(0.1);
+    const [lit, faded] = alphaOf('a');
+    expect(lit).toBeCloseTo(0.5 * 0.75);
+    expect(faded).toBeCloseTo(0.5 * 0.2 * 0.15);
+    // A target counts as much as a source.
+    expect(alphaOf('b').map((v) => +v.toFixed(4))).toEqual([0.375, 0.375]);
+  });
+
   it('tapers ribbons towards the target', () => {
     const out = tessellateLinks(
       [link({ curve: 'ribbon', width: 10 })],

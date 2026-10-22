@@ -89,6 +89,9 @@ interface LabelText {
 
 export class LabelLayer {
   private pool: LabelSpan[] = [];
+  /** The labels shown last frame and their boxes, screen px, for `hit`. */
+  private boxes: { id: string; x: number; y: number; w: number; h: number }[] =
+    [];
 
   constructor(private readonly host: HTMLElement) {}
 
@@ -218,6 +221,10 @@ export class LabelLayer {
     }
     const shown = planLabels(candidates, { pinned, view: screen });
     const byId = new Map(candidates.map((c) => [c.id, c]));
+    this.boxes = shown.flatMap((id) => {
+      const c = byId.get(id);
+      return c ? [{ id, x: c.x, y: c.y, w: c.w, h: c.h }] : [];
+    });
 
     // A label shown last frame keeps its span, so a CSS transition on it (a
     // card's fill moving to another card) runs on its own box, never from
@@ -340,7 +347,22 @@ export class LabelLayer {
     return shown;
   }
 
+  /**
+   * The mark whose shown label covers a screen point, or null. The layer
+   * takes no pointer events (the canvas under it must pan and zoom), so the
+   * stage asks it after the marks: a name is as clickable as its mark.
+   */
+  hit(sx: number, sy: number): string | null {
+    for (let i = this.boxes.length - 1; i >= 0; i--) {
+      const b = this.boxes[i];
+      if (sx >= b.x && sx <= b.x + b.w && sy >= b.y && sy <= b.y + b.h)
+        return b.id;
+    }
+    return null;
+  }
+
   destroy(): void {
+    this.boxes = [];
     for (const { span } of this.pool) span.remove();
     this.pool = [];
   }

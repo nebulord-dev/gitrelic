@@ -3,7 +3,7 @@
 
 import type { MarkStore } from './markStore';
 import type { ScreenSize, ViewTransform } from './viewport';
-import type { LiveGuide, LiveLink, Palette } from '@gitrelic/scene';
+import type { EntityId, LiveGuide, LiveLink, Palette } from '@gitrelic/scene';
 
 export interface StageFrame {
   store: MarkStore;
@@ -13,6 +13,11 @@ export interface StageFrame {
   view: ViewTransform;
   /** Glow theme: soft halos behind dots and rings. */
   glow: boolean;
+  /**
+   * A mark whose links are lit while the rest fade (`Scene.hoverLinks`), or
+   * null for every link as its scene drew it.
+   */
+  linkFocus: EntityId | null;
   /**
    * Whether anything changed since the last frame beyond the view — while
    * false, arcs, links and guides keep their last tessellation.

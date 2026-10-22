@@ -379,4 +379,44 @@ export {
   fixRateView,
   funnelLayout,
 } from './views/fixRate';
+export {
+  contributorFlow,
+  contributorFlowOf,
+  FLOW_PACKAGES,
+  FLOW_PEOPLE,
+  LEFT_BEHIND_SHARE,
+  notActiveShare,
+  personStatus,
+  type ContributorFlow,
+  type FlowLink,
+  type FlowPackage,
+  type FlowPerson,
+  type PersonStatus,
+} from './contributors/flow';
+export {
+  flowScene,
+  OTHER_PACKAGES_ID,
+  OTHER_PEOPLE_ID,
+  packageId,
+  packageName,
+  STATUS_TEXT,
+} from './layouts/flow';
+export {
+  CARRIERS,
+  CONTRIBUTOR_TIER_NAMES,
+  contributorsFindings,
+  contributorsTable,
+  contributorsView,
+  flowLayout,
+  lanesLayout,
+} from './views/contributors';
+export {
+  contributorLanes,
+  contributorLanesOf,
+  statusCutoffs,
+  type LaneRow,
+  type Lanes,
+} from './contributors/lanes';
+export { lanesScene } from './layouts/lanes';
+export { timeBins, type TimeBins } from './time/bins';
 export { VIEWS } from './views/index';
