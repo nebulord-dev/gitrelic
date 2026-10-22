@@ -88,6 +88,13 @@ export function parallelDevFindings(input: ViewInput): Finding[] {
   return findings;
 }
 
+/**
+ * Score floors of the table's tiers: core's own (`tierMix` in
+ * `analyzers/parallel-dev.ts`: 0–24 low, 25–49 medium, 50–74 high, 75+
+ * critical). Keep the two in step.
+ */
+export const PARALLEL_TIERS = [25, 50, 75] as const;
+
 export const PARALLEL_TIER_NAMES = [
   'Low',
   'Medium',
@@ -135,14 +142,8 @@ export function parallelDevTable(input: ViewInput): LensTable {
       const more = people.length - named.length;
       return {
         id: ids.file(f.file),
-        tier:
-          f.parallelScore >= 75
-            ? 3
-            : f.parallelScore >= 50
-              ? 2
-              : f.parallelScore >= 25
-                ? 1
-                : 0,
+        tier: PARALLEL_TIERS.filter((floor) => f.parallelScore >= floor)
+          .length as 0 | 1 | 2 | 3,
         // Names too, so filtering by a person finds the files they met on.
         search: [f.file, ...people.map((p) => p.name)].join(' ').toLowerCase(),
         cells: {

@@ -431,6 +431,7 @@ export { pairsScene } from './layouts/pairs';
 export {
   filePeople,
   PARALLEL_TIER_NAMES,
+  PARALLEL_TIERS,
   pairsLayout,
   parallelDevFindings,
   parallelDevTable,

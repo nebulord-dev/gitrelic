@@ -40,6 +40,40 @@ describe('parallelPairs', () => {
     expect(data.allPairs).toHaveLength(PAIR_PEOPLE + 2);
   });
 
+  it('draws no one whose partners all fell outside the cut', () => {
+    // A hub with many partners, and dan, whose only partner (zed) is too weak
+    // to make the cut, though dan's own weight does.
+    const pairs = [
+      ...Array.from({ length: PAIR_PEOPLE - 1 }, (_, i) => ({
+        a: 'hub@x',
+        b: `p${String(i).padStart(2, '0')}@x`,
+        weeks: 3,
+        files: [],
+      })),
+      { a: 'dan@x', b: 'zed@x', weeks: 2, files: [] },
+    ];
+    const data = parallelPairs(parallelReport(pairs));
+    const drawn = data.people.map((p) => p.email);
+    expect(drawn).not.toContain('dan@x');
+    expect(drawn).toHaveLength(PAIR_PEOPLE);
+    for (const e of drawn)
+      expect(data.pairs.some((p) => p.a === e || p.b === e)).toBe(true);
+  });
+
+  it('seats whole pairs when the cut would split every one', () => {
+    // 30 separate pairs, everyone at one week: by name the cut takes 24
+    // a-people and not one partner.
+    const pairs = Array.from({ length: 30 }, (_, i) => ({
+      a: `a${String(i).padStart(2, '0')}@x`,
+      b: `z${String(i).padStart(2, '0')}@x`,
+      weeks: 1,
+      files: [],
+    }));
+    const data = parallelPairs(parallelReport(pairs));
+    expect(data.pairs).toHaveLength(PAIR_PEOPLE / 2);
+    expect(data.people).toHaveLength(PAIR_PEOPLE);
+  });
+
   it('is memoised per report', () => {
     const report = parallelReport();
     expect(parallelPairsOf(report)).toBe(parallelPairsOf(report));

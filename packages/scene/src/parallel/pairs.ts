@@ -57,12 +57,30 @@ export function parallelPairs(report: GitrelicReport): PairsData {
       partners.set(e, (partners.get(e) ?? 0) + 1);
     }
   }
-  const top = [...weight]
+  // The people who collide most, then only pairs between them; anyone left
+  // without a pair there (their partners all fell outside the cut) goes too,
+  // so no dot is drawn without a chord.
+  const strongest = [...weight]
     .sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0]))
     .slice(0, PAIR_PEOPLE)
     .map(([e]) => e);
-  const drawn = new Set(top);
-  const pairs = raw.filter((p) => drawn.has(p.a) && drawn.has(p.b));
+  let drawn = new Set(strongest);
+  let pairs = raw.filter((p) => drawn.has(p.a) && drawn.has(p.b));
+  // Many separate pairs can all be split by that cut. Then seat whole pairs
+  // instead, most weeks first, so the circle is never empty while pairs
+  // exist.
+  if (pairs.length === 0 && raw.length > 0) {
+    drawn = new Set();
+    for (const p of raw) {
+      const add = [p.a, p.b].filter((e) => !drawn.has(e));
+      if (drawn.size + add.length <= PAIR_PEOPLE)
+        for (const e of add) drawn.add(e);
+    }
+    pairs = raw.filter((p) => drawn.has(p.a) && drawn.has(p.b));
+  }
+  const paired = new Set(pairs.flatMap((p) => [p.a, p.b]));
+  const top = strongest.filter((e) => paired.has(e));
+  for (const e of drawn) if (paired.has(e) && !top.includes(e)) top.push(e);
 
   // Circle order: greedy by ties to those already placed.
   const tie = new Map<string, Map<string, number>>();
