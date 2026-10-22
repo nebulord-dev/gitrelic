@@ -54,9 +54,10 @@ const BUILD_SCRIPT = path.resolve(
   '../tests/fixtures/build-sample-repo.sh',
 );
 
-// Pin "now" 26 days after the fixture's last commit (2026-04-05). All
-// time-sensitive analyzer logic (contributor.isActive, ghost detection,
-// dead-code ageInDays) resolves deterministically from this anchor.
+// Pin "now" 26 days after the fixture's last commit (2026-04-05). Ages and
+// activity windows count back from that last commit, not the clock, so
+// nothing here should move with it; the pin keeps `meta.timestamp` and any
+// future clock read deterministic.
 const FROZEN_NOW = new Date('2026-05-01T12:00:00Z');
 
 // ─── Normalization helpers ───────────────────────────────────────────────────

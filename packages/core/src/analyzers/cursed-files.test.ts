@@ -129,20 +129,19 @@ function makeEmptyParallelDev(): ParallelDevReport {
 }
 
 /**
- * Synthetic commit history. `findCursedFiles` only reads authorEmail, date and
- * files, so the rest stays minimal. `authorEmail` drives bot attribution and
- * `daysAgo` drives how idle the repository looks.
+ * Synthetic commit history. `findCursedFiles` only reads authorEmail and
+ * files, so the rest stays minimal. `authorEmail` drives bot attribution.
  */
 function makeCommits(
   count: number,
-  opts: { files?: string[]; authorEmail?: string; daysAgo?: number } = {},
+  opts: { files?: string[]; authorEmail?: string } = {},
 ): RawCommit[] {
-  const { files = [], authorEmail = 'alice@example.com', daysAgo = 0 } = opts;
+  const { files = [], authorEmail = 'alice@example.com' } = opts;
   return Array.from({ length: count }, (_, i) => ({
     hash: `c${i}`,
     authorEmail,
     authorName: authorEmail.split('@')[0],
-    date: new Date(Date.now() - daysAgo * 86_400_000).toISOString(),
+    date: '2026-03-08T12:00:00Z',
     message: 'chore: change',
     coAuthors: [],
     files,
@@ -730,7 +729,7 @@ describe('findCursedFiles', () => {
   });
 
   describe('abandoned hot files', () => {
-    const abandoned = () => ({
+    const abandoned = (ageInDays = 337) => ({
       churn: makeChurnReport([
         { file: 'a.ts', commitCount: 10, churnScore: 80 },
       ]),
@@ -742,7 +741,7 @@ describe('findCursedFiles', () => {
           uniqueAuthors: 2,
         },
       ]),
-      age: makeAgeMapReport([{ file: 'a.ts', ageInDays: 337 }]),
+      age: makeAgeMapReport([{ file: 'a.ts', ageInDays }]),
     });
 
     it('flags a file abandoned long before the repo went quiet', () => {
@@ -753,7 +752,7 @@ describe('findCursedFiles', () => {
         age,
         makeEmptyFixRate(),
         makeEmptyParallelDev(),
-        makeCommits(10, { files: ['other.ts'], daysAgo: 0 }),
+        makeCommits(10, { files: ['other.ts'] }),
       );
 
       expect(
@@ -761,18 +760,17 @@ describe('findCursedFiles', () => {
       ).toBe(true);
     });
 
-    it('does not flag files in a repo that is simply dormant', () => {
-      // Every file in an 11-month-dormant repo is 11 months old. An absolute
-      // age threshold marks all of them, and the old copy claimed they were
-      // "still actively changing" — the opposite of the truth.
-      const { churn, bus, age } = abandoned();
+    it('does not flag a file quiet for under 180 days', () => {
+      // Ages come from Age Map, counted back from the analyzed commit, so a
+      // dormant repo's last-touched files are young there and this holds.
+      const { churn, bus, age } = abandoned(170);
       const result = findCursedFiles(
         churn,
         bus,
         age,
         makeEmptyFixRate(),
         makeEmptyParallelDev(),
-        makeCommits(10, { files: ['a.ts'], daysAgo: 337 }),
+        makeCommits(10, { files: ['a.ts'] }),
       );
 
       expect(

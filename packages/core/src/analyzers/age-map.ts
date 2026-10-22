@@ -24,12 +24,15 @@ export function getAgeThresholds(
  * @param commits - The raw commits from the repository.
  * @param trackedFiles - The list of currently tracked files in the repository.
  * @param repoAgeDays - The age of the repository in days.
+ * @param asOf - The analyzed commit's time (ms): ages count back from it,
+ *   never from today.
  * @Returns a report with the top 20 files by age, the number of stale files, and a summary.
  */
 export function analyzeAgeMap(
   commits: RawCommit[],
   trackedFiles: string[],
   repoAgeDays: number,
+  asOf: number,
 ): AgeMapReport {
   const fileLastCommit: Map<string, string> = new Map();
   const trackedSet = new Set(trackedFiles);
@@ -46,13 +49,12 @@ export function analyzeAgeMap(
     }
   }
 
-  const now = Date.now();
   const thresholds = getAgeThresholds(repoAgeDays);
 
   const files: FileAge[] = Array.from(fileLastCommit.entries())
     .map(([file, lastCommitDate]) => {
       const ageInDays = Math.floor(
-        (now - new Date(lastCommitDate).getTime()) / 86_400_000,
+        (asOf - new Date(lastCommitDate).getTime()) / 86_400_000,
       );
       return {
         file,

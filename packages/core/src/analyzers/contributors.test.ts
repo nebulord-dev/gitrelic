@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import { analyzeContributors } from './contributors.js';
 import type { RawCommit } from '../utils/git.js';
@@ -26,20 +26,12 @@ function daysAgo(n: number): string {
 }
 
 describe('analyzeContributors', () => {
-  beforeEach(() => {
-    vi.spyOn(Date, 'now').mockReturnValue(FAKE_NOW);
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it('marks recent contributors as active (within 25% of repo age)', () => {
     // repoAgeDays=365, active window = 91 days
     const commits = [
       makeCommit({ hash: '1', date: daysAgo(50), files: ['a.ts'] }),
     ];
-    const result = analyzeContributors(commits, 365);
+    const result = analyzeContributors(commits, 365, FAKE_NOW);
     expect(result.activeContributors.length).toBe(1);
     expect(result.activeContributors[0].isActive).toBe(true);
   });
@@ -49,9 +41,26 @@ describe('analyzeContributors', () => {
     const commits = [
       makeCommit({ hash: '1', date: daysAgo(200), files: ['a.ts'] }),
     ];
-    const result = analyzeContributors(commits, 365);
+    const result = analyzeContributors(commits, 365, FAKE_NOW);
     expect(result.ghostContributors.length).toBe(1);
     expect(result.ghostContributors[0].email).toBe('alice@example.com');
+  });
+
+  it('counts windows back from the analyzed commit, not today', () => {
+    // A report on a commit two years old: its author was active then, and
+    // the wall clock (two years on) must not turn them into a ghost.
+    const asOf = FAKE_NOW - 730 * 86_400_000;
+    const commits = [
+      makeCommit({
+        hash: '1',
+        date: new Date(asOf - 10 * 86_400_000).toISOString(),
+        files: ['a.ts'],
+      }),
+    ];
+    const result = analyzeContributors(commits, 365, asOf);
+    expect(result.activeContributors).toHaveLength(1);
+    expect(result.ghostContributors).toHaveLength(0);
+    expect(result.newcomers90d).toBe(1);
   });
 
   it('enforces minimum floors on young repos', () => {
@@ -73,7 +82,7 @@ describe('analyzeContributors', () => {
         files: ['b.ts'],
       }),
     ];
-    const result = analyzeContributors(commits, 90);
+    const result = analyzeContributors(commits, 90, FAKE_NOW);
     expect(result.activeContributors.map((c) => c.email)).toContain(
       'active@example.com',
     );
@@ -97,7 +106,7 @@ describe('analyzeContributors', () => {
         files: ['b.ts'],
       }),
     ];
-    const result = analyzeContributors(commits, 90);
+    const result = analyzeContributors(commits, 90, FAKE_NOW);
     expect(result.ghostContributors.map((c) => c.email)).toContain(
       'ghost@example.com',
     );
@@ -129,7 +138,7 @@ describe('analyzeContributors', () => {
         files: ['c.ts'],
       }),
     ];
-    const result = analyzeContributors(commits, 365);
+    const result = analyzeContributors(commits, 365, FAKE_NOW);
     const active = result.contributors.find((c) => c.email === 'active@x')!;
     const middle = result.contributors.find((c) => c.email === 'middle@x')!;
     const ghost = result.contributors.find((c) => c.email === 'ghost@x')!;
@@ -164,7 +173,7 @@ describe('analyzeContributors', () => {
         ],
       }),
     ];
-    const result = analyzeContributors(commits, 365);
+    const result = analyzeContributors(commits, 365, FAKE_NOW);
     const alice = result.contributors.find(
       (c) => c.email === 'alice@example.com',
     )!;
@@ -188,7 +197,7 @@ describe('analyzeContributors', () => {
         deletions: 20,
       }),
     ];
-    const result = analyzeContributors(commits, 365);
+    const result = analyzeContributors(commits, 365, FAKE_NOW);
     const alice = result.contributors.find(
       (c) => c.email === 'alice@example.com',
     )!;
@@ -208,7 +217,7 @@ describe('analyzeContributors', () => {
       makeCommit({ hash: '3', date: daysAgo(3), files: ['c.ts'] }),
       makeCommit({ hash: '4', date: daysAgo(2), files: ['d.ts'] }),
     ];
-    const result = analyzeContributors(commits, 365);
+    const result = analyzeContributors(commits, 365, FAKE_NOW);
     expect(result.contributors[0].email).toBe('alice@example.com');
     expect(result.contributors[0].commitCount).toBe(3);
     expect(result.contributors[1].email).toBe('bob@example.com');
@@ -219,13 +228,13 @@ describe('analyzeContributors', () => {
     const commits = [
       makeCommit({ hash: '1', date: daysAgo(200), files: ['a.ts'] }),
     ];
-    const result = analyzeContributors(commits, 365);
+    const result = analyzeContributors(commits, 365, FAKE_NOW);
     expect(result.summary).toContain('183');
   });
 
   describe('top3CommitShare', () => {
     it('is 0 on empty commit list', () => {
-      const result = analyzeContributors([], 365);
+      const result = analyzeContributors([], 365, FAKE_NOW);
       expect(result.top3CommitShare).toBe(0);
     });
 
@@ -233,7 +242,7 @@ describe('analyzeContributors', () => {
       const commits = Array.from({ length: 5 }, (_, i) =>
         makeCommit({ hash: String(i), date: daysAgo(10 + i), files: ['a.ts'] }),
       );
-      const result = analyzeContributors(commits, 365);
+      const result = analyzeContributors(commits, 365, FAKE_NOW);
       expect(result.top3CommitShare).toBe(100);
     });
 
@@ -261,7 +270,7 @@ describe('analyzeContributors', () => {
           files: ['c.ts'],
         }),
       ];
-      const result = analyzeContributors(commits, 365);
+      const result = analyzeContributors(commits, 365, FAKE_NOW);
       expect(result.top3CommitShare).toBe(100);
     });
 
@@ -305,14 +314,14 @@ describe('analyzeContributors', () => {
           }),
         ),
       ];
-      const result = analyzeContributors(commits, 365);
+      const result = analyzeContributors(commits, 365, FAKE_NOW);
       expect(result.top3CommitShare).toBeCloseTo((10 / 12) * 100, 5);
     });
   });
 
   describe('newcomers90d', () => {
     it('is 0 on empty commit list', () => {
-      const result = analyzeContributors([], 365);
+      const result = analyzeContributors([], 365, FAKE_NOW);
       expect(result.newcomers90d).toBe(0);
     });
 
@@ -320,7 +329,7 @@ describe('analyzeContributors', () => {
       const commits = [
         makeCommit({ hash: '1', date: daysAgo(89), files: ['a.ts'] }),
       ];
-      const result = analyzeContributors(commits, 365);
+      const result = analyzeContributors(commits, 365, FAKE_NOW);
       expect(result.newcomers90d).toBe(1);
     });
 
@@ -328,7 +337,7 @@ describe('analyzeContributors', () => {
       const commits = [
         makeCommit({ hash: '1', date: daysAgo(90), files: ['a.ts'] }),
       ];
-      const result = analyzeContributors(commits, 365);
+      const result = analyzeContributors(commits, 365, FAKE_NOW);
       expect(result.newcomers90d).toBe(1);
     });
 
@@ -336,7 +345,7 @@ describe('analyzeContributors', () => {
       const commits = [
         makeCommit({ hash: '1', date: daysAgo(91), files: ['a.ts'] }),
       ];
-      const result = analyzeContributors(commits, 365);
+      const result = analyzeContributors(commits, 365, FAKE_NOW);
       expect(result.newcomers90d).toBe(0);
     });
 
@@ -346,7 +355,7 @@ describe('analyzeContributors', () => {
         makeCommit({ hash: '1', date: daysAgo(200), files: ['a.ts'] }),
         makeCommit({ hash: '2', date: daysAgo(10), files: ['a.ts'] }),
       ];
-      const result = analyzeContributors(commits, 365);
+      const result = analyzeContributors(commits, 365, FAKE_NOW);
       expect(result.newcomers90d).toBe(0);
     });
   });
@@ -359,6 +368,7 @@ describe('analyzeContributors timezone handling', () => {
     const [alice] = analyzeContributors(
       [makeCommit({ date: later }), makeCommit({ date: earlier })],
       365,
+      FAKE_NOW,
     ).contributors;
     expect(alice.firstCommit).toBe(earlier);
     expect(alice.lastCommit).toBe(later);

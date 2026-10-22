@@ -4,114 +4,96 @@ exports[`fixture regression > age map report is stable 1`] = `
 {
   "ancientFiles": [
     {
-      "ageInDays": 120,
+      "ageInDays": 94,
       "file": "README.md",
       "lastCommitDate": "2026-01-01T09:00:00Z",
       "status": "ancient",
     },
     {
-      "ageInDays": 120,
+      "ageInDays": 94,
       "file": "package.json",
       "lastCommitDate": "2026-01-01T09:00:00Z",
-      "status": "ancient",
-    },
-    {
-      "ageInDays": 84,
-      "file": "src/auth.ts",
-      "lastCommitDate": "2026-02-05T23:15:00Z",
-      "status": "ancient",
-    },
-    {
-      "ageInDays": 70,
-      "file": "src/config.ts",
-      "lastCommitDate": "2026-02-20T08:30:00Z",
       "status": "ancient",
     },
   ],
   "files": [
     {
-      "ageInDays": 120,
+      "ageInDays": 94,
       "file": "README.md",
       "lastCommitDate": "2026-01-01T09:00:00Z",
       "status": "ancient",
     },
     {
-      "ageInDays": 120,
+      "ageInDays": 94,
       "file": "package.json",
       "lastCommitDate": "2026-01-01T09:00:00Z",
       "status": "ancient",
     },
     {
-      "ageInDays": 84,
+      "ageInDays": 58,
       "file": "src/auth.ts",
       "lastCommitDate": "2026-02-05T23:15:00Z",
-      "status": "ancient",
+      "status": "stale",
     },
     {
-      "ageInDays": 70,
+      "ageInDays": 44,
       "file": "src/config.ts",
       "lastCommitDate": "2026-02-20T08:30:00Z",
-      "status": "ancient",
+      "status": "stale",
     },
     {
-      "ageInDays": 56,
+      "ageInDays": 31,
       "file": "docs/USAGE.md",
       "lastCommitDate": "2026-03-05T14:00:00Z",
-      "status": "stale",
+      "status": "aging",
     },
     {
-      "ageInDays": 42,
+      "ageInDays": 16,
       "file": "src/types.ts",
       "lastCommitDate": "2026-03-20T11:15:00Z",
-      "status": "stale",
+      "status": "aging",
     },
     {
-      "ageInDays": 36,
+      "ageInDays": 11,
       "file": "src/__tests__/api.test.ts",
       "lastCommitDate": "2026-03-25T13:00:00Z",
-      "status": "stale",
+      "status": "aging",
     },
     {
-      "ageInDays": 30,
+      "ageInDays": 4,
       "file": "src/helpers.ts",
       "lastCommitDate": "2026-04-01T08:00:00Z",
-      "status": "aging",
+      "status": "fresh",
     },
     {
-      "ageInDays": 25,
+      "ageInDays": 0,
       "file": "src/api.ts",
       "lastCommitDate": "2026-04-05T15:30:00Z",
-      "status": "aging",
+      "status": "fresh",
     },
     {
-      "ageInDays": 25,
+      "ageInDays": 0,
       "file": "src/index.ts",
       "lastCommitDate": "2026-04-05T15:30:00Z",
-      "status": "aging",
+      "status": "fresh",
     },
   ],
-  "medianAgeDays": 56,
+  "medianAgeDays": 31,
   "staleFiles": [
     {
-      "ageInDays": 56,
-      "file": "docs/USAGE.md",
-      "lastCommitDate": "2026-03-05T14:00:00Z",
+      "ageInDays": 58,
+      "file": "src/auth.ts",
+      "lastCommitDate": "2026-02-05T23:15:00Z",
       "status": "stale",
     },
     {
-      "ageInDays": 42,
-      "file": "src/types.ts",
-      "lastCommitDate": "2026-03-20T11:15:00Z",
-      "status": "stale",
-    },
-    {
-      "ageInDays": 36,
-      "file": "src/__tests__/api.test.ts",
-      "lastCommitDate": "2026-03-25T13:00:00Z",
+      "ageInDays": 44,
+      "file": "src/config.ts",
+      "lastCommitDate": "2026-02-20T08:30:00Z",
       "status": "stale",
     },
   ],
-  "summary": "4 files haven't been touched in over 62 days — they may be dead weight or critical infrastructure nobody dares touch",
+  "summary": "2 files haven't been touched in over 62 days — they may be dead weight or critical infrastructure nobody dares touch",
   "thresholds": {
     "agingLimit": 31,
     "freshLimit": 8,
@@ -1665,7 +1647,7 @@ exports[`fixture regression > contributors report is stable 1`] = `
     },
   ],
   "ghostContributors": [],
-  "newcomers90d": 0,
+  "newcomers90d": 1,
   "summary": "3 contributors — 3 actively committing",
   "top3CommitShare": 100,
   "topContributor": {
@@ -1751,7 +1733,7 @@ exports[`fixture regression > cursed files list is stable 1`] = `
   "excludedBotFiles": [],
   "files": [
     {
-      "ageDays": 30,
+      "ageDays": 4,
       "authors": 1,
       "breakdown": [
         {
@@ -1777,7 +1759,7 @@ exports[`fixture regression > cursed files list is stable 1`] = `
   ],
   "nearMisses": [
     {
-      "ageDays": 25,
+      "ageDays": 0,
       "authors": 1,
       "breakdown": [
         {
@@ -1801,7 +1783,7 @@ exports[`fixture regression > cursed files list is stable 1`] = `
       ],
     },
     {
-      "ageDays": 25,
+      "ageDays": 0,
       "authors": 1,
       "breakdown": [
         {
@@ -1825,7 +1807,7 @@ exports[`fixture regression > cursed files list is stable 1`] = `
       ],
     },
     {
-      "ageDays": 70,
+      "ageDays": 44,
       "authors": 1,
       "breakdown": [
         {
@@ -1849,7 +1831,7 @@ exports[`fixture regression > cursed files list is stable 1`] = `
       ],
     },
     {
-      "ageDays": 84,
+      "ageDays": 58,
       "authors": 1,
       "breakdown": [
         {

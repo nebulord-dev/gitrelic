@@ -5,11 +5,15 @@ import type { RawCommit } from '../utils/git.js';
  * Analyzes the contributors of the repository based on the provided commits and repository age in days.
  * @param commits - The raw commits from the repository.
  * @param repoAgeDays - The age of the repository in days.
+ * @param asOf - The analyzed commit's time (ms): activity windows and
+ *   newcomers count back from it, never from today, so a report on an older
+ *   commit says what was true then.
  * @Returns a report with the top 20 contributors by commit count, the number of active contributors, and a summary.
  */
 export function analyzeContributors(
   commits: RawCommit[],
   repoAgeDays: number,
+  asOf: number,
 ): ContributorReport {
   const authorMap: Map<
     string,
@@ -42,7 +46,6 @@ export function analyzeContributors(
     }
   }
 
-  const now = Date.now();
   const MIN_ACTIVE_DAYS = 90;
   const MIN_GHOST_DAYS = 180;
   const activeWindowDays = Math.max(
@@ -53,8 +56,8 @@ export function analyzeContributors(
     MIN_GHOST_DAYS,
     Math.round(repoAgeDays * 0.5),
   );
-  const activeCutoff = now - activeWindowDays * 86_400_000;
-  const ghostCutoff = now - ghostWindowDays * 86_400_000;
+  const activeCutoff = asOf - activeWindowDays * 86_400_000;
+  const ghostCutoff = asOf - ghostWindowDays * 86_400_000;
 
   const contributors: Contributor[] = Array.from(authorMap.entries())
     .map(([email, data]) => {
@@ -128,7 +131,7 @@ export function analyzeContributors(
   const top3CommitShare =
     totalCommits === 0 ? 0 : (top3Sum / totalCommits) * 100;
 
-  const newcomerCutoff = now - 90 * 86_400_000;
+  const newcomerCutoff = asOf - 90 * 86_400_000;
   const newcomers90d = contributors.filter(
     (c) => new Date(c.firstCommit).getTime() >= newcomerCutoff,
   ).length;

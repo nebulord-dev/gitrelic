@@ -24,12 +24,10 @@ const BOT_CHURN_THRESHOLD = 0.5;
 
 /**
  * How long a file must have gone quiet *before the repository itself did* to
- * count as abandoned. Measured relative to the repo's last commit rather than
- * to today, so a dormant repo doesn't mark every file it contains.
+ * count as abandoned. Age Map measures ages from the analyzed commit, not
+ * today, so a dormant repo doesn't mark every file it contains.
  */
 const ABANDONED_AFTER_DAYS = 180;
-
-const MS_PER_DAY = 86_400_000;
 
 /** The score a file needs to be cursed. */
 export const CURSED_THRESHOLD = 50;
@@ -77,20 +75,6 @@ function botChurnShareByFile(commits: RawCommit[]): Map<string, number> {
   return shares;
 }
 
-/** Days between the repository's most recent commit and now. */
-function repoIdleDays(commits: RawCommit[]): number {
-  let newest = 0;
-  for (const commit of commits) {
-    const ms = Date.parse(commit.date);
-    if (!Number.isNaN(ms) && ms > newest) newest = ms;
-  }
-  // No parseable dates: report zero idle days, which degrades the abandonment
-  // check back to the absolute `ageInDays > ABANDONED_AFTER_DAYS` behaviour
-  // rather than suppressing it. Unreachable with real git output.
-  if (newest === 0) return 0;
-  return Math.max(0, (Date.now() - newest) / MS_PER_DAY);
-}
-
 /**
  * Analyzes the repository to identify "cursed" files that exhibit high churn, low bus factor, and/or age paradox characteristics.
  * @param churn - The churn report for the repository.
@@ -100,7 +84,7 @@ function repoIdleDays(commits: RawCommit[]): number {
  *   are candidates and earn the `fixes` reason.
  * @param parallelDev - The parallel development report for the repository.
  * @param commits - Every commit in the analyzed window. Needed to attribute
- *   churn to humans vs bots and to date the repository's own last activity.
+ *   churn to humans vs bots.
  * @returns Cursed files, plus the ones withheld as machine-generated churn.
  */
 export function findCursedFiles(
@@ -117,7 +101,6 @@ export function findCursedFiles(
 ): CursedFilesReport {
   const totalCommits = commits.length;
   const botShare = botChurnShareByFile(commits);
-  const idleDays = repoIdleDays(commits);
   const excludedBotFiles: string[] = [];
   // Index the other reports by file for O(1) lookups
   const churnByFile = new Map(churn.files.map((f) => [f.file, f]));
@@ -196,14 +179,10 @@ export function findCursedFiles(
       }
     }
 
-    // Abandoned hot file: heavily churned, then left untouched. Measured
-    // against the repo's own last commit, not today — in a dormant repo every
-    // file is old, and an absolute threshold would flag all of them.
-    if (
-      a &&
-      a.ageInDays - idleDays > ABANDONED_AFTER_DAYS &&
-      c.churnScore > 60
-    ) {
+    // Abandoned hot file: heavily churned, then left untouched. Ages count
+    // from the analyzed commit (age-map), not today, so in a dormant repo the
+    // files touched last are fresh rather than all of them old.
+    if (a && a.ageInDays > ABANDONED_AFTER_DAYS && c.churnScore > 60) {
       add(
         'abandoned',
         `Heavily churned, then untouched for ${Math.round(a.ageInDays)} days`,

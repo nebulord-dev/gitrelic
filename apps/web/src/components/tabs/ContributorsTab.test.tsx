@@ -25,8 +25,14 @@ function makeContributor(overrides: Partial<Contributor> = {}): Contributor {
   };
 }
 
-function makeReport(contributors: Contributor[] = []): GitrelicReport {
+function makeReport(
+  contributors: Contributor[] = [],
+  lastCommit = '',
+): GitrelicReport {
   return {
+    // '' is what normalizeReport backfills; reportNow then falls back to the
+    // newest contributor commit.
+    meta: { lastCommit },
     contributors: {
       contributors,
       activeContributors: contributors.filter((c) => c.isActive),
@@ -113,6 +119,23 @@ describe('ContributorsTab', () => {
     expect(focus.textContent).toContain('packages/react-devtools-shared');
     expect(focus.textContent).toContain('packages/react-server');
     expect(focus.textContent).toContain('packages/react-dom');
+  });
+
+  it("dates Last Active from the report's last commit, not today", () => {
+    const report = makeReport(
+      [
+        makeContributor(),
+        makeContributor({
+          email: 'rick@example.com',
+          name: 'Rick',
+          lastCommit: '2026-04-10T00:00:00Z',
+        }),
+      ],
+      '2026-04-20T00:00:00Z',
+    );
+    render(<ContributorsTab report={report} onApplyPreset={vi.fn()} />);
+    expect(screen.getByText('today')).toBeTruthy();
+    expect(screen.getByText('10d ago')).toBeTruthy();
   });
 
   it('renders an empty-state message when the contributor list is empty', () => {

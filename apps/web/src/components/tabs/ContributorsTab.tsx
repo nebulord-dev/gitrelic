@@ -1,4 +1,4 @@
-import { formatRelative } from '@gitrelic/scene';
+import { formatRelative, reportNow } from '@gitrelic/scene';
 
 import Badge from '../shared/Badge';
 import { type Column, SortableTable } from '../shared/SortableTable';
@@ -11,9 +11,12 @@ interface ContributorsTabProps {
   onApplyPreset: (id: PresetId) => void;
 }
 
-function daysSince(iso: string): number | null {
+// Measured from the report's last commit, not today, like the analyzer's
+// active and ghost windows: a saved or older report would otherwise call an
+// active contributor "4mo ago".
+function daysSince(iso: string, now: number): number | null {
   if (!iso) return null;
-  const ms = Date.now() - new Date(iso).getTime();
+  const ms = now - new Date(iso).getTime();
   if (Number.isNaN(ms)) return null;
   return ms / 86_400_000;
 }
@@ -23,6 +26,7 @@ export function ContributorsTab({
   onApplyPreset,
 }: ContributorsTabProps) {
   const contributors = report.contributors.contributors;
+  const now = reportNow(report);
 
   const columns: Column<Contributor>[] = [
     {
@@ -101,7 +105,7 @@ export function ContributorsTab({
       sortValue: (c) => -1 * (new Date(c.lastCommit).getTime() || 0),
       render: (c) => (
         <span className="font-mono text-[10px] text-text-tertiary">
-          {formatRelative(daysSince(c.lastCommit))}
+          {formatRelative(daysSince(c.lastCommit, now))}
         </span>
       ),
     },
