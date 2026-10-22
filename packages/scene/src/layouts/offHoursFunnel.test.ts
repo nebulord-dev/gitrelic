@@ -112,6 +112,27 @@ describe('offHoursFunnelScene', () => {
     expect(mark(s, 'dir:compiler').labelPriority).toBe(3000);
   });
 
+  it('keeps the selection’s name first however big the others are', () => {
+    const big = [
+      pt('monolith', 5000, 400),
+      pt('hot', 3000, 600),
+      pt('small', 40, 4),
+    ];
+    const s = offHoursFunnelScene(
+      { points: big, rate: RATE, minCommits: 10, focus: 'dir:small' },
+      VIEWPORT,
+    );
+    // Sampled band: sizes 40 to 5,000 are far more than its 80 steps.
+    expect(checkScene(s)).toEqual([]);
+    expect(
+      s.marks.filter((m) => m.id.startsWith('band:')).length,
+    ).toBeLessThanOrEqual(81);
+    const p = (id: string) => mark(s, id).labelPriority!;
+    expect(p('dir:small')).toBeGreaterThan(p('dir:hot'));
+    expect(p('dir:hot')).toBeGreaterThan(p('rate-label'));
+    expect(p('rate-label')).toBeGreaterThan(p('dir:monolith'));
+  });
+
   it('says so when no package has enough commits', () => {
     const s = offHoursFunnelScene(
       { points: [], rate: RATE, minCommits: 10 },

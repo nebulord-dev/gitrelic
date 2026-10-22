@@ -180,7 +180,7 @@ export function offHoursFunnelScene(
       Y(rate) - 10,
       `repo ${ratePct(rate)}`,
       'right',
-      1500,
+      1000, // card adds 1000: 2000, the top of the ordinary tier
     ),
   );
 
@@ -206,9 +206,11 @@ export function offHoursFunnelScene(
       r: DOT_R[pt.tier],
       alpha: pt.tier === 0 ? 0.75 : 1,
       label: pt.name,
+      // Tiers of 1000: the selection, then above chance, then the rest,
+      // bigger first within a tier (capped, so a tier never overruns).
       labelPriority: focused
         ? 3000
-        : (pt.aboveChance ? 2000 : 1000) + pt.commits,
+        : (pt.aboveChance ? 2000 : 1000) + Math.min(pt.commits, 999),
       z: pt.tier + 1,
       tip: [
         pt.name,
