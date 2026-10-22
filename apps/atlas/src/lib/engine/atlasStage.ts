@@ -12,7 +12,7 @@ import {
   type Scene,
 } from '@gitrelic/scene';
 
-import { HitTester } from './hitTest';
+import { HitTester, hitLink } from './hitTest';
 import { LabelLayer } from './labelLayer';
 import { MarkStore } from './markStore';
 import { TooltipLayer } from './tooltipLayer';
@@ -69,6 +69,11 @@ export class AtlasStage {
   private pointerHover: EntityId | null = null;
   /** An entity hovered from outside (a table row). */
   private rowHover: EntityId | null = null;
+  /**
+   * A link with a tip under the pointer, where no mark is, and the pointer's
+   * screen position: its tooltip follows the pointer.
+   */
+  private linkHover: { id: string; sx: number; sy: number } | null = null;
   /** The marks holding entities the scene didn't draw (`Scene.standIns`). */
   private standIns: Scene['standIns'];
   /** Marks whose click selects another entity (`Mark.selects`). */
@@ -134,8 +139,15 @@ export class AtlasStage {
         this.requestDraw(false);
       },
       fit: () => this.fitView(),
-      hover: (sx, sy) => this.setHovered(this.pick(sx, sy)),
-      leave: () => this.setHovered(null),
+      hover: (sx, sy) => {
+        const mark = this.pick(sx, sy);
+        this.setHovered(mark);
+        this.setLinkHover(mark ? null : this.pickLink(sx, sy), sx, sy);
+      },
+      leave: () => {
+        this.setHovered(null);
+        this.setLinkHover(null, 0, 0);
+      },
       click: (sx, sy, repeat) => {
         const hit = this.pick(sx, sy);
         const key = hit && this.toggles.get(hit);
@@ -300,6 +312,21 @@ export class AtlasStage {
     return this.hits.hitMark(this.store, wx, wy, HIT_SLOP / this.view.scale);
   }
 
+  /** The link with a tooltip under a screen point (links aren't clickable). */
+  pickLink(sx: number, sy: number): string | null {
+    const [wx, wy] = screenToWorld(this.view, sx, sy);
+    const withTips = [...this.engine.links.values()].filter((l) => l.tip);
+    if (withTips.length === 0) return null;
+    return hitLink(withTips, this.store, wx, wy, HIT_SLOP / this.view.scale);
+  }
+
+  private setLinkHover(id: string | null, sx: number, sy: number): void {
+    const was = this.linkHover;
+    if (!id && !was) return;
+    this.linkHover = id ? { id, sx, sy } : null;
+    this.requestDraw(false);
+  }
+
   /**
    * Hovers `id` from outside the canvas (a detail-table row): its label is
    * pinned and its tooltip shown, as if the pointer were on it. It has its
@@ -384,7 +411,21 @@ export class AtlasStage {
     const selected = this.markFor(this.selected);
     if (selected) pinned.add(selected);
     this.labels.update(this.store, this.view, this.size, pinned, selected);
-    this.tooltip.update(this.store, this.view, this.size, this.hovered);
+    const link =
+      !this.hovered && this.linkHover
+        ? this.engine.links.get(this.linkHover.id)
+        : undefined;
+    if (link?.tip && this.linkHover) {
+      this.tooltip.updateAt(
+        link.id,
+        link.tip,
+        this.linkHover.sx,
+        this.linkHover.sy,
+        this.size,
+      );
+    } else {
+      this.tooltip.update(this.store, this.view, this.size, this.hovered);
+    }
     this.opts.onFrame?.(this.clock.now() - start);
     // A plan can cut the engine's repaint short, or end before the camera
     // lands; finish either anyway. requestDraw does nothing while the engine
