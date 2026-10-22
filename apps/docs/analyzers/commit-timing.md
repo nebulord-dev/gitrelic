@@ -1,12 +1,12 @@
 # Commit Timing
 
-The Commit Timing analyzer answers two questions: **when does this team work?** and **is anyone grinding?** It measures every commit's hour-of-day and day-of-week (in the author's local time, parsed from the commit's ISO timezone offset) and surfaces two stress signals: late-night work (11pm–4am) and weekend work (Sat / Sun).
+The Commit Timing analyzer answers two questions: **when does this team work?** and **is anyone grinding?** It measures every commit's hour-of-day and day-of-week (in the author's local time, parsed from the commit's ISO timezone offset) and surfaces two stress signals: late-night work (11pm–5am: commits from 23:00 through 04:59) and weekend work (Sat / Sun).
 
 ## What it measures
 
 Every commit contributes to a 7×24 hour-day matrix. Per file (and per author) we track:
 
-- **Late-night percent** — commits between 11pm and 4am as a share of total
+- **Late-night percent** — commits from 11pm to 5am (23:00 through 04:59) as a share of total
 - **Weekend percent** — commits on Saturday or Sunday as a share of total
 
 Per-file stress score:
@@ -18,6 +18,17 @@ stressScore = round(lateNightPercent × 0.6 + weekendPercent × 0.4)
 Late-night is weighted more heavily because it's a stronger crunch / burnout signal — weekend work can be voluntary side-projects, while 3am commits typically aren't.
 
 A file needs at least 3 commits to get a score. An author needs at least 5 commits to appear on the contributor leaderboard. Both floors exclude noise from one-off commits.
+
+## Which code changes off-hours
+
+Per-file stress scores are rated from three commits, so one 2am commit in a three-commit test file scores 67% late night: on React's last 12 months, every top "stressed" file had three or four commits. The report therefore also asks the question at the package level, with enough commits to answer it:
+
+- A commit is **off-hours** when it's late night or on a weekend, in the author's local time.
+- **Packages** are `packages/<name>` in a `packages/` monorepo, otherwise the top-level directory. A commit counts once in each package it touches.
+- **Sweeping commits** (more than 20 files) and **bot commits** are left out, of the repo's rate and of every package's count: a 300-file dependency bump at 1am isn't three hundred files changing at night.
+- A package with at least **10 commits** is tested against the repo's own off-hours rate, the same test [Fix rate](/analyzers/fix-rate) uses: it's **above chance** when that many off-hours commits would happen by chance less than 2.5% of the time.
+
+On React's last 12 months, 10.4% of commits are off-hours. `react-server` (15 of 66, 23%) and `react-dom` (16 of 86, 19%) are above chance; the compiler is the most regular package (5 of 87). The test adapts to each team: a repo that works evenings has a higher rate, and only packages unusual for that team stand out.
 
 ## How to read the punch card
 

@@ -273,6 +273,7 @@ const EMPTY_COMMIT_TIMING: CommitTimingReport = {
   tierMix: { low: 0, medium: 0, high: 0, critical: 0 },
   byMonth: [],
   authorStress: [],
+  offHours: { commits: 0, offHours: 0, rate: 0, minCommits: 10, packages: [] },
 };
 const EMPTY_RENAME_TRACKING: RenameTrackingReport = {
   renames: [],

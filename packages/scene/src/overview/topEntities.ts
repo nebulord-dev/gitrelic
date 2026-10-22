@@ -115,16 +115,22 @@ const SOURCES: Record<string, (r: GitrelicReport) => Candidate[]> = {
     byDesc(r.contributors.contributors, (c) => c.commitCount).map((c) => ({
       id: ids.person(c.email),
       label: c.name,
-      value: `${n(c.commitCount)} commits${c.isGhost ? ' · gone quiet' : ''}`,
+      value: `${n(c.commitCount)} commits${c.isGhost ? ' · gone' : ''}`,
     })),
   'parallel-dev': (r) =>
     r.parallelDev.hotFiles.map((f) =>
       file(f.file, `parallel ${f.parallelScore}`),
     ),
+  // Packages above chance first (core's order), as directories; the root
+  // package has no directory to select.
   'commit-timing': (r) =>
-    r.commitTiming.stressFiles.map((f) =>
-      file(f.file, `${Math.round(f.lateNightPercent)}% late night`),
-    ),
+    r.commitTiming.offHours.packages
+      .filter((p) => p.package !== '')
+      .map((p) => ({
+        id: ids.dir(p.package),
+        label: shortDir(p.package),
+        value: `${p.percent}% off-hours`,
+      })),
   'co-authors': (r) =>
     r.coAuthors.aiAuthors.map((a) => ({
       id: ids.person(a.author),

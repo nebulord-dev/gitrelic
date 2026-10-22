@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
 
-import { analyzeCommitTiming } from './commit-timing.js';
+import {
+  analyzeCommitTiming,
+  chanceAllows,
+  MIN_PACKAGE_COMMITS,
+  offHoursByPackage,
+  packageOf,
+} from './commit-timing.js';
 import type { RawCommit } from '../utils/git.js';
 
 function makeCommit(overrides: Partial<RawCommit> = {}): RawCommit {
@@ -460,5 +466,92 @@ describe('edge cases', () => {
     });
     const report = analyzeCommitTiming(commits, []);
     expect(report.authorStress).toEqual([]);
+  });
+});
+
+describe('offHoursByPackage', () => {
+  // Weekday noon and Saturday noon in New York, and 2am Tuesday.
+  const DAY = '2025-06-03T12:00:00-04:00'; // Tue
+  const SAT = '2025-06-07T12:00:00-04:00';
+  const LATE = '2025-06-03T02:00:00-04:00';
+  let h = 0;
+  const at = (date: string, files: string[], authorEmail = 'a@b.com') =>
+    makeCommit({ hash: String(++h), date, files, authorEmail });
+  const tracked = (commits: RawCommit[]) =>
+    new Set(commits.flatMap((c) => c.files));
+
+  it('flags a package changed off-hours more than the repo’s rate explains', () => {
+    // 40 commits elsewhere, 2 off-hours (5%); packages/night: 12 of 20.
+    const commits = [
+      ...Array.from({ length: 38 }, () => at(DAY, ['src/a.ts'])),
+      at(SAT, ['src/a.ts']),
+      at(LATE, ['src/a.ts']),
+      ...Array.from({ length: 8 }, () => at(DAY, ['packages/night/x.ts'])),
+      ...Array.from({ length: 6 }, () => at(SAT, ['packages/night/x.ts'])),
+      ...Array.from({ length: 6 }, () => at(LATE, ['packages/night/x.ts'])),
+    ];
+    const r = offHoursByPackage(commits, tracked(commits));
+    expect(r.commits).toBe(60);
+    expect(r.offHours).toBe(14);
+    expect(r.rate).toBeCloseTo(14 / 60);
+    const [night, src] = r.packages;
+    expect(night).toMatchObject({
+      package: 'packages/night',
+      commits: 20,
+      offHours: 12,
+      percent: 60,
+      aboveChance: true,
+    });
+    expect(night.allowed).toBe(chanceAllows(20, 14 / 60));
+    expect(src).toMatchObject({ package: 'src', aboveChance: false });
+  });
+
+  it('leaves out sweeping and bot commits, from the rate and the counts', () => {
+    const wide = Array.from({ length: 21 }, (_, i) => `src/f${i}.ts`);
+    const commits = [
+      ...Array.from({ length: 12 }, () => at(DAY, ['src/a.ts'])),
+      at(LATE, wide),
+      at(
+        LATE,
+        ['src/a.ts'],
+        '49699333+dependabot[bot]@users.noreply.github.com',
+      ),
+    ];
+    const r = offHoursByPackage(commits, tracked(commits));
+    expect(r.commits).toBe(12);
+    expect(r.offHours).toBe(0);
+    expect(r.packages[0]).toMatchObject({
+      package: 'src',
+      commits: 12,
+      offHours: 0,
+    });
+  });
+
+  it('tests only packages with enough commits, and counts a commit once per package', () => {
+    const commits = [
+      ...Array.from({ length: MIN_PACKAGE_COMMITS }, () =>
+        at(DAY, ['src/a.ts', 'src/b.ts', 'docs/x.md']),
+      ),
+      at(DAY, ['tiny/x.ts']),
+    ];
+    const r = offHoursByPackage(commits, tracked(commits));
+    expect(r.packages.map((p) => [p.package, p.commits])).toEqual([
+      ['docs', MIN_PACKAGE_COMMITS],
+      ['src', MIN_PACKAGE_COMMITS],
+    ]);
+  });
+
+  it('is part of the report', () => {
+    const commits = [at(DAY, ['src/a.ts'])];
+    expect(analyzeCommitTiming(commits, ['src/a.ts']).offHours.commits).toBe(1);
+    expect(analyzeCommitTiming([], []).offHours.packages).toEqual([]);
+  });
+});
+
+describe('packageOf', () => {
+  it('matches scene’s rule', () => {
+    expect(packageOf('packages/react-dom/src/x.js')).toBe('packages/react-dom');
+    expect(packageOf('compiler/crates/a.rs')).toBe('compiler');
+    expect(packageOf('README.md')).toBe('');
   });
 });

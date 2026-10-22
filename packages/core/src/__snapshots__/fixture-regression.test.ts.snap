@@ -953,6 +953,22 @@ exports[`fixture regression > commit timing report is stable 1`] = `
     },
   ],
   "highStress": 0,
+  "offHours": {
+    "commits": 20,
+    "minCommits": 10,
+    "offHours": 8,
+    "packages": [
+      {
+        "aboveChance": false,
+        "allowed": 11,
+        "commits": 18,
+        "offHours": 8,
+        "package": "src",
+        "percent": 44,
+      },
+    ],
+    "rate": 0.4,
+  },
   "repoHourDayMatrix": [
     [
       0,

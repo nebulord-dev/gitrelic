@@ -27,6 +27,49 @@ describe('lensReadings', () => {
     expect(byId.get('languages')?.reason).toBeUndefined();
   });
 
+  it('reads Commit Timing as the repo’s off-hours share', () => {
+    const withOffHours = {
+      ...report,
+      commitTiming: {
+        ...report.commitTiming,
+        offHours: {
+          commits: 100,
+          offHours: 12,
+          rate: 0.12,
+          minCommits: 10,
+          packages: [
+            {
+              package: 'packages/server',
+              commits: 40,
+              offHours: 12,
+              percent: 30,
+              allowed: 8,
+              aboveChance: true,
+            },
+            {
+              package: '',
+              commits: 20,
+              offHours: 2,
+              percent: 10,
+              allowed: 5,
+              aboveChance: false,
+            },
+            {
+              package: 'src',
+              commits: 30,
+              offHours: 3,
+              percent: 10,
+              allowed: 7,
+              aboveChance: false,
+            },
+          ],
+        },
+      },
+    } as GitrelicReport;
+    const byId = new Map(lensReadings(withOffHours).map((r) => [r.preset, r]));
+    expect(byId.get('commit-timing')?.value).toBe('12% off-hours');
+  });
+
   it('reads missing data as a dash, not a zero that looks like a finding', () => {
     const byId = new Map(
       lensReadings(normalizeReport({})).map((r) => [r.preset, r]),
