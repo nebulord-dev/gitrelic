@@ -419,4 +419,20 @@ export {
 } from './contributors/lanes';
 export { lanesScene } from './layouts/lanes';
 export { timeBins, type TimeBins } from './time/bins';
+export {
+  PAIR_PEOPLE,
+  parallelPairs,
+  parallelPairsOf,
+  type Pair,
+  type PairPerson,
+  type PairsData,
+} from './parallel/pairs';
+export { pairsScene } from './layouts/pairs';
+export {
+  PARALLEL_TIER_NAMES,
+  pairsLayout,
+  parallelDevFindings,
+  parallelDevTable,
+  parallelDevView,
+} from './views/parallelDev';
 export { VIEWS } from './views/index';

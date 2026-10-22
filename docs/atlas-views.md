@@ -468,7 +468,15 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 
 **Dropped:** classic's score histogram (a distribution, the inspector's job, and of a score that was mostly noise) and its monthly Trend (the time strip); board C, the matrix (exact, but a table: the detail table covers it).
 
-**Open for the lens build:** tooltips (a chord: the two people, weeks and files; a person: collision weeks and top partners; a lane mark: the week and the names), findings, the table's columns, and whether a pair needs its own entity id to be selectable.
+**As built (Pairs, RELIC-371):**
+
+- **Data** is `parallel/pairs.ts` (`parallelPairsOf`, memoised per report), read from core's `parallelDev.pairs`: no commit history needed, so the lens draws with the lite report. Up to 24 people (`PAIR_PEOPLE`) by the sum of their pairs' weeks (a size, not a count of weeks: a week shared with two partners counts twice), and only pairs between them. Circle order is greedy: the most-colliding person, then each time the person tied most strongly to those placed, so partners sit together.
+- **Layout** is `layouts/pairs.ts`. An **ellipse**, 1.45 times wider than tall, with people spaced **evenly by height** down the right half and back up the left. A circle with even angles bunched people near the top and bottom, and on React four names were culled there. Names sit beside their dots (right half right, left half left). Chords are `arc` links bowed toward the centre (`bow` signed by which side of the chord the centre is), as wide as the pair's weeks, with `Link.tip`; the scene sets `hoverLinks`. A selected person's chords take the accent, people they never met dim to 0.55 (over the label floor), and each partner's second line says their weeks together.
+- **Tooltips:** a person: partners and status, then their top three partners with weeks. A chord: the two people, their weeks, the files they shared most.
+- **Pairs aren't selectable.** A chord selects nothing (links never do); the inspector's pair list makes each name a chip that selects that person.
+- **Inspector (lens mode):** `ParallelDevCard`: the number of pairs, the findings (top pair and files; the file with the most weeks of 2+ people and its lockstep family; what was left out), the six pairs who meet most, and the table link.
+- **Table:** the files with two or more collision weeks, most weeks first, tiered by core's score tiers.
+- **React (last 12 months):** 45 pairs. Silbermann has 13 partners; the right half holds the group around him (Liebau, Lesiutin, Pope, Hanlon, Markbåge, Story); the gone people and one-off pairs sit on the left. Collision lanes, the alternate form, is the next PR.
 
 ---
 

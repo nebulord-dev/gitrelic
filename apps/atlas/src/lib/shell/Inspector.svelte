@@ -22,6 +22,7 @@
   import FixRateCard from '../inspector/FixRateCard.svelte';
   import HotspotsCard from '../inspector/HotspotsCard.svelte';
   import LensPreviewCard from '../inspector/LensPreviewCard.svelte';
+  import ParallelDevCard from '../inspector/ParallelDevCard.svelte';
   import PersonCard from '../inspector/PersonCard.svelte';
   import RepoMapCard from '../inspector/RepoMapCard.svelte';
   import RepositoryCard from '../inspector/RepositoryCard.svelte';
@@ -292,6 +293,9 @@
   {:else if lens === 'contributors' && lensEntry}
     <ExplainCard entry={lensEntry} />
     <ContributorsCard {report} {index} {commits} {onselect} {ontable} />
+  {:else if lens === 'parallel-dev' && lensEntry}
+    <ExplainCard entry={lensEntry} />
+    <ParallelDevCard {report} {index} {onselect} {ontable} />
   {:else if lens === 'overview'}
     <RepoMapCard {report} {onselect} />
     {#if lensEntry}<ExplainCard entry={lensEntry} />{/if}

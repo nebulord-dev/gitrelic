@@ -172,7 +172,7 @@ export const CATALOG: readonly CatalogEntry[] = [
     explain:
       'Files edited by several people in the same week; concurrent work correlates with defects.',
     docsPath: 'analyzers/parallel-dev',
-    atlas: false,
+    atlas: true,
   },
   {
     id: 'commit-timing',
