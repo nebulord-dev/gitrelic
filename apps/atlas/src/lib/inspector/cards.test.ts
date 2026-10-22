@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { fixRateReport } from '../../../../../packages/scene/test/fixRateReport';
 import reportJson from '../../../../../packages/scene/test/fixtures/report.small.json';
+import { parallelReport } from '../../../../../packages/scene/test/parallelReport';
 import { fixesReport } from '../../../../../packages/scene/test/riskFixesReport';
 import ActivityCard from './ActivityCard.svelte';
 import Card from './Card.svelte';
@@ -13,6 +14,7 @@ import ContributorsCard from './ContributorsCard.svelte';
 import FindingCard from './FindingCard.svelte';
 import FixRateCard from './FixRateCard.svelte';
 import HotspotsCard from './HotspotsCard.svelte';
+import ParallelDevCard from './ParallelDevCard.svelte';
 import RiskCard from './RiskCard.svelte';
 import WhatToDoCard from './WhatToDoCard.svelte';
 import type { GitrelicReport } from '@gitrelic/core';
@@ -180,6 +182,40 @@ describe('ContributorsCard', () => {
     await fireEvent.click(
       screen.getByRole('button', {
         name: 'All 3 contributors in the table (T) ▸',
+      }),
+    );
+    expect(ontable).toHaveBeenCalled();
+  });
+});
+
+describe('ParallelDevCard', () => {
+  const report = parallelReport();
+  const pindex = buildEntityIndex(report);
+
+  it('leads with the pairs, then the findings', () => {
+    render(ParallelDevCard, { report, index: pindex });
+    expect(
+      screen.getByText(/of people on the same files in the same week/)
+        .previousElementSibling?.textContent,
+    ).toBe('3');
+    expect(
+      screen.getByText(/committed to the same files in 3 weeks/),
+    ).toBeTruthy();
+  });
+
+  it('lists the pairs who meet most as people you can select, and opens the table', async () => {
+    const onselect = vi.fn();
+    const ontable = vi.fn();
+    render(ParallelDevCard, { report, index: pindex, onselect, ontable });
+    const list = screen.getByRole('heading', {
+      name: 'Pairs who meet most',
+    }).parentElement!;
+    expect(list.querySelectorAll('li')).toHaveLength(3);
+    await fireEvent.click(list.querySelectorAll('li button')[0]);
+    expect(onselect).toHaveBeenCalledWith('person:ann@x');
+    await fireEvent.click(
+      screen.getByRole('button', {
+        name: 'All 2 files people collided on in the table (T) ▸',
       }),
     );
     expect(ontable).toHaveBeenCalled();

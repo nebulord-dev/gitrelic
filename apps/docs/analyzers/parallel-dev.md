@@ -60,6 +60,19 @@ A few specifics worth knowing:
 
 Beside the files, the report lists **pairs of people** who committed to the same file in the same week, with how many **weeks** they did and the files they shared most. Weeks, not file-weeks: a feature flag flipped across eight fork files in one week counts once. On React that changes the picture: Lesiutin and Hanlon shared 15 file-weeks, nearly all of them flag forks, but only 2 weeks.
 
+## In Atlas: pairs
+
+Atlas (`gitrelic --ui atlas`) draws Parallel Dev as **pairs of people**, under **Team & Activity**. The question it answers is who has to coordinate with whom.
+
+- **People sit around an oval**, up to 24 of them: the people in the most pairs. Partners sit near each other, so groups that keep landing on the same files form neighborhoods. A dot's size is how much that person collides, and its color is their status (grey active, brown quiet, orange gone, as in [Contributors](/analyzers/contributors)).
+- **A chord joins two people** who committed to the same file in the same week. Its width is how many weeks they did.
+
+Point at a person, or their name, to light their chords while the rest fade. Click someone to keep their chords lit: the people they never met dim, and each partner says how many weeks they shared. Hover a chord for the two people, their weeks and the files they shared most.
+
+With nothing selected, the inspector leads with how many pairs there are. Its findings name the pair who meet most and their files, the file with the most weeks of two or more people (and its family, when it changes in lockstep with others), and how many sweeping and bot commits were left out. A list of the pairs who meet most follows; each name selects that person.
+
+The detail table (`T`) lists the files people collided on in two or more weeks: **who** (the people who met on it, most weeks first: the first three by name, then how many more), weeks with two or more people, active weeks, the most people in one week, the score and the package. Its filter matches people's names too, so typing a name lists the files that person met others on.
+
 ## The score formula
 
 For each file that survives the floors, the analyzer computes:

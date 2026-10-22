@@ -6,6 +6,7 @@ import { contributorsView } from './contributors';
 import { fixRateView } from './fixRate';
 import { hotspotsView } from './hotspots';
 import { overviewView } from './overview';
+import { parallelDevView } from './parallelDev';
 import { riskView } from './risk';
 import type { AnalyzerView } from '../model';
 
@@ -16,4 +17,5 @@ export const VIEWS: ReadonlyMap<string, AnalyzerView> = new Map([
   ['cursed-files', riskView],
   ['fix-rate', fixRateView],
   ['contributors', contributorsView],
+  ['parallel-dev', parallelDevView],
 ]);
