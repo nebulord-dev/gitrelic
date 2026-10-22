@@ -33,6 +33,23 @@ describe('parallelDevFindings', () => {
     expect(text(left.segments)).toMatch(/^Left out 3 sweeping commits/);
   });
 
+  it('names the hot file’s family when its family-mates are listed too', () => {
+    const report = parallelReport();
+    const base = report.parallelDev.files[0];
+    // All three flag files listed: one family in the lanes, one here.
+    report.parallelDev.files = [
+      base,
+      { ...base, file: 'src/flags.www.js', parallelWeeks: 2 },
+      { ...base, file: 'src/flags.native.js', parallelWeeks: 2 },
+    ];
+    const hot = parallelDevFindings(input(report)).find(
+      (f) => f.id === 'hot-file',
+    )!;
+    expect(text(hot.segments)).toBe(
+      'flags.js had two or more people in 3 of its 8 active weeks, one of 3 files that change together.',
+    );
+  });
+
   it('says nothing about pairs or files when there are none', () => {
     const report = parallelReport([], { sweepingCommits: 0, botCommits: 0 });
     report.parallelDev.files = [];

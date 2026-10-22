@@ -11,7 +11,7 @@
 
 import { distinctNames } from '../format/distinctNames';
 import { packageOf } from '../hotspots/points';
-import { ids, type EntityId } from '../ids';
+import { entityKind, ids, type EntityId } from '../ids';
 import { STATUS_TEXT } from './flow';
 import type { PersonStatus } from '../contributors/flow';
 import type { ColorRole, Guide, Mark, Scene, Viewport } from '../model';
@@ -74,9 +74,13 @@ export function collisionsScene(
   }
 
   const top = 64;
-  const rowH = Math.min(
-    ROW_MAX_H,
-    (viewport.height - 64 - top) / Math.max(1, rows.length),
+  // Floored, so a short stage squeezes rows rather than turning them over.
+  const rowH = Math.max(
+    8,
+    Math.min(
+      ROW_MAX_H,
+      (viewport.height - 64 - top) / Math.max(1, rows.length),
+    ),
   );
   const bottom = top + rowH * rows.length;
   const height = bottom + (data.hidden > 0 ? 48 : 24);
@@ -194,7 +198,7 @@ export function collisionsScene(
     for (const mark of row.marks) {
       const x = left + mark.bin * colW + colW / 2;
       const step = Math.min(2 * DOT_R + 2, room / mark.people.length);
-      const r = Math.min(DOT_R, step / 2 - 0.5);
+      const r = Math.max(1, Math.min(DOT_R, step / 2 - 0.5));
       const top0 = y - (step * (mark.people.length - 1)) / 2;
       const when =
         unit === 'week'
@@ -207,8 +211,13 @@ export function collisionsScene(
           .join(', ');
         const pid = ids.person(p.email);
         const mine = focus === pid;
+        // Fade for a selected person (everyone else's dots), or a drawn
+        // file (other rows'); a file past the drawn rows fades nothing, as
+        // nothing here would be lit.
         const faded =
-          focus !== null && !mine && (focusRow === undefined || !lit);
+          focus !== null &&
+          !mine &&
+          (focusRow !== undefined ? !lit : entityKind(focus) === 'person');
         marks.push({
           id: `collisions-dot:${row.file}:${mark.bin}:${p.email}`,
           parent: id,

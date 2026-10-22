@@ -59,6 +59,11 @@ export interface Collisions {
   rows: CollisionRow[];
   /** Rows past `COLLISION_ROWS`, left to the table. */
   hidden: number;
+  /**
+   * Every listed file's row-mates (itself included), drawn or not, so a
+   * finding names the same family the lanes would, past the cap too.
+   */
+  familyOf: ReadonlyMap<string, readonly string[]>;
 }
 
 export function collisions(report: GitrelicReport): Collisions {
@@ -71,7 +76,7 @@ export function collisions(report: GitrelicReport): Collisions {
     .map((timeMs) => ({ timeMs, author: '', files: [] }));
   const { unit, binStarts, binOf } = timeBins(span);
   if (files.length === 0 || binStarts.length === 0)
-    return { unit, binStarts, rows: [], hidden: 0 };
+    return { unit, binStarts, rows: [], hidden: 0, familyOf: new Map() };
 
   const byEmail = new Map(
     report.contributors.contributors.map((c) => [c.email, c]),
@@ -128,6 +133,8 @@ export function collisions(report: GitrelicReport): Collisions {
     const weeks = new Set<string>();
     for (const m of members) {
       for (const w of m.windows) {
+        // Counted even if a window fell outside the bins (it can't, with
+        // bins spanning the history): weeks are the files' own count.
         weeks.add(w.weekStart);
         const b = binOf(Date.parse(w.weekStart));
         if (b < 0 || b >= binStarts.length) continue;
@@ -158,6 +165,9 @@ export function collisions(report: GitrelicReport): Collisions {
     binStarts,
     rows: rows.slice(0, COLLISION_ROWS),
     hidden: Math.max(0, rows.length - COLLISION_ROWS),
+    familyOf: new Map(
+      rows.flatMap((r) => r.members.map((m) => [m, r.members])),
+    ),
   };
 }
 

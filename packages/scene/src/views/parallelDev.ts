@@ -77,10 +77,7 @@ export function parallelDevFindings(input: ViewInput): Finding[] {
       b.parallelWeeks - a.parallelWeeks || b.parallelScore - a.parallelScore,
   )[0];
   if (hot) {
-    const family = collisionsOf(report).rows.find((r) =>
-      r.members.includes(hot.file),
-    );
-    const size = family?.members.length ?? 1;
+    const size = collisionsOf(report).familyOf.get(hot.file)?.length ?? 1;
     findings.push({
       id: 'hot-file',
       tone: 'neutral',

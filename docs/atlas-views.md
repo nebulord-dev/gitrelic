@@ -476,7 +476,7 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 - **Pairs aren't selectable.** A chord selects nothing (links never do); the inspector's pair list makes each name a chip that selects that person.
 - **Inspector (lens mode):** `ParallelDevCard`: the number of pairs, the findings (top pair and files; the file with the most weeks of 2+ people and its lockstep family; what was left out), the six pairs who meet most, and the table link.
 - **Table:** the files with two or more collision weeks, most weeks first, tiered by core's score tiers. A **People** column (asked for at review: "what files are they, and who?") names who met on each file from its `windows`, most collision weeks first, three by name then "+N"; the filter matches every name, so a person's files are one word away. On React the flag forks read "Ruslan Lesiutin, Jack Pope, Rick Hanlon +4".
-- **React (last 12 months):** 45 pairs. Silbermann has 13 partners; the right half holds the group around him (Liebau, Lesiutin, Pope, Hanlon, Markbåge, Story); the gone people and one-off pairs sit on the left. 
+- **React (last 12 months):** 45 pairs. Silbermann has 13 partners; the right half holds the group around him (Liebau, Lesiutin, Pope, Hanlon, Markbåge, Story); the gone people and one-off pairs sit on the left.
 
 **As built (Collision lanes, RELIC-371):**
 

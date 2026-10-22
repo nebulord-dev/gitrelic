@@ -71,8 +71,7 @@ export interface RootCauses {
   hubCount: number;
 }
 
-/** A pair shares at least `strength`% of the busier file's commits over `commits`. */
-/** Whether a coupled pair changes together at least this often, this many times. */
+/** A pair shares at least `strength`% of the busier file's commits, over `commits`. */
 export function together(
   p: CoupledPair,
   strength: number,

@@ -95,6 +95,40 @@ describe('collisionsScene', () => {
     }
   });
 
+  it('fades nothing for a selected file it doesn’t draw', () => {
+    const focused = collisionsScene(data, VIEWPORT, {
+      focus: ids.file('src/only-in-the-table.ts'),
+    });
+    for (const m of dots(focused)) expect(m.alpha).toBeGreaterThan(0.5);
+  });
+
+  it('bins by month past two years, with yearly ticks and month tooltips', () => {
+    const r = report();
+    r.meta.firstCommit = '2023-01-02T09:00:00Z';
+    r.meta.lastCommit = '2026-03-02T09:00:00Z';
+    const monthly = collisions(r);
+    expect(monthly.unit).toBe('month');
+    const s = collisionsScene(monthly, VIEWPORT);
+    expect(checkScene(s)).toEqual([]);
+    const ticks = s.marks
+      .filter((m) => m.id.startsWith('collisions-tick:'))
+      .map((m) => m.label);
+    expect(ticks).toEqual(['Jan 23', 'Jan 24', 'Jan 25', 'Jan 26']);
+    expect(s.marks.find((m) => m.id === 'collisions-head')!.label).toBe(
+      'months with two or more people on a file',
+    );
+    const jan = dots(s).find((m) =>
+      m.id.startsWith('collisions-dot:src/flags.js:'),
+    )!;
+    expect(jan.tip![1]).toMatch(/^Jan 2026 · /);
+  });
+
+  it('keeps rows and dots sound on a very short stage', () => {
+    const s = collisionsScene(data, { width: 1200, height: 100 });
+    expect(checkScene(s)).toEqual([]);
+    for (const m of dots(s)) expect(m.r).toBeGreaterThanOrEqual(1);
+  });
+
   it('names a family’s files in its row’s tooltip', () => {
     const r = report();
     const family = ['src/flags.js', 'src/flags.www.js', 'src/flags.native.js'];
