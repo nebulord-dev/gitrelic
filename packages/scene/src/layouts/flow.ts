@@ -112,8 +112,12 @@ export function flowScene(
     };
   }
 
-  const leftX = Math.round(viewport.width * 0.32);
-  const rightX = Math.round(viewport.width * 0.68);
+  // Columns far apart: with their names beside them, the picture is about
+  // twice as wide as it is tall, the shape of the stage, so a fit fills it
+  // across rather than leaving its sides empty. The long bands read better
+  // too: crossings spread out over the width.
+  const leftX = Math.round(viewport.width * 0.17);
+  const rightX = Math.round(viewport.width * 0.83);
   const bottom = viewport.height - 40;
 
   // Node keys: a person's email or a package's dir; null is the others' node.
