@@ -625,6 +625,68 @@ describe('AtlasStage', () => {
     expect(label()).toBeTruthy();
   });
 
+  it('selects a mark when its name is clicked', async () => {
+    const { stage, fc, host, onSelect } = await setup();
+    stage!.show(scene(dot('person:a', 200, 100, { label: 'Ann Example' })));
+    settle(fc);
+    // Well right of the dot (r 10), on its label.
+    const sx = 200 * stage!.transform.scale + stage!.transform.tx + 40;
+    const sy = 100 * stage!.transform.scale + stage!.transform.ty;
+    host.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        pointerId: 1,
+        clientX: sx,
+        clientY: sy,
+      }),
+    );
+    host.dispatchEvent(
+      new PointerEvent('pointerup', { pointerId: 1, clientX: sx, clientY: sy }),
+    );
+    expect(onSelect).toHaveBeenCalledWith('person:a', false);
+  });
+
+  it('lights a hovered mark’s links when the scene asks', async () => {
+    const { stage, fc, host, frames } = await setup();
+    const withLinks = (hoverLinks: boolean) => ({
+      ...scene(dot('person:a', 50, 100), dot('dir:src', 350, 100)),
+      links: [
+        {
+          id: 'a-src',
+          source: 'person:a',
+          target: 'dir:src',
+          curve: 'straight' as const,
+          width: 4,
+          paint: '--link' as const,
+          alpha: 0.3,
+        },
+      ],
+      hoverLinks,
+    });
+    const hoverA = () => {
+      host.dispatchEvent(
+        new PointerEvent('pointermove', {
+          pointerId: 1,
+          clientX: 50 * stage!.transform.scale + stage!.transform.tx,
+          clientY: 100 * stage!.transform.scale + stage!.transform.ty,
+        }),
+      );
+      fc.frame();
+    };
+    stage!.show(withLinks(true));
+    settle(fc);
+    hoverA();
+    // The focus changed, so links re-tessellate.
+    expect(frames.at(-1)).toMatchObject({ linkFocus: 'person:a', dirty: true });
+    host.dispatchEvent(new PointerEvent('pointerleave', { pointerId: 1 }));
+    fc.frame();
+    expect(frames.at(-1)).toMatchObject({ linkFocus: null, dirty: true });
+
+    stage!.show(withLinks(false));
+    settle(fc);
+    hoverA();
+    expect(frames.at(-1)?.linkFocus).toBeNull();
+  });
+
   it('shows a link’s tip by the pointer when no mark is under it', async () => {
     const { stage, fc, host, labelHost, onHover } = await setup();
     stage!.show({

@@ -36,6 +36,20 @@ const spans = (host: HTMLElement) =>
   );
 
 describe('LabelLayer', () => {
+  it('says whose shown label covers a point, so a name is clickable', () => {
+    const host = document.createElement('div');
+    const layer = new LabelLayer(host);
+    const s = store({ label: 'Ann' }, { label: 'Bo' });
+    layer.update(s, IDENTITY, screen, new Set());
+    // Right of each dot (r 5 at x 100): the label starts past its edge.
+    expect(layer.hit(112, 100)).toBe('person:0');
+    expect(layer.hit(112, 150)).toBe('person:1');
+    expect(layer.hit(400, 100)).toBeNull();
+    // Gone with the label.
+    layer.update(store(), IDENTITY, screen, new Set());
+    expect(layer.hit(112, 100)).toBeNull();
+  });
+
   it('draws a second, quieter line under a label, placed as one', () => {
     const host = document.createElement('div');
     const layer = new LabelLayer(host);

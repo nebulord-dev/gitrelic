@@ -6,9 +6,10 @@
 // allows. Bands take the person's status: who still works here, and which
 // code was left by people who went quiet.
 //
-// A selected person lights their bands and dims the packages they never
-// touched; a selected package lights its bands and dims the people who never
-// touched it. People are `person:` marks and packages `dir:` marks (the root
+// Hovering a node (or its name) lights its bands and fades the rest, drawn by
+// the stage alone (`Scene.hoverLinks`). A selected person lights their bands
+// and dims the packages they never touched; a selected package lights its
+// bands and dims the people who never touched it. People are `person:` marks and packages `dir:` marks (the root
 // package is `repo`), so they travel to and from the other lenses; the
 // others' nodes are layout-only and select nothing.
 
@@ -125,7 +126,27 @@ export function flowScene(
   const leftKeys: Key[] = flow.people.map((p) => p.email);
   if (flow.otherPeople.count > 0 && flow.otherPeople.commits > 0)
     leftKeys.push(null);
-  const rightKeys: Key[] = flow.packages.map((p) => p.dir);
+  // Packages sit level with the people who commit to them: ordered by the
+  // commit-weighted mean place of their (drawn) people, so a team's bands
+  // run straight across instead of crossing everyone else's. Size still
+  // reads off a node's height. The others' node stays last.
+  const personAt = new Map(flow.people.map((p, i) => [p.email, i]));
+  const pull = new Map<string, { sum: number; weight: number }>();
+  for (const l of flow.links) {
+    if (l.email === null || l.dir === null) continue;
+    const p = pull.get(l.dir) ?? { sum: 0, weight: 0 };
+    p.sum += personAt.get(l.email)! * l.commits;
+    p.weight += l.commits;
+    pull.set(l.dir, p);
+  }
+  const place = (dir: string) => {
+    const p = pull.get(dir);
+    return p ? p.sum / p.weight : Infinity;
+  };
+  const rightKeys: Key[] = flow.packages
+    .map((p, i) => ({ dir: p.dir, i, at: place(p.dir) }))
+    .sort((a, b) => a.at - b.at || a.i - b.i)
+    .map((o) => o.dir);
   if (flow.otherPackages.commits > 0) rightKeys.push(null);
   const leftIndex = new Map(leftKeys.map((k, i) => [k, i]));
   const rightIndex = new Map(rightKeys.map((k, i) => [k, i]));
@@ -292,7 +313,7 @@ export function flowScene(
       });
       return;
     }
-    const pkg = flow.packages[j];
+    const pkg = flow.packages.find((p) => p.dir === key)!;
     const share = notActiveShare(pkg);
     const mine = focusPerson
       ? (focusPerson.packages.find((q) => q.dir === pkg.dir)?.commits ?? 0)
@@ -361,6 +382,7 @@ export function flowScene(
     marks,
     links,
     guides: [],
+    hoverLinks: true,
     bounds: {
       x: leftX - LABEL_ROOM,
       y: headY - 24,
