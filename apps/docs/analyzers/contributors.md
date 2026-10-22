@@ -53,7 +53,8 @@ The detail table (`T`) lists every contributor with their status, commits, files
 The **Lanes** toggle in the stage's corner shows the same people as rows, with their commits week by week. The weeks match the commit strip under the stage, and over a window longer than two years (such as `--since all`) the bars are months instead. Where the commit strip shows one selection's weeks, Lanes shows everyone's at once, so arrivals, departures and handoffs line up.
 
 - **Bars** share one height scale and take the person's status color. A last row holds everyone else together.
-- **Two lines** mark the status cutoffs. A last commit right of **active** keeps someone active; one left of **gone** makes them gone. Anyone in between is quiet.
+- **A ruler under the rows** names the three zones a last commit can fall in: **gone** (before the gone cutoff), **quiet** (between the cutoffs) and **active** (after the active cutoff), with their dates. Faint lines carry its edges up through the rows. The cutoffs are the same for everyone; each person's status is the zone their last commit lands in.
+- **An end mark** sits at the last commit of anyone who isn't active, and their row stops there, so each row shows when that person went quiet.
 - **At the right**, each row says its status and how long ago the last commit was.
 
 Hover a week's bar for its date, its commits and the package most of them touched. Click anywhere on a row to select its person; their bars take the accent and the other rows fade.

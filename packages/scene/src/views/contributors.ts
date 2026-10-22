@@ -53,7 +53,7 @@ export const lanesLayout: Layout = {
   id: 'lanes',
   label: 'Lanes',
   caption:
-    'The same people week by week (by month past two years), in their status’s colour. A last commit right of “active” keeps someone active; one left of “gone” makes them gone.',
+    'The same people week by week (by month past two years), in their status’s colour. The ruler underneath shows where a last commit makes someone gone, quiet or active; anyone not active has a mark at their last commit, where their row ends.',
   focusKinds: ['person'],
   needsCommits: true,
   build: (input, viewport) =>
