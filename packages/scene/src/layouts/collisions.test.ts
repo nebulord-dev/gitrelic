@@ -95,6 +95,27 @@ describe('collisionsScene', () => {
     }
   });
 
+  it('names a family’s files in its row’s tooltip', () => {
+    const r = report();
+    const family = ['src/flags.js', 'src/flags.www.js', 'src/flags.native.js'];
+    r.parallelDev.files = family.map((file, i) => ({
+      ...r.parallelDev.files[0],
+      file,
+      parallelWeeks: 3 - i,
+    }));
+    const s = collisionsScene(collisions(r), VIEWPORT);
+    const row = s.marks.find((m) => m.id === ids.file('src/flags.js'))!;
+    expect(row.label).toBe('flags.*');
+    expect(row.tip).toEqual([
+      'flags.*',
+      '3 files that change together:',
+      'flags.js',
+      'flags.www.js',
+      'flags.native.js',
+      '2 weeks with two or more people',
+    ]);
+  });
+
   it('says so when no file is listed', () => {
     const r = report();
     r.parallelDev.files = [];

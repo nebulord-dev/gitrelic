@@ -78,7 +78,7 @@ The **Collision lanes** toggle in the stage's corner answers where and when. It 
 - **Files that nearly always change together share a row**, named after the family (`ReactFeatureFlags.*`). A flag flipped across seven forks is one collision, not seven rows of the same dots.
 - **The 14 rows with the most collision weeks are drawn.** The rest are in the table.
 
-Hover a dot for the person, the week, and who else was on that file then. Click a dot to select that person: their dots light up across every row and the rest fade. Click a row to select its file.
+Hover a dot for the person, the week, and who else was on that file then. Click a dot to select that person: their dots light up across every row and the rest fade. Click a row to select its file. Hover a family's row for the files in it.
 
 The detail table (`T`) lists the files people collided on in two or more weeks: **who** (the people who met on it, most weeks first: the first three by name, then how many more), weeks with two or more people, active weeks, the most people in one week, the score and the package. Its filter matches people's names too, so typing a name lists the files that person met others on.
 

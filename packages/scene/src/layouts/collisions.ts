@@ -9,6 +9,7 @@
 // lenses and a table row lights its lane. Dots are layout-only and select
 // their person; a selected person's dots take the accent and the rest fade.
 
+import { distinctNames } from '../format/distinctNames';
 import { packageOf } from '../hotspots/points';
 import { ids, type EntityId } from '../ids';
 import { STATUS_TEXT } from './flow';
@@ -25,6 +26,8 @@ const ROW_MAX_H = 52;
 /** The picture's width over its height: about the stage's shape. */
 const WIDE = 2.1;
 const DOT_R = 4.5;
+/** A family's tooltip names this many of its files. */
+const TIP_FILES = 8;
 const MONTHS = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
 const zero = { r: 0, w: 0, h: 0, a0: 0, a1: 0 };
 const n = (v: number) => v.toLocaleString('en-US');
@@ -129,11 +132,25 @@ export function collisionsScene(
     const name = rowName(row);
     const lit = focusRow === row;
     const where = packageOf(row.file) || '(root)';
+    // A family's tooltip names its files, one per line (paths shortened
+    // only as far as they stay distinct), past TIP_FILES as "and N more".
+    const names = distinctNames(row.members);
+    const listed = row.family
+      ? [
+          ...row.members
+            .slice(0, TIP_FILES)
+            .map((m) => names.get(m) ?? baseName(m)),
+          ...(row.members.length > TIP_FILES
+            ? [`and ${n(row.members.length - TIP_FILES)} more`]
+            : []),
+        ]
+      : [];
     const tip = [
       name,
       row.family
-        ? `${n(row.members.length)} files that change together`
+        ? `${n(row.members.length)} files that change together:`
         : where,
+      ...listed,
       `${plural(row.weeks, 'week')} with two or more people`,
     ];
 
