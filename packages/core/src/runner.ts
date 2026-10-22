@@ -167,6 +167,8 @@ const EMPTY_PARALLEL_DEV: ParallelDevReport = {
   highParallel: 0,
   tierMix: { low: 0, medium: 0, high: 0, critical: 0 },
   byMonth: [],
+  pairs: [],
+  leftOut: { sweepingCommits: 0, botCommits: 0 },
   summary: 'unavailable',
 };
 const EMPTY_LOC: LocReport = {
@@ -419,7 +421,12 @@ export async function runGitrelic(
   onProgress?.('Detecting parallel development...');
   const parallelDev = safeRun(
     'parallelDev',
-    () => analyzeParallelDev(commits, trackedFiles),
+    () =>
+      analyzeParallelDev(
+        commits,
+        trackedFiles,
+        new Set(Object.keys(fileClasses)),
+      ),
     EMPTY_PARALLEL_DEV,
   );
 

@@ -2443,6 +2443,11 @@ exports[`fixture regression > parallel dev report is stable 1`] = `
   "files": [],
   "highParallel": 0,
   "hotFiles": [],
+  "leftOut": {
+    "botCommits": 0,
+    "sweepingCommits": 0,
+  },
+  "pairs": [],
   "summary": "No significant parallel development detected.",
   "tierMix": {
     "critical": 0,

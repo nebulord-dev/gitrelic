@@ -34,6 +34,8 @@ import type { BlameOrigin, RawCommit } from '../utils/git.js';
 
 export const FIX_WINDOW_DAYS = 30;
 export const MIN_CHANGES = 8;
+/** A fix touching more files than this is sweeping, and not traced. Parallel
+ * dev's sweeping commits use the same number (`SWEEPING_COMMIT_FILES`). */
 export const MAX_FIX_FILES = 20;
 const MAX_FIXES_LISTED = 5;
 /** Blames run at once: enough to hide git's startup, few enough to stay polite. */

@@ -49,10 +49,16 @@ A few specifics worth knowing:
 
 - **Window:** the full reachable history of the analyzed branch, bounded by `--since=<date>` if provided.
 - **Merge commits are excluded** (`--no-merges`). A merge that touches 50 files doesn't fabricate parallel work between the merger and the original authors.
+- **Sweeping commits are left out.** A commit touching more than 20 files (a mass rename, a codemod, a port, a dependency bump) isn't counted. Two of those in one week would put hundreds of files in "parallel development" with nobody coordinating anything. On React's last 12 months they made most of the raw events: a 175-file fix, its revert and its re-land in December, and a 461-file port in June.
+- **Bot commits are left out**, and so are files that aren't source (tests, fixtures and generated files, as classified for the whole report). The report says how many commits were left out (`leftOut`).
 - **Co-authored commits count as a single author** at this layer — the matrix keys by `commit.authorEmail` only. Multi-author co-commits surface separately in the [Co-Authors](/analyzers/co-authors) analyzer.
 - **Renames are *not* followed.** A file's parallel history is attributed to its current path; pre-rename activity is scored against the old path. See [Rename Tracking](/analyzers/renames).
 - **Files with fewer than 3 active weeks are skipped.** Even if a file had a parallel week, three weeks of total activity is the floor for the score's denominator to be meaningful — below that, a single parallel week dominates the ratio in misleading ways.
-- **Files with `parallelScore < 20` are skipped.** The minimum-signal floor keeps the leaderboard from being polluted by files with one parallel week out of fifty.
+- **Files with a single parallel week are skipped.** One overlap is chance; a file needs two or more to be listed. On React's last 12 months, 37 of the 53 files with any overlap had exactly one.
+
+### Pairs
+
+Beside the files, the report lists **pairs of people** who committed to the same file in the same week, with how many **weeks** they did and the files they shared most. Weeks, not file-weeks: a feature flag flipped across eight fork files in one week counts once. On React that changes the picture: Lesiutin and Hanlon shared 15 file-weeks, nearly all of them flag forks, but only 2 weeks.
 
 ## The score formula
 

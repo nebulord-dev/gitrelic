@@ -326,7 +326,16 @@ export interface FileParallelDev {
   peakAuthors: number; // max distinct authors in a single week
   peakWindow: ParallelWindow; // the week with the most author overlap
   topWindows: ParallelWindow[]; // top 3 parallel windows by author count
+  windows: ParallelWindow[]; // every parallel window, oldest first
   narrative: string; // human-readable summary
+}
+
+/** Two people who committed to the same file in the same week. */
+export interface ParallelPair {
+  a: string; // email; a < b
+  b: string;
+  weeks: number; // distinct weeks they shared a file (not file-weeks)
+  files: string[]; // the files they shared most, at most 5
 }
 
 export interface ParallelByMonth {
@@ -343,6 +352,9 @@ export interface ParallelDevReport {
   highParallel: number; // files at or above the 70 polish-pattern threshold (spans high tier 70–74 + critical tier 75+)
   tierMix: { low: number; medium: number; high: number; critical: number }; // 0-24 / 25-49 / 50-74 / 75-100
   byMonth: ParallelByMonth[]; // repo-aggregate monthly parallel activity
+  pairs: ParallelPair[]; // most shared weeks first
+  // Commits left out: sweeping (> 20 files) and bot-authored.
+  leftOut: { sweepingCommits: number; botCommits: number };
   summary: string;
 }
 

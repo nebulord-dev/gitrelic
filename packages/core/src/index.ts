@@ -48,6 +48,7 @@ export type {
   ParallelDevReport,
   FileParallelDev,
   ParallelWindow,
+  ParallelPair,
   ParallelByMonth,
   LocReport,
   FileLocEntry,
