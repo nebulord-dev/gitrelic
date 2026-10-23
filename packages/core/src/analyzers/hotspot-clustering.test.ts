@@ -47,7 +47,15 @@ function emptyBusFactor(): BusFactorReport {
 }
 
 function emptyCoupling(): CouplingReport {
-  return { pairs: [], fileProfiles: [], topPairs: [], summary: '' };
+  return {
+    pairs: [],
+    fileProfiles: [],
+    topPairs: [],
+    packageCommits: [],
+    packages: [],
+    families: [],
+    summary: '',
+  };
 }
 
 function emptyContributors(): ContributorReport {
@@ -429,6 +437,9 @@ function makeCoupling(
     })),
     fileProfiles: [],
     topPairs: [],
+    packageCommits: [],
+    packages: [],
+    families: [],
     summary: '',
   };
 }

@@ -150,6 +150,8 @@ exports[`fixture regression > blast radius report is stable 1`] = `
       "totalCommits": 3,
     },
   ],
+  "minCommits": 8,
+  "rated": 0,
   "summary": "2 high blast-radius files (architectural load-bearers)",
   "topBlasters": [
     {
@@ -1696,6 +1698,7 @@ exports[`fixture regression > contributors report is stable 1`] = `
 
 exports[`fixture regression > coupling report is stable 1`] = `
 {
+  "families": [],
   "fileProfiles": [
     {
       "couplingScore": 60,
@@ -1728,6 +1731,21 @@ exports[`fixture regression > coupling report is stable 1`] = `
       "topPartner": "src/helpers.ts",
     },
   ],
+  "packageCommits": [
+    {
+      "commits": 18,
+      "package": "src",
+    },
+    {
+      "commits": 1,
+      "package": "",
+    },
+    {
+      "commits": 1,
+      "package": "docs",
+    },
+  ],
+  "packages": [],
   "pairs": [
     {
       "coCommits": 3,

@@ -190,6 +190,9 @@ const EMPTY_COUPLING: CouplingReport = {
   pairs: [],
   fileProfiles: [],
   topPairs: [],
+  packageCommits: [],
+  packages: [],
+  families: [],
   summary: 'unavailable',
 };
 const EMPTY_CHURN_VELOCITY: ChurnVelocityReport = {
@@ -208,6 +211,8 @@ const EMPTY_REWRITE_RATIO: RewriteRatioReport = {
 const EMPTY_BLAST_RADIUS: BlastRadiusReport = {
   files: [],
   topBlasters: [],
+  minCommits: 8,
+  rated: 0,
   summary: 'unavailable',
 };
 const EMPTY_DEAD_CODE: DeadCodeReport = {
@@ -510,7 +515,8 @@ export async function runGitrelic(
   onProgress?.('Mapping file coupling...');
   const coupling = safeRun(
     'coupling',
-    () => analyzeCoupling(commits, trackedFiles),
+    // The ownership set: a snapshot update changing with code isn't coupling.
+    () => analyzeCoupling(commits, ownershipFiles),
     EMPTY_COUPLING,
   );
 
@@ -531,7 +537,7 @@ export async function runGitrelic(
   onProgress?.('Measuring blast radius...');
   const blastRadius = safeRun(
     'blastRadius',
-    () => analyzeBlastRadius(commits, trackedFiles),
+    () => analyzeBlastRadius(commits, ownershipFiles),
     EMPTY_BLAST_RADIUS,
   );
 

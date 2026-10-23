@@ -1020,6 +1020,13 @@
         "couplingStrength": 60
       }
     ],
+    "packageCommits": [
+      { "package": "src", "commits": 18 },
+      { "package": "", "commits": 1 },
+      { "package": "docs", "commits": 1 }
+    ],
+    "packages": [],
+    "families": [],
     "summary": "1 coupled pair found, strongest: src/helpers.ts ↔ src/index.ts (60%)"
   },
   "churnVelocity": {
@@ -1388,6 +1395,8 @@
         "totalCommits": 3
       }
     ],
+    "minCommits": 8,
+    "rated": 0,
     "summary": "2 high blast-radius files (architectural load-bearers)"
   },
   "deadCode": {

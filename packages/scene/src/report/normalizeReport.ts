@@ -120,11 +120,15 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       topHotspots: [],
       summary: 'Not available',
     },
-    coupling: raw.coupling ?? {
-      pairs: [],
-      fileProfiles: [],
-      topPairs: [],
-      summary: 'Not available',
+    coupling: {
+      pairs: raw.coupling?.pairs ?? [],
+      fileProfiles: raw.coupling?.fileProfiles ?? [],
+      topPairs: raw.coupling?.topPairs ?? [],
+      // Reports before the Coupling lens had no package view or families.
+      packageCommits: raw.coupling?.packageCommits ?? [],
+      packages: raw.coupling?.packages ?? [],
+      families: raw.coupling?.families ?? [],
+      summary: raw.coupling?.summary ?? 'Not available',
     },
     churnVelocity: raw.churnVelocity ?? {
       files: [],
@@ -139,10 +143,13 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       highRewrite: 0,
       summary: 'Not available',
     },
-    blastRadius: raw.blastRadius ?? {
-      files: [],
-      topBlasters: [],
-      summary: 'Not available',
+    blastRadius: {
+      files: raw.blastRadius?.files ?? [],
+      topBlasters: raw.blastRadius?.topBlasters ?? [],
+      // Mirrors core's MIN_BLAST_COMMITS; older reports rated no file.
+      minCommits: raw.blastRadius?.minCommits ?? 8,
+      rated: raw.blastRadius?.rated ?? 0,
+      summary: raw.blastRadius?.summary ?? 'Not available',
     },
     deadCode: raw.deadCode ?? {
       candidates: [],

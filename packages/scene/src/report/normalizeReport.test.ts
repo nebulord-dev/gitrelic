@@ -77,6 +77,24 @@ describe('normalizeReport', () => {
     expect(result.ageMap.dormantPackages).toEqual([]);
   });
 
+  it('backfills coupling’s packages and families and blast radius’s floor for older reports', () => {
+    const result = normalizeReport({
+      coupling: {
+        pairs: [],
+        fileProfiles: [],
+        topPairs: [],
+        summary: '',
+      } as never,
+      blastRadius: { files: [], topBlasters: [], summary: '' } as never,
+    });
+    expect(result.coupling.packageCommits).toEqual([]);
+    expect(result.coupling.packages).toEqual([]);
+    expect(result.coupling.families).toEqual([]);
+    // No file in an older report has a median, so none is rated.
+    expect(result.blastRadius.minCommits).toBe(8);
+    expect(result.blastRadius.rated).toBe(0);
+  });
+
   it('preserves ageMap.thresholds from a fresh report and does not overwrite', () => {
     const result = normalizeReport({
       meta: { ageInDays: 100 } as never,

@@ -456,10 +456,47 @@ export interface FileCouplingProfile {
   couplingScore: number;
 }
 
+/** Two packages' files changing in the same commits. */
+export interface PackageCoupling {
+  /** `packageOf` the files ('' for the root); `packageA` sorts first. */
+  packageA: string;
+  packageB: string;
+  /** Commits that changed a file in both. */
+  commits: number;
+  /** `commits` as a share of the smaller package's commits, 0–1. */
+  share: number;
+  /** The coupled file pairs between them, most shared commits first (up to 4). */
+  filePairs: CoupledPair[];
+}
+
+export interface PackageCommits {
+  package: string;
+  commits: number;
+}
+
+/**
+ * Files that change together both ways: one change, made in several places
+ * (forks, copies, generated twins).
+ */
+export interface CouplingFamily {
+  /** Sorted. */
+  files: string[];
+  /** The packages they span, sorted. */
+  packages: string[];
+  /** The pairs that hold them together. */
+  pairs: CoupledPair[];
+}
+
 export interface CouplingReport {
   pairs: CoupledPair[];
   fileProfiles: FileCouplingProfile[];
   topPairs: CoupledPair[];
+  /** Commits per package, most first. */
+  packageCommits: PackageCommits[];
+  /** Package pairs with `MIN_CO_OCCURRENCES`+ commits in common, most first. */
+  packages: PackageCoupling[];
+  /** Largest first. */
+  families: CouplingFamily[];
   summary: string;
 }
 
@@ -505,15 +542,28 @@ export interface RewriteRatioReport {
 
 export interface FileBlastRadius {
   file: string;
+  /** Classic's score: the average scaled to the widest file's (0–100). */
   blastScore: number;
   avgCoChangedFiles: number;
   maxCoChangedFiles: number;
   totalCommits: number;
+  /**
+   * The median number of other files its commits changed: the blast radius
+   * Atlas shows. Only with `minCommits`+ commits; one wide commit can't drag
+   * a median up the way it drags an average.
+   */
+  medianCoChanged?: number;
+  /** Its commits by how many other files each changed (index 0–19), when rated. */
+  footprint?: number[];
 }
 
 export interface BlastRadiusReport {
   files: FileBlastRadius[];
   topBlasters: FileBlastRadius[];
+  /** Commits a file needs for a `medianCoChanged`. */
+  minCommits: number;
+  /** Files with one. */
+  rated: number;
   summary: string;
 }
 
