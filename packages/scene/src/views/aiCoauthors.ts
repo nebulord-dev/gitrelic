@@ -8,7 +8,6 @@ import { adoptionLanesOf } from '../ai/adoption';
 import {
   AI_PACKAGE_ROWS,
   aiPackageId,
-  aiPackageName,
   aiPackagesFrom,
   aiPackagesOf,
 } from '../ai/packages';
