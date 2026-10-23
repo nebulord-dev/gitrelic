@@ -18,7 +18,10 @@ const binary = path.join(cliDir, 'dist', 'index.mjs');
 
 // A fake git that answers the quick lookups at once and hangs on `git log`.
 // `exec sleep` replaces the shell, so the kill reaches the sleeping process.
+// Leading `-c key=value` options (every call sets core.quotePath) are skipped,
+// as git does, so `$1` is the subcommand.
 const STUB = `#!/bin/sh
+while [ "$1" = "-c" ]; do shift 2; done
 case "$1" in
   log) exec sleep 5 ;;
   rev-parse)
