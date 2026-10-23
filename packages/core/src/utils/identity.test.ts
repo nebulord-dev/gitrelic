@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { mergeIdentities } from './identity.js';
+import { canonicalEmailMap, mergeIdentities } from './identity.js';
 import type { RawCommit } from './git.js';
 
 let seq = 0;
@@ -274,5 +274,23 @@ describe('mergeIdentities', () => {
       commit('7+ann.lee@users.noreply.github.com', 'al'),
     ]);
     expect(new Set(commits.map((c) => c.authorEmail)).size).toBe(1);
+  });
+});
+
+describe('canonicalEmailMap', () => {
+  it('maps every alias, lowercased, to its canonical email', () => {
+    const map = canonicalEmailMap([
+      {
+        canonicalEmail: 'ann@corp.com',
+        name: 'Ann Lee',
+        aliases: [
+          { email: 'ann@corp.com', name: 'Ann Lee', commits: 5 },
+          { email: 'Ann@Home.org', name: 'ann', commits: 1 },
+        ],
+      },
+    ]);
+    expect(map.get('ann@home.org')).toBe('ann@corp.com');
+    expect(map.get('ann@corp.com')).toBe('ann@corp.com');
+    expect(map.get('bob@corp.com')).toBeUndefined();
   });
 });

@@ -255,3 +255,17 @@ export function mergeIdentities(commits: RawCommit[]): {
 
   return { commits: merged, identities };
 }
+
+/**
+ * Each merged alias, lowercased, to its canonical email: maps commits read
+ * outside the window (Age's older history) onto the window's identities.
+ */
+export function canonicalEmailMap(
+  identities: IdentityAlias[],
+): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const id of identities)
+    for (const alias of id.aliases)
+      map.set(alias.email.toLowerCase(), id.canonicalEmail);
+  return map;
+}
