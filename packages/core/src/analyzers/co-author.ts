@@ -166,27 +166,26 @@ export function analyzeCoAuthors(
       aiAssistedCommits++;
     }
 
-    // Monthly bucket — every human-authored commit lands here. `aiAssisted` counts
-    // commits with an AI co-author; `pureHuman` everything else (solo or human-pair).
-    {
-      const month = commit.date.slice(0, 7); // ISO `YYYY-MM`
-      const monthEntry = monthMap.get(month) ?? {
-        month,
-        aiAssisted: 0,
-        pureHuman: 0,
-        total: 0,
-        aiAuthored: 0,
-      };
-      if (primaryIsAi) {
-        monthEntry.aiAuthored++;
-      } else if (hasAiCoAuthor) {
-        monthEntry.aiAssisted++;
-      } else {
-        monthEntry.pureHuman++;
-      }
-      monthEntry.total = monthEntry.aiAssisted + monthEntry.pureHuman;
-      monthMap.set(month, monthEntry);
+    // Monthly bucket: every commit lands here. `aiAuthored` counts an agent's
+    // own commits, `aiAssisted` a person's with an AI co-author, `pureHuman`
+    // everything else (solo or human-pair).
+    const month = commit.date.slice(0, 7); // ISO `YYYY-MM`
+    const monthEntry = monthMap.get(month) ?? {
+      month,
+      aiAssisted: 0,
+      pureHuman: 0,
+      total: 0,
+      aiAuthored: 0,
+    };
+    if (primaryIsAi) {
+      monthEntry.aiAuthored++;
+    } else if (hasAiCoAuthor) {
+      monthEntry.aiAssisted++;
+    } else {
+      monthEntry.pureHuman++;
     }
+    monthEntry.total = monthEntry.aiAssisted + monthEntry.pureHuman;
+    monthMap.set(month, monthEntry);
 
     // Trailer-bearing commits — the rest of the analysis only fires when there are co-authors.
     if (commit.coAuthors.length === 0) continue;

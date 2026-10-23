@@ -6,7 +6,8 @@
  *
  * 1. A fix is a human commit whose subject says so (`fix`, `bug`, `hotfix`,
  *    `regression`, `oops`, `broke`…) or a revert (`Revert "…"`). Bots are
- *    left out on both sides; merges never reach the analyzers.
+ *    left out on both sides; AI agents' own commits stay in, so `ai` can
+ *    rate them. Merges never reach the analyzers.
  * 2. For each file a fix changed, `git blame` on the lines it changed or
  *    removed (in the fix's parent) names the commits that wrote them.
  * 3. A change is *fixed-after* when a fix within `FIX_WINDOW_DAYS` traced back
@@ -69,7 +70,6 @@ export function binomialUpperTail(n: number, k: number, p: number): number {
   return Math.max(0, 1 - below);
 }
 
-/** Whether a rated file's fixed-after count is more than chance explains. */
 /** Each side needs this many changes before the AI split is tested. */
 export const MIN_SPLIT_CHANGES = 30;
 // The two-sided normal cutoff for CHANCE_TAIL in each tail.
@@ -99,6 +99,7 @@ export function versusOthers(
   return z > Z_CHANCE ? 'above' : z < -Z_CHANCE ? 'below' : 'within';
 }
 
+/** Whether a rated file's fixed-after count is more than chance explains. */
 export function aboveChance(
   file: Pick<FileFixRate, 'changes' | 'fixedAfter'>,
   rate: number | null,
@@ -123,6 +124,7 @@ interface Plan {
 }
 
 function plan(commits: RawCommit[]): Plan {
+  // People and AI agents: everyone but bots.
   const human = commits.filter((c) => classifyAuthor(c.authorEmail) !== 'bot');
   const fixes = human.filter((c) => fixKind(c.message) !== null);
   const traced = fixes.filter((c) => c.files.length <= MAX_FIX_FILES);
