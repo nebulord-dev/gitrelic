@@ -416,36 +416,36 @@ export async function runGitrelic(
       older = null;
     }
   }
-  // Age asks whether anyone who changed a file is still around, so it merges
-  // identities over the older history too: someone whose old email appears
-  // only before the window would otherwise look gone. The report's own
-  // identities stay the window's.
-  const ageIdentities =
-    older && shouldMergeIdentities
-      ? canonicalEmailMap(
-          mergeIdentities([
-            ...commits,
-            ...older.map((t) => ({
-              ...t,
-              message: '',
-              coAuthors: [],
-              fileStats: [],
-              insertions: 0,
-              deletions: 0,
-            })),
-          ]).identities,
-        )
-      : undefined;
-
   onProgress?.('Building age map...');
   const ageMap = safeRun(
     'ageMap',
-    () =>
-      analyzeAgeMap(commits, trackedFiles, ageInDays, asOf, {
+    () => {
+      // Age asks whether anyone who changed a file is still around, so it
+      // merges identities over the older history too: someone whose old
+      // email appears only before the window would otherwise look gone. The
+      // report's own identities stay the window's.
+      const canonical =
+        older && shouldMergeIdentities
+          ? canonicalEmailMap(
+              mergeIdentities([
+                ...commits,
+                ...older.map((t) => ({
+                  ...t,
+                  message: '',
+                  coAuthors: [],
+                  fileStats: [],
+                  insertions: 0,
+                  deletions: 0,
+                })),
+              ]).identities,
+            )
+          : undefined;
+      return analyzeAgeMap(commits, trackedFiles, ageInDays, asOf, {
         older,
-        canonical: ageIdentities,
+        canonical,
         fileClasses,
-      }),
+      });
+    },
     EMPTY_AGE_MAP,
   );
 
