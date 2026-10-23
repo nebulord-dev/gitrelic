@@ -151,6 +151,56 @@ export async function getAllCommits(
   return commits;
 }
 
+/** A commit's author, time and changed paths, without line counts. */
+export interface FileTouch {
+  hash: string;
+  authorEmail: string;
+  authorName: string;
+  date: string; // ISO
+  files: string[];
+}
+
+/**
+ * The commits up to `until` (a git date, usually the window's `--since`), with
+ * the paths each changed. Age reads it for the history before the window, so a
+ * file untouched in the window still gets its real last change. `--name-only`
+ * skips the line counts `getAllCommits` needs, which is most of a log's cost.
+ */
+export async function getFileTouches(
+  repoPath: string,
+  options: { until: string; ref?: string; timeoutMs?: number },
+): Promise<FileTouch[]> {
+  const args = [
+    'log',
+    '--format=COMMIT%x1F%H%x1F%aE%x1F%aN%x1F%aI',
+    '--name-only',
+    '--no-merges',
+    `--until=${options.until}`,
+  ];
+  if (options.ref) args.push('--end-of-options', options.ref);
+  const stdout = await runGit(args, {
+    repoPath,
+    timeoutMs: options.timeoutMs ?? GIT_HEAVY_TIMEOUT_MS,
+    heavy: true,
+  });
+  return parseFileTouches(stdout);
+}
+
+export function parseFileTouches(raw: string): FileTouch[] {
+  const touches: FileTouch[] = [];
+  let current: FileTouch | null = null;
+  for (const line of raw.split('\n')) {
+    if (line.startsWith(HEADER_PREFIX)) {
+      const [, hash, authorEmail, authorName, date] = line.split(FIELD_SEP);
+      current = { hash, authorEmail, authorName, date, files: [] };
+      touches.push(current);
+    } else if (current && line) {
+      current.files.push(line);
+    }
+  }
+  return touches;
+}
+
 // git applies .mailmap to %aE/%aN but not to %(trailers), so co-author
 // identities would otherwise stay split from the same person's authorship.
 // Argument form (not --stdin) keeps this working on git < 2.43.
