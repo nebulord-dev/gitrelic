@@ -16,6 +16,7 @@ exports[`fixture regression > age map report is stable 1`] = `
       "status": "ancient",
     },
   ],
+  "dormantPackages": [],
   "files": [
     {
       "ageInDays": 94,
@@ -79,6 +80,7 @@ exports[`fixture regression > age map report is stable 1`] = `
     },
   ],
   "medianAgeDays": 31,
+  "source": "history",
   "staleFiles": [
     {
       "ageInDays": 58,

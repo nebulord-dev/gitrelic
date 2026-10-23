@@ -27,13 +27,14 @@ import { classifyFile } from './utils/fileClass.js';
 import {
   countBlobLines,
   getAllCommits,
+  getFileTouches,
   getTreeBlobs,
   resolveCommit,
   getBranches,
   getCurrentBranch,
   detectPrimaryLanguage,
 } from './utils/git.js';
-import { mergeIdentities } from './utils/identity.js';
+import { canonicalEmailMap, mergeIdentities } from './utils/identity.js';
 import type {
   AgeMapReport,
   BlastRadiusReport,
@@ -61,6 +62,7 @@ import type {
   RunGitrelicOptions,
   TestCoverageProxyReport,
 } from './types.js';
+import type { FileTouch } from './utils/git.js';
 
 // Wraps a single analyzer call so that one failure doesn't abort the entire
 // run. Logs to stderr with the analyzer name and returns the provided fallback,
@@ -399,10 +401,37 @@ export async function runGitrelic(
     EMPTY_BUS_FACTOR,
   );
 
+  // A windowed run sees only the files it touched; read the history before
+  // the window too, so every file gets its real last change. If that read
+  // fails, ages cover the window only and the report says so.
+  let older: FileTouch[] | null | undefined;
+  if (since) {
+    onProgress?.('Reading older history for file ages...');
+    try {
+      const canonical = canonicalEmailMap(identities);
+      older = (
+        await getFileTouches(repoPath, { until: since, ref, timeoutMs })
+      ).map((t) => ({
+        ...t,
+        authorEmail:
+          canonical.get(t.authorEmail.toLowerCase()) ?? t.authorEmail,
+      }));
+    } catch (err) {
+      process.stderr.write(
+        `[gitrelic] file ages cover the analysis window only: ${(err as Error).message ?? String(err)}\n`,
+      );
+      older = null;
+    }
+  }
+
   onProgress?.('Building age map...');
   const ageMap = safeRun(
     'ageMap',
-    () => analyzeAgeMap(commits, trackedFiles, ageInDays, asOf),
+    () =>
+      analyzeAgeMap(commits, trackedFiles, ageInDays, asOf, {
+        older,
+        fileClasses,
+      }),
     EMPTY_AGE_MAP,
   );
 
