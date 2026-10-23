@@ -10,7 +10,10 @@
     "allowJs": true,
     "checkJs": true,
     "verbatimModuleSyntax": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    // oxlint skips no-unused-vars in .svelte files (it can't see the markup);
+    // svelte-check can, so it catches unused imports there.
+    "noUnusedLocals": true
   },
   "include": ["src"]
 }

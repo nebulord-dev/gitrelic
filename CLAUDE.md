@@ -224,6 +224,8 @@ pnpm format:check                   # check formatting without writing
 
 Pre-commit hook (husky + lint-staged) runs `oxlint --fix` and `oxfmt` on staged files automatically, `.svelte` included: oxlint checks their `<script>` blocks, and oxfmt formats them through its bundled `prettier-plugin-svelte` (`"svelte": true` in `.oxfmtrc.json`), which is why `svelte` is a root devDependency.
 
+Warnings never fail the hook or CI, so a rule that must hold is set to `error`; `no-unused-vars` is. oxlint skips that rule in `.svelte` files, since it can't see what the markup uses. For those files, Atlas's `noUnusedLocals` makes `svelte-check`, part of `pnpm typecheck`, catch unused imports.
+
 ## Testing
 
 ```bash
