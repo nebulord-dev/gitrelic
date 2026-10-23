@@ -31,7 +31,8 @@ export default defineConfig({
   ],
   rules: {
     // TypeScript
-    'no-unused-vars': 'warn',
+    // An error, not a warning: warnings pass CI and the pre-commit hook.
+    'no-unused-vars': 'error',
     'typescript/no-explicit-any': 'warn',
 
     // React
