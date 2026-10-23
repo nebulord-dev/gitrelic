@@ -10,15 +10,16 @@ describe('LensBar', () => {
     expect(
       screen.getByRole('navigation', { name: 'Code Health lenses' }),
     ).toBeTruthy();
-    // Hotspots, Churn, Risk and Fix rate have Atlas views: tabs, not links.
+    // Hotspots, Churn, Risk, Age and Fix rate have Atlas views: tabs, not links.
     expect(screen.getByRole('button', { name: /^Hotspots/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Churn/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Risk/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Age/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Fix rate/ })).toBeTruthy();
     const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(5);
-    expect(links[0].textContent).toMatch(/^Stale Files/);
-    expect(links[0].getAttribute('href')).toBe('/classic/#preset=dead-code');
+    expect(links).toHaveLength(3);
+    expect(links[0].textContent).toMatch(/^Blast Radius/);
+    expect(links[0].getAttribute('href')).toBe('/classic/#preset=blast-radius');
     expect(links[0].textContent).toContain('opens the classic dashboard');
   });
 

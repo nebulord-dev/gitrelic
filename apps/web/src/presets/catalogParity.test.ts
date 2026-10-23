@@ -11,6 +11,7 @@ const ATLAS_RENAMES: Record<string, string> = {
   overview: 'Repo map',
   'cursed-files': 'Risk',
   'co-authors': 'AI & Co-authors',
+  'age-map': 'Age',
 };
 
 // A classic preset folded into an Atlas lens leaves the catalog: Atlas has
@@ -18,6 +19,7 @@ const ATLAS_RENAMES: Record<string, string> = {
 const ATLAS_MERGES: Record<string, string> = {
   risk: 'cursed-files',
   shame: 'fix-rate',
+  'dead-code': 'age-map',
 };
 
 // Lenses only Atlas has: no classic preset to match, and none may appear.

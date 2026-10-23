@@ -9,10 +9,9 @@
 // shows the count of flagged items. The Overview ring grades every lens from
 // the same table (outlierGrades), so the badge and the ring always agree.
 //
-// Stale Files has no rule: its count is every tracked file with no commits in
-// the analysis window, which measures how short the window is, not decay
-// (66% of React's files in 12 months). Its design checkpoint decides what a
-// real "stale" outlier is.
+// Age badges dormant packages, not old files: React has 979 source files
+// unchanged for a year, which says the codebase is mature, and one package
+// nobody has touched in three years, which asks for a decision.
 
 import { fixRateOf } from './fixRate/points';
 import type { GitrelicReport } from '@gitrelic/core';
@@ -78,6 +77,17 @@ export const RULES: readonly Rule[] = [
     min: 1,
     reason: (c) =>
       `${c} file${c === 1 ? ' is' : 's are'} fixed more often than chance`,
+  },
+  {
+    preset: 'age-map',
+    measure: (r) => ({
+      count: r.ageMap.dormantPackages.length,
+      of: r.meta.totalFiles,
+    }),
+    share: 0,
+    min: 1,
+    reason: (c) =>
+      `${c} package${c === 1 ? '' : 's'} with no source change in a year`,
   },
   {
     preset: 'bus-factor',

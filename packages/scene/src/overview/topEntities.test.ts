@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { ageReport } from '../../test/ageReport';
 import reportJson from '../../test/fixtures/report.small.json';
 import { CATALOG } from '../catalog';
 import { buildEntityIndex } from '../entities';
@@ -222,5 +223,16 @@ describe('lensTopEntities', () => {
       buildEntityIndex(twins),
     ).map((e) => e.label);
     expect(labels).toEqual(['Sam (sam@a.dev)', 'Sam (sam@b.dev)']);
+  });
+
+  it('fans Age’s dormant packages first, then orphaned files, oldest first', () => {
+    const aged = ageReport();
+    const fanned = lensTopEntities('age-map', aged, buildEntityIndex(aged));
+    expect(fanned.map((e) => [e.id, e.value])).toEqual([
+      ['dir:packages/old', 'dormant 3.4 years'],
+      ['file:packages/old/a.ts', 'orphaned, 3.4 years old'],
+      ['file:packages/old/b.ts', 'orphaned, 3.4 years old'],
+      ['file:scripts/release.js', 'orphaned, 2.2 years old'],
+    ]);
   });
 });

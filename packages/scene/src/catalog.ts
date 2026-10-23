@@ -3,8 +3,8 @@
 // open in the classic dashboard (`/classic/#preset=<id>`).
 //
 // The ids match apps/web's preset registry, less the classic presets merged
-// into an Atlas lens and plus the lenses only Atlas has (fix-rate); a web test
-// keeps the two in step.
+// into an Atlas lens (Risk, Shame, Stale Files) and plus the lenses only
+// Atlas has (fix-rate); a web test keeps the two in step.
 
 export const PRESET_GROUPS = [
   { id: 'overview', label: 'Overview' },
@@ -71,12 +71,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     atlas: true,
   },
   {
-    id: 'dead-code',
-    label: 'Stale Files',
+    id: 'age-map',
+    label: 'Age',
     group: 'code-health',
     explain:
-      'Tracked files with no commits in the analysis window: stable, or forgotten.',
-    atlas: false,
+      'Every file by its last change: how much code has gone cold, where, and which of it nobody left still knows.',
+    docsPath: 'analyzers/age-map',
+    atlas: true,
   },
   {
     id: 'blast-radius',
@@ -93,15 +94,6 @@ export const CATALOG: readonly CatalogEntry[] = [
     group: 'code-health',
     explain:
       'Whether files are growing or shrinking over time; growth accumulates maintenance burden.',
-    atlas: false,
-  },
-  {
-    id: 'age-map',
-    label: 'Age Map',
-    group: 'code-health',
-    explain:
-      'Time since each file last changed: fresh, ageing, stale or ancient.',
-    docsPath: 'analyzers/age-map',
     atlas: false,
   },
   {

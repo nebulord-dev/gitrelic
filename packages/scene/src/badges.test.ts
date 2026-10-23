@@ -76,6 +76,20 @@ describe('computeOutlierBadges', () => {
       1,
     ],
     [
+      // One dormant package is enough: it asks for a decision.
+      'age-map',
+      { ageMap: { ...base.ageMap, dormantPackages: [] } },
+      {
+        ageMap: {
+          ...base.ageMap,
+          dormantPackages: [
+            { package: 'packages/old', sourceFiles: 9, newestAgeDays: 1248 },
+          ],
+        },
+      },
+      1,
+    ],
+    [
       // At a 1.2% repo rate: one fix in 8 is chance, three is not.
       'fix-rate',
       { fixRate: fixRateReport([rated('a.ts', 8, 1)]).fixRate },
@@ -177,6 +191,7 @@ describe('computeOutlierBadges', () => {
 
   it('has a test row for every rule', () => {
     expect(RULES.map((r) => r.preset).sort()).toEqual([
+      'age-map',
       'bus-factor',
       'commit-timing',
       'cursed-files',

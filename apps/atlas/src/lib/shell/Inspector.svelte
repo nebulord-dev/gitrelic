@@ -13,6 +13,7 @@
   } from '@gitrelic/scene';
   import { tick } from 'svelte';
 
+  import AgeCard from '../inspector/AgeCard.svelte';
   import AiCoauthorsCard from '../inspector/AiCoauthorsCard.svelte';
   import ChurnCard from '../inspector/ChurnCard.svelte';
   import CommitTimingCard from '../inspector/CommitTimingCard.svelte';
@@ -289,6 +290,9 @@
   {:else if lens === 'cursed-files' && lensEntry}
     <ExplainCard entry={lensEntry} />
     <RiskCard {report} {index} {onselect} {ontable} />
+  {:else if lens === 'age-map' && lensEntry}
+    <ExplainCard entry={lensEntry} />
+    <AgeCard {report} {index} {onselect} {ontable} />
   {:else if lens === 'fix-rate' && lensEntry}
     <ExplainCard entry={lensEntry} />
     <FixRateCard {report} {index} {onselect} {ontable} />

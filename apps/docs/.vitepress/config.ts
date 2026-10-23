@@ -16,7 +16,6 @@ export default withMermaid(
       '/analyzers/churn-velocity',
       '/analyzers/coupling',
       '/analyzers/knowledge-silos',
-      '/analyzers/dead-code',
       '/analyzers/complexity-trend',
     ],
 
@@ -48,7 +47,7 @@ export default withMermaid(
           collapsed: false,
           items: [
             { text: 'Overview', link: '/analyzers/' },
-            { text: 'Age Map', link: '/analyzers/age-map' },
+            { text: 'Age', link: '/analyzers/age-map' },
             { text: 'Blast Radius', link: '/analyzers/blast-radius' },
             { text: 'Bus Factor', link: '/analyzers/bus-factor' },
             { text: 'Churn', link: '/analyzers/churn' },

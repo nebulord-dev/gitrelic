@@ -584,6 +584,17 @@ With real ages (each file's last change in all of history, counted back from the
 
 **Dropped:** classic's histogram (the strata place every file on the same axis, and the table drawer's band column covers the distribution); the "% Cold" tiers (Healthy to Critical), which judged a mature codebase for being stable; the Stale Files list as its own lens (the table, sorted by last change, is that list, with dates); board C, the treemap (it overlaps Hotspots' By package and loses React's thin cold files to slivers).
 
+**As built (RELIC-374):**
+
+- **Core** (#162): `getFileTouches` reads the history before the window, `ageMap.source` says whether it could; per-file `orphaned`, `orphanedAuthors` and `wokeAfterDays`; `ageMap.dormantPackages`. Age merges identities over the older history too: on React, Dan Abramov commits in the window under an email only older commits tie to his other one, and the first run called his files orphaned. `staleFiles` and `ancientFiles` left the report (copies of `files` by `status`; scene's `filesInTier` derives them for classic).
+- **Data** is `age/strata.ts`: `ageStrataOf(report, tests)` (packages by `packageOf`, most cold lines first, files oldest first, lines per band from `loc`) and `ageSummaryOf` (source only), memoised per report. Bands and `COLD_DAYS` mirror core's constants.
+- **Strata** is `layouts/strata.ts`, built like the Churn swarm: up to 14 rows (`STRATA_ROWS`), x = √(age / oldest), ticks 3 mo to 16 yr as far as the data goes, a shaded cold zone from a year. Dots are `file:` marks painted `{ mix: ['--cell-base', '--person'], t }` by band (no new tokens); an orphaned file gets an accent `ring` (`orphan:`, `selects` its file). Each row names its oldest file. A dormant row is tinted toward the accent and says "dormant · 3.4 years" on its label's second line (`atlas-label--hot`, which colors only that line).
+- **Warm and cold** is `layouts/warmCold.ts`: the same rows; warm bands left of the axis, cold right, oldest outermost; the orphaned part in the accent at half height; a heading with the cold share.
+- **Tests switch**: a `toggles` card (`AGE_TESTS_PANEL`) in the stage's corner, shared by both forms, remembered with the shell's other panels. The table always lists tests, with a Kind column.
+- **Inspector**: `AgeCard` leads with the cold share of source lines, then `ageFindings` (cold and how thin; each dormant package with its action; orphaned files and their two biggest packages; the longest-woken file, neutral; the window-only fallback; fixtures left out) and the five coldest packages. The file card's Age row reads "Last changed 3.4 years ago · orphaned · woke after…", a warning only when orphaned; Stale Files' row went with its lens.
+- **Navigation**: Stale Files is `ATLAS_MERGES['dead-code'] = 'age-map'`; the lens is renamed *Age* (`ATLAS_RENAMES`) and sits after Risk. The badge rule counts dormant packages, firing at one. The Overview reads "N dormant" (else "N% cold") and fans dormant packages, then orphaned files.
+- **React (default window):** 14% of source lines cold (67,791 of 483,535), 979 cold files with a median of 23 lines, `dom-event-testing-library` dormant (badge), 152 orphaned files (8,036 lines, most in `scripts/` and `react-devtools-shared/`), 330 woken, longest `ReactNativeFeatureFlags.js` after 8.4 years, 4,172 fixture and generated files left out. **gitrelic:** nothing a year old; every finding says so.
+
 ---
 
 ## Decision log

@@ -360,7 +360,7 @@ describe('fanScene', () => {
     );
   });
 
-  // Geometry on the largest view: Code Health's nine lenses, each fanning
+  // Geometry on the largest view: Code Health's eight lenses, each fanning
   // eight entities (the sample repo has fewer).
   const health = readings.filter((r) => r.group === 'code-health');
   const eight = Array.from({ length: 8 }, (_, i) => ({
@@ -377,7 +377,7 @@ describe('fanScene', () => {
     );
 
   it('ranks the previewed lens’s label above the views’ and the tucked repo’s', () => {
-    expect(health).toHaveLength(9);
+    expect(health).toHaveLength(8);
     for (const lens of health) {
       const scene = preview(lens.preset);
       const own = markOf(scene, ids.analyzer(lens.preset)).labelPriority ?? 0;
@@ -424,11 +424,11 @@ describe('fanScene', () => {
     }
   });
 
-  it('spaces the nine lenses at least a two-line label apart', () => {
+  it('spaces the eight lenses at least a two-line label apart', () => {
     const ys = fanScene(repo, readings, closed, viewport)
       .marks.filter((m) => m.id.startsWith('analyzer:'))
       .map((m) => m.y);
-    expect(ys).toHaveLength(9);
+    expect(ys).toHaveLength(8);
     for (let i = 1; i < ys.length; i++)
       expect(Math.abs(ys[i] - ys[i - 1])).toBeGreaterThanOrEqual(60);
   });

@@ -14,10 +14,11 @@ import {
 describe('catalog', () => {
   // Classic's 23 presets, less those merged into an Atlas lens (ATLAS_MERGES
   // in apps/web's catalogParity.test.ts: Risk into cursed-files, Shame into
-  // fix-rate), plus Atlas's own (ATLAS_ONLY: fix-rate).
-  it('lists 22 presets with unique ids, each in a known group', () => {
-    expect(CATALOG).toHaveLength(22);
-    expect(new Set(CATALOG.map((e) => e.id)).size).toBe(22);
+  // fix-rate, Stale Files into age-map), plus Atlas's own (ATLAS_ONLY:
+  // fix-rate).
+  it('lists 21 presets with unique ids, each in a known group', () => {
+    expect(CATALOG).toHaveLength(21);
+    expect(new Set(CATALOG.map((e) => e.id)).size).toBe(21);
     const groups = new Set<string>(PRESET_GROUPS.map((g) => g.id));
     for (const entry of CATALOG) expect(groups.has(entry.group)).toBe(true);
   });
@@ -48,10 +49,9 @@ describe('catalog', () => {
       'hotspots',
       'churn',
       'cursed-files',
-      'dead-code',
+      'age-map',
       'blast-radius',
       'complexity-trend',
-      'age-map',
       'rewrite-ratio',
       'fix-rate',
     ]);

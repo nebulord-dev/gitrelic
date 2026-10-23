@@ -64,9 +64,10 @@ describe('Inspector', () => {
     expect(screen.getByText('api.ts')).toBeTruthy();
     expect(screen.getByText('src/')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Flagged by' })).toBeTruthy();
-    // A row whose lens has no Atlas view opens classic.
-    const age = screen.getByRole('link', { name: /^Age/ });
-    expect(age.getAttribute('href')).toBe('/classic/#preset=age-map');
+    // A row whose lens has no Atlas view opens classic; Age has one now.
+    const bus = screen.getByRole('link', { name: /^Bus Factor/ });
+    expect(bus.getAttribute('href')).toBe('/classic/#preset=bus-factor');
+    expect(screen.getByRole('button', { name: /^Last changed/ })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'People' })).toBeTruthy();
     await fireEvent.click(screen.getByRole('button', { name: /Alice/ }));
     expect(onselect).toHaveBeenCalledWith('person:alice@example.com');
@@ -353,12 +354,12 @@ describe('Inspector', () => {
   });
 
   it('links a selected lens without an Atlas view to classic', () => {
-    render(Inspector, { ...base, selection: ids.analyzer('dead-code') });
+    render(Inspector, { ...base, selection: ids.analyzer('blast-radius') });
     expect(
       screen
-        .getByRole('link', { name: /Open Stale Files in classic/ })
+        .getByRole('link', { name: /Open Blast Radius in classic/ })
         .getAttribute('href'),
-    ).toBe('/classic/#preset=dead-code');
+    ).toBe('/classic/#preset=blast-radius');
   });
 
   it('describes a selected view: its headline, its lenses loudest first, and a way in', async () => {

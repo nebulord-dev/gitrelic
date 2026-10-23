@@ -3,9 +3,9 @@
 // the index knows are returned, so every fanned mark is selectable; the ids
 // are the ones the lens's own view will use, so the marks can travel into it.
 
+import { sinceText } from '../age/strata';
 import { fixRateOf } from '../fixRate/points';
 import { ids, type EntityId } from '../ids';
-import { filesInTier } from '../report/ageTiers';
 import type { EntityIndex } from '../entities';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -55,10 +55,6 @@ const SOURCES: Record<string, (r: GitrelicReport) => Candidate[]> = {
     byDesc(r.cursedFiles.files, (f) => f.curseScore).map((f) =>
       file(f.file, `curse ${f.curseScore}`),
     ),
-  'dead-code': (r) =>
-    r.deadCode.candidates.map((f) =>
-      file(f.file, `untouched ${n(f.ageInDays)} days`),
-    ),
   'blast-radius': (r) =>
     r.blastRadius.topBlasters.map((f) =>
       file(f.file, `${f.avgCoChangedFiles.toFixed(1)} files per change`),
@@ -67,10 +63,19 @@ const SOURCES: Record<string, (r: GitrelicReport) => Candidate[]> = {
     r.complexityTrend.growingFiles.map((f) =>
       file(f.file, `+${n(Math.round(f.recentGrowthRate))} lines a month`),
     ),
-  'age-map': (r) =>
-    byDesc(filesInTier(r.ageMap, 'ancient'), (f) => f.ageInDays).map((f) =>
-      file(f.file, `${n(f.ageInDays)} days old`),
-    ),
+  // Dormant packages first (the badge's count), then orphaned files, oldest
+  // first: what the lens's findings point at.
+  'age-map': (r) => [
+    ...r.ageMap.dormantPackages.map((d) => ({
+      id: ids.dir(d.package),
+      label: shortDir(d.package),
+      value: `dormant ${sinceText(d.newestAgeDays)}`,
+    })),
+    ...byDesc(
+      r.ageMap.files.filter((f) => f.orphaned && !r.fileClasses[f.file]),
+      (f) => f.ageInDays,
+    ).map((f) => file(f.file, `orphaned, ${sinceText(f.ageInDays)} old`)),
+  ],
   'rewrite-ratio': (r) =>
     r.rewriteRatio.topRewriters.map((f) =>
       file(f.file, rewriteRate(f.totalInsertions, f.totalDeletions)),

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { ageReport } from '../../test/ageReport';
 import reportJson from '../../test/fixtures/report.small.json';
 import { CATALOG } from '../catalog';
 import { normalizeReport } from '../report/normalizeReport';
@@ -23,7 +24,7 @@ describe('lensReadings', () => {
   it('grades only lenses with an outlier rule; the rest stay quiet', () => {
     const byId = new Map(lensReadings(report).map((r) => [r.preset, r]));
     expect(byId.get('languages')?.grade).toBe(0);
-    expect(byId.get('dead-code')?.grade).toBe(0);
+    expect(byId.get('blast-radius')?.grade).toBe(0);
     expect(byId.get('languages')?.reason).toBeUndefined();
   });
 
@@ -117,5 +118,12 @@ describe('repoReading', () => {
       meta: { ...bare.meta, totalFiles: 2 },
     });
     expect(reading).toEqual({ label: 'r', sub: '2 files' });
+  });
+
+  it('reads Age as its dormant packages, else its cold share', () => {
+    const age = (r: GitrelicReport) =>
+      lensReadings(r).find((x) => x.preset === 'age-map')!;
+    expect(age(ageReport())).toMatchObject({ value: '1 dormant', grade: 2 });
+    expect(age(ageReport({ dormantPackages: [] })).value).toBe('20% cold');
   });
 });
