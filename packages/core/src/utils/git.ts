@@ -584,10 +584,6 @@ export class BlobLineCounter {
 }
 
 /**
- * Counts lines for each object id by streaming one `git cat-file --batch`
- * process — no working-copy reads, one subprocess for the whole tree.
- */
-/**
  * The text of a few small blobs, by object id, in one `git cat-file --batch`:
  * the workspace manifests (`utils/workspace.ts`). Not for source files: the
  * whole output is buffered.
@@ -595,8 +591,9 @@ export class BlobLineCounter {
 export async function readTextBlobs(
   repoPath: string,
   oids: string[],
-  timeoutMs = GIT_HEAVY_TIMEOUT_MS,
 ): Promise<Map<string, string>> {
+  // A handful of small files: a quick read, like the other lookups.
+  const timeoutMs = quickTimeoutMs;
   const unique = [...new Set(oids)];
   if (unique.length === 0) return new Map();
   const args = ['cat-file', '--batch'];
@@ -610,7 +607,7 @@ export async function readTextBlobs(
     });
     return parseBatchBlobs(Buffer.from(stdout));
   } catch (err) {
-    throw timeoutOr(err, args, { repoPath, timeoutMs, heavy: true });
+    throw timeoutOr(err, args, { repoPath, timeoutMs });
   }
 }
 
@@ -637,6 +634,10 @@ export function parseBatchBlobs(raw: Buffer): Map<string, string> {
   return blobs;
 }
 
+/**
+ * Counts lines for each object id by streaming one `git cat-file --batch`
+ * process — no working-copy reads, one subprocess for the whole tree.
+ */
 export async function countBlobLines(
   repoPath: string,
   oids: string[],

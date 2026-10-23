@@ -32,7 +32,7 @@ export interface SwarmFile {
 }
 
 export interface SwarmRow {
-  /** `packageOf` the files; '' for the repository root. */
+  /** The files' package (`packagesOf`); '' for the repository root. */
   dir: string;
   /** Commits summed over its files: a commit touching three files counts three times. */
   total: number;

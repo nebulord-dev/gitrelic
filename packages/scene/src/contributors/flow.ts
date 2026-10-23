@@ -5,7 +5,7 @@
 //
 // A link counts the commits a person made that touch a package; a commit
 // touching two packages counts once in each, so a person's links can add up
-// to more than their commit count. Packages are `packageOf`'s (the grouping
+// to more than their commit count. Packages are the workspace's (`packagesOf`) (the grouping
 // Hotspots and Churn use). Statuses come from the contributors report, which
 // measures them from the analyzed commit.
 
@@ -38,7 +38,7 @@ export interface FlowPerson {
 }
 
 export interface FlowPackage {
-  /** `packageOf`'s path; '' for files at the repository root. */
+  /** The package (`packagesOf`); '' for files at the repository root. */
   dir: string;
   /** Commits touching it. */
   commits: number;

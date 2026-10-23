@@ -46,7 +46,7 @@ export interface AgeFile {
 }
 
 export interface AgeRow {
-  /** `packageOf` the files; '' for the repository root. */
+  /** The files' package (`packagesOf`); '' for the repository root. */
   dir: string;
   /** Oldest first. */
   files: AgeFile[];

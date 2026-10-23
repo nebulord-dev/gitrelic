@@ -3,7 +3,7 @@
 // centre, so where heat concentrates reads at a glance — a small package full
 // of hot files against a big one with none.
 //
-// Packages are the directories `packageOf` names; files at the root gather in
+// Packages are the workspace's (`HotspotPoint.package`, from `packagesOf`); files at the root gather in
 // the repo's own circle. The biggest packages are drawn, plus any smaller
 // one with several hot files; the rest are summed up in a note below, and
 // their files stay in the table. Circles stand in columns, biggest first,

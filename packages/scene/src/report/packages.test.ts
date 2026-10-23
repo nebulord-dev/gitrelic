@@ -40,7 +40,7 @@ describe('packagesOf', () => {
     expect(packagesOf(report)).toBe(packagesOf(report));
   });
 
-  it('backfills an older report with its packages/<name> roots', () => {
+  it('groups an older report exactly as its own core data did', () => {
     const old = normalizeReport({
       loc: {
         files: [
@@ -51,11 +51,11 @@ describe('packagesOf', () => {
     });
     expect(old.workspace).toEqual({
       sources: ['convention'],
-      roots: ['packages/react'],
+      roots: ['apps', 'packages/react'],
     });
     const of = packagesOf(old);
     expect(of('packages/react/src/a.js')).toBe('packages/react');
-    // The convention fallback splits apps/ too, as a new report would.
-    expect(of('apps/web/a.ts')).toBe('apps/web');
+    // Its Commit Timing and coupling packages say `apps`, not `apps/web`.
+    expect(of('apps/web/a.ts')).toBe('apps');
   });
 });

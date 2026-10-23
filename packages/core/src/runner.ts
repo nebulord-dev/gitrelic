@@ -108,7 +108,6 @@ async function safeRunAsync<T>(
 async function readWorkspace(
   repoPath: string,
   treeBlobs: TreeBlob[],
-  timeoutMs: number | undefined,
 ): Promise<Workspace> {
   const paths = treeBlobs.map((b) => b.path);
   try {
@@ -119,7 +118,6 @@ async function readWorkspace(
     const text = await readTextBlobs(
       repoPath,
       manifests.map((b) => b.oid),
-      timeoutMs,
     );
     const byPath = new Map<string, string>();
     for (const b of manifests) {
@@ -387,7 +385,7 @@ export async function runGitrelic(
   // that groups by package reads them through one resolver, and Atlas reads
   // the same roots from the report.
   onProgress?.('Reading the workspace...');
-  const workspace = await readWorkspace(repoPath, treeBlobs, timeoutMs);
+  const workspace = await readWorkspace(repoPath, treeBlobs);
   const pkgOf = packageResolver(workspace.roots);
 
   // Fixtures and generated code would inflate ownership metrics (nobody
