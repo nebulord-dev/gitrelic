@@ -79,6 +79,8 @@ function makeAgeMapReport(
     ancientFiles: [],
     medianAgeDays: 0,
     thresholds: { freshLimit: 30, agingLimit: 90, staleLimit: 180 },
+    source: 'history',
+    dormantPackages: [],
     summary: '',
   };
 }

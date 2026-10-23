@@ -112,6 +112,8 @@ const EMPTY_AGE_MAP: AgeMapReport = {
   ancientFiles: [],
   medianAgeDays: 0,
   thresholds: { freshLimit: 0, agingLimit: 0, staleLimit: 0 },
+  source: 'window',
+  dormantPackages: [],
   summary: 'unavailable',
 };
 const EMPTY_CONTRIBUTORS: ContributorReport = {
