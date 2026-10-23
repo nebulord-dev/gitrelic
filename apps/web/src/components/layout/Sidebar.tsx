@@ -1,3 +1,5 @@
+import { filesInTier } from '@gitrelic/scene';
+
 import { PRESETS } from '../../presets/registry';
 import { cn } from '../../utils/cn';
 import type { PresetId, SidebarGroupLabel } from '../../presets/types';
@@ -74,7 +76,7 @@ function getNavGroups(report: GitrelicReport): NavGroup[] {
         {
           id: 'age-map',
           label: 'Age Map',
-          badge: report.ageMap.ancientFiles.length,
+          badge: filesInTier(report.ageMap, 'ancient').length,
         },
         {
           id: 'rewrite-ratio',

@@ -35,7 +35,7 @@ The full pipeline, from raw git output to the dashboard surfaces:
 ```mermaid
 flowchart LR
     G[("git log --no-merges --name-only")] --> A[analyzeAgeMap]
-    A --> R[("AgeMapReport.files[]<br/>+ staleFiles[]<br/>+ ancientFiles[]<br/>+ medianAgeDays<br/>+ thresholds")]
+    A --> R[("AgeMapReport.files[]<br/>+ medianAgeDays<br/>+ thresholds<br/>+ dormantPackages")]
     R --> H["Age histogram hero<br/>30-day bins, tier-colored"]
     R --> B1["Bottom panel · Age Map<br/>% Cold + top stale dirs + rollup"]
     R --> B2["Bottom panel · By Directory<br/>per-directory sortable table"]

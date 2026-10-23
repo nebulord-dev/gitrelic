@@ -166,9 +166,13 @@ export interface DormantPackage {
 export type AgeStatus = 'fresh' | 'aging' | 'stale' | 'ancient';
 
 export interface AgeMapReport {
+  /**
+   * Every tracked file, oldest first. A tier's files are `files` filtered by
+   * `status` (scene's `filesInTier`): reports before RELIC-374 also carried
+   * `staleFiles` and `ancientFiles`, copies that became most of the report
+   * once every file had an age.
+   */
   files: FileAge[];
-  staleFiles: FileAge[];
-  ancientFiles: FileAge[];
   medianAgeDays: number;
   thresholds: {
     /** Files at or below `freshLimit` days are tier "fresh". */

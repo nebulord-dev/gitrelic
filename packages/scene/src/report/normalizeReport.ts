@@ -41,8 +41,6 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
     },
     ageMap: {
       files: raw.ageMap?.files ?? [],
-      staleFiles: raw.ageMap?.staleFiles ?? [],
-      ancientFiles: raw.ageMap?.ancientFiles ?? [],
       medianAgeDays: raw.ageMap?.medianAgeDays ?? 0,
       // Mirrors `getAgeThresholds` in packages/core/src/analyzers/age-map.ts —
       // duplicated because browser code only does `import type` from @gitrelic/core

@@ -2,20 +2,6 @@
 
 exports[`fixture regression > age map report is stable 1`] = `
 {
-  "ancientFiles": [
-    {
-      "ageInDays": 94,
-      "file": "README.md",
-      "lastCommitDate": "2026-01-01T09:00:00Z",
-      "status": "ancient",
-    },
-    {
-      "ageInDays": 94,
-      "file": "package.json",
-      "lastCommitDate": "2026-01-01T09:00:00Z",
-      "status": "ancient",
-    },
-  ],
   "dormantPackages": [],
   "files": [
     {
@@ -81,20 +67,6 @@ exports[`fixture regression > age map report is stable 1`] = `
   ],
   "medianAgeDays": 31,
   "source": "history",
-  "staleFiles": [
-    {
-      "ageInDays": 58,
-      "file": "src/auth.ts",
-      "lastCommitDate": "2026-02-05T23:15:00Z",
-      "status": "stale",
-    },
-    {
-      "ageInDays": 44,
-      "file": "src/config.ts",
-      "lastCommitDate": "2026-02-20T08:30:00Z",
-      "status": "stale",
-    },
-  ],
   "summary": "2 files haven't been touched in over 62 days — they may be dead weight or critical infrastructure nobody dares touch",
   "thresholds": {
     "agingLimit": 31,

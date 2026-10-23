@@ -75,8 +75,6 @@ function makeAgeMapReport(
       ).toISOString(),
       status: 'fresh' as const,
     })),
-    staleFiles: [],
-    ancientFiles: [],
     medianAgeDays: 0,
     thresholds: { freshLimit: 30, agingLimit: 90, staleLimit: 180 },
     source: 'history',

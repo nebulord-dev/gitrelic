@@ -52,8 +52,6 @@ describe('normalizeReport', () => {
       meta: { ageInDays: 365 } as never,
       ageMap: {
         files: [],
-        staleFiles: [],
-        ancientFiles: [],
         medianAgeDays: 0,
         summary: '',
       } as never,
@@ -70,8 +68,6 @@ describe('normalizeReport', () => {
       meta: { ageInDays: 365 } as never,
       ageMap: {
         files: [],
-        staleFiles: [],
-        ancientFiles: [],
         medianAgeDays: 0,
         summary: '',
       } as never,
@@ -86,8 +82,6 @@ describe('normalizeReport', () => {
       meta: { ageInDays: 100 } as never,
       ageMap: {
         files: [],
-        staleFiles: [],
-        ancientFiles: [],
         medianAgeDays: 0,
         thresholds: { freshLimit: 8, agingLimit: 33, staleLimit: 66 },
         summary: '',

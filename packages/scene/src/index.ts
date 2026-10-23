@@ -205,6 +205,7 @@ export {
 } from './motion/plan';
 
 export { normalizeReport } from './report/normalizeReport';
+export { filesInTier } from './report/ageTiers';
 
 export { readPalette } from './theme/palette';
 export {

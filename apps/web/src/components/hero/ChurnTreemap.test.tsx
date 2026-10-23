@@ -10,8 +10,6 @@ function makeReport(overrides: Partial<GitrelicReport> = {}): GitrelicReport {
     hotspots: { files: [], topHotspots: [], summary: '' },
     ageMap: {
       files: [],
-      staleFiles: [],
-      ancientFiles: [],
       medianAgeDays: 0,
       summary: '',
     },
@@ -86,8 +84,6 @@ describe('ChurnTreemap render', () => {
       hotspots: { files: [], topHotspots: [], summary: '' },
       ageMap: {
         files: [],
-        staleFiles: [],
-        ancientFiles: [],
         medianAgeDays: 0,
         summary: '',
       },

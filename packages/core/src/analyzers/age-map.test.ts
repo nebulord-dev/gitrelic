@@ -76,7 +76,7 @@ describe('analyzeAgeMap', () => {
     );
   });
 
-  it('counts stale and ancient files', () => {
+  it('tiers stale and ancient files', () => {
     const commits = [
       makeCommit({ hash: '1', files: ['a.ts'], date: daysAgo(200) }),
       makeCommit({ hash: '2', files: ['b.ts'], date: daysAgo(300) }),
@@ -88,8 +88,14 @@ describe('analyzeAgeMap', () => {
       365,
       FAKE_NOW,
     );
-    expect(result.staleFiles.length).toBe(1);
-    expect(result.ancientFiles.length).toBe(1);
+    expect(result.files.map((f) => [f.file, f.status])).toEqual([
+      ['b.ts', 'ancient'],
+      ['a.ts', 'stale'],
+      ['c.ts', 'fresh'],
+    ]);
+    // The tiers' files are read from `files`; the report carries no copies.
+    expect(result).not.toHaveProperty('ancientFiles');
+    expect(result).not.toHaveProperty('staleFiles');
   });
 
   it('sorts files oldest first', () => {

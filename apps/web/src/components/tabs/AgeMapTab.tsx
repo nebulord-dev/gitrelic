@@ -1,4 +1,4 @@
-import { aggregateAgeByDirectory } from '@gitrelic/scene';
+import { aggregateAgeByDirectory, filesInTier } from '@gitrelic/scene';
 
 import { NarrativeKPI } from '../shared/NarrativeKPI';
 import { Tooltip } from '../shared/Tooltip';
@@ -29,7 +29,9 @@ function tierBadge(coldShare: number): {
 }
 
 export function AgeMapTab({ report, onApplyPreset }: AgeMapTabProps) {
-  const { files, staleFiles, ancientFiles } = report.ageMap;
+  const { files } = report.ageMap;
+  const staleFiles = filesInTier(report.ageMap, 'stale');
+  const ancientFiles = filesInTier(report.ageMap, 'ancient');
 
   const total = files.length;
   const coldCount = staleFiles.length + ancientFiles.length;

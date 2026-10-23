@@ -166,8 +166,6 @@ export function analyzeAgeMap(
 
   return {
     files,
-    staleFiles,
-    ancientFiles,
     medianAgeDays,
     thresholds,
     source: options.older === null ? 'window' : 'history',

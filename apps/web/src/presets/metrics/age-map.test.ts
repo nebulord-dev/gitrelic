@@ -17,8 +17,6 @@ function makeReport(ageMap: Partial<AgeMapReport>): GitrelicReport {
   return {
     ageMap: {
       files: ageMap.files ?? [],
-      staleFiles: ageMap.staleFiles ?? [],
-      ancientFiles: ageMap.ancientFiles ?? [],
       medianAgeDays: ageMap.medianAgeDays ?? 0,
       summary: '',
     },
@@ -37,18 +35,14 @@ describe('ageMapMetrics', () => {
     expect(metrics[3].value).toBe('0');
   });
 
-  it('counts fresh files from files array by status', () => {
+  it('counts every tier from the files array by status', () => {
     const files = [
       makeFile({ status: 'fresh' }),
       makeFile({ status: 'fresh' }),
       makeFile({ status: 'stale' }),
       makeFile({ status: 'ancient' }),
     ];
-    const staleFiles = [makeFile({ status: 'stale' })];
-    const ancientFiles = [makeFile({ status: 'ancient' })];
-    const metrics = ageMapMetrics(
-      makeReport({ files, staleFiles, ancientFiles, medianAgeDays: 200 }),
-    );
+    const metrics = ageMapMetrics(makeReport({ files, medianAgeDays: 200 }));
     expect(metrics[0].value).toBe('200');
     expect(metrics[1].value).toBe('1');
     expect(metrics[1].color).toBe('var(--severity-warning)');

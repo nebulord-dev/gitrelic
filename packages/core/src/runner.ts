@@ -110,8 +110,6 @@ const EMPTY_BUS_FACTOR: BusFactorReport = {
 };
 const EMPTY_AGE_MAP: AgeMapReport = {
   files: [],
-  staleFiles: [],
-  ancientFiles: [],
   medianAgeDays: 0,
   thresholds: { freshLimit: 0, agingLimit: 0, staleLimit: 0 },
   source: 'window',

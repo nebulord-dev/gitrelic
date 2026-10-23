@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { filesInTier } from '@gitrelic/scene';
 import { scaleLinear } from 'd3-scale';
 
 import { HeroCaption } from '../shared/HeroCaption';
@@ -49,7 +50,7 @@ export function prepareAgeHistogramData(
       bins: [],
       maxCount: 0,
       totalFiles: files.length,
-      ancientCount: report.ageMap.ancientFiles.length,
+      ancientCount: filesInTier(report.ageMap, 'ancient').length,
       staleLimit: thresholds.staleLimit,
     };
   }
@@ -88,7 +89,7 @@ export function prepareAgeHistogramData(
     bins,
     maxCount,
     totalFiles: files.length,
-    ancientCount: report.ageMap.ancientFiles.length,
+    ancientCount: filesInTier(report.ageMap, 'ancient').length,
     staleLimit: thresholds.staleLimit,
   };
 }
