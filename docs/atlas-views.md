@@ -597,6 +597,39 @@ With real ages (each file's last change in all of history, counted back from the
 - **Navigation**: Stale Files is `ATLAS_MERGES['dead-code'] = 'age-map'`; the lens is renamed *Age* (`ATLAS_RENAMES`) and sits after Risk. The badge rule counts dormant packages, firing at one. The Overview reads "N dormant" (else "N% cold") and fans dormant packages, then orphaned files.
 - **React (default window):** 14% of source lines cold (67,791 of 483,535), 979 cold files with a median of 23 lines, `dom-event-testing-library` dormant (badge), 152 orphaned files (8,036 lines, most in `scripts/` and `react-devtools-shared/`), 330 woken, longest `ReactNativeFeatureFlags.js` after 8.4 years, 4,172 fixture and generated files left out. **gitrelic:** nothing a year old; every finding says so.
 
+
+### Ownership & Risk › Coupling (checkpoint 2026-10-23, RELIC-350)
+
+**Input:** `apps/docs/analyzers/blast-radius.md` (how many files a change to this one drags along), coupling's analyzer (no docs page yet), classic's Blast Radius histogram and Coupling tab, the lens inventory's plan (Blast Radius merges in as node size). Canvas: https://claude.ai/artifact/JYujzwRCj486Hz5VJ4dSrN (A Boundaries, B Families, C A file's ripple, D Blast radius in the inspector), React's last 12 months beside gitrelic's.
+
+**Holds:** Coupling (`coupling`), with Blast Radius (`blast-radius`) merged in. One lens.
+
+**What React showed.**
+
+- **Blast Radius, as computed, is noise.** It averages "other files in the same commit" over however few commits a file has, and scales the result to the top file. All of its top 100 files have three commits or fewer; the top ten were each touched once, by one 27-file commit. Classic's "80 files ≥70, High Risk" is mostly files changed once or twice.
+- **Coupling has signal under thin pairs.** 260 pairs, 191 resting on 3–4 shared commits; strength divides by the quieter file, so a file riding along with a busy one reads 100%.
+- **The strongest coupling is one family:** the seven `ReactFeatureFlags` forks change together (26–27 shared commits each), the family Risk's Root causes already draws as one node and Churn calls lockstep.
+- **Across packages is what no other lens shows.** The `ReactFlightDOMServerNode.js` copies in `react-server-dom-{parcel, turbopack, webpack, esm}` change together (one change made four or five times); `ReactFlightClient` ↔ `ReactFlightServer` (a protocol split across packages); `react-devtools-extensions` ↔ `react-devtools-shared`'s bridge. 72 of 169 source pairs cross a package line.
+- **Only some files have enough commits to judge.** With a minimum of 8 commits, 44 of React's 674 changed files get a blast radius (87 at 5, 180 at 3); 9 of the 44 usually change with 10 or more others, all flag forks.
+
+**Core first (its own PR).**
+
+- **Sweeping commits** (more than 20 files, Fix rate's `MAX_FIX_FILES`) are left out of both analyzers; today's cap is 30. Fixtures and generated files are left out (`fileClasses`), tests stay.
+- **Blast radius** becomes the median number of other files a file's commits changed, for files with 8+ such commits (`MIN_BLAST_COMMITS`, Fix rate's sample floor), with the spread kept for the inspector (commits by how many other files each changed). No score scaled to the top file; files under the floor get none and are counted.
+- **Package coupling:** for each pair of packages (scene's `packageOf`), the commits that changed both, the share of the smaller package's commits that is, and the file pairs behind it.
+- **Families:** groups of files that change together both ways (4+ shared commits, 60%+ of the *busier* file's), with the packages they span.
+- Classic's fields stay for classic; `normalizeReport` backfills the new ones and the fixture is regenerated.
+
+**Primary form — Boundaries.** Packages on a ring, sized by commits; a link is the commits that changed both, thicker for more, brighter for a bigger share of the smaller package's. Packages are `dir:` marks, so they travel from Commit Timing, AI & Co-authors and Churn. Hovering a link names the file pairs behind it. Chosen because it's the one picture no other lens has: which packages are coupled in practice, whatever the dependency graph declares. Cross-owner coupling (RELIC-358) lands here later as a highlight.
+
+**Selecting a file — its ripple.** In the lens, a selected file draws its partners around it, nearer the more often they change with it, grouped by package, the ones in another package in the accent. Not a form: what selection does.
+
+**Blast radius lives in the inspector.** Lens mode: how many files usually change with 10 or more others, a histogram of files by their median, the widest five, and how many files have too few commits to say. A selected file: its median as the number and its commits by how many other files each changed, the median marked; then its partners. This is classic's histogram with an honest measure, in the place Atlas keeps distributions.
+
+**Families are a finding,** not a form: on React there are 8, and the one that crosses five packages is the find ("5 copies of `ReactFlightDOMServerNode.js` across 5 packages change together"). Board B was dropped: sparse as a whole picture, and it overlaps Churn's lockstep and Risk's families inside a package.
+
+**Dropped:** classic's Blast Radius histogram of max-scaled scores and its "files ≥70" count; the force-directed network the plan proposed (a hairball at React's size, and packages read better on a ring); Blast Radius as a lens of its own (Blast Radius merges into Coupling).
+
 ---
 
 ## Decision log
@@ -638,3 +671,4 @@ With real ages (each file's last change in all of history, counted back from the
 - **2026-10-23 — Age rates every file by its real last change, in calendar bands; Strata primary, Warm and cold alternate** (RELIC-374). Stale Files merges in. The badge counts dormant packages; orphaned cold files are the highlight. *Why:* both analyzers saw only the window, so Age Map's oldest files were missing and Stale Files had no dates; window-share tiers moved with `--since`. Changes to long-untouched files were fixed less often on React, not more, so woken files stay a finding.
 - **2026-10-23 — Rewrite Ratio merges into Churn; Complexity Trend is retired as a lens** (RELIC-375). Lenses only: both analyzers stay, and Rewrite Ratio's still feeds Churn's character, the Hotspots facet, the file card (whose row now opens Churn) and What to do. *Why:* Rewrite Ratio's merge was decided in the lens inventory but never landed, so it still showed as a classic link; Complexity Trend's growth curve is read by nothing else, and its question is answered by Churn's *growing* character, Hotspots' size against churn and the "split it" rule.
 - **2026-10-23 — Classic links stay for lenses Atlas hasn't built, and go for merged and retired ones** (maintainer). *Why:* Atlas replaces classic, but removing every ↗ now would hide the unbuilt lenses (Ownership, Coupling, Languages, Tests…) until each lands. Classic goes when the last one does.
+- **2026-10-23 — Coupling is Boundaries, a ring of packages, with a file's ripple on selection and Blast Radius in the inspector** (RELIC-350). Blast Radius merges in; families are a finding. *Why:* on React, Blast Radius's top 100 were all files changed three times or fewer, so it becomes a median over 8+ commits with its spread; cross-package coupling is what no other lens shows; a ripple answers "what will I touch" for one file without a second picture.

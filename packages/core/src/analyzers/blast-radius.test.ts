@@ -31,8 +31,8 @@ describe('analyzeBlastRadius', () => {
     expect(fileA.maxCoChangedFiles).toBe(2);
   });
 
-  it('excludes commits touching 30+ files', () => {
-    const bigFiles = Array.from({ length: 30 }, (_, i) => `f${i}.ts`);
+  it('excludes sweeping commits (more than 20 files), as fix rate does', () => {
+    const bigFiles = Array.from({ length: 21 }, (_, i) => `f${i}.ts`);
     const commits = [
       makeCommit({ hash: '1', files: bigFiles }),
       makeCommit({ hash: '2', files: ['a.ts', 'b.ts'] }),
@@ -78,5 +78,47 @@ describe('analyzeBlastRadius', () => {
     const commits = [makeCommit({ hash: '1', files: ['a.ts', 'b.ts'] })];
     const result = analyzeBlastRadius(commits, ['a.ts', 'b.ts']);
     expect(result.summary).toBeTruthy();
+  });
+
+  describe('median over enough commits', () => {
+    const others = (n: number) =>
+      Array.from({ length: n }, (_, i) => `o${i}.ts`);
+    // hub.ts: seven commits alone with one other file, one with 15 others.
+    const commits = [
+      ...Array.from({ length: 7 }, (_, i) =>
+        makeCommit({ hash: `s${i}`, files: ['hub.ts', `p${i}.ts`] }),
+      ),
+      makeCommit({ hash: 'wide', files: ['hub.ts', ...others(15)] }),
+      makeCommit({ hash: 'thin', files: ['thin.ts', ...others(10)] }),
+    ];
+    const quiet = Array.from({ length: 7 }, (_, i) => `p${i}.ts`);
+    const result = analyzeBlastRadius(commits, [
+      'hub.ts',
+      'thin.ts',
+      ...others(15),
+      ...quiet,
+    ]);
+    const hub = result.files.find((f) => f.file === 'hub.ts')!;
+
+    it('rates a file by its median, which one wide commit can’t drag up', () => {
+      expect(hub.totalCommits).toBe(8);
+      expect(hub.medianCoChanged).toBe(1);
+      expect(hub.avgCoChangedFiles).toBe(2.8);
+    });
+
+    it('keeps its footprint: commits by how many other files each changed', () => {
+      expect(hub.footprint).toHaveLength(20);
+      expect(hub.footprint![1]).toBe(7);
+      expect(hub.footprint![15]).toBe(1);
+      expect(hub.footprint!.reduce((a, b) => a + b, 0)).toBe(8);
+    });
+
+    it('leaves files under 8 commits unrated, and counts the rated', () => {
+      const thin = result.files.find((f) => f.file === 'thin.ts')!;
+      expect(thin.medianCoChanged).toBeUndefined();
+      expect(thin.footprint).toBeUndefined();
+      expect(result.minCommits).toBe(8);
+      expect(result.rated).toBe(1);
+    });
   });
 });

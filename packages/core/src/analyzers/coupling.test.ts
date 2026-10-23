@@ -36,8 +36,8 @@ describe('analyzeCoupling', () => {
     expect(result.pairs[0].couplingStrength).toBe(100);
   });
 
-  it('filters out commits touching 30+ files', () => {
-    const bigFiles = Array.from({ length: 30 }, (_, i) => `file${i}.ts`);
+  it('filters out sweeping commits (more than 20 files), as fix rate does', () => {
+    const bigFiles = Array.from({ length: 21 }, (_, i) => `file${i}.ts`);
     const commits = [
       makeCommit({ hash: '1', files: bigFiles }),
       makeCommit({ hash: '2', files: ['a.ts', 'b.ts'] }),
@@ -188,5 +188,103 @@ describe('analyzeCoupling', () => {
     const result = analyzeCoupling(commits, ['a.ts', 'b.ts']);
 
     expect(result.summary).toContain('1');
+  });
+
+  it('keeps a 20-file commit: only more than 20 is sweeping', () => {
+    const files = Array.from({ length: 20 }, (_, i) => `f${i}.ts`);
+    const commits = ['1', '2', '3'].map((hash) => makeCommit({ hash, files }));
+    const result = analyzeCoupling(commits, files);
+    expect(result.pairs.length).toBe((20 * 19) / 2);
+  });
+
+  describe('packages', () => {
+    const commits = [
+      // Five commits change server and client together; one changes docs too.
+      ...['1', '2', '3', '4'].map((hash) =>
+        makeCommit({
+          hash,
+          files: ['packages/server/a.ts', 'packages/client/b.ts'],
+        }),
+      ),
+      makeCommit({
+        hash: '5',
+        files: ['packages/server/a.ts', 'packages/client/b.ts', 'README.md'],
+      }),
+      makeCommit({ hash: '6', files: ['packages/server/c.ts'] }),
+      makeCommit({ hash: '7', files: ['packages/client/b.ts', 'docs/x.md'] }),
+    ];
+    const tracked = [
+      'packages/server/a.ts',
+      'packages/server/c.ts',
+      'packages/client/b.ts',
+      'README.md',
+      'docs/x.md',
+    ];
+    const result = analyzeCoupling(commits, tracked);
+
+    it('counts commits per package', () => {
+      expect(result.packageCommits).toEqual([
+        { package: 'packages/client', commits: 6 },
+        { package: 'packages/server', commits: 6 },
+        { package: '', commits: 1 },
+        { package: 'docs', commits: 1 },
+      ]);
+    });
+
+    it('links packages that changed together 3+ times, with the pairs behind it', () => {
+      expect(result.packages).toHaveLength(1);
+      const [link] = result.packages;
+      expect(link).toMatchObject({
+        packageA: 'packages/client',
+        packageB: 'packages/server',
+        commits: 5,
+        share: 5 / 6,
+      });
+      expect(
+        link.filePairs.map((p) => [p.fileA, p.fileB, p.coCommits]),
+      ).toEqual([['packages/client/b.ts', 'packages/server/a.ts', 5]]);
+    });
+  });
+
+  describe('families', () => {
+    const fork = (hash: string, extra: string[] = []) =>
+      makeCommit({
+        hash,
+        files: ['flags/a.ts', 'flags/b.ts', 'other/c.ts', ...extra],
+      });
+    const commits = [
+      fork('1'),
+      fork('2'),
+      fork('3'),
+      fork('4', ['hub.ts']),
+      // hub.ts is busy elsewhere: it rides along with the family, not in it.
+      ...Array.from({ length: 12 }, (_, i) =>
+        makeCommit({ hash: `h${i}`, files: ['hub.ts', `x${i}.ts`] }),
+      ),
+    ];
+    const tracked = [
+      'flags/a.ts',
+      'flags/b.ts',
+      'other/c.ts',
+      'hub.ts',
+      ...Array.from({ length: 12 }, (_, i) => `x${i}.ts`),
+    ];
+    const result = analyzeCoupling(commits, tracked);
+
+    it('groups files that change together both ways, naming their packages', () => {
+      expect(result.families).toHaveLength(1);
+      expect(result.families[0].files).toEqual([
+        'flags/a.ts',
+        'flags/b.ts',
+        'other/c.ts',
+      ]);
+      expect(result.families[0].packages).toEqual(['flags', 'other']);
+      expect(result.families[0].pairs).toHaveLength(3);
+    });
+
+    it('needs 4 shared commits', () => {
+      const thin = analyzeCoupling(commits.slice(0, 3), tracked);
+      expect(thin.families).toEqual([]);
+    });
   });
 });
