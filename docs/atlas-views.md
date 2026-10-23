@@ -178,11 +178,11 @@ That is 14 confirmed lenses plus three in italics still to be decided. Once Risk
 
 The catalog changes as each view's lenses ship, not all at once, so classic stays reachable for everything until its Atlas replacement exists.
 
-**Catalog parity as lenses ship.** `catalogParity.test.ts` requires scene's `CATALOG` to hold exactly classic's preset ids, each in classic's group; today its only escape hatch is `ATLAS_RENAMES`. The first catalog PR that merges, moves or adds a lens extends the test with three tables instead of loosening it:
+**Catalog parity as lenses ship.** `catalogParity.test.ts` (in `apps/web`) requires scene's `CATALOG` to hold exactly classic's preset ids, each in classic's group, except where one of its tables says otherwise. Each table arrives with the first PR that needs it, rather than loosening the test. `ATLAS_RENAMES`, `ATLAS_MERGES` and `ATLAS_ONLY` exist today. `ATLAS_MOVES` hasn't been needed: Risk moved to Code Health in classic too, so the groups still match. The tables:
 
-- `ATLAS_MERGES` — a classic preset id → the Atlas lens that absorbs it (`ghost-files → ownership`). The merged id leaves the catalog, and the target must exist in it.
-- `ATLAS_MOVES` — a preset id → its new group (`cursed-files → code-health`). It skips the group check for that id only.
-- `ATLAS_ONLY` — lens ids with no classic preset (`ownership`, `fix-rate`, `truck-factor`, `release-cadence`). They're allowed in the catalog, and they must not appear in classic's registry.
+- `ATLAS_MERGES` — a classic preset id → the Atlas lens that absorbs it (today `risk → cursed-files` and `shame → fix-rate`; `ghost-files → ownership` is planned). The merged id leaves the catalog, and the target must exist in it.
+- `ATLAS_MOVES` — a preset id → its new group, for a lens that moves without classic following. It skips the group check for that id only.
+- `ATLAS_ONLY` — lens ids with no classic preset. They're allowed in the catalog, and they must not appear in classic's registry. Today it holds `fix-rate`; `ownership`, `truck-factor` and `release-cadence` join it as each one ships.
 
 Every classic preset must then be in the catalog, in `ATLAS_MERGES`, or retired in an explicit list, so nothing becomes unreachable by accident.
 
