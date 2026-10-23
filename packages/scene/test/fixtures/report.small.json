@@ -396,6 +396,8 @@
     ],
     "medianAgeDays": 31,
     "thresholds": { "freshLimit": 8, "agingLimit": 31, "staleLimit": 62 },
+    "source": "history",
+    "dormantPackages": [],
     "summary": "2 files haven't been touched in over 62 days — they may be dead weight or critical infrastructure nobody dares touch"
   },
   "contributors": {
