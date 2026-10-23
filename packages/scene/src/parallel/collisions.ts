@@ -15,6 +15,7 @@
 // commit to its last); past two years they're months (`timeBins`).
 
 import { personStatus, type PersonStatus } from '../contributors/flow';
+import { packagesOf } from '../report/packages';
 import {
   FAMILY_COMMITS,
   FAMILY_STRENGTH,
@@ -43,6 +44,8 @@ export interface CollisionMark {
 export interface CollisionRow {
   /** The file the row is drawn as (the family's busiest member). */
   file: string;
+  /** Its package (`packagesOf`); '' for the repository root. */
+  package: string;
   /** Every file in the row, most collision weeks first. */
   members: string[];
   /** The family's name, or null for a single file. */
@@ -68,6 +71,7 @@ export interface Collisions {
 
 export function collisions(report: GitrelicReport): Collisions {
   const files = report.parallelDev.files;
+  const pkgOf = packagesOf(report);
   const first = Date.parse(report.meta.firstCommit);
   const last = Date.parse(report.meta.lastCommit);
   // timeBins only reads the span; two instants give the strip's bins.
@@ -145,6 +149,7 @@ export function collisions(report: GitrelicReport): Collisions {
     }
     rows.push({
       file: members[0].file,
+      package: pkgOf(members[0].file),
       members: members.map((m) => m.file),
       family:
         members.length > 1 ? familyName(members.map((m) => m.file)) : null,
