@@ -3,11 +3,13 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { createRawSnippet, flushSync } from 'svelte';
 import { describe, expect, it, vi } from 'vitest';
 
+import { ageReport } from '../../../../../packages/scene/test/ageReport';
 import { fixRateReport } from '../../../../../packages/scene/test/fixRateReport';
 import reportJson from '../../../../../packages/scene/test/fixtures/report.small.json';
 import { parallelReport } from '../../../../../packages/scene/test/parallelReport';
 import { fixesReport } from '../../../../../packages/scene/test/riskFixesReport';
 import ActivityCard from './ActivityCard.svelte';
+import AgeCard from './AgeCard.svelte';
 import AiCoauthorsCard from './AiCoauthorsCard.svelte';
 import Card from './Card.svelte';
 import ChurnCard from './ChurnCard.svelte';
@@ -579,6 +581,54 @@ describe('AiCoauthorsCard', () => {
     expect(screen.getByText(/No commit had AI in it/)).toBeTruthy();
     expect(
       screen.queryByRole('heading', { name: 'Most AI, by person' }),
+    ).toBeNull();
+  });
+});
+
+describe('AgeCard', () => {
+  const report = ageReport();
+  const aged = buildEntityIndex(report);
+
+  it('leads with the cold share of source lines', () => {
+    render(AgeCard, { report, index: aged });
+    expect(screen.getByText('20%')).toBeTruthy();
+    expect(
+      screen.getByText(/of source lines unchanged for a year or more/),
+    ).toBeTruthy();
+  });
+
+  it('flags the dormant package and lets it be selected', async () => {
+    const onselect = vi.fn();
+    render(AgeCard, { report, index: aged, onselect });
+    expect(screen.getByText(/archive it, delete it, or say why/)).toBeTruthy();
+    const old = screen.getAllByRole('button', { name: /^packages\/old\// });
+    await fireEvent.click(old[0]);
+    expect(onselect).toHaveBeenCalledWith('dir:packages/old');
+  });
+
+  it('lists the coldest packages, dormant marked, and opens the table', async () => {
+    const ontable = vi.fn();
+    render(AgeCard, { report, index: aged, ontable });
+    const list = screen.getByRole('heading', {
+      name: 'Coldest packages',
+    }).parentElement!;
+    expect(list.querySelectorAll('li button')).toHaveLength(4);
+    expect(within(list).getByText(/dormant/)).toBeTruthy();
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'All 12 files in the table (T) ▸' }),
+    );
+    expect(ontable).toHaveBeenCalled();
+  });
+
+  it('says when nothing has gone cold', () => {
+    render(AgeCard, {
+      report: reportJson as unknown as GitrelicReport,
+      index,
+    });
+    expect(screen.getByText('0%')).toBeTruthy();
+    expect(screen.getByText(/^Nothing is a year old/)).toBeTruthy();
+    expect(
+      screen.queryByRole('heading', { name: 'Coldest packages' }),
     ).toBeNull();
   });
 });
