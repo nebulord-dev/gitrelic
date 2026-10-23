@@ -2,10 +2,10 @@
 // single-owner") and how far outside normal it sits (the outlier grade from
 // the badge rules; lenses without a rule read 0, descriptive by design).
 
+import { ageSummaryOf } from '../age/strata';
 import { outlierGrades, type OutlierGrade } from '../badges';
 import { CATALOG, type CatalogEntry, type PresetGroup } from '../catalog';
 import { fixRateOf } from '../fixRate/points';
-import { filesInTier } from '../report/ageTiers';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export interface LensReading {
@@ -31,12 +31,16 @@ const VALUE: Record<string, (r: GitrelicReport) => string> = {
     return top ? `${n(top.commitCount)} commits, top file` : '—';
   },
   'cursed-files': (r) => `${n(r.cursedFiles.files.length)} files`,
-  'dead-code': (r) => `${n(r.deadCode.totalDeadFiles)} untouched`,
   'blast-radius': (r) =>
     `${n(r.blastRadius.files.filter((f) => f.blastScore >= 70).length)} load-bearing`,
   'complexity-trend': (r) =>
     `${n(r.complexityTrend.files.filter((f) => f.trend === 'growing').length)} growing`,
-  'age-map': (r) => `${n(filesInTier(r.ageMap, 'ancient').length)} ancient`,
+  'age-map': (r) => {
+    const dormant = r.ageMap.dormantPackages.length;
+    if (dormant > 0) return `${n(dormant)} dormant`;
+    const s = ageSummaryOf(r);
+    return s.lines > 0 ? `${pct((100 * s.coldLines) / s.lines)} cold` : '—';
+  },
   'rewrite-ratio': (r) => `${n(r.rewriteRatio.highRewrite)} high rewrite`,
   'fix-rate': (r) => {
     const { available, points } = fixRateOf(r);

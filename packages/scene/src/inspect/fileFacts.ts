@@ -1,3 +1,4 @@
+import { sinceText } from '../age/strata';
 import { fixPointOf, ratePct } from '../fixRate/points';
 import type { GitrelicReport, HotspotCategory } from '@gitrelic/core';
 
@@ -66,9 +67,17 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
 
   const age = report.ageMap.files.find((f) => f.file === file);
   if (age) {
+    const notes = [
+      ...(age.orphaned ? ['orphaned'] : []),
+      ...(age.wokeAfterDays !== undefined
+        ? [`woke after ${sinceText(age.wokeAfterDays)}`]
+        : []),
+    ];
     facts.push({
-      label: 'Age',
-      value: `${age.ageInDays} days (${age.status})`,
+      label: 'Last changed',
+      value: [`${sinceText(age.ageInDays)} ago`, ...notes].join(' · '),
+      // Nobody left who changed it: the one age worth a warning.
+      tier: age.orphaned ? 'warning' : undefined,
       lens: 'age-map',
     });
   }
@@ -80,16 +89,6 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
       value: `${ghost.dominantAuthor.split('@')[0]} (${ghost.authorInactiveDays} days)`,
       tier: 'warning',
       lens: 'ghost-files',
-    });
-  }
-
-  const stale = report.deadCode.candidates.find((f) => f.file === file);
-  if (stale) {
-    facts.push({
-      label: 'Stale',
-      value: `untouched ${stale.ageInDays} days`,
-      tier: 'moderate',
-      lens: 'dead-code',
     });
   }
 

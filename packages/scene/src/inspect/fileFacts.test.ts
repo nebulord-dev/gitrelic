@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { ageReport } from '../../test/ageReport';
 import { normalizeReport } from '../report/normalizeReport';
 import { fileFacts } from './fileFacts';
 import type { GitrelicReport } from '@gitrelic/core';
@@ -83,18 +84,12 @@ describe('fileFacts', () => {
         tier: 'critical',
         lens: 'bus-factor',
       },
-      { label: 'Age', value: '400 days (stale)', lens: 'age-map' },
+      { label: 'Last changed', value: '13 months ago', lens: 'age-map' },
       {
         label: 'Owner Inactive',
         value: 'bo (210 days)',
         tier: 'warning',
         lens: 'ghost-files',
-      },
-      {
-        label: 'Stale',
-        value: 'untouched 400 days',
-        tier: 'moderate',
-        lens: 'dead-code',
       },
       {
         label: 'Blast Radius',
@@ -180,5 +175,21 @@ describe('fileFacts', () => {
       lens: 'fix-rate',
     });
     expect(factAt(8, 3)?.tier).toBe('warning');
+  });
+
+  it('warns on an orphaned file and notes a woken one', () => {
+    const report = ageReport();
+    expect(
+      fileFacts('scripts/release.js', report).find((f) => f.lens === 'age-map'),
+    ).toEqual({
+      label: 'Last changed',
+      value: '2.2 years ago · orphaned',
+      tier: 'warning',
+      lens: 'age-map',
+    });
+    expect(
+      fileFacts('src/flags.ts', report).find((f) => f.lens === 'age-map')!
+        .value,
+    ).toBe('30 days ago · woke after 8.2 years');
   });
 });

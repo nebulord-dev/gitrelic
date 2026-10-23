@@ -314,6 +314,32 @@ export {
 export { rhythmScene, rhythmTip } from './layouts/rhythm';
 export { SWARM_ROWS, swarmScene } from './layouts/swarm';
 export {
+  AGE_BAND_NAMES,
+  ageFileTip,
+  ageRowName,
+  ageStrata,
+  ageStrataOf,
+  ageSummaryOf,
+  bandOf,
+  COLD_DAYS,
+  sinceText,
+  type AgeBand,
+  type AgeFile,
+  type AgeRow,
+  type AgeSummary,
+} from './age/strata';
+export { strataScene } from './layouts/strata';
+export { warmColdScene } from './layouts/warmCold';
+export {
+  AGE_TESTS_PANEL,
+  ageFindings,
+  ageTable,
+  ageView,
+  STRATA_ROWS,
+  strataLayout,
+  warmColdLayout,
+} from './views/age';
+export {
   churnFindings,
   churnTable,
   churnView,

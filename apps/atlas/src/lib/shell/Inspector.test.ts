@@ -353,12 +353,12 @@ describe('Inspector', () => {
   });
 
   it('links a selected lens without an Atlas view to classic', () => {
-    render(Inspector, { ...base, selection: ids.analyzer('dead-code') });
+    render(Inspector, { ...base, selection: ids.analyzer('blast-radius') });
     expect(
       screen
-        .getByRole('link', { name: /Open Stale Files in classic/ })
+        .getByRole('link', { name: /Open Blast Radius in classic/ })
         .getAttribute('href'),
-    ).toBe('/classic/#preset=dead-code');
+    ).toBe('/classic/#preset=blast-radius');
   });
 
   it('describes a selected view: its headline, its lenses loudest first, and a way in', async () => {
