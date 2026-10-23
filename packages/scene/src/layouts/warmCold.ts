@@ -34,9 +34,8 @@ const zero = { r: 0, w: 0, h: 0, a0: 0, a1: 0 };
 const n = (v: number) => v.toLocaleString('en-US');
 const shortName = (dir: string) => ageRowName(dir.replace(/^packages\//, ''));
 
-/** A row's total at the right: dormant, or its cold and orphaned lines. */
+/** A row's total at the right: its cold and orphaned lines. */
 function totalText(row: AgeRow): string {
-  if (row.dormant) return `dormant · ${sinceText(row.newestSource)}`;
   if (row.cold === 0) return 'nothing cold';
   return row.orphaned > 0
     ? `${n(row.cold)} cold · ${n(row.orphaned)} orphaned`
@@ -182,7 +181,13 @@ export function warmColdScene(input: ViewInput, viewport: Viewport): Scene {
         2,
       ),
       selects: rowId,
-      ...(row.dormant ? { labelClass: 'atlas-label--hot' } : {}),
+      // Only a label's second line takes the accent (`atlas-label--hot`).
+      ...(row.dormant
+        ? {
+            labelSub: `dormant · ${sinceText(row.newestSource)}`,
+            labelClass: 'atlas-label--hot',
+          }
+        : {}),
     });
 
     function part(id: string, selects: typeof rowId, x1: number, w: number) {

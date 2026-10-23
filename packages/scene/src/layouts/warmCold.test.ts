@@ -56,7 +56,8 @@ describe('warmColdScene', () => {
   it('names a dormant package in the accent, others by their cold lines', () => {
     const scene = build();
     expect(mark(scene, 'age-total:packages/old')).toMatchObject({
-      label: 'dormant · 3.4 years',
+      label: '500 cold · 200 orphaned',
+      labelSub: 'dormant · 3.4 years',
       labelClass: 'atlas-label--hot',
     });
     expect(mark(scene, 'age-total:scripts').label).toBe(
