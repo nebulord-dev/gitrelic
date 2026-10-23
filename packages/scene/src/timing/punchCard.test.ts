@@ -53,7 +53,7 @@ describe('selectionHours', () => {
       at('2025-06-03T14:00:00Z', ['packages/server/b.ts'], 'a@x', -480),
       at('2025-06-07T12:00:00Z', ['packages/server/a.ts']),
       at('2025-06-03T14:00:00Z', ['src/x.ts']),
-      // Left out: a sweeping commit and a bot's.
+      // Left out: a sweeping commit, a bot's and an AI agent's.
       at(
         '2025-06-03T02:00:00Z',
         Array.from(
@@ -65,6 +65,11 @@ describe('selectionHours', () => {
         '2025-06-03T02:00:00Z',
         ['packages/server/a.ts'],
         '49699333+dependabot[bot]@users.noreply.github.com',
+      ),
+      at(
+        '2025-06-03T02:00:00Z',
+        ['packages/server/a.ts'],
+        '209825114+claude[bot]@users.noreply.github.com',
       ),
     ];
     const s = selectionHours(commits, selectionRule('dir:packages/server')!);

@@ -667,30 +667,37 @@ exports[`fixture regression > co-authors report is stable 1`] = `
 {
   "aiAdoptionPercent": 0,
   "aiAdoptionTier": "none",
+  "aiAgents": [],
   "aiAssistedCommits": 0,
+  "aiAuthoredCommits": 0,
   "aiAuthors": [],
+  "aiTools": [],
   "authorStats": [],
   "byMonth": [
     {
       "aiAssisted": 0,
+      "aiAuthored": 0,
       "month": "2026-01",
       "pureHuman": 6,
       "total": 6,
     },
     {
       "aiAssisted": 0,
+      "aiAuthored": 0,
       "month": "2026-02",
       "pureHuman": 6,
       "total": 6,
     },
     {
       "aiAssisted": 0,
+      "aiAuthored": 0,
       "month": "2026-03",
       "pureHuman": 6,
       "total": 6,
     },
     {
       "aiAssisted": 0,
+      "aiAuthored": 0,
       "month": "2026-04",
       "pureHuman": 2,
       "total": 2,
@@ -699,6 +706,26 @@ exports[`fixture regression > co-authors report is stable 1`] = `
   "filteredBotCommits": 0,
   "humanAuthoredCommits": 20,
   "humanPairs": [],
+  "packages": [
+    {
+      "aiAssisted": 0,
+      "aiAuthored": 0,
+      "commits": 18,
+      "package": "src",
+    },
+    {
+      "aiAssisted": 0,
+      "aiAuthored": 0,
+      "commits": 1,
+      "package": "",
+    },
+    {
+      "aiAssisted": 0,
+      "aiAuthored": 0,
+      "commits": 1,
+      "package": "docs",
+    },
+  ],
   "pairs": [],
   "perAuthorMix": [
     {
@@ -727,6 +754,7 @@ exports[`fixture regression > co-authors report is stable 1`] = `
     },
   ],
   "summary": "No co-authored commits found",
+  "sweepingLeftOut": 0,
   "totalCoAuthoredCommits": 0,
 }
 `;

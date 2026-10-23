@@ -5,7 +5,7 @@ description: Surfaces AI-assistance adoption and human pair-programming attribut
 
 # Co-Authors / AI
 
-The **Co-Authors / AI** analyzer parses `Co-Authored-By:` trailers from commit messages, classifies each author email as **AI** (Claude, GitHub Copilot, Aider, Devin, Cursor), **bot** (semantic-release, dependabot, renovate, GitHub Actions), or **human**, and surfaces two distinct stories: how AI assistance is adopted in this codebase, and which humans pair-program with each other.
+The **Co-Authors / AI** analyzer parses `Co-Authored-By:` trailers from commit messages, classifies each author email as **AI** (Claude, GitHub Copilot, Aider, Devin, Cursor, Amp, Jules), **bot** (semantic-release, dependabot, renovate, GitHub Actions), or **human**, and surfaces two distinct stories: how AI assistance is adopted in this codebase, and which humans pair-program with each other.
 
 The analyzer answers two related questions:
 
@@ -55,25 +55,31 @@ A few specifics worth knowing:
 
 - **Trailer parsing.** Only the canonical `Co-Authored-By:` trailer (case-insensitive) is recognized. Other attribution conventions (`Signed-off-by:`, free-form "with help from X" text) are ignored.
 - **Bots are stripped from the analysis.** Pairs and authors classified as bots are removed before any metric is computed. The bottom-panel tabs render a small footnote (`"N bot-authored commits filtered"`) when applicable, so the filter is transparent.
-- **AI-assisted commit definition.** A commit is "AI-assisted" if at least one of its `Co-Authored-By:` trailers classifies as AI. Multiple AI co-authors on the same commit count as one AI-assisted commit.
-- **The AI adoption %.** `aiAssistedCommits / (aiAssistedCommits + pureHumanCommits) × 100`. Bot-only commits (no human or AI co-author) are excluded from both numerator and denominator.
+- **AI-assisted commit definition.** A commit is "AI-assisted" if a person authored it and at least one of its `Co-Authored-By:` trailers classifies as AI. Multiple AI co-authors on the same commit count as one AI-assisted commit.
+- **AI-authored commit definition.** A commit is "AI-authored" when an AI agent is its author: the Claude or Copilot GitHub apps, Devin or Jules committing on their own. These are counted separately from AI-assisted ones, never as bots.
+- **The AI adoption %.** `(aiAssisted + aiAuthored) / (humanAuthored + aiAuthored) × 100`: the share of commits with AI in them. Bot commits are excluded from both sides.
+- **Crediting yourself doesn't count.** A trailer naming the commit's own author (under any email that resolves to them, including a second email under the same full name) is not a co-authored commit.
 - **Renames are *not* followed** in the pair table's shared-file count. A pair's shared files are attributed to current paths only; pre-rename activity is counted against the old path.
 
 ## What counts as AI
 
 | Tool | Email pattern |
 |---|---|
-| Claude (Anthropic) | `noreply@anthropic.com` |
-| GitHub Copilot Workspace | `copilot[bot]@*.noreply.github.com` |
+| Claude (Anthropic) | `noreply@anthropic.com`, and the Claude GitHub app `claude[bot]@users.noreply.github.com` |
+| GitHub Copilot | `copilot[bot]@*.noreply.github.com`, its coding agent `<id>+Copilot@users.noreply.github.com` and `copilot-swe-agent[bot]` |
 | Aider | `aider@aider.chat` |
 | Devin (Cognition) | `devin-ai-integration[bot]@*.noreply.github.com` |
-| Cursor | `*@cursor.sh` |
+| Cursor | `*@cursor.sh`, and Cursor's agent `cursoragent@cursor.com` |
+| Amp (Sourcegraph) | `amp@ampcode.com` |
+| Jules (Google) | `google-labs-jules[bot]@users.noreply.github.com` |
+
+A GitHub app's address may start with a numeric id (`209825114+claude[bot]@…`); each pattern accepts it.
 
 If your team uses an AI coding assistant that isn't on this list, please file an issue with the email pattern and we'll add it.
 
 ## What counts as a bot
 
-`semantic-release-*`, `dependabot*`, `renovate*`, `github-actions[bot]@*`, plus a catch-all for `*[bot]@*.noreply.github.com` accounts that don't match an AI pattern.
+`semantic-release-*`, `dependabot*`, `renovate*`, `github-actions[bot]@*`, plus a catch-all for `*[bot]@*.noreply.github.com` accounts that don't match an AI pattern. AI agents that commit as GitHub apps match an AI pattern first, so they're counted as AI-authored, not stripped as bots.
 
 Bots are stripped from the analysis entirely. They aren't ignored silently — the bottom-panel tabs surface a `"N bot-authored commits filtered"` footnote when bots were present in the raw data, so the filter is auditable rather than invisible.
 
@@ -88,8 +94,8 @@ Five KPI slots appear at the top of the Co-Authors pane.
 | Value | Tier | Meaning |
 |---|---|---|
 | No co-author trailers anywhere | `No Co-Author Data` (neutral grey) | Most repos in the wild. The signal isn't applicable. |
-| 0% (trailers present, none AI) | `No Adoption Yet` (neutral, not red) | Human-only attribution. *Absence of AI is not a risk.* |
-| 1–19% | `Low Adoption` | AI is being tried, not embedded. |
+| No AI commits (trailers present, none AI) | `No Adoption Yet` (neutral, not red) | Human-only attribution. *Absence of AI is not a risk.* |
+| Under 20%, with at least one AI commit | `Low Adoption` | AI is being tried, not embedded. A handful of AI commits in a long history rounds to 0% and is still low, not none. |
 | 20–49% | `Moderate Adoption` | AI is meaningfully part of the workflow. |
 | ≥ 50% | `High Adoption` | AI is the default for most commits. |
 

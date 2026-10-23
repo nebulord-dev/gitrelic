@@ -806,6 +806,7 @@
     "blameTimeouts": 0,
     "windowDays": 30,
     "minChanges": 8,
+    "ai": { "changes": 0, "fixedAfter": 0, "versusOthers": null },
     "summary": "4.5% of changes (1 of 22) had their lines fixed within 30 days; 0 files have the 8+ changes a rate needs."
   },
   "parallelDev": {
@@ -1485,10 +1486,34 @@
     "humanPairs": [],
     "filteredBotCommits": 0,
     "byMonth": [
-      { "month": "2026-01", "aiAssisted": 0, "pureHuman": 6, "total": 6 },
-      { "month": "2026-02", "aiAssisted": 0, "pureHuman": 6, "total": 6 },
-      { "month": "2026-03", "aiAssisted": 0, "pureHuman": 6, "total": 6 },
-      { "month": "2026-04", "aiAssisted": 0, "pureHuman": 2, "total": 2 }
+      {
+        "month": "2026-01",
+        "aiAssisted": 0,
+        "pureHuman": 6,
+        "total": 6,
+        "aiAuthored": 0
+      },
+      {
+        "month": "2026-02",
+        "aiAssisted": 0,
+        "pureHuman": 6,
+        "total": 6,
+        "aiAuthored": 0
+      },
+      {
+        "month": "2026-03",
+        "aiAssisted": 0,
+        "pureHuman": 6,
+        "total": 6,
+        "aiAuthored": 0
+      },
+      {
+        "month": "2026-04",
+        "aiAssisted": 0,
+        "pureHuman": 2,
+        "total": 2,
+        "aiAuthored": 0
+      }
     ],
     "perAuthorMix": [
       {
@@ -1515,7 +1540,16 @@
         "totalCommits": 3,
         "personalRatio": 0
       }
-    ]
+    ],
+    "aiAuthoredCommits": 0,
+    "aiTools": [],
+    "aiAgents": [],
+    "packages": [
+      { "package": "src", "commits": 18, "aiAssisted": 0, "aiAuthored": 0 },
+      { "package": "", "commits": 1, "aiAssisted": 0, "aiAuthored": 0 },
+      { "package": "docs", "commits": 1, "aiAssisted": 0, "aiAuthored": 0 }
+    ],
+    "sweepingLeftOut": 0
   },
   "hotspotClusters": {
     "clusters": [

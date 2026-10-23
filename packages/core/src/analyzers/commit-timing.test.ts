@@ -517,6 +517,8 @@ describe('offHoursByPackage', () => {
         ['src/a.ts'],
         '49699333+dependabot[bot]@users.noreply.github.com',
       ),
+      // An AI agent's own commit, too.
+      at(LATE, ['src/a.ts'], '209825114+claude[bot]@users.noreply.github.com'),
     ];
     const r = offHoursByPackage(commits, tracked(commits));
     expect(r.commits).toBe(12);
@@ -628,5 +630,15 @@ describe('off-hours regularity per person', () => {
     );
     expect(b.weekendWeeks).toBe(8);
     expect(b.regularWeekends).toBe(false);
+  });
+
+  it('never names an AI agent', () => {
+    const agent = '209825114+claude[bot]@users.noreply.github.com';
+    const weeks = Array.from({ length: 8 }, (_, k) => k);
+    const a = profile(
+      weeks.map((k) => c(sat(k), agent)),
+      agent,
+    );
+    expect(a.regularWeekends).toBe(false);
   });
 });

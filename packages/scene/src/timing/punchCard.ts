@@ -90,7 +90,7 @@ function eachCommitHour(
   for (const c of commits) {
     if (rule?.asPackages) {
       if (c.files.length > SWEEPING_COMMIT_FILES) continue;
-      if (classifyAuthor(c.author) === 'bot') continue;
+      if (classifyAuthor(c.author) !== 'human') continue;
     }
     if (rule && !rule.match(c)) continue;
     const { day, hour } = localDayHour(c);
@@ -281,7 +281,7 @@ export function offHoursPeople(
       (a) =>
         a.activeWeeks >= OFF_HOURS_MIN_WEEKS &&
         a.weekendWeeks + a.lateNightWeeks > 0 &&
-        classifyAuthor(a.email) !== 'bot',
+        classifyAuthor(a.email) === 'human',
     )
     .map((a) => asPerson(a, idOf))
     .sort(

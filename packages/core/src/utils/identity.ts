@@ -217,11 +217,23 @@ export function mergeIdentities(commits: RawCommit[]): {
   }
   identities.sort((a, b) => a.canonicalEmail.localeCompare(b.canonicalEmail));
 
+  // A co-author who never authored a commit under that email is matched to an
+  // author by rule 3's name: React credits "Jack Pope <jackpope1@gmail.com>"
+  // on commits Jack Pope authored as jackpope@meta.com, which otherwise
+  // reads as Jack pairing with himself.
+  const byName = (co: { name: string; email: string }) => {
+    if (classifyAuthor(co.email) !== 'human') return undefined;
+    const n = normalizeName(co.name);
+    if (!n.includes(' ') || NAME_DENYLIST.has(n)) return undefined;
+    const key = keyByName.get(n);
+    return key === undefined ? undefined : canonical.get(key);
+  };
+
   const merged = commits.map((c) => {
     const target = canonical.get(c.authorEmail.toLowerCase())!;
     let coAuthorsChanged = false;
     const coAuthors = c.coAuthors.map((co) => {
-      const t = canonical.get(co.email.toLowerCase());
+      const t = canonical.get(co.email.toLowerCase()) ?? byName(co);
       if (!t || (t.email === co.email && t.name === co.name)) return co;
       coAuthorsChanged = true;
       return { name: t.name, email: t.email };

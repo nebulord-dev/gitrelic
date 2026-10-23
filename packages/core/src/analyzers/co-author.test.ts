@@ -263,8 +263,20 @@ describe('analyzeCoAuthors', () => {
         }),
       ]);
       expect(result.byMonth).toEqual([
-        { month: '2026-01', aiAssisted: 1, pureHuman: 0, total: 1 },
-        { month: '2026-02', aiAssisted: 0, pureHuman: 1, total: 1 },
+        {
+          month: '2026-01',
+          aiAssisted: 1,
+          pureHuman: 0,
+          total: 1,
+          aiAuthored: 0,
+        },
+        {
+          month: '2026-02',
+          aiAssisted: 0,
+          pureHuman: 1,
+          total: 1,
+          aiAuthored: 0,
+        },
       ]);
     });
   });
@@ -394,6 +406,100 @@ describe('analyzeCoAuthors', () => {
         (m) => m.author === 'alice@co.com',
       );
       expect(alice!.aiCommits).toBe(2);
+    });
+  });
+
+  describe('AI-authored commits, tools and packages', () => {
+    const CLAUDE_APP = '209825114+claude[bot]@users.noreply.github.com';
+
+    it("counts an agent's own commit as AI-authored, apart from assisted", () => {
+      const r = analyzeCoAuthors([
+        makeCommit({ authorEmail: CLAUDE_APP, authorName: 'claude[bot]' }),
+        makeCommit({
+          coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+        }),
+        makeCommit({}),
+        makeCommit({}),
+      ]);
+      expect(r.aiAuthoredCommits).toBe(1);
+      expect(r.aiAssistedCommits).toBe(1);
+      expect(r.humanAuthoredCommits).toBe(3);
+      // (1 assisted + 1 authored) of (3 human + 1 authored)
+      expect(r.aiAdoptionPercent).toBe(50);
+      expect(r.aiTools).toEqual([
+        { product: 'Claude', assisted: 1, authored: 1 },
+      ]);
+      expect(r.aiAgents).toEqual([
+        {
+          author: CLAUDE_APP,
+          displayName: 'claude[bot]',
+          product: 'Claude',
+          commits: 1,
+        },
+      ]);
+      expect(r.byMonth[0]).toMatchObject({ total: 3, aiAuthored: 1 });
+      expect(r.summary).toContain('1 authored by an AI agent');
+    });
+
+    it('tiers adoption low, not none, when AI commits round to 0%', () => {
+      const commits = Array.from({ length: 300 }, () => makeCommit({}));
+      commits[0] = makeCommit({
+        coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+      });
+      const r = analyzeCoAuthors(commits);
+      expect(r.aiAdoptionPercent).toBe(0);
+      expect(r.aiAdoptionTier).toBe('low');
+    });
+
+    it('does not count crediting yourself as a co-authored commit', () => {
+      const r = analyzeCoAuthors([
+        makeCommit({ coAuthors: [ca('Alice', 'Alice@co.com')] }),
+      ]);
+      expect(r.totalCoAuthoredCommits).toBe(0);
+      expect(r.pairs).toEqual([]);
+      expect(r.authorStats).toEqual([]);
+    });
+
+    it('counts each package once per commit, tracked files only, sweeping commits out', () => {
+      const sweeping = Array.from({ length: 21 }, (_, i) => `src/f${i}.ts`);
+      const r = analyzeCoAuthors(
+        [
+          makeCommit({
+            files: ['packages/ui/a.ts', 'packages/ui/b.ts', 'README.md'],
+            coAuthors: [ca('Claude', 'noreply@anthropic.com')],
+          }),
+          makeCommit({ files: ['packages/ui/a.ts', 'gone/old.ts'] }),
+          makeCommit({ authorEmail: CLAUDE_APP, files: ['src/x.ts'] }),
+          makeCommit({ files: sweeping }),
+        ],
+        [
+          'packages/ui/a.ts',
+          'packages/ui/b.ts',
+          'README.md',
+          'src/x.ts',
+          ...sweeping,
+        ],
+      );
+      expect(r.packages).toEqual([
+        { package: 'packages/ui', commits: 2, aiAssisted: 1, aiAuthored: 0 },
+        { package: '', commits: 1, aiAssisted: 1, aiAuthored: 0 },
+        { package: 'src', commits: 1, aiAssisted: 0, aiAuthored: 1 },
+      ]);
+      expect(r.sweepingLeftOut).toBe(1);
+    });
+
+    it("classifies Amp and Cursor's agent as AI, not as human pairs", () => {
+      const r = analyzeCoAuthors([
+        makeCommit({
+          coAuthors: [
+            ca('Amp', 'amp@ampcode.com'),
+            ca('Cursor Agent', 'cursoragent@cursor.com'),
+          ],
+        }),
+      ]);
+      expect(r.aiAssistedCommits).toBe(1);
+      expect(r.humanPairs).toEqual([]);
+      expect(r.aiTools.map((t) => t.product)).toEqual(['Amp', 'Cursor']);
     });
   });
 });

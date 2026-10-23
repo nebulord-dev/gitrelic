@@ -6,7 +6,8 @@
  *
  * 1. A fix is a human commit whose subject says so (`fix`, `bug`, `hotfix`,
  *    `regression`, `oops`, `broke`…) or a revert (`Revert "…"`). Bots are
- *    left out on both sides; merges never reach the analyzers.
+ *    left out on both sides; AI agents' own commits stay in, so `ai` can
+ *    rate them. Merges never reach the analyzers.
  * 2. For each file a fix changed, `git blame` on the lines it changed or
  *    removed (in the fix's parent) names the commits that wrote them.
  * 3. A change is *fixed-after* when a fix within `FIX_WINDOW_DAYS` traced back
@@ -22,10 +23,11 @@
  * snapshot update) is left untraced: it would blame every file it passed.
  */
 
-import { classifyAuthor } from '../utils/authorClassification.js';
+import { classifyAuthor, isAiEmail } from '../utils/authorClassification.js';
 import { blameFixedLines, GitTimeoutError } from '../utils/git.js';
 import type {
   FileFixRate,
+  FixRateAiSplit,
   FixRateFix,
   FixRateMonth,
   FixRateReport,
@@ -68,6 +70,35 @@ export function binomialUpperTail(n: number, k: number, p: number): number {
   return Math.max(0, 1 - below);
 }
 
+/** Each side needs this many changes before the AI split is tested. */
+export const MIN_SPLIT_CHANGES = 30;
+// The two-sided normal cutoff for CHANCE_TAIL in each tail.
+const Z_CHANCE = 1.96;
+
+/**
+ * Are changes in AI commits fixed more or less often than the others'?
+ * A two-proportion z-test, since both rates are estimates: testing one
+ * against the other's as if it were exact overstates the gap. AI commits
+ * often land in newer, faster-moving code, so a gap is a reason to look,
+ * not proof that AI's changes are worse.
+ */
+export function versusOthers(
+  ai: { changes: number; fixedAfter: number },
+  others: { changes: number; fixedAfter: number },
+): FixRateAiSplit['versusOthers'] {
+  if (ai.changes < MIN_SPLIT_CHANGES || others.changes < MIN_SPLIT_CHANGES)
+    return null;
+  const pooled =
+    (ai.fixedAfter + others.fixedAfter) / (ai.changes + others.changes);
+  const se = Math.sqrt(
+    pooled * (1 - pooled) * (1 / ai.changes + 1 / others.changes),
+  );
+  if (se === 0) return 'within';
+  const z =
+    (ai.fixedAfter / ai.changes - others.fixedAfter / others.changes) / se;
+  return z > Z_CHANCE ? 'above' : z < -Z_CHANCE ? 'below' : 'within';
+}
+
 /** Whether a rated file's fixed-after count is more than chance explains. */
 export function aboveChance(
   file: Pick<FileFixRate, 'changes' | 'fixedAfter'>,
@@ -93,6 +124,7 @@ interface Plan {
 }
 
 function plan(commits: RawCommit[]): Plan {
+  // People and AI agents: everyone but bots.
   const human = commits.filter((c) => classifyAuthor(c.authorEmail) !== 'bot');
   const fixes = human.filter((c) => fixKind(c.message) !== null);
   const traced = fixes.filter((c) => c.files.length <= MAX_FIX_FILES);
@@ -141,12 +173,16 @@ export function computeFixRate(
   const months = new Map<string, FixRateMonth>();
   let changes = 0;
   let fixedAfter = 0;
+  const ai = { changes: 0, fixedAfter: 0 };
   for (const c of human) {
     const at = time.get(c.hash)!;
     if (at + windowMs > end) continue;
     const month = c.date.slice(0, 7);
+    const withAi =
+      isAiEmail(c.authorEmail) || c.coAuthors.some((co) => isAiEmail(co.email));
     for (const file of c.files) {
       if (!rated.has(file)) continue;
+      if (withAi) ai.changes++;
       const row = perFile.get(file) ?? {
         changes: 0,
         fixedAfter: 0,
@@ -160,6 +196,7 @@ export function computeFixRate(
       changes++;
       const by = fixedBy.get(`${c.hash}\0${file}`);
       if (!by) continue;
+      if (withAi) ai.fixedAfter++;
       row.fixedAfter++;
       m.fixedAfter++;
       fixedAfter++;
@@ -215,6 +252,13 @@ export function computeFixRate(
     blameTimeouts,
     windowDays: FIX_WINDOW_DAYS,
     minChanges: MIN_CHANGES,
+    ai: {
+      ...ai,
+      versusOthers: versusOthers(ai, {
+        changes: changes - ai.changes,
+        fixedAfter: fixedAfter - ai.fixedAfter,
+      }),
+    },
     summary: summarize(rate, changes, fixedAfter, files.length),
   };
 }

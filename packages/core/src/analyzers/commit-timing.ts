@@ -55,7 +55,9 @@ export function offHoursByPackage(
   let off = 0;
   const byPackage = new Map<string, { commits: number; offHours: number }>();
   for (const c of commits) {
-    if (classifyAuthor(c.authorEmail) === 'bot') continue;
+    // Nor is an AI agent's: Claude's GitHub app committing at 3am is no one
+    // working late.
+    if (classifyAuthor(c.authorEmail) !== 'human') continue;
     if (c.files.length > MAX_FIX_FILES) continue;
     const { hour, day } = parseLocalTime(c.date);
     const isOff = isLateNight(hour) || isWeekend(day);
@@ -379,8 +381,8 @@ export function analyzeCommitTiming(
       Math.max(0, Math.round(lateNightPercent * 0.6 + weekendPercent * 0.4)),
     );
     const activeWeeks = data.weeks.size;
-    // A bot's schedule isn't anyone's evening: never named as regular.
-    const person = classifyAuthor(email) !== 'bot';
+    // A bot's or an agent's schedule isn't anyone's evening: never regular.
+    const person = classifyAuthor(email) === 'human';
     const regular = (weeks: number) =>
       person &&
       activeWeeks >= REGULAR_MIN_WEEKS &&
