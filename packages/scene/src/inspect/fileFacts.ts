@@ -126,7 +126,8 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
     facts.push({
       label: 'Rewrite Ratio',
       value: rr.ratio.toFixed(2),
-      lens: 'rewrite-ratio',
+      // Rewrite Ratio merged into Churn, whose character tag reads it.
+      lens: 'churn',
     });
   }
 

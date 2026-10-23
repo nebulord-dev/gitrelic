@@ -33,15 +33,12 @@ const VALUE: Record<string, (r: GitrelicReport) => string> = {
   'cursed-files': (r) => `${n(r.cursedFiles.files.length)} files`,
   'blast-radius': (r) =>
     `${n(r.blastRadius.files.filter((f) => f.blastScore >= 70).length)} load-bearing`,
-  'complexity-trend': (r) =>
-    `${n(r.complexityTrend.files.filter((f) => f.trend === 'growing').length)} growing`,
   'age-map': (r) => {
     const dormant = r.ageMap.dormantPackages.length;
     if (dormant > 0) return `${n(dormant)} dormant`;
     const s = ageSummaryOf(r);
     return s.lines > 0 ? `${pct((100 * s.coldLines) / s.lines)} cold` : '—';
   },
-  'rewrite-ratio': (r) => `${n(r.rewriteRatio.highRewrite)} high rewrite`,
   'fix-rate': (r) => {
     const { available, points } = fixRateOf(r);
     return available

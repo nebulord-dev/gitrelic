@@ -20,20 +20,25 @@ const ATLAS_MERGES: Record<string, string> = {
   risk: 'cursed-files',
   shame: 'fix-rate',
   'dead-code': 'age-map',
+  'rewrite-ratio': 'churn',
 };
+
+// Classic presets Atlas retired outright: no lens, nothing absorbs them, and
+// classic still serves them until it goes (docs/atlas-views.md records why).
+const ATLAS_RETIRED = new Set(['complexity-trend']);
 
 // Lenses only Atlas has: no classic preset to match, and none may appear.
 const ATLAS_ONLY = new Set(['fix-rate']);
 
 describe('scene catalog ↔ classic presets', () => {
-  it('covers exactly the classic presets, less the merged ones', () => {
+  it('covers exactly the classic presets, less the merged and retired ones', () => {
     expect(
       CATALOG.map((e) => e.id)
         .filter((id) => !ATLAS_ONLY.has(id))
         .sort(),
     ).toEqual(
       Object.keys(PRESETS)
-        .filter((id) => !(id in ATLAS_MERGES))
+        .filter((id) => !(id in ATLAS_MERGES) && !ATLAS_RETIRED.has(id))
         .sort(),
     );
   });
@@ -43,6 +48,14 @@ describe('scene catalog ↔ classic presets', () => {
     (from, into) => {
       expect(from in PRESETS).toBe(true);
       expect(CATALOG.find((e) => e.id === into)?.atlas).toBe(true);
+    },
+  );
+
+  it.each([...ATLAS_RETIRED])(
+    '%s is retired: a classic preset with no Atlas lens',
+    (id) => {
+      expect(id in PRESETS).toBe(true);
+      expect(CATALOG.find((e) => e.id === id)).toBeUndefined();
     },
   );
 

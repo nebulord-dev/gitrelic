@@ -24,11 +24,6 @@ const n = (x: number) => x.toLocaleString();
  */
 const SILO_PERCENT = 80;
 
-/** Lines deleted per line added; `ratio` itself is a 0–1 balance score. */
-function rewriteRate(insertions: number, deletions: number): string {
-  if (insertions === 0) return `${n(deletions)} deleted, none added`;
-  return `${(deletions / insertions).toFixed(2)} deleted per line added`;
-}
 const base = (path: string) => path.slice(path.lastIndexOf('/') + 1);
 /** A directory's last two segments: enough to tell `react-server/src/` apart. */
 const shortDir = (dir: string) => `${dir.split('/').slice(-2).join('/')}/`;
@@ -59,10 +54,6 @@ const SOURCES: Record<string, (r: GitrelicReport) => Candidate[]> = {
     r.blastRadius.topBlasters.map((f) =>
       file(f.file, `${f.avgCoChangedFiles.toFixed(1)} files per change`),
     ),
-  'complexity-trend': (r) =>
-    r.complexityTrend.growingFiles.map((f) =>
-      file(f.file, `+${n(Math.round(f.recentGrowthRate))} lines a month`),
-    ),
   // Dormant packages first (the badge's count), then orphaned files, oldest
   // first: what the lens's findings point at.
   'age-map': (r) => [
@@ -76,10 +67,6 @@ const SOURCES: Record<string, (r: GitrelicReport) => Candidate[]> = {
       (f) => f.ageInDays,
     ).map((f) => file(f.file, `orphaned, ${sinceText(f.ageInDays)} old`)),
   ],
-  'rewrite-ratio': (r) =>
-    r.rewriteRatio.topRewriters.map((f) =>
-      file(f.file, rewriteRate(f.totalInsertions, f.totalDeletions)),
-    ),
   // Above chance first (the lens's own order), only files with a fix.
   'fix-rate': (r) =>
     fixRateOf(r)

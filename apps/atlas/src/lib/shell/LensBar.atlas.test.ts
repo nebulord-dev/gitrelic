@@ -24,7 +24,7 @@ describe('LensBar with an Atlas lens', () => {
     });
     const hotspots = screen.getByRole('button', { name: 'Hotspots' });
     expect(hotspots.getAttribute('aria-current')).toBe('page');
-    expect(screen.getAllByRole('link')).toHaveLength(7);
+    expect(screen.getAllByRole('link')).toHaveLength(5);
     await fireEvent.click(hotspots);
     expect(onopen).toHaveBeenCalledWith('hotspots');
   });
