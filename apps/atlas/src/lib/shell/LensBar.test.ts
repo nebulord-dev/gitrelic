@@ -16,8 +16,9 @@ describe('LensBar', () => {
     expect(screen.getByRole('button', { name: /^Risk/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Age/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Fix rate/ })).toBeTruthy();
+    // Blast Radius is Code Health's one lens still in classic.
     const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(3);
+    expect(links).toHaveLength(1);
     expect(links[0].textContent).toMatch(/^Blast Radius/);
     expect(links[0].getAttribute('href')).toBe('/classic/#preset=blast-radius');
     expect(links[0].textContent).toContain('opens the classic dashboard');

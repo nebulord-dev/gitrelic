@@ -3,8 +3,9 @@
 // open in the classic dashboard (`/classic/#preset=<id>`).
 //
 // The ids match apps/web's preset registry, less the classic presets merged
-// into an Atlas lens (Risk, Shame, Stale Files) and plus the lenses only
-// Atlas has (fix-rate); a web test keeps the two in step.
+// into an Atlas lens (Risk, Shame, Stale Files, Rewrite Ratio) or retired
+// (Complexity Trend), and plus the lenses only Atlas has (fix-rate); a web
+// test keeps the two in step.
 
 export const PRESET_GROUPS = [
   { id: 'overview', label: 'Overview' },
@@ -86,23 +87,6 @@ export const CATALOG: readonly CatalogEntry[] = [
     explain:
       'How many other files change alongside a file: its coordination cost.',
     docsPath: 'analyzers/blast-radius',
-    atlas: false,
-  },
-  {
-    id: 'complexity-trend',
-    label: 'Complexity Trend',
-    group: 'code-health',
-    explain:
-      'Whether files are growing or shrinking over time; growth accumulates maintenance burden.',
-    atlas: false,
-  },
-  {
-    id: 'rewrite-ratio',
-    label: 'Rewrite Ratio',
-    group: 'code-health',
-    explain:
-      'Deletions against insertions: code being rewritten rather than added to.',
-    docsPath: 'analyzers/rewrite-ratio',
     atlas: false,
   },
   {

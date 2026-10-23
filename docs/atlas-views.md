@@ -169,7 +169,7 @@ Fix rate, test co-change, truck factor and cross-owner coupling are new core wor
 | View | Lenses |
 |---|---|
 | Overview | Repo map (forms: Dashboard, Fan; Briefing planned) |
-| Code Health | Hotspots · Churn · Risk · Age · Fix rate · *Complexity growth (own lens or a Hotspots facet: decided at its checkpoint)* |
+| Code Health | Hotspots · Churn · Risk · Age · Fix rate (Complexity growth retired as a lens, 2026-10-23; Blast Radius waits for Coupling's checkpoint) |
 | Ownership & Risk *(name revisited when Risk moves; see below)* | Ownership · Coupling |
 | Team & Activity | Contributors · Parallel Dev · Commit Timing · AI & Co-authors · *Release cadence* |
 | Structure | Languages · Tests · *Repo health (git-sizer, RELIC-297)* |
@@ -178,13 +178,15 @@ That is 14 confirmed lenses plus three in italics still to be decided. Once Risk
 
 The catalog changes as each view's lenses ship, not all at once, so classic stays reachable for everything until its Atlas replacement exists.
 
-**Catalog parity as lenses ship.** `catalogParity.test.ts` (in `apps/web`) requires scene's `CATALOG` to hold exactly classic's preset ids, each in classic's group, except where one of its tables says otherwise. Each table arrives with the first PR that needs it, rather than loosening the test. `ATLAS_RENAMES`, `ATLAS_MERGES` and `ATLAS_ONLY` exist today. `ATLAS_MOVES` hasn't been needed: Risk moved to Code Health in classic too, so the groups still match. The tables:
+**Catalog parity as lenses ship.** `catalogParity.test.ts` (in `apps/web`) requires scene's `CATALOG` to hold exactly classic's preset ids, each in classic's group, except where one of its tables says otherwise. Each table arrives with the first PR that needs it, rather than loosening the test. `ATLAS_RENAMES`, `ATLAS_MERGES`, `ATLAS_RETIRED` and `ATLAS_ONLY` exist today. `ATLAS_MOVES` hasn't been needed: Risk moved to Code Health in classic too, so the groups still match. The tables:
 
-- `ATLAS_MERGES` — a classic preset id → the Atlas lens that absorbs it (today `risk → cursed-files` and `shame → fix-rate`; `ghost-files → ownership` is planned). The merged id leaves the catalog, and the target must exist in it.
+- `ATLAS_MERGES` — a classic preset id → the Atlas lens that absorbs it (today `risk → cursed-files`, `shame → fix-rate`, `dead-code → age-map` and `rewrite-ratio → churn`; `ghost-files → ownership` is planned). The merged id leaves the catalog, and the target must exist in it.
 - `ATLAS_MOVES` — a preset id → its new group, for a lens that moves without classic following. It skips the group check for that id only.
 - `ATLAS_ONLY` — lens ids with no classic preset. They're allowed in the catalog, and they must not appear in classic's registry. Today it holds `fix-rate`; `ownership`, `truck-factor` and `release-cadence` join it as each one ships.
 
-Every classic preset must then be in the catalog, in `ATLAS_MERGES`, or retired in an explicit list, so nothing becomes unreachable by accident.
+- `ATLAS_RETIRED` — classic preset ids with no Atlas lens and nothing absorbing them (today `complexity-trend`). They leave the catalog; classic serves them until it goes.
+
+Every classic preset must then be in the catalog, in `ATLAS_MERGES`, or in `ATLAS_RETIRED`, so nothing becomes unreachable by accident.
 
 ---
 
@@ -634,3 +636,5 @@ With real ages (each file's last change in all of history, counted back from the
 - **2026-10-22 — AI & Co-authors shows where AI writes, by package, with Adoption lanes as its one alternate; the co-author graph is dropped** (RELIC-372). *Why:* how much of the code AI helped write, and where, is the question a team lead asks, and low adoption is an answer too; lanes show everyone's start at once, which the strip can't. On React most human "pairs" are one-off squash-merge credits, so a graph of them overstates collaboration.
 - **2026-10-23 — The time strip can shade a lens's part of each week** (RELIC-372). An `AnalyzerView.strip` names it; AI & Co-authors shades commits with AI in them. *Why:* adoption is a trend, and trends live in the strip; drawing it there keeps the stage for where and who.
 - **2026-10-23 — Age rates every file by its real last change, in calendar bands; Strata primary, Warm and cold alternate** (RELIC-374). Stale Files merges in. The badge counts dormant packages; orphaned cold files are the highlight. *Why:* both analyzers saw only the window, so Age Map's oldest files were missing and Stale Files had no dates; window-share tiers moved with `--since`. Changes to long-untouched files were fixed less often on React, not more, so woken files stay a finding.
+- **2026-10-23 — Rewrite Ratio merges into Churn; Complexity Trend is retired as a lens** (RELIC-375). Lenses only: both analyzers stay, and Rewrite Ratio's still feeds Churn's character, the Hotspots facet, the file card (whose row now opens Churn) and What to do. *Why:* Rewrite Ratio's merge was decided in the lens inventory but never landed, so it still showed as a classic link; Complexity Trend's growth curve is read by nothing else, and its question is answered by Churn's *growing* character, Hotspots' size against churn and the "split it" rule.
+- **2026-10-23 — Classic links stay for lenses Atlas hasn't built, and go for merged and retired ones** (maintainer). *Why:* Atlas replaces classic, but removing every ↗ now would hide the unbuilt lenses (Ownership, Coupling, Languages, Tests…) until each lands. Classic goes when the last one does.

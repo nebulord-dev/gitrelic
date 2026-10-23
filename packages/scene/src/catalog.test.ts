@@ -14,11 +14,12 @@ import {
 describe('catalog', () => {
   // Classic's 23 presets, less those merged into an Atlas lens (ATLAS_MERGES
   // in apps/web's catalogParity.test.ts: Risk into cursed-files, Shame into
-  // fix-rate, Stale Files into age-map), plus Atlas's own (ATLAS_ONLY:
-  // fix-rate).
-  it('lists 21 presets with unique ids, each in a known group', () => {
-    expect(CATALOG).toHaveLength(21);
-    expect(new Set(CATALOG.map((e) => e.id)).size).toBe(21);
+  // fix-rate, Stale Files into age-map, Rewrite Ratio into churn), less
+  // those retired (ATLAS_RETIRED: Complexity Trend), plus Atlas's own
+  // (ATLAS_ONLY: fix-rate).
+  it('lists 19 presets with unique ids, each in a known group', () => {
+    expect(CATALOG).toHaveLength(19);
+    expect(new Set(CATALOG.map((e) => e.id)).size).toBe(19);
     const groups = new Set<string>(PRESET_GROUPS.map((g) => g.id));
     for (const entry of CATALOG) expect(groups.has(entry.group)).toBe(true);
   });
@@ -51,8 +52,6 @@ describe('catalog', () => {
       'cursed-files',
       'age-map',
       'blast-radius',
-      'complexity-trend',
-      'rewrite-ratio',
       'fix-rate',
     ]);
     // Overview's Repo map is the first Atlas lens; views without one have none.

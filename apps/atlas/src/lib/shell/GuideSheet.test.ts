@@ -20,7 +20,7 @@ describe('GuideSheet', () => {
     // Repo map, Hotspots, Churn, Risk, Age, Fix rate, Contributors, Parallel
     // Dev, Commit Timing and AI & Co-authors have Atlas views (Open); the
     // rest link classic.
-    expect(screen.getAllByRole('link', { name: 'Classic ↗' }).length).toBe(11);
+    expect(screen.getAllByRole('link', { name: 'Classic ↗' }).length).toBe(9);
     expect(screen.getAllByRole('button', { name: 'Open' })).toHaveLength(10);
   });
 

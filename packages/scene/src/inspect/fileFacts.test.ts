@@ -104,7 +104,7 @@ describe('fileFacts', () => {
         tier: 'critical',
         lens: 'cursed-files',
       },
-      { label: 'Rewrite Ratio', value: '1.46', lens: 'rewrite-ratio' },
+      { label: 'Rewrite Ratio', value: '1.46', lens: 'churn' },
       {
         label: 'Fix rate',
         value: '38% (3 of 8)',
