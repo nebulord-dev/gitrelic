@@ -50,6 +50,7 @@ describe('fromRawCommits', () => {
         files: ['src/a.ts'],
         hash: 'a'.repeat(12),
         tz: -480,
+        ai: 0,
       },
       {
         timeMs: Date.parse('2026-01-02T09:00:00Z'),
@@ -57,6 +58,7 @@ describe('fromRawCommits', () => {
         files: ['src/a.ts', 'src/b.ts'],
         hash: 'b'.repeat(12),
         tz: 0,
+        ai: 0,
       },
       {
         timeMs: Date.parse('2026-01-03T12:00:00Z'),
@@ -64,6 +66,7 @@ describe('fromRawCommits', () => {
         files: [],
         hash: 'c'.repeat(12),
         tz: 0,
+        ai: 0,
       },
     ]);
   });
@@ -107,6 +110,29 @@ describe('fromCommitIndex', () => {
       'ann@corp.com',
     ]);
     expect(fromRawCommits(sameSecond)).toEqual(decoded);
+  });
+
+  it('carries AI the same way from both sources, and 0 from older indexes', () => {
+    const ai = [
+      raw({ hash: 'a'.repeat(40), date: '2026-01-01T00:00:00Z' }),
+      raw({
+        hash: 'b'.repeat(40),
+        date: '2026-01-02T00:00:00Z',
+        coAuthors: [{ name: 'Claude', email: 'noreply@anthropic.com' }],
+      }),
+      raw({
+        hash: 'c'.repeat(40),
+        date: '2026-01-03T00:00:00Z',
+        authorEmail: '209825114+claude[bot]@users.noreply.github.com',
+      }),
+    ];
+    const index = buildCommitIndex(ai);
+    expect(fromCommitIndex(index).map((c) => c.ai)).toEqual([0, 1, 2]);
+    expect(fromRawCommits(ai).map((c) => c.ai)).toEqual([0, 1, 2]);
+    const { ai: _, ...older } = index;
+    expect(
+      fromCommitIndex(older as unknown as CommitIndex).map((c) => c.ai),
+    ).toEqual([0, 0, 0]);
   });
 
   it('decodes an empty history', () => {

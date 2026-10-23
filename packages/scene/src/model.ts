@@ -338,6 +338,12 @@ export interface AnalyzerView {
   findings: (input: ViewInput) => Finding[];
   /** Its detail table, when it has one (the drawer opens with `T`). */
   table?: (input: ViewInput) => LensTable;
+  /**
+   * A part of each week the time strip shades in this lens (AI & Co-authors:
+   * the commits with AI in them), of the selection's commits when there is
+   * one. `label` names the part in the strip's caption.
+   */
+  strip?: { split: (c: CommitLike) => boolean; label: string };
 }
 
 export function emptyScene(viewport: Viewport): Scene {

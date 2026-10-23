@@ -176,6 +176,23 @@ The footer surfaces the bot-filter footnote (`"N bot-authored commits filtered"`
 
 Click any row in the pairs table to populate the Inspector with the author's full profile: total commits, AI-assisted commit count, AI ratio, top co-author partners, classification (`ai` / `human`). The Inspector is the place to drill into a single contributor's collaboration shape; the bottom panels and heroes are the places to scan many at once.
 
+## In Atlas: where AI writes
+
+Atlas (`gitrelic --ui atlas`) draws this analyzer as **AI & Co-authors** under **Team & Activity**. It asks how much of the code AI helped write, where, and who adopted it when. Little or no AI is an answer too: the picture is the same, nearly all grey, and says so.
+
+- **Where AI writes** — every package as a row, most commits first, its bar as long as its commits. The part with AI in it is in the accent: AI-assisted commits (a person's commit with an AI co-author), then, in a lighter shade, commits an AI agent authored itself. The share is at the right. Packages follow Atlas's rule (`packages/<name>` in a monorepo, otherwise the top-level directory); sweeping commits (more than 20 files) and bot commits are left out of them. Select a package to bring its row forward, or a person to redraw the rows from their own commits.
+- **The time strip** under the stage shades each week's commits with AI in them, so the adoption curve is always in view, and counts them in its caption. With a selection, it shades the selection's.
+
+Hover a bar for the package's commits and how many were AI-assisted or agent-authored.
+
+With nothing selected, the inspector leads with the share of commits with AI in them. Its findings say since when and with which tools, who uses AI most, any agents' own commits, the package with the most AI (among packages with 20 or more commits), and how often changes in AI commits get fixed within 30 days compared with the rest (see [Fix rate](/analyzers/fix-rate); a two-proportion test, and the finding warns only when the gap is beyond chance, adding that AI commits are often the newest code, which changes more anyway). When most pairs of people are credited together only once, it says so: that's usually GitHub squash-merging a PR with several authors, not pair programming. Every person card shows how many of their commits were AI-assisted and who they're credited with most often.
+
+The detail table (`T`) lists every package: commits, how many had AI in them, the share, and the AI-assisted and agent-authored counts.
+
+### Adoption lanes
+
+The corner toggle switches to **Adoption lanes**: one row per person, their commits week by week, the part with AI in it in the accent from the baseline up. Everyone with an AI commit is drawn first (AI agents get their own row), then the busiest of the rest, up to 14. At the right, each row says its share and since when ("10% · since Jun 29"). On React's last 12 months, every row is grey until late June 2026; then five people light up.
+
 ## AI Adoption vs Human Pairs
 
 The analyzer is deliberately bi-modal — different surfaces answer different questions. The matrix below maps questions to surfaces.

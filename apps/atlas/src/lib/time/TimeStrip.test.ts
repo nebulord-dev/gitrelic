@@ -59,4 +59,29 @@ describe('TimeStrip', () => {
       screen.getByRole('img', { name: '1,200 commits over 600 weeks' }),
     ).toBeTruthy();
   });
+
+  it('shades a lens’s part of each week and counts it in the caption', async () => {
+    const { container, rerender } = render(TimeStrip, {
+      activity,
+      split: [1, 0, 2, 0],
+      splitLabel: 'with AI',
+    });
+    expect(
+      screen.getByRole('img', { name: '9 commits over 4 weeks · 3 with AI' }),
+    ).toBeTruthy();
+    const parts = [
+      ...container.querySelectorAll('[data-split]'),
+    ] as HTMLElement[];
+    expect(parts.map((p) => p.style.height)).toEqual([
+      `${(1 / 3) * 100}%`,
+      '100%',
+    ]);
+    await rerender({
+      activity,
+      selected: true,
+      split: [0, 0, 1, 0],
+      splitLabel: 'with AI',
+    });
+    expect(screen.getByRole('img', { name: /· 1 with AI$/ })).toBeTruthy();
+  });
 });

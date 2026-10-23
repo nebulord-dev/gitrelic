@@ -1,6 +1,7 @@
 // Every lens Atlas has a view for, by preset id. A preset listed here should
 // be `atlas: true` in the catalog; views.test.ts keeps the two in step.
 
+import { aiCoauthorsView } from './aiCoauthors';
 import { churnView } from './churn';
 import { commitTimingView } from './commitTiming';
 import { contributorsView } from './contributors';
@@ -20,4 +21,5 @@ export const VIEWS: ReadonlyMap<string, AnalyzerView> = new Map([
   ['contributors', contributorsView],
   ['parallel-dev', parallelDevView],
   ['commit-timing', commitTimingView],
+  ['co-authors', aiCoauthorsView],
 ]);

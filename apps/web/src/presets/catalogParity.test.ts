@@ -10,6 +10,7 @@ import { PRESETS } from './registry';
 const ATLAS_RENAMES: Record<string, string> = {
   overview: 'Repo map',
   'cursed-files': 'Risk',
+  'co-authors': 'AI & Co-authors',
 };
 
 // A classic preset folded into an Atlas lens leaves the catalog: Atlas has

@@ -92,6 +92,32 @@ export function personFacts(
     });
   }
 
+  // AI, and who they're credited with most (the co-author graph's place,
+  // since the lens dropped it: docs/atlas-views.md › AI & Co-authors).
+  const lower = email.toLowerCase();
+  const mix = report.coAuthors.perAuthorMix.find((m) => m.author === lower);
+  if (mix && mix.aiCommits > 0)
+    rows.push({
+      label: 'With AI',
+      value: `${fmt(mix.aiCommits)} of ${fmt(mix.totalCommits)} commits AI-assisted`,
+    });
+  let partner: { email: string; commits: number } | null = null;
+  for (const p of report.coAuthors.humanPairs) {
+    const other =
+      p.authorA === lower ? p.authorB : p.authorB === lower ? p.authorA : null;
+    if (other && (!partner || p.coAuthoredCommits > partner.commits))
+      partner = { email: other, commits: p.coAuthoredCommits };
+  }
+  if (partner) {
+    const who = report.contributors.contributors.find(
+      (x) => x.email.toLowerCase() === partner.email,
+    );
+    rows.push({
+      label: 'Co-authored with',
+      value: `${who?.name ?? partner.email} · ${fmt(partner.commits)} commit${partner.commits === 1 ? '' : 's'}`,
+    });
+  }
+
   const merged = report.identities?.find((i) => i.canonicalEmail === email);
   return {
     name: c.name,

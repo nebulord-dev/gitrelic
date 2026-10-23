@@ -7,6 +7,8 @@
     activity = null,
     selected = false,
     failed = false,
+    split = null,
+    splitLabel = '',
   }: {
     /** Weekly commits; null while the history loads or if it failed. */
     activity?: WeeklyActivity | null;
@@ -14,18 +16,27 @@
     selected?: boolean;
     /** The history couldn't be loaded. */
     failed?: boolean;
+    /** The lens's shaded part of each week (`AnalyzerView.strip`). */
+    split?: readonly number[] | null;
+    /** What that part is, for the caption ("with AI"). */
+    splitLabel?: string;
   } = $props();
 
   let span = $derived(activity ? spanLabels(activity) : ['', '']);
   let total = $derived(activity?.totals.reduce((s, n) => s + n, 0) ?? 0);
+  let part = $derived(
+    split
+      ? ` · ${split.reduce((s, n) => s + n, 0).toLocaleString()} ${splitLabel}`
+      : '',
+  );
   let caption = $derived.by(() => {
     if (!activity) return '';
     const base = `${total.toLocaleString()} commits over ${activity.totals.length} weeks`;
-    if (!selected) return base;
+    if (!selected) return base + part;
     const share = recentShare(activity);
     const weeks = activeWeeks(activity);
     return share
-      ? `Selection changed in ${weeks} week${weeks === 1 ? '' : 's'} · ${share}`
+      ? `Selection changed in ${weeks} week${weeks === 1 ? '' : 's'} · ${share}${part}`
       : 'No commits touch this selection';
   });
 </script>
@@ -39,6 +50,7 @@
         height={40}
         highlight={selected}
         maxBars={300}
+        {split}
       />
     </div>
     <div class="flex justify-between gap-4 text-[12px] text-muted">

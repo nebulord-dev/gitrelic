@@ -39,7 +39,19 @@ describe('activity words', () => {
     expect(fitBars(short, 120)).toEqual({
       totals: [1, 2],
       hits: [0, 1],
+      split: null,
       weeksPerBar: 1,
     });
+  });
+
+  it('merges a lens’s split the same way', () => {
+    const totals = Array.from({ length: 600 }, () => 2);
+    const split = totals.map((_, i) => (i % 2 === 0 ? 1 : 0));
+    const fit = fitBars({ start: MON, totals, hits: [] }, 120, split);
+    expect(fit.split).toHaveLength(fit.totals.length);
+    expect(fit.split!.reduce((s, n) => s + n, 0)).toBe(300);
+    expect(
+      fitBars({ start: MON, totals: [1], hits: [0] }, 120, [1]).split,
+    ).toEqual([1]);
   });
 });

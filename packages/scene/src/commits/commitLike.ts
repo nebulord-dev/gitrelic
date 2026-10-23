@@ -1,3 +1,4 @@
+import { isAiEmail } from '../authors/authorClassification';
 import type { CommitIndex, RawCommit } from '@gitrelic/core';
 
 /**
@@ -19,7 +20,15 @@ export interface CommitLike {
    * s): what local-time views (Commit Timing's punch card) need.
    */
   tz?: number;
+  /**
+   * AI in the commit: 0 none, 1 AI-assisted (an AI co-author), 2 authored
+   * by an AI agent (core's `CommitIndex.ai`). Missing reads as 0.
+   */
+  ai?: 0 | 1 | 2;
 }
+
+/** Whether a commit had AI in it, assisted or authored. */
+export const withAi = (c: Pick<CommitLike, 'ai'>) => (c.ai ?? 0) > 0;
 
 /** `+05:30` → 330, `-08:00` → -480; `Z` or none → 0 (core's rule). */
 export function utcOffsetMinutes(iso: string): number {
@@ -51,6 +60,11 @@ export function fromRawCommits(commits: readonly RawCommit[]): CommitLike[] {
       files: c.files,
       hash: c.hash.slice(0, 12),
       tz: utcOffsetMinutes(c.date),
+      ai: isAiEmail(c.authorEmail)
+        ? 2
+        : c.coAuthors.some((co) => isAiEmail(co.email))
+          ? 1
+          : 0,
     }));
 }
 
@@ -66,5 +80,7 @@ export function fromCommitIndex(index: CommitIndex): CommitLike[] {
       .map((id) => index.files[id]),
     hash: index.hash[i],
     tz: index.tz[i],
+    // Indexes from before RELIC-372 have no AI column.
+    ai: (index.ai?.[i] ?? 0) as 0 | 1 | 2,
   }));
 }

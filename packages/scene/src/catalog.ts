@@ -185,12 +185,12 @@ export const CATALOG: readonly CatalogEntry[] = [
   },
   {
     id: 'co-authors',
-    label: 'Co-Authors / AI',
+    label: 'AI & Co-authors',
     group: 'team-activity',
     explain:
-      'Pair programming and AI assistance, from Co-authored-by trailers.',
+      'How much of the code AI helped write, where, and who adopted it when, from Co-authored-by trailers and AI agents’ own commits.',
     docsPath: 'analyzers/co-authors',
-    atlas: false,
+    atlas: true,
   },
   {
     id: 'languages',

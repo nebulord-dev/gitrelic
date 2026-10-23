@@ -492,5 +492,43 @@ export {
   timingPackageName,
   timingTier,
 } from './views/commitTiming';
-export { localDayHour, utcOffsetMinutes } from './commits/commitLike';
+export { localDayHour, utcOffsetMinutes, withAi } from './commits/commitLike';
 export { VIEWS } from './views/index';
+export {
+  ADOPTION_ROWS,
+  adoptionLanes,
+  adoptionLanesOf,
+  type AdoptionLanes,
+  type AdoptionRow,
+} from './ai/adoption';
+export {
+  AI_PACKAGE_ROWS,
+  aiPackageId,
+  aiPackageName,
+  aiPackagesFrom,
+  aiPackagesOf,
+  type AiPackageRow,
+  type AiPackages,
+} from './ai/packages';
+export {
+  adoptionLanesScene,
+  adoptionLine,
+  adoptionShare,
+} from './layouts/adoptionLanes';
+export {
+  aiPackagesScene,
+  AUTHORED_PAINT,
+  type AiPackagesInput,
+} from './layouts/aiPackages';
+export {
+  AI_SHARE_MIN_COMMITS,
+  AI_TIER_NAMES,
+  adoptionLanesLayout,
+  aiCoauthorsFindings,
+  aiCoauthorsTable,
+  aiCoauthorsView,
+  aiTier,
+  aiToolsLine,
+  personIdOf,
+  whereAiLayout,
+} from './views/aiCoauthors';

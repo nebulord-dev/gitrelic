@@ -34,24 +34,41 @@ export function activeWeeks(a: WeeklyActivity): number {
  * At most `maxBars` bars: on a long history, consecutive weeks merge into
  * one bar (their counts summed), so every bar keeps room to draw instead of
  * the row overflowing its box. `weeksPerBar` is 1 when nothing merged.
+ * `split`, a lens's shaded part of each week, merges the same way.
  */
 export function fitBars(
   a: WeeklyActivity,
   maxBars: number,
-): { totals: number[]; hits: number[]; weeksPerBar: number } {
+  split: readonly number[] | null = null,
+): {
+  totals: number[];
+  hits: number[];
+  split: number[] | null;
+  weeksPerBar: number;
+} {
   const weeksPerBar = Math.max(1, Math.ceil(a.totals.length / maxBars));
-  if (weeksPerBar === 1) return { totals: a.totals, hits: a.hits, weeksPerBar };
+  if (weeksPerBar === 1)
+    return {
+      totals: a.totals,
+      hits: a.hits,
+      split: split ? [...split] : null,
+      weeksPerBar,
+    };
   const totals: number[] = [];
   const hits: number[] = [];
+  const parts: number[] = [];
   for (let i = 0; i < a.totals.length; i += weeksPerBar) {
     let t = 0;
     let h = 0;
+    let p = 0;
     for (let k = i; k < Math.min(i + weeksPerBar, a.totals.length); k++) {
       t += a.totals[k];
       h += a.hits[k] ?? 0;
+      p += split?.[k] ?? 0;
     }
     totals.push(t);
     hits.push(h);
+    parts.push(p);
   }
-  return { totals, hits, weeksPerBar };
+  return { totals, hits, split: split ? parts : null, weeksPerBar };
 }
