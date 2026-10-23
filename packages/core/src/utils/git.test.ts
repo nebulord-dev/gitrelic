@@ -6,6 +6,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 
 import {
   BlobLineCounter,
+  parseBatchBlobs,
   parseBlameOrigins,
   parseFileTouches,
   parseGitLog,
@@ -522,5 +523,22 @@ describe('parseFileTouches', () => {
 
   it('returns an empty array for empty output', () => {
     expect(parseFileTouches('')).toEqual([]);
+  });
+});
+
+describe('parseBatchBlobs', () => {
+  it('reads each blob by its id, skipping missing ones', () => {
+    const body = (oid: string, text: string) =>
+      `${oid} blob ${Buffer.byteLength(text)}\n${text}\n`;
+    const raw = Buffer.from(
+      body('aaa', '{"workspaces":["packages/*"]}') +
+        'bbb missing\n' +
+        body('ccc', 'packages:\n  - café/*\n'),
+    );
+    const blobs = parseBatchBlobs(raw);
+    expect(blobs.get('aaa')).toBe('{"workspaces":["packages/*"]}');
+    expect(blobs.has('bbb')).toBe(false);
+    // Sizes are bytes: a multi-byte character doesn't throw the next one off.
+    expect(blobs.get('ccc')).toBe('packages:\n  - café/*\n');
   });
 });

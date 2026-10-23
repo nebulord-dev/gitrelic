@@ -6,7 +6,7 @@
 // tests only when the stage's Tests switch is on. Core decides what is
 // orphaned and which packages are dormant; this only groups and sums.
 
-import { packageOf } from '../hotspots/points';
+import { packagesOf } from '../report/packages';
 import type { DormantPackage, FileAge, GitrelicReport } from '@gitrelic/core';
 
 /**
@@ -112,6 +112,7 @@ export function ageStrata(
   { tests }: { tests: boolean },
 ): AgeRow[] {
   const lines = new Map(report.loc.files.map((f) => [f.file, f.lines]));
+  const pkgOf = packagesOf(report);
   const dormant = new Set(report.ageMap.dormantPackages.map((d) => d.package));
   const rows = new Map<string, AgeRow>();
   for (const f of report.ageMap.files) {
@@ -119,7 +120,7 @@ export function ageStrata(
     if (cls === 'fixture' || cls === 'generated') continue;
     if (cls === 'test' && !tests) continue;
     const file = ageFile(f, lines, cls === 'test');
-    const dir = packageOf(f.file);
+    const dir = pkgOf(f.file);
     let row = rows.get(dir);
     if (!row) {
       row = {

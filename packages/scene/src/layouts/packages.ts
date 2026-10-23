@@ -13,7 +13,7 @@
 // fits it). A selected package is outlined.
 
 import { distinctNames } from '../format/distinctNames';
-import { hotspotTip, packageOf, type HotspotPoint } from '../hotspots/points';
+import { hotspotTip, type HotspotPoint } from '../hotspots/points';
 import { ids, REPO_ID, type EntityId } from '../ids';
 import type { Guide, Mark, Scene, Viewport } from '../model';
 
@@ -79,7 +79,7 @@ export function packagesScene(
   const byPkg = new Map<string, HotspotPoint[]>();
   // Points arrive hottest first, so each package's list is too.
   for (const p of allPoints) {
-    const pkg = packageOf(p.file);
+    const pkg = p.package;
     const list = byPkg.get(pkg);
     if (list) list.push(p);
     else byPkg.set(pkg, [p]);

@@ -206,6 +206,7 @@ export {
 
 export { normalizeReport } from './report/normalizeReport';
 export { filesInTier } from './report/ageTiers';
+export { packageResolver, packagesOf } from './report/packages';
 
 export { readPalette } from './theme/palette';
 export {
@@ -252,7 +253,6 @@ export {
   hotspotTier,
   hotspotTip,
   HOTSPOT_TIER_NAMES,
-  packageOf,
   type HotspotPoint,
   type HotspotSummary,
   type HotspotTier,

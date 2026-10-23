@@ -9,7 +9,7 @@
 
 import { makeFileKind } from '../files/fileKind';
 import { REWRITE_HOT } from '../hotspots/facets';
-import { packageOf } from '../hotspots/points';
+import { packagesOf } from '../report/packages';
 import type { ChurnCategory, GitrelicReport } from '@gitrelic/core';
 
 /** Files with this many commits or fewer sit in the swarm's grey band. */
@@ -66,6 +66,7 @@ export function churnCharacter(
 /** Every package with source churn, biggest total first. */
 export function churnSwarm(report: GitrelicReport): SwarmRow[] {
   const kindOf = makeFileKind(report);
+  const pkgOf = packagesOf(report);
   const lines = new Map(report.rewriteRatio.files.map((r) => [r.file, r]));
   const rows = new Map<string, SwarmRow>();
   for (const f of report.churn.files) {
@@ -81,7 +82,7 @@ export function churnSwarm(report: GitrelicReport): SwarmRow[] {
         : null,
       tier: TIER[f.category] ?? 0,
     };
-    const dir = packageOf(f.file);
+    const dir = pkgOf(f.file);
     let row = rows.get(dir);
     if (!row) {
       row = { dir, total: 0, files: [], quiet: 0 };

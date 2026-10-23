@@ -1,4 +1,4 @@
-import { packageOf } from './commit-timing.js';
+import { packageOf, type PackageOf } from './commit-timing.js';
 import { MAX_FIX_FILES } from './fix-rate.js';
 import type {
   CouplingFamily,
@@ -35,6 +35,7 @@ function pairKey(a: string, b: string): string {
 export function analyzeCoupling(
   commits: RawCommit[],
   files: string[],
+  pkgOf: PackageOf = packageOf,
 ): CouplingReport {
   const fileSet = new Set(files);
   const coOccurrences = new Map<string, number>();
@@ -58,7 +59,7 @@ export function analyzeCoupling(
       }
     }
 
-    const pkgs = [...new Set(changed.map(packageOf))];
+    const pkgs = [...new Set(changed.map(pkgOf))];
     for (const p of pkgs) packageTotals.set(p, (packageTotals.get(p) ?? 0) + 1);
     for (let i = 0; i < pkgs.length; i++) {
       for (let j = i + 1; j < pkgs.length; j++) {
@@ -137,8 +138,8 @@ export function analyzeCoupling(
       packageTotals.get(packageB) ?? 0,
     );
     const across = (p: CoupledPair) => {
-      const a = packageOf(p.fileA);
-      const b = packageOf(p.fileB);
+      const a = pkgOf(p.fileA);
+      const b = pkgOf(p.fileB);
       return (
         (a === packageA && b === packageB) || (a === packageB && b === packageA)
       );
@@ -174,13 +175,13 @@ export function analyzeCoupling(
     topPairs,
     packageCommits,
     packages,
-    families: families(pairs),
+    families: families(pairs, pkgOf),
     summary,
   };
 }
 
 /** Connected groups of pairs strong both ways, largest first. */
-function families(pairs: CoupledPair[]): CouplingFamily[] {
+function families(pairs: CoupledPair[], pkgOf: PackageOf): CouplingFamily[] {
   const strong = pairs.filter(
     (p) =>
       p.coCommits >= FAMILY_MIN_SHARED &&
@@ -213,7 +214,7 @@ function families(pairs: CoupledPair[]): CouplingFamily[] {
       const inside = new Set(files);
       return {
         files,
-        packages: [...new Set(files.map(packageOf))].sort(),
+        packages: [...new Set(files.map(pkgOf))].sort(),
         pairs: strong.filter((p) => inside.has(p.fileA) && inside.has(p.fileB)),
       };
     })

@@ -2,12 +2,12 @@
 // weeks, as a circle of pairs (docs/atlas-views.md › Parallel Dev), with
 // Collision lanes (where and when) as its one alternate form.
 
-import { packageOf } from '../hotspots/points';
 import { ids } from '../ids';
 import { collisionsScene } from '../layouts/collisions';
 import { pairsScene } from '../layouts/pairs';
 import { collisionsOf } from '../parallel/collisions';
 import { parallelPairsOf } from '../parallel/pairs';
+import { packagesOf } from '../report/packages';
 import type {
   AnalyzerView,
   Finding,
@@ -166,7 +166,7 @@ export function parallelDevTable(input: ViewInput): LensTable {
           active: f.totalActiveWeeks,
           peak: f.peakAuthors,
           score: f.parallelScore,
-          package: packageOf(f.file) || '(root)',
+          package: packagesOf(input.report)(f.file) || '(root)',
         },
       };
     }),

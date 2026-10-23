@@ -8,7 +8,6 @@ import {
   hotspotScale,
   hotspotSummary,
   hotspotTier,
-  packageOf,
 } from './points';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -85,15 +84,6 @@ describe('hotspotScale', () => {
       hotspots: { files: [] },
     } as unknown as GitrelicReport;
     expect(hotspotScale(empty)).toBeNull();
-  });
-});
-
-describe('packageOf', () => {
-  it('names monorepo packages, top-level folders and the root', () => {
-    expect(packageOf('packages/shared/src/x.js')).toBe('packages/shared');
-    expect(packageOf('packages/README.md')).toBe('packages');
-    expect(packageOf('compiler/a/b.ts')).toBe('compiler');
-    expect(packageOf('package.json')).toBe('');
   });
 });
 

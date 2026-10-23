@@ -9,7 +9,7 @@
 // Hotspots and Churn use). Statuses come from the contributors report, which
 // measures them from the analyzed commit.
 
-import { packageOf } from '../hotspots/points';
+import { packagesOf } from '../report/packages';
 import type { CommitLike } from '../commits/commitLike';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -94,6 +94,7 @@ export function contributorFlow(
   commits: readonly CommitLike[],
 ): ContributorFlow {
   const contributors = report.contributors.contributors;
+  const pkgOf = packagesOf(report);
   const statusOf = new Map(contributors.map((c) => [c.email, personStatus(c)]));
   const nameOf = new Map(contributors.map((c) => [c.email, c.name]));
 
@@ -102,7 +103,7 @@ export function contributorFlow(
   const pkgCommits = new Map<string, number>();
   const pkgPeople = new Map<string, Map<string, number>>();
   for (const c of commits) {
-    const dirs = new Set(c.files.map(packageOf));
+    const dirs = new Set(c.files.map(pkgOf));
     let mine = byPerson.get(c.author);
     if (!mine) byPerson.set(c.author, (mine = new Map()));
     for (const d of dirs) {

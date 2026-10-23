@@ -7,6 +7,29 @@ import type { FixRateAiSplit, GitrelicReport } from '@gitrelic/core';
  * this normalization, any tab touching a missing field crashes with a TypeError
  * because the static `as GitrelicReport` cast provides no runtime safety.
  */
+/**
+ * Reports before workspaces were read grouped files by one rule:
+ * `packages/<name>`, else the top-level folder. These roots reproduce it.
+ */
+function conventionalWorkspace(
+  raw: Partial<GitrelicReport>,
+): GitrelicReport['workspace'] {
+  const roots = new Set<string>();
+  const paths = [
+    ...(raw.loc?.files ?? []).map((f) => f.file),
+    ...(raw.ageMap?.files ?? []).map((f) => f.file),
+  ];
+  for (const path of paths) {
+    const parts = path.split('/');
+    if (parts[0] === 'packages' && parts.length > 2)
+      roots.add(`packages/${parts[1]}`);
+  }
+  return {
+    sources: roots.size > 0 ? ['convention'] : [],
+    roots: [...roots].sort(),
+  };
+}
+
 export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
   return {
     timestamp: raw.timestamp ?? new Date().toISOString(),
@@ -256,6 +279,7 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
     },
     identities: raw.identities ?? [],
     fileClasses: raw.fileClasses ?? {},
+    workspace: raw.workspace ?? conventionalWorkspace(raw),
     commits: raw.commits ?? [],
   };
 }

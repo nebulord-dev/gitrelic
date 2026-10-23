@@ -60,6 +60,8 @@ export type {
   HotspotCategory,
   CouplingReport,
   CouplingFamily,
+  Workspace,
+  WorkspaceSource,
   PackageCoupling,
   PackageCommits,
   CoupledPair,

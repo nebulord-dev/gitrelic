@@ -421,4 +421,16 @@ describe('analyzeAgeMap with older history', () => {
       { package: 'packages/old', sourceFiles: 5, newestAgeDays: 600 },
     ]);
   });
+
+  it('never calls a dot-folder dormant: it is config, not a package', () => {
+    const config = ['a', 'b', 'c', 'd', 'e'].map((n) => `.vscode/${n}.json`);
+    const r = analyzeAgeMap(
+      [makeCommit({ hash: 'now', files: ['src/live.ts'], date: daysAgo(1) })],
+      [...config, 'src/live.ts'],
+      365,
+      FAKE_NOW,
+      { older: [touch({ files: config, date: daysAgo(900) })] },
+    );
+    expect(r.dormantPackages).toEqual([]);
+  });
 });
