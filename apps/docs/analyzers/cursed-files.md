@@ -149,7 +149,7 @@ One cursed file out of 7,009 is also the point being made above: the intersectio
 
 - **A file with both churn and ownership chips** — the highest-value target. It changes constantly and one person understands it. Pair on it, or split it before that person leaves.
 - **A file with a fixes chip** — its changes keep needing repair. Read the fixes Fix Rate lists for it (each names the change it repaired): a repeated pattern usually means the file's contract is wrong, not its implementation.
-- **A file with the abandonment chip** — it was heavily churned, then stopped. Either it stabilised (fine) or it was abandoned mid-refactor (not fine). Cross-reference with [Dead Code](/analyzers/dead-code).
+- **A file with the abandonment chip** — it was heavily churned, then stopped. Either it stabilised (fine) or it was abandoned mid-refactor (not fine). Cross-reference with [Age](/analyzers/age-map), which says whether anyone who changed it is still around.
 - **Zero cursed files** — genuinely good news. Check the withheld list to confirm nothing was excluded that you would have wanted to see.
 - **Everything cursed** — if a large share of your files qualify, the repository has a systemic ownership problem rather than a set of bad files. Start with [Bus Factor](/analyzers/bus-factor) instead.
 
