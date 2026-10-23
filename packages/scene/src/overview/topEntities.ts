@@ -5,6 +5,7 @@
 
 import { fixRateOf } from '../fixRate/points';
 import { ids, type EntityId } from '../ids';
+import { filesInTier } from '../report/ageTiers';
 import type { EntityIndex } from '../entities';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -67,7 +68,7 @@ const SOURCES: Record<string, (r: GitrelicReport) => Candidate[]> = {
       file(f.file, `+${n(Math.round(f.recentGrowthRate))} lines a month`),
     ),
   'age-map': (r) =>
-    byDesc(r.ageMap.ancientFiles, (f) => f.ageInDays).map((f) =>
+    byDesc(filesInTier(r.ageMap, 'ancient'), (f) => f.ageInDays).map((f) =>
       file(f.file, `${n(f.ageInDays)} days old`),
     ),
   'rewrite-ratio': (r) =>

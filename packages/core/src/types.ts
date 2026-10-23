@@ -144,14 +144,35 @@ export interface FileAge {
   lastCommitDate: string; // ISO date
   ageInDays: number; // days before the analyzed commit (the newest in the window), not today
   status: AgeStatus;
+  /**
+   * Cold (unchanged for `COLD_DAYS`), and every person who changed it has made
+   * no commit in the `COLD_DAYS` before the analyzed commit.
+   */
+  orphaned?: boolean;
+  /** An orphaned file's authors, most changes first, up to three. */
+  orphanedAuthors?: string[];
+  /** Changed in the last `COLD_DAYS` after at least that long untouched: the gap, in days. */
+  wokeAfterDays?: number;
+}
+
+/** A package with no source change in `COLD_DAYS`: archive it, delete it, or say why it stays. */
+export interface DormantPackage {
+  package: string;
+  sourceFiles: number;
+  /** Days since its newest source change. */
+  newestAgeDays: number;
 }
 
 export type AgeStatus = 'fresh' | 'aging' | 'stale' | 'ancient';
 
 export interface AgeMapReport {
+  /**
+   * Every tracked file, oldest first. A tier's files are `files` filtered by
+   * `status` (scene's `filesInTier`): reports before RELIC-374 also carried
+   * `staleFiles` and `ancientFiles`, copies that became most of the report
+   * once every file had an age.
+   */
   files: FileAge[];
-  staleFiles: FileAge[];
-  ancientFiles: FileAge[];
   medianAgeDays: number;
   thresholds: {
     /** Files at or below `freshLimit` days are tier "fresh". */
@@ -161,6 +182,13 @@ export interface AgeMapReport {
     /** Files at or below `staleLimit` (and above `agingLimit`) are tier "stale". Files above this are "ancient". */
     staleLimit: number;
   };
+  /**
+   * 'history': every tracked file's last change, from all of history.
+   * 'window': only files changed in the analysis window (the older history
+   * couldn't be read), as before RELIC-374.
+   */
+  source: 'history' | 'window';
+  dormantPackages: DormantPackage[];
   summary: string;
 }
 

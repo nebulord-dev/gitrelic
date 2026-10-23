@@ -7,6 +7,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
   BlobLineCounter,
   parseBlameOrigins,
+  parseFileTouches,
   parseGitLog,
   parseRemovedRanges,
   parseRenamedFrom,
@@ -486,5 +487,40 @@ describe('parseRenamedFrom', () => {
     expect(parseRenamedFrom(raw, 'a.ts')).toBeUndefined();
     expect(parseRenamedFrom(raw, 'src/copy.ts')).toBeUndefined();
     expect(parseRenamedFrom('', 'a.ts')).toBeUndefined();
+  });
+});
+
+describe('parseFileTouches', () => {
+  it('parses commits and their files from name-only output', () => {
+    const raw = [
+      header('h2', 'ann@x.com', 'Ann | Lee', '2023-02-01T10:00:00+00:00'),
+      '',
+      'src/a.ts',
+      'src/b.ts',
+      header('h1', 'bob@x.com', 'Bob', '2023-01-01T10:00:00+00:00'),
+      '',
+      'README.md',
+      '',
+    ].join('\n');
+    expect(parseFileTouches(raw)).toEqual([
+      {
+        hash: 'h2',
+        authorEmail: 'ann@x.com',
+        authorName: 'Ann | Lee',
+        date: '2023-02-01T10:00:00+00:00',
+        files: ['src/a.ts', 'src/b.ts'],
+      },
+      {
+        hash: 'h1',
+        authorEmail: 'bob@x.com',
+        authorName: 'Bob',
+        date: '2023-01-01T10:00:00+00:00',
+        files: ['README.md'],
+      },
+    ]);
+  });
+
+  it('returns an empty array for empty output', () => {
+    expect(parseFileTouches('')).toEqual([]);
   });
 });

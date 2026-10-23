@@ -17,8 +17,6 @@ function makeReport(files: FileAge[]): GitrelicReport {
     meta: { ageInDays: 365 } as never,
     ageMap: {
       files,
-      staleFiles: files.filter((x) => x.status === 'stale'),
-      ancientFiles: files.filter((x) => x.status === 'ancient'),
       medianAgeDays: 0,
       thresholds: { freshLimit: 29, agingLimit: 120, staleLimit: 241 },
       summary: '',

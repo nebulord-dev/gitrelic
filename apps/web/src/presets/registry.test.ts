@@ -63,7 +63,7 @@ function makeReport(): GitrelicReport {
       byMonth: [],
       summary: '',
     },
-    ageMap: { files: [], staleFiles: [], ancientFiles: [], medianAgeDays: 0 },
+    ageMap: { files: [], medianAgeDays: 0 },
     testCoverage: {
       directories: [],
       uncoveredDirectories: [],

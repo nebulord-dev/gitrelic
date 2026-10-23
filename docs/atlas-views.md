@@ -543,6 +543,47 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 - **Table:** every package: commits, with AI, its share, AI-assisted, agent-authored. Tiers are the share (no AI, under 20%, 20–49%, 50% or more), a shape, not a risk.
 - **React (last 12 months):** 3% (18 of 526: Claude 16, Amp 1, Cursor 1), the first in June 2026; the lanes are grey until July, then Silbermann (10%, since Jun 29), dan (57%), lauren, Andrew Clark and ronnakamoto light up; `react-dom` has the most AI (7 of 86); 14 rated AI changes, too few to compare fixes; 51 human pairs, 45 credited once. **gitrelic:** 66%, `scene` and `atlas` written entirely with Claude; AI changes fixed above chance (7.3% against 4.7%), with the caveat.
 
+### Code Health › Age (checkpoint 2026-10-23, RELIC-374)
+
+**Input:** `apps/docs/analyzers/age-map.md` (how much of the codebase has gone cold, and where), classic's Age histogram and its two bottom tabs, classic's Stale Files list, both run on React and on this repo. Canvas: https://claude.ai/artifact/BZbdPyhd7rLr9QagKD8Qw4 (A Warm and cold by package, B Strata, C Cold blocks), on React's real file ages beside gitrelic's.
+
+**Holds:** Age Map (`age-map`) and Stale Files (`dead-code`), merged as the lens inventory decided. One lens, *Age*.
+
+**What the two repos showed.** Neither analyzer works on a windowed run, and the default run is windowed:
+
+- **Age Map rates only the files touched in the window.** On React's default run that's 2,339 of 7,009 files. Its tiers are shares of the window (8/33/66%), so "ancient" meant 194 days of a 294-day window, and a file's tier moved with `--since`.
+- **Stale Files has no dates.** All 4,670 of its files read `lastCommitDate: 'unknown'`, because it looks them up in Age Map, which never saw them. 3,107 are fixtures.
+
+With real ages (each file's last change in all of history, counted back from the analyzed commit), React's cold source is plentiful but thin: 979 source files (68k lines) unchanged for a year or more, against 1,265 (416k lines) changed within it. One package has gone quiet: `dom-event-testing-library`, 9 files, no change in 3.4 years. 152 cold source files (8k lines) have nobody left who changed them, mostly devtools and `scripts`. gitrelic is 7 months old: nothing in it is cold.
+
+**Tested and dropped: woken files as a risk.** 330 of React's source files changed in the last year after a year or more untouched (`ReactNativeFeatureFlags.js` after 8.4 years). The guess was that changes to forgotten code break more. Fix rate's blame says the opposite: across React's history those changes were later fixed 1.8% of the time (18 of 1,012) against 2.6% for the rest, at 6-month and 2-year gaps too. They are mostly small, deliberate edits. Woken files stay a neutral finding and carry no badge.
+
+**Core first (RELIC-374, its own PR).**
+
+- **Every tracked file gets its real last change.** One more pass over the history before the window (a `utils/git.ts` primitive under `runGit`'s heavy timeout) gives each file untouched in the window its last change and its authors, and each file touched in the window its previous change before it. On a timeout or error the analyzer falls back to the window, as today, and the report says which it used.
+- **Calendar bands replace the window-share tiers:** under 3 months, 3–12 months, 1–2 years, 2–4 years, 4 years or more. *Cold* is a year or more. A file's band no longer moves with `--since`, and "a year" is a unit people already use.
+- **Orphaned:** a cold file whose every author (sweeping commits left out, as Fix rate does) has made no commit in the year before the analyzed commit. Nobody left changed it.
+- **Dormant package:** a package (scene's `packageOf`, mirrored in core as Commit Timing does) of 5 or more source files with no source change in a year. React: `dom-event-testing-library`.
+- **Woken:** a file changed in the last year after a year or more untouched, with the gap.
+- Fixture and generated files are left out of every count and counted on their own (`fileClasses`); tests are kept and marked, since the stage can show them.
+- Stale Files' `deadCode` takes its dates from the new ages, so classic's list stops saying "unknown". Classic's fields stay for classic; `normalizeReport` backfills the new ones and the fixture is regenerated.
+
+**Badge:** the count of dormant packages, firing at one (React: 1). A dormant package has an obvious action (archive it, delete it, or say why it stays) and is rare, which is what a badge is for. Orphaned files are the lens's highlight, not its badge: they overlap Ownership's ghost files, and a count of them would badge most old repos.
+
+**Primary form — Strata.** One lane per package, the packages with the most cold first; every file a dot placed by time since its last change (square-root scale, ticks at 3 months and 1, 2, 4 and 8 years), sized by lines, painted by band. The cold side of the stage is shaded. Orphaned files are ringed in the accent; a dormant package's lane is outlined and its name in the accent. Every file is a `file:` mark, so files travel in from Hotspots and Churn, and selecting one works as everywhere else. Chosen because it shows whether a package's cold is a few old files or a whole layer (`scripts` and devtools have a cold layer; the reconciler is warm with a thin tail), and it is the archaeology picture the product is named for.
+
+**Alternate form — Warm and cold.** A bar per package split at a center axis: lines changed within the year to the left, cold lines to the right by band, the orphaned part hatched at the far end, dormant packages named in the accent. *Passes the checkpoint test:* the strata can't be summed by eye, and the table lists files, not packages; this answers "how much, and where" exactly.
+
+**Tests switch.** Tests are left out by default and a stage switch adds them (a `toggles` mark, `ViewInput.open`), on both forms. The maintainer liked it on the canvas.
+
+**Colors:** no new theme tokens. Each band mixes from `--cell-base` toward `--person`, the oldest brightest, as Commit Timing's cells mix toward `--risk-2`. The accent is kept for orphaned files and dormant packages.
+
+**Findings** (the lens card): the share of source lines unchanged for a year; how many files are cold and how thin they are; dormant packages, each with its action; orphaned files and where most of them are; woken files, with the longest gap and "check that whoever changed it knew it"; how many fixture and generated files were left out. On a repo with nothing cold, each says so and names the oldest file.
+
+**Tooltips:** a file: its path, its last change ("3.4 years ago"), lines, test; if orphaned, who changed it; if woken, the gap. A package (alternate form): lines within the year and cold, by band, orphaned, its newest source change.
+
+**Dropped:** classic's histogram (the strata place every file on the same axis, and the table drawer's band column covers the distribution); the "% Cold" tiers (Healthy to Critical), which judged a mature codebase for being stable; the Stale Files list as its own lens (the table, sorted by last change, is that list, with dates); board C, the treemap (it overlaps Hotspots' By package and loses React's thin cold files to slivers).
+
 ---
 
 ## Decision log
@@ -581,3 +622,4 @@ Stale Files has no outlier rule: its count is every file untouched in the window
 - **2026-10-22 — Commit Timing names people, by regularity** (RELIC-352, reversing the checkpoint's drop of people). *Why:* the maintainer wants to spot someone working every weekend; regularity (a third of active weeks, over six) separates a habit from one crunch, which a share of commits can't, and only regulars are named, with a caveat that it's a check-in, not a verdict.
 - **2026-10-22 — AI & Co-authors shows where AI writes, by package, with Adoption lanes as its one alternate; the co-author graph is dropped** (RELIC-372). *Why:* how much of the code AI helped write, and where, is the question a team lead asks, and low adoption is an answer too; lanes show everyone's start at once, which the strip can't. On React most human "pairs" are one-off squash-merge credits, so a graph of them overstates collaboration.
 - **2026-10-23 — The time strip can shade a lens's part of each week** (RELIC-372). An `AnalyzerView.strip` names it; AI & Co-authors shades commits with AI in them. *Why:* adoption is a trend, and trends live in the strip; drawing it there keeps the stage for where and who.
+- **2026-10-23 — Age rates every file by its real last change, in calendar bands; Strata primary, Warm and cold alternate** (RELIC-374). Stale Files merges in. The badge counts dormant packages; orphaned cold files are the highlight. *Why:* both analyzers saw only the window, so Age Map's oldest files were missing and Stale Files had no dates; window-share tiers moved with `--since`. Changes to long-untouched files were fixed less often on React, not more, so woken files stay a finding.

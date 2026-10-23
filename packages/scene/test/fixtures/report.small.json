@@ -366,36 +366,10 @@
         "status": "fresh"
       }
     ],
-    "staleFiles": [
-      {
-        "file": "src/auth.ts",
-        "lastCommitDate": "2026-02-05T23:15:00Z",
-        "ageInDays": 58,
-        "status": "stale"
-      },
-      {
-        "file": "src/config.ts",
-        "lastCommitDate": "2026-02-20T08:30:00Z",
-        "ageInDays": 44,
-        "status": "stale"
-      }
-    ],
-    "ancientFiles": [
-      {
-        "file": "README.md",
-        "lastCommitDate": "2026-01-01T09:00:00Z",
-        "ageInDays": 94,
-        "status": "ancient"
-      },
-      {
-        "file": "package.json",
-        "lastCommitDate": "2026-01-01T09:00:00Z",
-        "ageInDays": 94,
-        "status": "ancient"
-      }
-    ],
     "medianAgeDays": 31,
     "thresholds": { "freshLimit": 8, "agingLimit": 31, "staleLimit": 62 },
+    "source": "history",
+    "dormantPackages": [],
     "summary": "2 files haven't been touched in over 62 days — they may be dead weight or critical infrastructure nobody dares touch"
   },
   "contributors": {

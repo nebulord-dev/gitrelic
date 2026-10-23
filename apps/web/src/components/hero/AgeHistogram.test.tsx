@@ -25,8 +25,6 @@ function makeReport(
     meta: { ageInDays } as never,
     ageMap: {
       files,
-      staleFiles: files.filter((x) => x.status === 'stale'),
-      ancientFiles: files.filter((x) => x.status === 'ancient'),
       medianAgeDays: 0,
       thresholds,
       summary: '',

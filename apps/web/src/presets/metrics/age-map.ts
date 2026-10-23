@@ -1,9 +1,13 @@
+import { filesInTier } from '@gitrelic/scene';
+
 import { fmt } from '../../components/theme';
 import type { Metric } from '../types';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export function ageMapMetrics(report: GitrelicReport): Metric[] {
-  const { files, staleFiles, ancientFiles, medianAgeDays } = report.ageMap;
+  const { files, medianAgeDays } = report.ageMap;
+  const staleFiles = filesInTier(report.ageMap, 'stale');
+  const ancientFiles = filesInTier(report.ageMap, 'ancient');
   const freshCount = files.filter((f) => f.status === 'fresh').length;
 
   return [

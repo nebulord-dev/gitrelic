@@ -5,6 +5,7 @@
 import { outlierGrades, type OutlierGrade } from '../badges';
 import { CATALOG, type CatalogEntry, type PresetGroup } from '../catalog';
 import { fixRateOf } from '../fixRate/points';
+import { filesInTier } from '../report/ageTiers';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export interface LensReading {
@@ -35,7 +36,7 @@ const VALUE: Record<string, (r: GitrelicReport) => string> = {
     `${n(r.blastRadius.files.filter((f) => f.blastScore >= 70).length)} load-bearing`,
   'complexity-trend': (r) =>
     `${n(r.complexityTrend.files.filter((f) => f.trend === 'growing').length)} growing`,
-  'age-map': (r) => `${n(r.ageMap.ancientFiles.length)} ancient`,
+  'age-map': (r) => `${n(filesInTier(r.ageMap, 'ancient').length)} ancient`,
   'rewrite-ratio': (r) => `${n(r.rewriteRatio.highRewrite)} high rewrite`,
   'fix-rate': (r) => {
     const { available, points } = fixRateOf(r);

@@ -27,13 +27,14 @@ import { classifyFile } from './utils/fileClass.js';
 import {
   countBlobLines,
   getAllCommits,
+  getFileTouches,
   getTreeBlobs,
   resolveCommit,
   getBranches,
   getCurrentBranch,
   detectPrimaryLanguage,
 } from './utils/git.js';
-import { mergeIdentities } from './utils/identity.js';
+import { canonicalEmailMap, mergeIdentities } from './utils/identity.js';
 import type {
   AgeMapReport,
   BlastRadiusReport,
@@ -61,6 +62,7 @@ import type {
   RunGitrelicOptions,
   TestCoverageProxyReport,
 } from './types.js';
+import type { FileTouch } from './utils/git.js';
 
 // Wraps a single analyzer call so that one failure doesn't abort the entire
 // run. Logs to stderr with the analyzer name and returns the provided fallback,
@@ -108,10 +110,10 @@ const EMPTY_BUS_FACTOR: BusFactorReport = {
 };
 const EMPTY_AGE_MAP: AgeMapReport = {
   files: [],
-  staleFiles: [],
-  ancientFiles: [],
   medianAgeDays: 0,
   thresholds: { freshLimit: 0, agingLimit: 0, staleLimit: 0 },
+  source: 'window',
+  dormantPackages: [],
   summary: 'unavailable',
 };
 const EMPTY_CONTRIBUTORS: ContributorReport = {
@@ -397,10 +399,51 @@ export async function runGitrelic(
     EMPTY_BUS_FACTOR,
   );
 
+  // A windowed run sees only the files it touched; read the history before
+  // the window too, so every file gets its real last change. If that read
+  // fails, ages cover the window only and the report says so.
+  let older: FileTouch[] | null | undefined;
+  if (since) {
+    onProgress?.('Reading older history for file ages...');
+    try {
+      older = await getFileTouches(repoPath, { until: since, ref, timeoutMs });
+    } catch (err) {
+      process.stderr.write(
+        `[gitrelic] file ages cover the analysis window only: ${(err as Error).message ?? String(err)}\n`,
+      );
+      older = null;
+    }
+  }
   onProgress?.('Building age map...');
   const ageMap = safeRun(
     'ageMap',
-    () => analyzeAgeMap(commits, trackedFiles, ageInDays, asOf),
+    () => {
+      // Age asks whether anyone who changed a file is still around, so it
+      // merges identities over the older history too: someone whose old
+      // email appears only before the window would otherwise look gone. The
+      // report's own identities stay the window's.
+      const canonical =
+        older && shouldMergeIdentities
+          ? canonicalEmailMap(
+              mergeIdentities([
+                ...commits,
+                ...older.map((t) => ({
+                  ...t,
+                  message: '',
+                  coAuthors: [],
+                  fileStats: [],
+                  insertions: 0,
+                  deletions: 0,
+                })),
+              ]).identities,
+            )
+          : undefined;
+      return analyzeAgeMap(commits, trackedFiles, ageInDays, asOf, {
+        older,
+        canonical,
+        fileClasses,
+      });
+    },
     EMPTY_AGE_MAP,
   );
 
