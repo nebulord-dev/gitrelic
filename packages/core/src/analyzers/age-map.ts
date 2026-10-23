@@ -37,11 +37,17 @@ export function getAgeThresholds(
 
 export interface AgeMapOptions {
   /**
-   * The history before the window (`getFileTouches`), emails already mapped
-   * to the window's identities. Undefined when the window is all of history;
-   * null when it couldn't be read, so ages cover the window only.
+   * The history before the window (`getFileTouches`). Undefined when the
+   * window is all of history; null when it couldn't be read, so ages cover
+   * the window only.
    */
   older?: FileTouch[] | null;
+  /**
+   * Lowercased email to one identity across the window and the older
+   * history (`canonicalEmailMap`). The window's own merge can't see an alias
+   * used only before it, which would make someone still active look gone.
+   */
+  canonical?: Map<string, string>;
   /** The report's non-source files: tests don't keep a package awake. */
   fileClasses?: GitrelicReport['fileClasses'];
 }
@@ -86,12 +92,16 @@ export function analyzeAgeMap(
   const names = new Map<string, string>();
   const lastActive = new Map<string, number>();
   for (const t of touches) {
+    const person =
+      options.canonical?.get(t.authorEmail.toLowerCase()) ?? t.authorEmail;
     // Compare instants: ISO strings with different UTC offsets don't sort
     // chronologically as text.
     const at = Date.parse(t.date);
-    if (at > (lastActive.get(t.authorEmail) ?? -Infinity))
-      lastActive.set(t.authorEmail, at);
-    names.set(t.authorEmail, t.authorName);
+    // A person goes by the name on their latest commit.
+    if (at > (lastActive.get(person) ?? -Infinity)) {
+      lastActive.set(person, at);
+      names.set(person, t.authorName);
+    }
     const authored =
       t.files.length <= MAX_FIX_FILES &&
       classifyAuthor(t.authorEmail) === 'human';
@@ -103,7 +113,7 @@ export function analyzeAgeMap(
       if (!authored) continue;
       let who = authors.get(file);
       if (!who) authors.set(file, (who = new Map()));
-      who.set(t.authorEmail, (who.get(t.authorEmail) ?? 0) + 1);
+      who.set(person, (who.get(person) ?? 0) + 1);
     }
   }
 

@@ -296,6 +296,35 @@ describe('analyzeAgeMap with older history', () => {
     expect(r.files.find((f) => f.file === 'kept.ts')!.orphaned).toBeUndefined();
   });
 
+  it('compares people through the canonical map, older aliases included', () => {
+    const r = analyzeAgeMap(
+      [
+        makeCommit({
+          files: ['live.ts'],
+          date: daysAgo(5),
+          authorEmail: 'dan@new.com',
+          authorName: 'dan',
+        }),
+      ],
+      ['live.ts', 'old.ts'],
+      365,
+      FAKE_NOW,
+      {
+        older: [
+          touch({
+            files: ['old.ts'],
+            date: daysAgo(900),
+            authorEmail: 'Dan@Old.com',
+            authorName: 'Dan Abramov',
+          }),
+        ],
+        canonical: new Map([['dan@old.com', 'dan@new.com']]),
+      },
+    );
+    // Same person under an older email, still active: not orphaned.
+    expect(r.files.find((f) => f.file === 'old.ts')!.orphaned).toBeUndefined();
+  });
+
   it("doesn't make authors of sweeping commits or bots", () => {
     const sweep = Array.from({ length: 21 }, (_, i) => `f${i}.ts`);
     const r = analyzeAgeMap(

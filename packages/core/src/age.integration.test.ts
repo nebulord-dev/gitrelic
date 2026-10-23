@@ -47,6 +47,9 @@ function commit(
 
 const BOB: [string, string] = ['Bob', 'bob@corp.com'];
 const ANN: [string, string] = ['Ann', 'ann@corp.com'];
+// One person, a new email by the window: only the older history links them.
+const CY_THEN: [string, string] = ['Cy Doe', 'cy@old.com'];
+const CY_NOW: [string, string] = ['Cy Doe', 'cy@new.com'];
 let windowed: GitrelicReport;
 let full: GitrelicReport;
 
@@ -63,9 +66,11 @@ beforeAll(async () => {
       ['a', 'b', 'c', 'd', 'e'].map((n) => [`old/${n}.ts`, `${n}\n`]),
     ),
   );
+  commit('2023-01-20', CY_THEN, { 'keep/x.ts': 'x\n' });
   commit('2023-02-01', BOB, { 'lib/woke.ts': 'v1\n' });
   commit('2026-01-05', ANN, { 'src/new.ts': 'v1\n' });
   commit('2026-02-01', ANN, { 'lib/woke.ts': 'v2\n' });
+  commit('2026-02-15', CY_NOW, { 'src/other.ts': 'o\n' });
   commit('2026-03-01', ANN, { 'src/new.ts': 'v2\n' });
   windowed = await runGitrelic({ repoPath: repo, since: '2025-12-01' });
   full = await runGitrelic({ repoPath: repo });
@@ -80,6 +85,12 @@ describe('Age over a windowed run', () => {
     expect(a.ageInDays).toBe(days('2023-01-10', '2026-03-01'));
     expect(a.orphaned).toBe(true);
     expect(a.orphanedAuthors).toEqual(['Bob']);
+  });
+
+  it('knows someone who changed email is still around', () => {
+    const x = windowed.ageMap.files.find((f) => f.file === 'keep/x.ts')!;
+    expect(x.ageInDays).toBe(days('2023-01-20', '2026-03-01'));
+    expect(x.orphaned).toBeUndefined();
   });
 
   it('finds the woken file and the dormant package', () => {

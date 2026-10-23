@@ -408,14 +408,7 @@ export async function runGitrelic(
   if (since) {
     onProgress?.('Reading older history for file ages...');
     try {
-      const canonical = canonicalEmailMap(identities);
-      older = (
-        await getFileTouches(repoPath, { until: since, ref, timeoutMs })
-      ).map((t) => ({
-        ...t,
-        authorEmail:
-          canonical.get(t.authorEmail.toLowerCase()) ?? t.authorEmail,
-      }));
+      older = await getFileTouches(repoPath, { until: since, ref, timeoutMs });
     } catch (err) {
       process.stderr.write(
         `[gitrelic] file ages cover the analysis window only: ${(err as Error).message ?? String(err)}\n`,
@@ -423,6 +416,26 @@ export async function runGitrelic(
       older = null;
     }
   }
+  // Age asks whether anyone who changed a file is still around, so it merges
+  // identities over the older history too: someone whose old email appears
+  // only before the window would otherwise look gone. The report's own
+  // identities stay the window's.
+  const ageIdentities =
+    older && shouldMergeIdentities
+      ? canonicalEmailMap(
+          mergeIdentities([
+            ...commits,
+            ...older.map((t) => ({
+              ...t,
+              message: '',
+              coAuthors: [],
+              fileStats: [],
+              insertions: 0,
+              deletions: 0,
+            })),
+          ]).identities,
+        )
+      : undefined;
 
   onProgress?.('Building age map...');
   const ageMap = safeRun(
@@ -430,6 +443,7 @@ export async function runGitrelic(
     () =>
       analyzeAgeMap(commits, trackedFiles, ageInDays, asOf, {
         older,
+        canonical: ageIdentities,
         fileClasses,
       }),
     EMPTY_AGE_MAP,
