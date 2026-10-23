@@ -13,6 +13,7 @@
   } from '@gitrelic/scene';
   import { tick } from 'svelte';
 
+  import AiCoauthorsCard from '../inspector/AiCoauthorsCard.svelte';
   import ChurnCard from '../inspector/ChurnCard.svelte';
   import CommitTimingCard from '../inspector/CommitTimingCard.svelte';
   import ContributorsCard from '../inspector/ContributorsCard.svelte';
@@ -300,6 +301,9 @@
   {:else if lens === 'commit-timing' && lensEntry}
     <ExplainCard entry={lensEntry} />
     <CommitTimingCard {report} {index} {onselect} {ontable} />
+  {:else if lens === 'co-authors' && lensEntry}
+    <ExplainCard entry={lensEntry} />
+    <AiCoauthorsCard {report} {index} {onselect} {ontable} />
   {:else if lens === 'overview'}
     <RepoMapCard {report} {onselect} />
     {#if lensEntry}<ExplainCard entry={lensEntry} />{/if}

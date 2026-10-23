@@ -20,6 +20,49 @@ describe('personFacts', () => {
     expect(p?.rows.find((r) => r.label === 'Off-hours')?.tier).toBe('warning');
   });
 
+  it('adds their AI share and who they are credited with most', () => {
+    const bob = report.contributors.contributors.find(
+      (c) => c.email !== 'alice@example.com',
+    )!;
+    const pair = (b: string, n: number) => ({
+      authorA: 'alice@example.com',
+      authorB: b,
+      coAuthoredCommits: n,
+      files: [],
+      classification: 'human-pair' as const,
+    });
+    const withAi = {
+      ...report,
+      coAuthors: {
+        ...report.coAuthors,
+        perAuthorMix: [
+          {
+            author: 'alice@example.com',
+            displayName: 'Alice',
+            aiCommits: 4,
+            soloCommits: 9,
+            totalCommits: 13,
+            personalRatio: 31,
+          },
+        ],
+        humanPairs: [pair('x@else.com', 1), pair(bob.email.toLowerCase(), 3)],
+      },
+    } as GitrelicReport;
+    const rows = Object.fromEntries(
+      (personFacts('alice@example.com', withAi)?.rows ?? []).map((r) => [
+        r.label,
+        r.value,
+      ]),
+    );
+    expect(rows['With AI']).toBe('4 of 13 commits AI-assisted');
+    expect(rows['Co-authored with']).toBe(`${bob.name} · 3 commits`);
+    // Neither row without the data.
+    const plain = personFacts('alice@example.com', report)!.rows.map(
+      (r) => r.label,
+    );
+    expect(plain).not.toContain('With AI');
+  });
+
   it('falls back to the shares on reports from before regularity', () => {
     const old = {
       ...report,

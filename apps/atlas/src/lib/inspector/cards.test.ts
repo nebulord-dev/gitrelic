@@ -1,5 +1,5 @@
 import { buildEntityIndex, type FixPoint } from '@gitrelic/scene';
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { createRawSnippet, flushSync } from 'svelte';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -8,6 +8,7 @@ import reportJson from '../../../../../packages/scene/test/fixtures/report.small
 import { parallelReport } from '../../../../../packages/scene/test/parallelReport';
 import { fixesReport } from '../../../../../packages/scene/test/riskFixesReport';
 import ActivityCard from './ActivityCard.svelte';
+import AiCoauthorsCard from './AiCoauthorsCard.svelte';
 import Card from './Card.svelte';
 import ChurnCard from './ChurnCard.svelte';
 import CommitTimingCard from './CommitTimingCard.svelte';
@@ -505,5 +506,79 @@ describe('FixRateCard', () => {
     render(FixRateCard, { report, index: buildEntityIndex(report) });
     expect(screen.getByText(/predates fix rate/)).toBeTruthy();
     expect(screen.queryByText(/above chance/)).toBeNull();
+  });
+});
+
+describe('AiCoauthorsCard', () => {
+  const base = reportJson as unknown as GitrelicReport;
+  const report = {
+    ...base,
+    coAuthors: {
+      ...base.coAuthors,
+      humanAuthoredCommits: 40,
+      aiAssistedCommits: 10,
+      aiAuthoredCommits: 0,
+      aiTools: [{ product: 'Claude', assisted: 10, authored: 0 }],
+      aiAuthors: [
+        {
+          author: 'alice@example.com',
+          displayName: 'Alice',
+          aiCommits: 10,
+          totalCommits: 13,
+          personalRatio: 77,
+        },
+      ],
+      packages: [
+        { package: 'src', commits: 30, aiAssisted: 9, aiAuthored: 0 },
+        { package: 'docs', commits: 5, aiAssisted: 0, aiAuthored: 0 },
+      ],
+    },
+  } as GitrelicReport;
+
+  it('leads with the share of commits with AI, then the findings', () => {
+    render(AiCoauthorsCard, { report, index });
+    expect(
+      screen.getByText(/of 40 commits had AI in them/).previousElementSibling
+        ?.textContent,
+    ).toBe('25%');
+    expect(screen.getByText(/Claude 10/)).toBeTruthy();
+  });
+
+  it('lists packages with AI and the people who use it, each selectable', async () => {
+    const onselect = vi.fn();
+    const ontable = vi.fn();
+    render(AiCoauthorsCard, { report, index, onselect, ontable });
+    const pkgs = screen.getByRole('heading', {
+      name: 'Most AI, by package',
+    }).parentElement!;
+    // Packages without AI stay out of the list.
+    expect(pkgs.textContent).toContain('9 of 30');
+    expect(pkgs.textContent).not.toContain('docs');
+    await fireEvent.click(within(pkgs).getByRole('button', { name: /^src/ }));
+    expect(onselect).toHaveBeenCalledWith('dir:src');
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'All 2 packages in the table (T) ▸' }),
+    );
+    expect(ontable).toHaveBeenCalled();
+    const chips = screen.getAllByRole('button', { name: 'Alice' });
+    await fireEvent.click(chips[chips.length - 1]);
+    expect(onselect).toHaveBeenCalledWith('person:alice@example.com');
+  });
+
+  it('shows only the share and findings when nobody used AI', () => {
+    const none = {
+      ...report,
+      coAuthors: {
+        ...report.coAuthors,
+        aiAssistedCommits: 0,
+        aiAuthors: [],
+        packages: [],
+      },
+    } as GitrelicReport;
+    render(AiCoauthorsCard, { report: none, index });
+    expect(screen.getByText(/No commit had AI in it/)).toBeTruthy();
+    expect(
+      screen.queryByRole('heading', { name: 'Most AI, by person' }),
+    ).toBeNull();
   });
 });

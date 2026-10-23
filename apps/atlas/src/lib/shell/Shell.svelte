@@ -122,6 +122,19 @@
     );
   });
   let lensView = $derived(nav.lens ? VIEWS.get(nav.lens) : undefined);
+  // The lens's shaded part of each week in the time strip (AI & Co-authors:
+  // commits with AI in them), of the selection's commits when there is one.
+  let stripSplit = $derived.by(() => {
+    const strip = lensView?.strip;
+    if (!strip || !commits || !series) return null;
+    const t = touches;
+    return weeklyHits(
+      commits,
+      series.start,
+      series.totals.length,
+      t ? (c) => t(c) && strip.split(c) : strip.split,
+    );
+  });
   // The picture's collapsible panels the viewer has opened (Mark.toggles);
   // a viewer preference like the inspector's, remembered, never in the URL.
   let openPanels = $state.raw(initialPanels());
@@ -264,6 +277,8 @@
         {activity}
         selected={touches !== null}
         failed={historyFailed}
+        split={stripSplit}
+        splitLabel={lensView?.strip?.label ?? ''}
       />
     </div>
     <Inspector
