@@ -7,8 +7,20 @@ import type { CoAuthorMonthEntry } from '@gitrelic/core';
 describe('AiAdoptionTrend', () => {
   it('renders one bar per month with two stacked layers', () => {
     const byMonth: CoAuthorMonthEntry[] = [
-      { month: '2026-01', aiAssisted: 5, pureHuman: 3, total: 8 },
-      { month: '2026-02', aiAssisted: 7, pureHuman: 2, total: 9 },
+      {
+        month: '2026-01',
+        aiAssisted: 5,
+        pureHuman: 3,
+        total: 8,
+        aiAuthored: 0,
+      },
+      {
+        month: '2026-02',
+        aiAssisted: 7,
+        pureHuman: 2,
+        total: 9,
+        aiAuthored: 0,
+      },
     ];
     render(<AiAdoptionTrend byMonth={byMonth} />);
     expect(screen.getAllByTestId('ai-trend-bar-ai').length).toBe(2);
@@ -25,7 +37,15 @@ describe('AiAdoptionTrend', () => {
   it('renders the hero caption', () => {
     render(
       <AiAdoptionTrend
-        byMonth={[{ month: '2026-01', aiAssisted: 0, pureHuman: 5, total: 5 }]}
+        byMonth={[
+          {
+            month: '2026-01',
+            aiAssisted: 0,
+            pureHuman: 5,
+            total: 5,
+            aiAuthored: 0,
+          },
+        ]}
       />,
     );
     expect(screen.getByText(/top layer = AI-assisted/i)).toBeTruthy();

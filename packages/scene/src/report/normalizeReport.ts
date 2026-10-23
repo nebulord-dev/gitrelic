@@ -1,4 +1,4 @@
-import type { GitrelicReport } from '@gitrelic/core';
+import type { FixRateAiSplit, GitrelicReport } from '@gitrelic/core';
 
 /**
  * Fills in default empty shapes for any analyzer field missing from a report.
@@ -90,7 +90,7 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
     },
     // Reports from before the fix-rate analyzer. windowDays 0 marks the
     // backfill: a real report always has a window.
-    fixRate: raw.fixRate ?? {
+    fixRate: normalizeFixRate(raw.fixRate) ?? {
       files: [],
       unratedFiles: 0,
       changes: 0,
@@ -103,6 +103,7 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       blameTimeouts: 0,
       windowDays: 0,
       minChanges: 0,
+      ai: NO_AI_SPLIT,
       summary: 'Not available',
     },
     parallelDev: normalizeParallelDev(raw.parallelDev),
@@ -181,8 +182,15 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       aiAuthors: raw.coAuthors?.aiAuthors ?? [],
       humanPairs: raw.coAuthors?.humanPairs ?? [],
       filteredBotCommits: raw.coAuthors?.filteredBotCommits ?? 0,
-      byMonth: raw.coAuthors?.byMonth ?? [],
+      byMonth: (raw.coAuthors?.byMonth ?? []).map((m) =>
+        m.aiAuthored === undefined ? { ...m, aiAuthored: 0 } : m,
+      ),
       perAuthorMix: raw.coAuthors?.perAuthorMix ?? [],
+      aiAuthoredCommits: raw.coAuthors?.aiAuthoredCommits ?? 0,
+      aiTools: raw.coAuthors?.aiTools ?? [],
+      aiAgents: raw.coAuthors?.aiAgents ?? [],
+      packages: raw.coAuthors?.packages ?? [],
+      sweepingLeftOut: raw.coAuthors?.sweepingLeftOut ?? 0,
     },
     hotspotClusters: raw.hotspotClusters ?? {
       clusters: [],
@@ -270,6 +278,20 @@ function normalizeCursedFiles(
     nearMisses: (report.nearMisses ?? []).map(withBreakdown),
     summary: report.summary ?? 'Not available',
   };
+}
+
+const NO_AI_SPLIT: FixRateAiSplit = {
+  changes: 0,
+  fixedAfter: 0,
+  versusOthers: null,
+};
+
+/** Fix rate's AI split (RELIC-372) on reports from before it. */
+function normalizeFixRate(
+  raw: GitrelicReport['fixRate'] | undefined,
+): GitrelicReport['fixRate'] | undefined {
+  if (!raw || raw.ai) return raw;
+  return { ...raw, ai: NO_AI_SPLIT };
 }
 
 /**

@@ -1,7 +1,16 @@
-import { classifyAuthor, isAiEmail } from '../utils/authorClassification.js';
+import {
+  aiProductName,
+  classifyAuthor,
+  isAiEmail,
+} from '../utils/authorClassification.js';
+import { packageOf } from './commit-timing.js';
+import { MAX_FIX_FILES } from './fix-rate.js';
 import type {
   AdoptionTier,
+  AiAgentStat,
   AiAuthorStat,
+  AiToolStat,
+  CoAuthorPackage,
   CoAuthorMonthEntry,
   CoAuthorPair,
   CoAuthorPairClassification,
@@ -15,8 +24,10 @@ function pairKey(a: string, b: string): string {
   return a < b ? `${a}\0${b}` : `${b}\0${a}`;
 }
 
-function adoptionTier(percent: number): AdoptionTier {
-  if (percent === 0) return 'none';
+// `none` only when no commit had AI in it: 16 AI commits among React's
+// 18,938 round to 0%, and that is low adoption, not none.
+function adoptionTier(percent: number, aiCommits: number): AdoptionTier {
+  if (aiCommits === 0) return 'none';
   if (percent < 20) return 'low';
   if (percent < 50) return 'moderate';
   return 'high';
@@ -38,8 +49,21 @@ interface AuthorAccum {
   totalCommits: number;
 }
 
-export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
+/**
+ * @param trackedFiles - the analyzed commit's files: a package counts only
+ *   files that still exist. Omitted, every file counts.
+ */
+export function analyzeCoAuthors(
+  commits: RawCommit[],
+  trackedFiles?: readonly string[],
+): CoAuthorReport {
+  const tracked = trackedFiles ? new Set(trackedFiles) : null;
   const pairMap = new Map<string, PairAccum>();
+  const tools = new Map<string, AiToolStat>();
+  const agents = new Map<string, AiAgentStat>();
+  const packages = new Map<string, CoAuthorPackage>();
+  let aiAuthoredCommits = 0;
+  let sweepingLeftOut = 0;
   const authorCoAuthorCount = new Map<string, number>();
   const authorAccum = new Map<string, AuthorAccum>();
   const monthMap = new Map<string, CoAuthorMonthEntry>();
@@ -73,6 +97,52 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
     const coAuthorEmails = commit.coAuthors.map((c) => c.email.toLowerCase());
     const hasAiCoAuthor = coAuthorEmails.some(isAiEmail);
 
+    // An agent's own commit is AI-authored; a person's with an AI trailer is
+    // AI-assisted. An agent's commit with an AI trailer is still authored.
+    const tool = (product: string) => {
+      const t = tools.get(product) ?? { product, assisted: 0, authored: 0 };
+      tools.set(product, t);
+      return t;
+    };
+    if (primaryIsAi) {
+      aiAuthoredCommits++;
+      const product = aiProductName(primaryEmailLower) ?? 'AI';
+      tool(product).authored++;
+      const agent = agents.get(primaryEmailLower) ?? {
+        author: primaryEmailLower,
+        displayName: commit.authorName || product,
+        product,
+        commits: 0,
+      };
+      agent.commits++;
+      agents.set(primaryEmailLower, agent);
+    } else {
+      const products = new Set(
+        coAuthorEmails.filter(isAiEmail).map((e) => aiProductName(e) ?? 'AI'),
+      );
+      for (const product of products) tool(product).assisted++;
+    }
+
+    if (commit.files.length > MAX_FIX_FILES) {
+      sweepingLeftOut++;
+    } else {
+      const touched = new Set(
+        commit.files.filter((f) => !tracked || tracked.has(f)).map(packageOf),
+      );
+      for (const pkg of touched) {
+        const row = packages.get(pkg) ?? {
+          package: pkg,
+          commits: 0,
+          aiAssisted: 0,
+          aiAuthored: 0,
+        };
+        row.commits++;
+        if (primaryIsAi) row.aiAuthored++;
+        else if (hasAiCoAuthor) row.aiAssisted++;
+        packages.set(pkg, row);
+      }
+    }
+
     // Author-mix accumulation (humans only).
     if (!primaryIsAi) {
       const accum = authorAccum.get(primaryEmailLower) ?? {
@@ -98,15 +168,18 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
 
     // Monthly bucket — every human-authored commit lands here. `aiAssisted` counts
     // commits with an AI co-author; `pureHuman` everything else (solo or human-pair).
-    if (!primaryIsAi) {
+    {
       const month = commit.date.slice(0, 7); // ISO `YYYY-MM`
       const monthEntry = monthMap.get(month) ?? {
         month,
         aiAssisted: 0,
         pureHuman: 0,
         total: 0,
+        aiAuthored: 0,
       };
-      if (hasAiCoAuthor) {
+      if (primaryIsAi) {
+        monthEntry.aiAuthored++;
+      } else if (hasAiCoAuthor) {
         monthEntry.aiAssisted++;
       } else {
         monthEntry.pureHuman++;
@@ -120,8 +193,9 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
 
     // Drop bot co-authors from the participant set (they're noise). Same
     // classifyAuthor() use as the primary-author check so AI wins over bot.
+    // Crediting yourself (React has 79 such commits) isn't co-authoring.
     const filteredCoAuthors = coAuthorEmails.filter(
-      (e) => classifyAuthor(e) !== 'bot',
+      (e) => classifyAuthor(e) !== 'bot' && e !== primaryEmailLower,
     );
     if (filteredCoAuthors.length === 0) continue;
 
@@ -256,19 +330,23 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
       return a.author.localeCompare(b.author);
     });
 
+  const aiCommits = aiAssistedCommits + aiAuthoredCommits;
+  const counted = humanAuthoredCommits + aiAuthoredCommits;
   const aiAdoptionPercent =
-    humanAuthoredCommits > 0
-      ? Math.round((aiAssistedCommits / humanAuthoredCommits) * 100)
-      : 0;
-  const aiAdoptionTierValue = adoptionTier(aiAdoptionPercent);
+    counted > 0 ? Math.round((aiCommits / counted) * 100) : 0;
+  const aiAdoptionTierValue = adoptionTier(aiAdoptionPercent, aiCommits);
 
   const byMonth: CoAuthorMonthEntry[] = [...monthMap.values()].sort((a, b) =>
     a.month.localeCompare(b.month),
   );
 
+  const agentPart =
+    aiAuthoredCommits > 0
+      ? `; ${aiAuthoredCommits} authored by an AI agent`
+      : '';
   const summary =
-    aiAssistedCommits > 0
-      ? `${aiAdoptionPercent}% of human work used AI assistance (${aiAssistedCommits} of ${humanAuthoredCommits} commits)`
+    aiCommits > 0
+      ? `${aiAdoptionPercent}% of commits had AI in them (${aiAssistedCommits} of ${humanAuthoredCommits} human commits AI-assisted${agentPart})`
       : totalCoAuthoredCommits > 0
         ? `${totalCoAuthoredCommits} co-authored commit${totalCoAuthoredCommits !== 1 ? 's' : ''} across ${humanPairs.length} human pair${humanPairs.length !== 1 ? 's' : ''} — no AI assistance`
         : 'No co-authored commits found';
@@ -287,5 +365,18 @@ export function analyzeCoAuthors(commits: RawCommit[]): CoAuthorReport {
     filteredBotCommits,
     byMonth,
     perAuthorMix,
+    aiAuthoredCommits,
+    aiTools: [...tools.values()].sort(
+      (a, b) =>
+        b.assisted + b.authored - (a.assisted + a.authored) ||
+        a.product.localeCompare(b.product),
+    ),
+    aiAgents: [...agents.values()].sort(
+      (a, b) => b.commits - a.commits || a.author.localeCompare(b.author),
+    ),
+    packages: [...packages.values()].sort(
+      (a, b) => b.commits - a.commits || a.package.localeCompare(b.package),
+    ),
+    sweepingLeftOut,
   };
 }

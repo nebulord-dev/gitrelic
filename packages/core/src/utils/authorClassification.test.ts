@@ -16,6 +16,14 @@ describe('authorClassification', () => {
       ['aider@aider.chat', 'Aider'],
       ['devin-ai-integration[bot]@users.noreply.github.com', 'Devin'],
       ['agent@cursor.sh', 'Cursor'],
+      // Agents that commit themselves, and tools seen in React's trailers.
+      ['209825114+claude[bot]@users.noreply.github.com', 'Claude'],
+      ['198982749+Copilot@users.noreply.github.com', 'GitHub Copilot'],
+      ['copilot-swe-agent[bot]@users.noreply.github.com', 'GitHub Copilot'],
+      ['158243242+devin-ai-integration[bot]@users.noreply.github.com', 'Devin'],
+      ['161369871+google-labs-jules[bot]@users.noreply.github.com', 'Jules'],
+      ['cursoragent@cursor.com', 'Cursor'],
+      ['amp@ampcode.com', 'Amp'],
     ])('classifies %s as AI with productName=%s', (email, productName) => {
       expect(classifyAuthor(email)).toBe('ai');
       expect(isAiEmail(email)).toBe(true);
@@ -35,6 +43,13 @@ describe('authorClassification', () => {
         'bot',
       );
     });
+  });
+
+  it('keeps people at cursor.com and a GitHub user named claude human', () => {
+    expect(classifyAuthor('jane@cursor.com')).toBe('human');
+    expect(classifyAuthor('12345+claude@users.noreply.github.com')).toBe(
+      'human',
+    );
   });
 
   describe('bot emails', () => {

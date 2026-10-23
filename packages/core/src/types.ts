@@ -69,6 +69,8 @@ export interface CommitIndex {
   deletions: number[];
   /** 12-character abbreviated hashes. */
   hash: string[];
+  /** 0 no AI, 1 AI-assisted (an AI co-author), 2 authored by an AI agent. */
+  ai: number[];
 }
 
 // ─── Author identities ────────────────────────────────────────────────────────
@@ -307,7 +309,16 @@ export interface FixRateReport {
   blameTimeouts: number; // per-file blames that hit the time limit and were skipped
   windowDays: number;
   minChanges: number;
+  // Changes in commits with AI in them (assisted or agent-authored), against
+  // the rest: `versusOthers` is null when either side has too few changes.
+  ai: FixRateAiSplit;
   summary: string;
+}
+
+export interface FixRateAiSplit {
+  changes: number;
+  fixedAfter: number;
+  versusOthers: 'above' | 'within' | 'below' | null;
 }
 
 // ─── Parallel development ─────────────────────────────────────────────────────
@@ -593,7 +604,31 @@ export interface CoAuthorMonthEntry {
   month: string; // ISO `YYYY-MM`
   aiAssisted: number;
   pureHuman: number;
-  total: number;
+  total: number; // aiAssisted + pureHuman: human-authored commits
+  aiAuthored: number; // commits an AI agent authored itself, not in total
+}
+
+/** An AI tool's commits: as a co-author (assisted) and as the author. */
+export interface AiToolStat {
+  product: string; // 'Claude', 'GitHub Copilot', …
+  assisted: number;
+  authored: number;
+}
+
+/** An AI agent that authored commits itself (the Claude or Copilot app). */
+export interface AiAgentStat {
+  author: string; // email (lowercased)
+  displayName: string;
+  product: string;
+  commits: number;
+}
+
+/** A package's commits, and how many of them AI helped write or wrote. */
+export interface CoAuthorPackage {
+  package: string; // commit timing's packageOf; '' is the root
+  commits: number;
+  aiAssisted: number;
+  aiAuthored: number;
 }
 
 export interface CoAuthorReport {
@@ -616,6 +651,16 @@ export interface CoAuthorReport {
   filteredBotCommits: number; // for the panel footnote
   byMonth: CoAuthorMonthEntry[];
   perAuthorMix: PerAuthorMixEntry[];
+
+  // Commits an AI agent authored itself. aiAdoptionPercent counts them with
+  // the assisted ones: (assisted + authored) / (human-authored + authored).
+  aiAuthoredCommits: number;
+  aiTools: AiToolStat[]; // by commits, most first
+  aiAgents: AiAgentStat[]; // by commits, most first
+  // Every package a counted commit touched, by commits. Bot commits and
+  // sweeping ones (over fix rate's MAX_FIX_FILES) are left out.
+  packages: CoAuthorPackage[];
+  sweepingLeftOut: number;
 }
 
 // ─── Hotspot clustering ────────────────────────────────────────────────────

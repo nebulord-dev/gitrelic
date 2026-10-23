@@ -352,8 +352,46 @@ describe('normalizeReport', () => {
     expect(old.files).toEqual([]);
     expect(old.rate).toBeNull();
     expect(old.windowDays).toBe(0);
-    const fixRate = { files: [], rate: 0.02, windowDays: 30 };
+    const fixRate = {
+      files: [],
+      rate: 0.02,
+      windowDays: 30,
+      ai: { changes: 4, fixedAfter: 1, versusOthers: null },
+    };
     expect(normalizeReport({ fixRate } as any).fixRate).toBe(fixRate);
+  });
+
+  it('backfills fix rate’s AI split on reports from before it', () => {
+    const out = normalizeReport({ fixRate: { files: [], rate: 0.02 } } as any);
+    expect(out.fixRate.rate).toBe(0.02);
+    expect(out.fixRate.ai).toEqual({
+      changes: 0,
+      fixedAfter: 0,
+      versusOthers: null,
+    });
+  });
+
+  it('backfills AI-authored counts, tools, agents and packages on older co-author reports', () => {
+    const out = normalizeReport({
+      coAuthors: {
+        pairs: [],
+        byMonth: [{ month: '2026-01', aiAssisted: 1, pureHuman: 2, total: 3 }],
+      },
+    } as any).coAuthors;
+    expect(out.aiAuthoredCommits).toBe(0);
+    expect(out.aiTools).toEqual([]);
+    expect(out.aiAgents).toEqual([]);
+    expect(out.packages).toEqual([]);
+    expect(out.sweepingLeftOut).toBe(0);
+    expect(out.byMonth).toEqual([
+      {
+        month: '2026-01',
+        aiAssisted: 1,
+        pureHuman: 2,
+        total: 3,
+        aiAuthored: 0,
+      },
+    ]);
   });
 
   it('backfills parallel dev’s pairs, left-out counts and windows on older reports', () => {

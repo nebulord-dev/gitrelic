@@ -157,6 +157,7 @@ const EMPTY_FIX_RATE: FixRateReport = {
   blameTimeouts: 0,
   windowDays: 0,
   minChanges: 0,
+  ai: { changes: 0, fixedAfter: 0, versusOthers: null },
   summary: 'Fix rate analysis unavailable.',
 };
 
@@ -248,6 +249,11 @@ const EMPTY_CO_AUTHORS: CoAuthorReport = {
   filteredBotCommits: 0,
   byMonth: [],
   perAuthorMix: [],
+  aiAuthoredCommits: 0,
+  aiTools: [],
+  aiAgents: [],
+  packages: [],
+  sweepingLeftOut: 0,
 };
 const EMPTY_HOTSPOT_CLUSTERS: HotspotClusterReport = {
   clusters: [],
@@ -517,7 +523,7 @@ export async function runGitrelic(
   onProgress?.('Analyzing co-authorship...');
   const coAuthors = safeRun(
     'coAuthors',
-    () => analyzeCoAuthors(commits),
+    () => analyzeCoAuthors(commits, trackedFiles),
     EMPTY_CO_AUTHORS,
   );
 

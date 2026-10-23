@@ -1,3 +1,4 @@
+import { isAiEmail } from './authorClassification.js';
 import type { CommitIndex } from '../types.js';
 import type { RawCommit } from './git.js';
 
@@ -39,6 +40,7 @@ export function buildCommitIndex(commits: RawCommit[]): CommitIndex {
     insertions: [],
     deletions: [],
     hash: [],
+    ai: [],
   };
   const authorIds = new Map<string, number>();
   const fileIds = new Map<string, number>();
@@ -67,6 +69,13 @@ export function buildCommitIndex(commits: RawCommit[]): CommitIndex {
     ix.insertions.push(c.insertions);
     ix.deletions.push(c.deletions);
     ix.hash.push(c.hash.slice(0, HASH_LENGTH));
+    ix.ai.push(
+      isAiEmail(c.authorEmail)
+        ? 2
+        : c.coAuthors.some((co) => isAiEmail(co.email))
+          ? 1
+          : 0,
+    );
   }
   return ix;
 }

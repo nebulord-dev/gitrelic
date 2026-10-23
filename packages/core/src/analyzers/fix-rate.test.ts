@@ -8,6 +8,8 @@ import {
   fixKind,
   MAX_FIX_FILES,
   MIN_CHANGES,
+  MIN_SPLIT_CHANGES,
+  versusOthers,
   type FixOrigins,
 } from './fix-rate.js';
 import type { RawCommit } from '../utils/git.js';
@@ -279,5 +281,70 @@ describe('aboveChance', () => {
     expect(binomialUpperTail(5000, 1500, 0.3)).toBeCloseTo(0.5, 1);
     expect(binomialUpperTail(10, 0, 0.1)).toBe(1);
     expect(binomialUpperTail(10, 11, 0.1)).toBe(0);
+  });
+});
+
+describe('versusOthers', () => {
+  const side = (changes: number, fixedAfter: number) => ({
+    changes,
+    fixedAfter,
+  });
+
+  it('needs MIN_SPLIT_CHANGES changes on each side', () => {
+    expect(versusOthers(side(MIN_SPLIT_CHANGES - 1, 10), side(500, 5))).toBe(
+      null,
+    );
+    expect(versusOthers(side(500, 5), side(MIN_SPLIT_CHANGES - 1, 0))).toBe(
+      null,
+    );
+  });
+
+  it('calls 46 of 464 against 12 of 189 within chance', () => {
+    // Against 12/189 taken as exact, 46/464 would be far above it.
+    expect(versusOthers(side(464, 46), side(189, 12))).toBe('within');
+  });
+
+  it('calls a clear gap above or below', () => {
+    expect(versusOthers(side(400, 80), side(400, 20))).toBe('above');
+    expect(versusOthers(side(400, 20), side(400, 80))).toBe('below');
+  });
+
+  it('is within when nothing was ever fixed', () => {
+    expect(versusOthers(side(100, 0), side(100, 0))).toBe('within');
+  });
+});
+
+describe('computeFixRate AI split', () => {
+  it('counts changes in AI-assisted and agent-authored commits as AI', () => {
+    const file = 'src/a.ts';
+    const commits = [
+      ...history(file, 4),
+      {
+        ...makeCommit('ai1', 4, [file]),
+        coAuthors: [{ name: 'Claude', email: 'noreply@anthropic.com' }],
+      },
+      makeCommit(
+        'ai2',
+        5,
+        [file],
+        'feat: agent',
+        'copilot-swe-agent[bot]@users.noreply.github.com',
+      ),
+      makeCommit('fix', 6, [file], 'fix: a'),
+      endAt(100),
+    ];
+    const r = computeFixRate(
+      commits,
+      blame({
+        fix: [
+          ['ai1', file],
+          ['c0', file],
+        ],
+      }),
+      new Set([file]),
+    );
+    expect(r.ai).toEqual({ changes: 2, fixedAfter: 1, versusOthers: null });
+    expect(r.changes).toBe(7);
+    expect(r.fixedAfter).toBe(2);
   });
 });

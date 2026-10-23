@@ -89,6 +89,38 @@ describe('mergeIdentities', () => {
     ]);
   });
 
+  it('matches a co-author email nobody authored with to an author by full name', () => {
+    const { commits } = mergeIdentities([
+      commit('jackpope@meta.com', 'Jack Pope', {
+        coAuthors: [{ name: 'Jack Pope', email: 'jackpope1@gmail.com' }],
+      }),
+      commit('bob@example.com', 'Bob Brown', {
+        coAuthors: [
+          { name: 'jack pope', email: 'jackpope1@gmail.com' },
+          { name: 'Alex', email: 'alex@else.com' },
+        ],
+      }),
+    ]);
+    expect(commits[0].coAuthors).toEqual([
+      { name: 'Jack Pope', email: 'jackpope@meta.com' },
+    ]);
+    // A single-word name is too common to trust, as for authors.
+    expect(commits[1].coAuthors).toEqual([
+      { name: 'Jack Pope', email: 'jackpope@meta.com' },
+      { name: 'Alex', email: 'alex@else.com' },
+    ]);
+  });
+
+  it('never matches an AI co-author to a person by name', () => {
+    const { commits } = mergeIdentities([
+      commit('claude@corp.com', 'Claude Opus'),
+      commit('bob@example.com', 'Bob Brown', {
+        coAuthors: [{ name: 'Claude Opus', email: 'noreply@anthropic.com' }],
+      }),
+    ]);
+    expect(commits[1].coAuthors[0].email).toBe('noreply@anthropic.com');
+  });
+
   it('does not merge on a single-word name', () => {
     const { commits, identities } = mergeIdentities([
       commit('alex@a.com', 'Alex'),

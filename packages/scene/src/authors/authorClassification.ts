@@ -15,17 +15,31 @@ interface AiPattern {
 }
 
 const AI_PATTERNS: AiPattern[] = [
+  // Claude Code's trailer, and the Claude GitHub app when it commits itself.
   { match: /^noreply@anthropic\.com$/i, productName: 'Claude' },
   {
-    match: /^copilot(\[bot\])?@.*\.noreply\.github\.com$/i,
+    match: /^(\d+\+)?claude\[bot\]@users\.noreply\.github\.com$/i,
+    productName: 'Claude',
+  },
+  // GitHub app accounts are `<id>+<login>@users.noreply.github.com`; the
+  // id prefix is optional in each pattern. Copilot's coding agent commits as
+  // `<id>+Copilot@…` or `copilot-swe-agent[bot]`.
+  {
+    match: /^(\d+\+)?copilot(-swe-agent)?(\[bot\])?@.*\.noreply\.github\.com$/i,
     productName: 'GitHub Copilot',
   },
   { match: /^aider@aider\.chat$/i, productName: 'Aider' },
   {
-    match: /^devin-ai-integration\[bot\]@.*\.noreply\.github\.com$/i,
+    match: /^(\d+\+)?devin-ai-integration\[bot\]@.*\.noreply\.github\.com$/i,
     productName: 'Devin',
   },
-  { match: /@cursor\.sh$/i, productName: 'Cursor' },
+  // Only Cursor's agent on cursor.com: its staff commit from there too.
+  { match: /@cursor\.sh$|^cursoragent@cursor\.com$/i, productName: 'Cursor' },
+  { match: /^amp@ampcode\.com$/i, productName: 'Amp' },
+  {
+    match: /^(\d+\+)?google-labs-jules\[bot\]@users\.noreply\.github\.com$/i,
+    productName: 'Jules',
+  },
 ];
 
 const BOT_PATTERNS: RegExp[] = [

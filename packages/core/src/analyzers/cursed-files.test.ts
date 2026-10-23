@@ -97,6 +97,7 @@ function makeEmptyFixRate(): FixRateReport {
     blameTimeouts: 0,
     windowDays: 30,
     minChanges: 8,
+    ai: { changes: 0, fixedAfter: 0, versusOthers: null },
     summary: '',
   };
 }

@@ -121,6 +121,23 @@ describe('buildCommitIndex', () => {
     expect(local.getUTCDate()).toBe(1);
   });
 
+  it('marks each commit 0 no AI, 1 AI-assisted, 2 agent-authored', () => {
+    const ix = buildCommitIndex([
+      commit({ hash: 'a'.repeat(40), date: '2026-01-01T00:00:00Z' }),
+      commit({
+        hash: 'b'.repeat(40),
+        date: '2026-01-02T00:00:00Z',
+        coAuthors: [{ name: 'Claude', email: 'noreply@anthropic.com' }],
+      }),
+      commit({
+        hash: 'c'.repeat(40),
+        date: '2026-01-03T00:00:00Z',
+        authorEmail: '209825114+claude[bot]@users.noreply.github.com',
+      }),
+    ]);
+    expect(ix.ai).toEqual([0, 1, 2]);
+  });
+
   it('handles an empty history', () => {
     const ix = buildCommitIndex([]);
     expect(ix.time).toEqual([]);
