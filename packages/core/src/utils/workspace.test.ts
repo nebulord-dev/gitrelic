@@ -183,4 +183,78 @@ describe('workspaceFrom', () => {
     );
     expect(ws).toEqual({ sources: ['convention'], roots: ['packages/a'] });
   });
+
+  it('reads brace and class globs', () => {
+    const ws = workspaceFrom(
+      files(
+        'package.json',
+        'apps/web/package.json',
+        'apps/cli/package.json',
+        'apps/notes/package.json',
+        'tools/a1/package.json',
+        'tools/b1/package.json',
+      ),
+      new Map([
+        ['package.json', '{"workspaces":["apps/{web,cli}", "tools/[a]1"]}'],
+      ]),
+    );
+    expect(ws.roots).toEqual(['apps/cli', 'apps/web', 'tools/a1']);
+  });
+
+  it('reads pnpm flow lists and keeps a # inside quotes', () => {
+    const files2 = files(
+      'pnpm-workspace.yaml',
+      'apps/web/package.json',
+      'pkgs/#1/package.json',
+    );
+    expect(
+      workspaceFrom(
+        files2,
+        new Map([
+          ['pnpm-workspace.yaml', 'packages: [\'apps/*\', "pkgs/#1"] # both\n'],
+        ]),
+      ).roots,
+    ).toEqual(['apps/web', 'pkgs/#1']);
+    expect(
+      workspaceFrom(
+        files2,
+        new Map([
+          ['pnpm-workspace.yaml', "packages:\n  - 'pkgs/#1' # the odd one\n"],
+        ]),
+      ).roots,
+    ).toEqual(['pkgs/#1']);
+  });
+
+  it('stays fast on a hostile glob, skipping it', () => {
+    // `*a` thirty times against a long run of a's: catastrophic for a
+    // backtracking regex if it ran.
+    const dirs = Array.from(
+      { length: 50 },
+      (_, i) => `${'a'.repeat(60)}${i}/package.json`,
+    );
+    const hostile = `${'*a'.repeat(30)}b`;
+    const start = performance.now();
+    const ws = workspaceFrom(
+      files('package.json', 'packages/real/package.json', ...dirs),
+      new Map([
+        [
+          'package.json',
+          JSON.stringify({
+            workspaces: [hostile, `${'**/'.repeat(40)}x`, 'packages/*'],
+          }),
+        ],
+      ]),
+    );
+    expect(performance.now() - start).toBeLessThan(500);
+    // The hostile globs are skipped; the honest one still counts.
+    expect(ws.roots).toEqual(['packages/real']);
+  });
+
+  it('survives a Cargo.toml it can’t parse', () => {
+    const ws = workspaceFrom(
+      files('Cargo.toml', 'crates/a/Cargo.toml'),
+      new Map([['Cargo.toml', '[workspace\nmembers = ["crates/*"']]),
+    );
+    expect(ws).toEqual({ sources: [], roots: [] });
+  });
 });

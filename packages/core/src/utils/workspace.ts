@@ -60,9 +60,26 @@ export function packageResolver(
   };
 }
 
-/** A glob relative to its manifest's folder, as a whole-path pattern. */
-function globRegex(glob: string): RegExp {
+/**
+ * Globs come from the repository being analyzed, so they're untrusted: one
+ * with many wildcards (`*a*a*a…b`) would make the matching regex backtrack
+ * for minutes. Real workspace globs have one to three.
+ */
+const MAX_GLOB_LENGTH = 200;
+const MAX_GLOB_WILDCARDS = 8;
+
+/**
+ * A glob relative to its manifest's folder, as a whole-path pattern: `*`,
+ * `**`, `?`, `{a,b}` and `[abc]` (`[!a]` negated). Null when it is too long
+ * or has too many wildcards to match safely; it is then skipped.
+ */
+function globRegex(raw: string): RegExp | null {
+  // `**/**/` is `**/`: collapsing it costs nothing and removes a trap.
+  const glob = raw.replace(/(?:\*\*\/)+/g, '**/');
+  if (glob.length > MAX_GLOB_LENGTH) return null;
+  if ((glob.match(/\*+|\?/g) ?? []).length > MAX_GLOB_WILDCARDS) return null;
   let out = '';
+  let braces = 0;
   for (let i = 0; i < glob.length; i++) {
     const ch = glob[i];
     if (ch === '*' && glob[i + 1] === '*') {
@@ -70,9 +87,27 @@ function globRegex(glob: string): RegExp {
       i++;
     } else if (ch === '*') out += '[^/]*';
     else if (ch === '?') out += '[^/]';
-    else out += ch.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+    else if (ch === '{') {
+      braces++;
+      out += '(?:';
+    } else if (ch === '}' && braces > 0) {
+      braces--;
+      out += ')';
+    } else if (ch === ',' && braces > 0) out += '|';
+    else if (ch === '[' && glob.indexOf(']', i + 2) > i) {
+      const end = glob.indexOf(']', i + 2);
+      let body = glob.slice(i + 1, end).replace(/\\/g, '\\\\');
+      if (body.startsWith('!')) body = `^${body.slice(1)}`;
+      out += `[${body}]`;
+      i = end;
+    } else out += ch.replace(/[.+^${}()|[\]\\]/g, '\\$&');
   }
-  return new RegExp(`^${out}$`);
+  if (braces > 0) return null;
+  try {
+    return new RegExp(`^${out}$`);
+  } catch {
+    return null;
+  }
 }
 
 function cleanGlob(glob: string): string {
@@ -94,15 +129,17 @@ function expand(
   markerDirs: readonly string[],
   excludes: readonly string[] = [],
 ): string[] {
-  const include = globs
-    .filter((g) => !g.trim().startsWith('!'))
-    .map((g) => globRegex(cleanGlob(g)));
-  const exclude = [
+  const compiled = (list: string[]) =>
+    list
+      .map((g) => globRegex(cleanGlob(g)))
+      .filter((r): r is RegExp => r !== null);
+  const include = compiled(globs.filter((g) => !g.trim().startsWith('!')));
+  const exclude = compiled([
     ...globs
       .filter((g) => g.trim().startsWith('!'))
       .map((g) => g.trim().slice(1)),
     ...excludes,
-  ].map((g) => globRegex(cleanGlob(g)));
+  ]);
   const prefix = base === '' ? '' : `${base}/`;
   return markerDirs.filter((dir) => {
     if (dir === base || !dir.startsWith(prefix)) return false;
@@ -139,20 +176,32 @@ function lernaGlobs(text: string): string[] {
   }
 }
 
-/** pnpm-workspace.yaml's `packages:` list: enough YAML for that one key. */
+/** A YAML scalar: quoted (a `#` inside stays), or bare up to a comment. */
+function yamlScalar(text: string): string {
+  const quoted = text.match(/^\s*(['"])(.*?)\1/);
+  return quoted ? quoted[2] : text.replace(/\s+#.*$/, '').trim();
+}
+
+/**
+ * pnpm-workspace.yaml's `packages:` list, block (`- 'apps/*'`) or flow
+ * (`packages: ['apps/*']`): enough YAML for that one key.
+ */
 function pnpmGlobs(text: string): string[] {
   const globs: string[] = [];
   let inPackages = false;
-  for (const raw of text.split('\n')) {
-    const line = raw.replace(/\s+#.*$/, '');
+  for (const line of text.split('\n')) {
     if (/^\S/.test(line)) {
       inPackages = /^packages\s*:/.test(line);
+      const flow = inPackages ? line.match(/^packages\s*:\s*\[(.*)\]/) : null;
+      if (flow)
+        for (const part of flow[1].match(/'[^']*'|"[^"]*"|[^,\s][^,]*/g) ?? [])
+          globs.push(yamlScalar(part));
       continue;
     }
-    const item = inPackages ? line.match(/^\s+-\s*(.+?)\s*$/) : null;
-    if (item) globs.push(item[1].replace(/^['"]|['"]$/g, ''));
+    const item = inPackages ? line.match(/^\s+-\s*(.+)$/) : null;
+    if (item) globs.push(yamlScalar(item[1]));
   }
-  return globs;
+  return globs.filter(Boolean);
 }
 
 /** Cargo.toml's `[workspace]` members and excludes. */
