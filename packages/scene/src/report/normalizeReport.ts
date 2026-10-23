@@ -53,6 +53,9 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
         agingLimit: Math.round((raw.meta?.ageInDays ?? 0) * 0.33),
         staleLimit: Math.round((raw.meta?.ageInDays ?? 0) * 0.66),
       },
+      // Reports before RELIC-374 aged only the files their window touched.
+      source: raw.ageMap?.source ?? 'window',
+      dormantPackages: raw.ageMap?.dormantPackages ?? [],
       summary: raw.ageMap?.summary ?? 'Not available',
     },
     contributors: {

@@ -30,6 +30,7 @@ export type {
   AgeMapReport,
   FileAge,
   AgeStatus,
+  DormantPackage,
   ContributorReport,
   Contributor,
   CursedFile,

@@ -65,6 +65,22 @@ describe('normalizeReport', () => {
     });
   });
 
+  it('backfills ageMap.source and dormantPackages for reports before RELIC-374', () => {
+    const result = normalizeReport({
+      meta: { ageInDays: 365 } as never,
+      ageMap: {
+        files: [],
+        staleFiles: [],
+        ancientFiles: [],
+        medianAgeDays: 0,
+        summary: '',
+      } as never,
+    });
+    // Older reports aged only the files touched in their window.
+    expect(result.ageMap.source).toBe('window');
+    expect(result.ageMap.dormantPackages).toEqual([]);
+  });
+
   it('preserves ageMap.thresholds from a fresh report and does not overwrite', () => {
     const result = normalizeReport({
       meta: { ageInDays: 100 } as never,
