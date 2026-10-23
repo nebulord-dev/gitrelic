@@ -26,8 +26,10 @@ import {
 // - mailmap-hang: `log` returns one commit with a co-author, and only
 //   `check-mailmap` sleeps.
 // `exec sleep` replaces the shell, so the kill reaches the sleeping process and
-// no orphan keeps the output pipe open.
+// no orphan keeps the output pipe open. Leading `-c key=value` options (every
+// call sets core.quotePath) are skipped, as git does, so `$1` is the subcommand.
 const STUB = `#!/bin/sh
+while [ "$1" = "-c" ]; do shift 2; done
 case "$GITSTUB" in
   env) echo "$GIT_TERMINAL_PROMPT/$GCM_INTERACTIVE"; exit 0 ;;
   log-hang)

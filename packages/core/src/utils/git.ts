@@ -23,6 +23,13 @@ export function setGitQuickTimeoutForTests(ms = GIT_QUICK_TIMEOUT_MS): void {
 // Manager's dialog) would hang the run with nothing on screen. Merged into
 // process.env (execa extends it by default).
 const GIT_ENV = { GIT_TERMINAL_PROMPT: '0', GCM_INTERACTIVE: 'never' };
+/**
+ * Before every subcommand. `git log` quotes a path with non-ASCII characters
+ * (`"caf\303\251.ts"`) unless `core.quotePath` is off, and `ls-tree -z`
+ * never does, so those files' history never matched a tracked file. A path
+ * with a tab, newline, `"` or `\` is still quoted; matching those needs `-z`.
+ */
+const GIT_CONFIG = ['-c', 'core.quotePath=false'];
 
 /** A git process ran past its time limit and was killed. */
 export class GitTimeoutError extends Error {
@@ -74,7 +81,7 @@ function timeoutOr(err: unknown, args: string[], call: GitCall): unknown {
  */
 async function runGit(args: string[], call: GitCall): Promise<string> {
   try {
-    const { stdout } = await execa('git', args, {
+    const { stdout } = await execa('git', [...GIT_CONFIG, ...args], {
       cwd: call.repoPath,
       timeout: call.timeoutMs,
       env: GIT_ENV,
@@ -589,7 +596,7 @@ export async function countBlobLines(
   const counter = new BlobLineCounter();
   if (unique.length === 0) return counter.results;
   const args = ['cat-file', '--batch'];
-  const proc = execa('git', args, {
+  const proc = execa('git', [...GIT_CONFIG, ...args], {
     cwd: repoPath,
     input: unique.join('\n') + '\n',
     buffer: false,
