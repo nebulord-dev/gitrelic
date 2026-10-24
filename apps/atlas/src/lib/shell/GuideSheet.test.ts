@@ -17,11 +17,11 @@ describe('GuideSheet', () => {
     expect(
       screen.getByRole('region', { name: 'Ownership & Risk' }),
     ).toBeTruthy();
-    // Repo map, Hotspots, Churn, Risk, Age, Fix rate, Contributors, Parallel
-    // Dev, Commit Timing and AI & Co-authors have Atlas views (Open); the
-    // rest link classic.
-    expect(screen.getAllByRole('link', { name: 'Classic ↗' }).length).toBe(9);
-    expect(screen.getAllByRole('button', { name: 'Open' })).toHaveLength(10);
+    // Repo map, Hotspots, Churn, Risk, Age, Fix rate, Coupling, Contributors,
+    // Parallel Dev, Commit Timing and AI & Co-authors have Atlas views (Open);
+    // the rest link classic.
+    expect(screen.getAllByRole('link', { name: 'Classic ↗' }).length).toBe(7);
+    expect(screen.getAllByRole('button', { name: 'Open' })).toHaveLength(11);
   });
 
   it('filters by label or explanation, and says when nothing matches', async () => {

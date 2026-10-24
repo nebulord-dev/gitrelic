@@ -6,6 +6,7 @@ import { aiCoauthorsView } from './aiCoauthors';
 import { churnView } from './churn';
 import { commitTimingView } from './commitTiming';
 import { contributorsView } from './contributors';
+import { couplingView } from './coupling';
 import { fixRateView } from './fixRate';
 import { hotspotsView } from './hotspots';
 import { overviewView } from './overview';
@@ -20,6 +21,7 @@ export const VIEWS: ReadonlyMap<string, AnalyzerView> = new Map([
   ['cursed-files', riskView],
   ['age-map', ageView],
   ['fix-rate', fixRateView],
+  ['coupling', couplingView],
   ['contributors', contributorsView],
   ['parallel-dev', parallelDevView],
   ['commit-timing', commitTimingView],

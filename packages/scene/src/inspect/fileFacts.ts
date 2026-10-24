@@ -1,4 +1,5 @@
 import { sinceText } from '../age/strata';
+import { BLAST_WIDE } from '../coupling/boundaries';
 import { fixPointOf, ratePct } from '../fixRate/points';
 import type { GitrelicReport, HotspotCategory } from '@gitrelic/core';
 
@@ -93,12 +94,14 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
   }
 
   const blast = report.blastRadius.files.find((f) => f.file === file);
-  if (blast) {
+  // A blast radius needs enough commits to mean anything (core's floor);
+  // below it, one wide commit would decide the number.
+  if (blast?.medianCoChanged !== undefined) {
     facts.push({
       label: 'Blast Radius',
-      value: `${blast.avgCoChangedFiles.toFixed(1)} avg files`,
-      tier: blast.blastScore > 50 ? 'warning' : undefined,
-      lens: 'blast-radius',
+      value: `${blast.medianCoChanged} other files per change`,
+      tier: blast.medianCoChanged >= BLAST_WIDE ? 'warning' : undefined,
+      lens: 'coupling',
     });
   }
 

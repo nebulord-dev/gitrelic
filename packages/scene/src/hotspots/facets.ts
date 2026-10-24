@@ -4,6 +4,7 @@
 // only when that analyzer reports the file. `hot` marks the readings worth a
 // second look; the thresholds are the analyzers' own where they have one.
 
+import { BLAST_WIDE } from '../coupling/boundaries';
 import { coupledWith } from '../inspect/coupledWith';
 import { fileContributors } from '../inspect/fileContributors';
 import { LARGE_FILE, type HotspotPoint } from './points';
@@ -31,7 +32,6 @@ export interface FileFacet {
 }
 
 /** Blast radius's warning bar, as the file inspector colours it. */
-export const BLAST_HOT = 50;
 /** Rewrite ratio's "high rewrite" bar (core's HIGH_REWRITE_THRESHOLD). */
 export const REWRITE_HOT = 70;
 /** A partner sharing at least this share of the rarer file's commits. */
@@ -113,13 +113,13 @@ export function fileFacets(
   }
 
   const blast = report.blastRadius.files.find((f) => f.file === file);
-  if (blast) {
+  if (blast?.medianCoChanged !== undefined) {
     facets.push({
       id: 'blast',
       name: 'Blast radius',
-      value: `${blast.avgCoChangedFiles.toFixed(1)} files per change`,
-      hint: 'Other files changed in the same commit, on average',
-      hot: blast.blastScore > BLAST_HOT,
+      value: `${n(blast.medianCoChanged)} files per change`,
+      hint: 'Other files its commits usually change (the median)',
+      hot: blast.medianCoChanged >= BLAST_WIDE,
     });
   }
 

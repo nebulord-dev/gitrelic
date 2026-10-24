@@ -3,7 +3,7 @@
 // open in the classic dashboard (`/classic/#preset=<id>`).
 //
 // The ids match apps/web's preset registry, less the classic presets merged
-// into an Atlas lens (Risk, Shame, Stale Files, Rewrite Ratio) or retired
+// into an Atlas lens (Risk, Shame, Stale Files, Rewrite Ratio, Blast Radius) or retired
 // (Complexity Trend), and plus the lenses only Atlas has (fix-rate); a web
 // test keeps the two in step.
 
@@ -81,15 +81,6 @@ export const CATALOG: readonly CatalogEntry[] = [
     atlas: true,
   },
   {
-    id: 'blast-radius',
-    label: 'Blast Radius',
-    group: 'code-health',
-    explain:
-      'How many other files change alongside a file: its coordination cost.',
-    docsPath: 'analyzers/blast-radius',
-    atlas: false,
-  },
-  {
     // Atlas only: replaces classic's Shame (docs/atlas-views.md › Fix rate).
     id: 'fix-rate',
     label: 'Fix rate',
@@ -113,8 +104,9 @@ export const CATALOG: readonly CatalogEntry[] = [
     label: 'Coupling',
     group: 'ownership-risk',
     explain:
-      'Files that change together in the same commits: hidden dependencies.',
-    atlas: false,
+      'Which packages change together, what changes with a file, and how far a change to it usually reaches.',
+    docsPath: 'analyzers/coupling',
+    atlas: true,
   },
   {
     id: 'knowledge-silos',

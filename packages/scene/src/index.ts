@@ -258,7 +258,6 @@ export {
   type HotspotTier,
 } from './hotspots/points';
 export {
-  BLAST_HOT,
   CLUSTERS_HOT,
   COUPLING_HOT,
   fileFacets,
@@ -329,6 +328,28 @@ export {
   type AgeSummary,
 } from './age/strata';
 export { strataScene } from './layouts/strata';
+export {
+  BLAST_WIDE,
+  blastSummaryOf,
+  boundariesOf,
+  onRing,
+  rippleOf,
+  RING_PACKAGES,
+  type BlastSummary,
+  type Boundaries,
+  type FileBlast,
+  type Ripple,
+  type RipplePartner,
+  type RingLink,
+  type RingPackage,
+} from './coupling/boundaries';
+export { boundariesScene, shortPackage } from './layouts/boundaries';
+export {
+  boundariesLayout,
+  couplingFindings,
+  couplingTable,
+  couplingView,
+} from './views/coupling';
 export { warmColdScene } from './layouts/warmCold';
 export {
   AGE_TESTS_PANEL,

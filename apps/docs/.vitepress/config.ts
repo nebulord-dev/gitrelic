@@ -14,7 +14,6 @@ export default withMermaid(
     // as their pages land so genuine typos still surface in the build.
     ignoreDeadLinks: [
       '/analyzers/churn-velocity',
-      '/analyzers/coupling',
       '/analyzers/knowledge-silos',
       '/analyzers/complexity-trend',
     ],
@@ -50,6 +49,7 @@ export default withMermaid(
             { text: 'Age', link: '/analyzers/age-map' },
             { text: 'Blast Radius', link: '/analyzers/blast-radius' },
             { text: 'Bus Factor', link: '/analyzers/bus-factor' },
+            { text: 'Coupling', link: '/analyzers/coupling' },
             { text: 'Churn', link: '/analyzers/churn' },
             { text: 'Co-Authors / AI', link: '/analyzers/co-authors' },
             { text: 'Commit Timing', link: '/analyzers/commit-timing' },

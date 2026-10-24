@@ -21,7 +21,7 @@ describe('fileFacets', () => {
       'owners',
       'changes-with',
       'trend',
-      'blast',
+      // No blast radius: the sample repo's files have under 8 commits.
       'rewrite',
       'root-causes',
       'last-touched',
@@ -104,5 +104,31 @@ describe('fileFacets', () => {
       },
     };
     expect(facet(fileFacets(top, fresh), 'last-touched')!.value).toBe('today');
+  });
+
+  it('shows blast radius as a median, hot from 10 other files per change', () => {
+    const rated = (median: number) =>
+      fileFacets(top, {
+        ...report,
+        blastRadius: {
+          ...report.blastRadius,
+          files: [
+            {
+              file: top.file,
+              blastScore: 0,
+              avgCoChangedFiles: 20,
+              maxCoChangedFiles: 0,
+              totalCommits: 9,
+              medianCoChanged: median,
+              footprint: [],
+            },
+          ],
+        },
+      });
+    expect(facet(rated(12), 'blast')).toMatchObject({
+      value: '12 files per change',
+      hot: true,
+    });
+    expect(facet(rated(4), 'blast')?.hot).toBe(false);
   });
 });

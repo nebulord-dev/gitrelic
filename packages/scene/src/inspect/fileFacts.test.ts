@@ -30,7 +30,12 @@ function reportWith(file: string): GitrelicReport {
   ];
   r.deadCode.candidates = [{ file, ageInDays: 400 } as never];
   r.blastRadius.files = [
-    { file, avgCoChangedFiles: 7.25, blastScore: 61 } as never,
+    {
+      file,
+      avgCoChangedFiles: 7.25,
+      blastScore: 61,
+      medianCoChanged: 12,
+    } as never,
   ];
   r.coupling.fileProfiles = [
     { file, topPartner: 'src/core/scheduler.ts', couplingScore: 72.6 } as never,
@@ -93,9 +98,9 @@ describe('fileFacts', () => {
       },
       {
         label: 'Blast Radius',
-        value: '7.3 avg files',
+        value: '12 other files per change',
         tier: 'warning',
-        lens: 'blast-radius',
+        lens: 'coupling',
       },
       { label: 'Coupled With', value: 'scheduler.ts (73%)', lens: 'coupling' },
       {
@@ -128,7 +133,14 @@ describe('fileFacts', () => {
       { file: F, topPartner: null, couplingScore: 0 } as never,
     ];
     r.blastRadius.files = [
-      { file: F, avgCoChangedFiles: 2, blastScore: 50 } as never,
+      {
+        file: F,
+        avgCoChangedFiles: 2,
+        blastScore: 50,
+        medianCoChanged: 9,
+      } as never,
+      // Under the commit floor: no median, so no row at all.
+      { file: 'thin.ts', avgCoChangedFiles: 25, blastScore: 100 } as never,
     ];
     r.busFactors.files[0] = { ...r.busFactors.files[0], risk: 'high' } as never;
     const facts = fileFacts(F, r);
@@ -137,6 +149,9 @@ describe('fileFacts', () => {
     expect(labels).not.toContain('Renames');
     expect(labels).not.toContain('Coupled With');
     expect(facts.find((f) => f.label === 'Blast Radius')?.tier).toBeUndefined();
+    expect(
+      fileFacts('thin.ts', r).find((f) => f.label === 'Blast Radius'),
+    ).toBeUndefined();
     expect(facts.find((f) => f.label === 'Bus Factor')?.tier).toBeUndefined();
   });
 

@@ -21,7 +21,7 @@ describe('CommandPalette', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
     const input = await openWithShortcut();
     expect(document.activeElement).toBe(input);
-    expect(screen.getAllByRole('option')).toHaveLength(19);
+    expect(screen.getAllByRole('option')).toHaveLength(18);
 
     await fireEvent.keyDown(input, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).toBeNull();

@@ -18,6 +18,7 @@
   import ChurnCard from '../inspector/ChurnCard.svelte';
   import CommitTimingCard from '../inspector/CommitTimingCard.svelte';
   import ContributorsCard from '../inspector/ContributorsCard.svelte';
+  import CouplingCard from '../inspector/CouplingCard.svelte';
   import DirCard from '../inspector/DirCard.svelte';
   import ExplainCard from '../inspector/ExplainCard.svelte';
   import FileCard from '../inspector/FileCard.svelte';
@@ -296,6 +297,9 @@
   {:else if lens === 'fix-rate' && lensEntry}
     <ExplainCard entry={lensEntry} />
     <FixRateCard {report} {index} {onselect} {ontable} />
+  {:else if lens === 'coupling' && lensEntry}
+    <ExplainCard entry={lensEntry} />
+    <CouplingCard {report} {index} {onselect} {ontable} />
   {:else if lens === 'contributors' && lensEntry}
     <ExplainCard entry={lensEntry} />
     <ContributorsCard {report} {index} {commits} {onselect} {ontable} />

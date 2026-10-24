@@ -233,7 +233,6 @@ describe('analyzer docsPath', () => {
    */
   const AWAITING_POLISH: PresetId[] = [
     'complexity-trend',
-    'coupling',
     'dead-code',
     'knowledge-silos',
     'languages',
