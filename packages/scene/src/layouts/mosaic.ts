@@ -34,6 +34,8 @@ const GAP = 2;
 const PLINTH = 10;
 const STRAND = 6;
 const TOP = 46;
+/** Package names, one row under the plinths and the strips. */
+const NAME_Y = TOP + H + PLINTH + 4 + STRAND + 14;
 const zero = { r: 0, a0: 0, a1: 0 };
 /** A rectangle as `poly` points, for the dashed quiet outline. */
 const RECT = [-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5];
@@ -102,7 +104,7 @@ export function mosaicScene(input: ViewInput, viewport: Viewport): Scene {
     const cx = x + w / 2;
     const tip = ownershipTip(map, p);
 
-    // The package itself: a plinth under the column, holding its name.
+    // The package itself: a plinth under the column.
     marks.push({
       id: p.id,
       shape: 'bar',
@@ -114,9 +116,25 @@ export function mosaicScene(input: ViewInput, viewport: Viewport): Scene {
       ...zero,
       alpha: 1,
       tip,
+    });
+    // Its name on a sizeless mark under the strip, so every name sits at one
+    // height (a 'below' label is offset by the mark's width, which varies).
+    marks.push({
+      id: `name:${p.dir}`,
+      shape: 'card',
+      paint: '--muted',
+      x: cx,
+      y: NAME_Y,
+      ...zero,
+      w: 0,
+      h: 0,
+      alpha: 1,
       label: names.get(p.dir)!,
-      labelAnchor: 'below',
+      labelAnchor: 'center',
       labelPriority: p.commits,
+      selects: p.id,
+      parent: p.id,
+      tip,
     });
 
     let y = TOP + H;
@@ -194,12 +212,15 @@ export function mosaicScene(input: ViewInput, viewport: Viewport): Scene {
     x += w + GAP;
   });
 
+  // Stranded packages past the map's 60 get no strip; the headline says so.
+  const drawnDirs = new Set(map.drawn.map((p) => p.dir));
+  const offMap = [...stranded].filter((d) => !drawnDirs.has(d)).length;
   const leaverName = leaver ? (map.people.get(leaver)?.name ?? leaver) : '';
   const headline = !leaver
     ? 'Select a person to see which packages nobody else would know if they left.'
     : stranded.size === 0
       ? `If ${leaverName} left, every package they work on still has someone who knows it.`
-      : `If ${leaverName} left, ${stranded.size} package${stranded.size === 1 ? '' : 's'} would have nobody left who knows ${stranded.size === 1 ? 'it' : 'them'}.`;
+      : `If ${leaverName} left, ${stranded.size} package${stranded.size === 1 ? '' : 's'} would have nobody left who knows ${stranded.size === 1 ? 'it' : 'them'}${offMap > 0 ? ` (${offMap} off the map)` : ''}.`;
   const note = noteMark('what-if', headline, W / 2, 16);
   if (leaver && stranded.size > 0) note.labelClass = 'atlas-label--accent';
   marks.push(note);

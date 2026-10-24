@@ -28,13 +28,20 @@ describe('mosaicScene', () => {
     ).toEqual([]);
   });
 
-  it('draws each package as a plinth, named, as wide as its commits', () => {
+  it('draws each package as a plinth, as wide as its commits, named in one row', () => {
     const plinths = scene.marks.filter((m) => m.id.startsWith('dir:'));
-    expect(plinths.map((m) => [m.id, m.label])).toEqual([
-      ['dir:packages/server', 'server'],
-      ['dir:packages/client', 'client'],
-      ['dir:packages/shared', 'shared'],
+    expect(plinths.map((m) => m.id)).toEqual([
+      'dir:packages/server',
+      'dir:packages/client',
+      'dir:packages/shared',
     ]);
+    const names = scene.marks.filter((m) => m.id.startsWith('name:'));
+    expect(names.map((m) => [m.label, m.selects, m.x])).toEqual(
+      plinths.map((p) => [p.id.split('/').at(-1), p.id, p.x]),
+    );
+    // One height for every name, below the plinths, whatever the width.
+    expect(new Set(names.map((m) => m.y)).size).toBe(1);
+    expect(names[0].y).toBeGreaterThan(plinths[0].y + plinths[0].h);
     // server 50 commits, client 34, shared 24.
     expect(plinths[0].w).toBeGreaterThan(plinths[1].w);
     expect(plinths[1].w).toBeGreaterThan(plinths[2].w);
@@ -118,6 +125,15 @@ describe('mosaicScene', () => {
     expect(byId(s.marks, 'what-if')?.label).toBe(
       'If Dee Fox left, every package they work on still has someone who knows it.',
     );
+  });
+
+  it('says how many stranded packages are off the map', () => {
+    // ann is the only knower of all 70 extra packages; the 13 smallest are off the map.
+    const s = build(manyPackagesReport(70), 'person:ann@example.com');
+    expect(byId(s.marks, 'what-if')?.label).toBe(
+      'If Ann Lee left, 70 packages would have nobody left who knows them (13 off the map).',
+    );
+    expect(s.marks.filter((m) => m.id.startsWith('strand:'))).toHaveLength(57);
   });
 
   it('draws only the map’s packages', () => {
