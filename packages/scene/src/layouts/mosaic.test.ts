@@ -95,6 +95,31 @@ describe('mosaicScene', () => {
     );
   });
 
+  it('splits out a leaver without a color from the grey block', () => {
+    // Dee has no color: unselected, they're in shared's grey block.
+    const s = build(ownershipReport(), 'person:dee@example.com');
+    expect(checkScene(s)).toEqual([]);
+    const shared = s.marks.filter((m) =>
+      m.id.startsWith('share:packages/shared:'),
+    );
+    expect(shared.map((m) => m.id)).toEqual([
+      'share:packages/shared:cy@example.com',
+      'share:packages/shared:dee@example.com',
+      'share:packages/shared:ann@example.com',
+      'share:packages/shared:bob@example.com',
+      'share:packages/shared:*',
+    ]);
+    expect(shared[1]).toMatchObject({
+      paint: '--ghost',
+      selects: 'person:dee@example.com',
+    });
+    expect(shared[1].alpha).toBeLessThan(0.2);
+    expect(shared[4].tip?.[1]).toBe('1 other: 21%');
+    expect(byId(s.marks, 'what-if')?.label).toBe(
+      'If Dee Fox left, every package they work on still has someone who knows it.',
+    );
+  });
+
   it('draws only the map’s packages', () => {
     const s = build(manyPackagesReport(70));
     expect(s.marks.filter((m) => m.id.startsWith('dir:'))).toHaveLength(60);

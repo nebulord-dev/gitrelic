@@ -50,7 +50,7 @@ export interface OwnershipMap {
   drawn: MapPackage[];
   /** Packages past `MAP_PACKAGES`, in the table but not on the map. */
   hidden: number;
-  /** Everyone with a share in a drawn package, by email. */
+  /** Everyone with a share in any of `packages` (drawn or not), by email. */
   people: ReadonlyMap<string, MapPerson>;
   truckFactor: TruckFactor;
   /** Rated packages left off: the root and dot-folders. */
