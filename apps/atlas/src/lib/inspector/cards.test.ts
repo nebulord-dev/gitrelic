@@ -4,6 +4,7 @@ import { createRawSnippet, flushSync } from 'svelte';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ageReport } from '../../../../../packages/scene/test/ageReport';
+import { couplingReport } from '../../../../../packages/scene/test/couplingReport';
 import { fixRateReport } from '../../../../../packages/scene/test/fixRateReport';
 import reportJson from '../../../../../packages/scene/test/fixtures/report.small.json';
 import { parallelReport } from '../../../../../packages/scene/test/parallelReport';
@@ -11,10 +12,12 @@ import { fixesReport } from '../../../../../packages/scene/test/riskFixesReport'
 import ActivityCard from './ActivityCard.svelte';
 import AgeCard from './AgeCard.svelte';
 import AiCoauthorsCard from './AiCoauthorsCard.svelte';
+import BlastCard from './BlastCard.svelte';
 import Card from './Card.svelte';
 import ChurnCard from './ChurnCard.svelte';
 import CommitTimingCard from './CommitTimingCard.svelte';
 import ContributorsCard from './ContributorsCard.svelte';
+import CouplingCard from './CouplingCard.svelte';
 import FindingCard from './FindingCard.svelte';
 import FixRateCard from './FixRateCard.svelte';
 import HotspotsCard from './HotspotsCard.svelte';
@@ -630,5 +633,74 @@ describe('AgeCard', () => {
     expect(
       screen.queryByRole('heading', { name: 'Coldest packages' }),
     ).toBeNull();
+  });
+});
+
+describe('CouplingCard', () => {
+  const report = couplingReport();
+  const coupled = buildEntityIndex(report);
+
+  it('leads with how many files usually change with 10 or more others', () => {
+    render(CouplingCard, { report, index: coupled });
+    expect(
+      screen.getByText(/of 3 files usually change with 10 or more others/),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('figure', { name: /Files by how many other files/ }),
+    ).toBeTruthy();
+  });
+
+  it('lists the widest changes, selecting a file, and opens the table', async () => {
+    const onselect = vi.fn();
+    const ontable = vi.fn();
+    render(CouplingCard, { report, index: coupled, onselect, ontable });
+    const list = screen.getByRole('heading', {
+      name: 'Widest changes',
+    }).parentElement!;
+    const rows = list.querySelectorAll('li button');
+    expect(rows).toHaveLength(3);
+    await fireEvent.click(rows[0]);
+    expect(onselect).toHaveBeenCalledWith('file:packages/shared/flags.ts');
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'All 3 files in the table (T) ▸' }),
+    );
+    expect(ontable).toHaveBeenCalled();
+  });
+
+  it('says when no file has enough commits', () => {
+    render(CouplingCard, {
+      report: reportJson as unknown as GitrelicReport,
+      index,
+    });
+    expect(
+      screen.getByText(/No file has the 8 commits a blast radius needs/),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole('heading', { name: 'Widest changes' }),
+    ).toBeNull();
+  });
+});
+
+describe('BlastCard', () => {
+  it('shows a rated file’s median and its commits by width', () => {
+    render(BlastCard, {
+      file: 'packages/server/src/api.ts',
+      report: couplingReport(),
+    });
+    expect(screen.getByText('3')).toBeTruthy();
+    expect(screen.getByText(/the median of 16/)).toBeTruthy();
+    expect(
+      screen.getByRole('figure', {
+        name: /Its commits by how many other files/,
+      }),
+    ).toBeTruthy();
+  });
+
+  it('shows nothing for a file under the commit floor', () => {
+    const { container } = render(BlastCard, {
+      file: 'packages/server/src/db.ts',
+      report: couplingReport(),
+    });
+    expect(container.textContent?.trim()).toBe('');
   });
 });

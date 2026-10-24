@@ -24,7 +24,7 @@ describe('lensReadings', () => {
   it('grades only lenses with an outlier rule; the rest stay quiet', () => {
     const byId = new Map(lensReadings(report).map((r) => [r.preset, r]));
     expect(byId.get('languages')?.grade).toBe(0);
-    expect(byId.get('blast-radius')?.grade).toBe(0);
+    expect(byId.get('coupling')?.grade).toBe(0);
     expect(byId.get('languages')?.reason).toBeUndefined();
   });
 

@@ -21,6 +21,7 @@ const ATLAS_MERGES: Record<string, string> = {
   shame: 'fix-rate',
   'dead-code': 'age-map',
   'rewrite-ratio': 'churn',
+  'blast-radius': 'coupling',
 };
 
 // Classic presets Atlas retired outright: no lens, nothing absorbs them, and

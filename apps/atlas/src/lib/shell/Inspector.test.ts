@@ -26,8 +26,8 @@ describe('Inspector', () => {
   });
 
   it('explains the open lens, with its docs', () => {
-    render(Inspector, { ...base, view: 'code-health', lens: 'blast-radius' });
-    expect(screen.getByText('Blast Radius')).toBeTruthy();
+    render(Inspector, { ...base, view: 'ownership-risk', lens: 'bus-factor' });
+    expect(screen.getByText('Bus Factor')).toBeTruthy();
     expect(screen.getByRole('link', { name: /Docs/ })).toBeTruthy();
   });
 
@@ -354,12 +354,12 @@ describe('Inspector', () => {
   });
 
   it('links a selected lens without an Atlas view to classic', () => {
-    render(Inspector, { ...base, selection: ids.analyzer('blast-radius') });
+    render(Inspector, { ...base, selection: ids.analyzer('bus-factor') });
     expect(
       screen
-        .getByRole('link', { name: /Open Blast Radius in classic/ })
+        .getByRole('link', { name: /Open Bus Factor in classic/ })
         .getAttribute('href'),
-    ).toBe('/classic/#preset=blast-radius');
+    ).toBe('/classic/#preset=bus-factor');
   });
 
   it('describes a selected view: its headline, its lenses loudest first, and a way in', async () => {

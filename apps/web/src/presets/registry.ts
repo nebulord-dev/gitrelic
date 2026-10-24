@@ -141,6 +141,7 @@ export const PRESETS: Record<PresetId, PresetDefinition> = {
       altTabs: ['coupling'],
     },
     metrics: couplingMetrics,
+    docsPath: 'analyzers/coupling',
   },
   contributors: {
     id: 'contributors',

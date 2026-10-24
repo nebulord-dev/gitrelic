@@ -4,6 +4,7 @@
 // are the ones the lens's own view will use, so the marks can travel into it.
 
 import { sinceText } from '../age/strata';
+import { blastSummaryOf, boundariesOf } from '../coupling/boundaries';
 import { fixRateOf } from '../fixRate/points';
 import { ids, type EntityId } from '../ids';
 import type { EntityIndex } from '../entities';
@@ -50,10 +51,6 @@ const SOURCES: Record<string, (r: GitrelicReport) => Candidate[]> = {
     byDesc(r.cursedFiles.files, (f) => f.curseScore).map((f) =>
       file(f.file, `curse ${f.curseScore}`),
     ),
-  'blast-radius': (r) =>
-    r.blastRadius.topBlasters.map((f) =>
-      file(f.file, `${f.avgCoChangedFiles.toFixed(1)} files per change`),
-    ),
   // Dormant packages first (the badge's count), then orphaned files, oldest
   // first: what the lens's findings point at.
   'age-map': (r) => [
@@ -80,13 +77,30 @@ const SOURCES: Record<string, (r: GitrelicReport) => Candidate[]> = {
           `${f.dominantAuthor.split('@')[0]} ${f.dominantAuthorPercent}%`,
         ),
     ),
-  coupling: (r) =>
-    r.coupling.topPairs.map((p) =>
-      file(
-        p.fileA,
-        `with ${base(p.fileB)} · ${Math.round(p.couplingStrength)}%`,
+  // The packages on the strongest links, then the widest-changing files.
+  coupling: (r) => {
+    const seen = new Set<string>();
+    const out: Candidate[] = [];
+    for (const l of boundariesOf(r).links)
+      for (const [dir, other] of [
+        [l.a, l.b],
+        [l.b, l.a],
+      ]) {
+        if (seen.has(dir)) continue;
+        seen.add(dir);
+        out.push({
+          id: ids.dir(dir),
+          label: shortDir(dir),
+          value: `${n(l.commits)} commits with ${shortDir(other)}`,
+        });
+      }
+    return [
+      ...out,
+      ...blastSummaryOf(r).widest.map((f) =>
+        file(f.file, `${n(f.median)} files per change`),
       ),
-    ),
+    ];
+  },
   'knowledge-silos': (r) =>
     byDesc(
       r.busFactors.files.filter((f) => f.dominantAuthorPercent > SILO_PERCENT),

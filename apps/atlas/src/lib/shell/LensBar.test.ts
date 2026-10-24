@@ -16,11 +16,17 @@ describe('LensBar', () => {
     expect(screen.getByRole('button', { name: /^Risk/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Age/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Fix rate/ })).toBeTruthy();
-    // Blast Radius is Code Health's one lens still in classic.
+    // Every Code Health lens has an Atlas view now.
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
+  });
+
+  it('links a lens without an Atlas view to classic', () => {
+    render(LensBar, { view: 'ownership-risk', badges: new Map() });
+    expect(screen.getByRole('button', { name: /^Coupling/ })).toBeTruthy();
     const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(1);
-    expect(links[0].textContent).toMatch(/^Blast Radius/);
-    expect(links[0].getAttribute('href')).toBe('/classic/#preset=blast-radius');
+    expect(links).toHaveLength(3);
+    expect(links[0].textContent).toMatch(/^Bus Factor/);
+    expect(links[0].getAttribute('href')).toBe('/classic/#preset=bus-factor');
     expect(links[0].textContent).toContain('opens the classic dashboard');
   });
 

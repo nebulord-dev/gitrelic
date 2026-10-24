@@ -5,6 +5,7 @@ import {
   coupledWith,
   fileContributors,
   fileFacts,
+  rippleOf,
   whatToDo,
   type AdviceSection,
 } from '@gitrelic/scene';
@@ -36,6 +37,8 @@ export function fileSections(
   if (fileContributors(file, report).length > 0)
     out.push({ anchor: 'insp-people', label: 'People' });
   out.push({ anchor: 'insp-activity', label: 'Activity' });
+  if (rippleOf(report, file)?.blast)
+    out.push({ anchor: 'insp-blast', label: 'Blast radius' });
   if (coupledWith(file, report).length > 0)
     out.push({ anchor: 'insp-coupled', label: 'Changes with' });
   return out;

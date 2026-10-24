@@ -5,6 +5,10 @@ description: Surface architectural load-bearers — files that drag many others 
 
 # Blast Radius
 
+::: info In Atlas, Blast Radius is part of Coupling
+Atlas shows blast radius in the [Coupling](./coupling) lens's inspector, as the **median** number of other files a file's commits change, for files with 8 or more commits. The score below (an average scaled to the widest file) is classic's: on React every one of its top 100 files had three commits or fewer, so one wide commit put a file at the top. Classic still shows it at `/classic/#preset=blast-radius`; the rest of this page describes that view.
+:::
+
 **Blast Radius** measures how many *other* files a given file tends to change with. A file with high blast radius is an architectural load-bearer: it can't be touched in isolation. Renaming a symbol, refactoring a contract, or fixing a bug there reliably costs you N other-file edits in the same commit. The analyzer ranks every tracked file by the average size of its co-change cohort, normalizes to a 0–100 score, and flags files at the cascade-risk threshold.
 
 The Blast Radius analyzer answers one question:

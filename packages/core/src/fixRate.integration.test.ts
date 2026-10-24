@@ -4,10 +4,16 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { analyzeFixRate } from './analyzers/fix-rate.js';
 import { runGitrelic } from './runner.js';
@@ -161,23 +167,44 @@ describe('fix rate on a real history', () => {
     expect(report.fixRate.blameTimeouts).toBe(0);
   });
 
-  it('skips a blame that times out, counts it, and still rates the rest', async () => {
-    const commits = await getAllCommits(repo);
-    setGitQuickTimeoutForTests(1);
-    try {
-      const r = await analyzeFixRate(
-        repo,
-        commits,
-        new Set(['a.ts', 'new.ts']),
+  it.skipIf(process.platform === 'win32')(
+    'skips a blame that times out, counts it, and still rates the rest',
+    async () => {
+      const commits = await getAllCommits(repo);
+      // A fake git first on PATH: `diff` and `blame` (a fix's two traced
+      // calls) sleep past the limit, everything else is real git. A 1 ms limit
+      // on real git raced instead: a fast runner finished a blame in time.
+      const realGit = execFileSync('which', ['git']).toString().trim();
+      const bin = path.join(
+        mkdtempSync(path.join(tmpdir(), 'gitrelic-stub-')),
+        'bin',
       );
-      // fix3, guard and late on a.ts; fixNew on new.ts.
-      expect(r.blameTimeouts).toBe(4);
-      const a = r.files.find((f) => f.file === 'a.ts')!;
-      expect(a).toMatchObject({ changes: 10, fixedAfter: 0 });
-    } finally {
-      setGitQuickTimeoutForTests();
-    }
-  });
+      mkdirSync(bin);
+      writeFileSync(
+        path.join(bin, 'git'),
+        `#!/bin/sh\nfor a in "$@"; do\n  case "$a" in diff|blame) exec sleep 5 ;; esac\ndone\nexec "${realGit}" "$@"\n`,
+      );
+      chmodSync(path.join(bin, 'git'), 0o755);
+      vi.stubEnv('PATH', `${bin}${path.delimiter}${process.env.PATH}`);
+      // Far under the fake's 5 s sleep, far over a real git call.
+      setGitQuickTimeoutForTests(1000);
+      try {
+        const r = await analyzeFixRate(
+          repo,
+          commits,
+          new Set(['a.ts', 'new.ts']),
+        );
+        // fix3, guard and late on a.ts; fixNew on new.ts.
+        expect(r.blameTimeouts).toBe(4);
+        const a = r.files.find((f) => f.file === 'a.ts')!;
+        expect(a).toMatchObject({ changes: 10, fixedAfter: 0 });
+      } finally {
+        setGitQuickTimeoutForTests();
+        vi.unstubAllEnvs();
+        rmSync(path.dirname(bin), { recursive: true, force: true });
+      }
+    },
+  );
 
   it('only blames tracked files it was asked to rate', async () => {
     const commits = await getAllCommits(repo);

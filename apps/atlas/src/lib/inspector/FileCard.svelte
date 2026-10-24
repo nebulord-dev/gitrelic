@@ -12,6 +12,7 @@
   } from '@gitrelic/scene';
 
   import ActivityCard from './ActivityCard.svelte';
+  import BlastCard from './BlastCard.svelte';
   import Card from './Card.svelte';
   import { fileSections, scrollToSection } from './fileSections';
   import FlaggedBy from './FlaggedBy.svelte';
@@ -149,6 +150,8 @@
   {fixes}
   windowDays={report.fixRate.windowDays}
 />
+
+<BlastCard {file} {report} />
 
 {#if coupled.length > 0}
   <Card eyebrow="Changes with" id="insp-coupled">

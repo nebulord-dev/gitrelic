@@ -5,6 +5,7 @@
 import { ageSummaryOf } from '../age/strata';
 import { outlierGrades, type OutlierGrade } from '../badges';
 import { CATALOG, type CatalogEntry, type PresetGroup } from '../catalog';
+import { boundariesOf } from '../coupling/boundaries';
 import { fixRateOf } from '../fixRate/points';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -31,8 +32,6 @@ const VALUE: Record<string, (r: GitrelicReport) => string> = {
     return top ? `${n(top.commitCount)} commits, top file` : '—';
   },
   'cursed-files': (r) => `${n(r.cursedFiles.files.length)} files`,
-  'blast-radius': (r) =>
-    `${n(r.blastRadius.files.filter((f) => f.blastScore >= 70).length)} load-bearing`,
   'age-map': (r) => {
     const dormant = r.ageMap.dormantPackages.length;
     if (dormant > 0) return `${n(dormant)} dormant`;
@@ -46,7 +45,7 @@ const VALUE: Record<string, (r: GitrelicReport) => string> = {
       : '—';
   },
   'bus-factor': (r) => `${n(r.busFactors.criticalFiles.length)} single-owner`,
-  coupling: (r) => `${n(r.coupling.pairs.length)} pairs`,
+  coupling: (r) => `${n(boundariesOf(r).links.length)} package links`,
   'knowledge-silos': (r) =>
     r.knowledgeConcentration.totalFiles > 0
       ? `${pct(r.knowledgeConcentration.concentrationIndex)} one author`

@@ -63,7 +63,7 @@ describe('Nav', () => {
 
   it('refuses lenses Atlas has no view for yet; the caller links classic', () => {
     const nav = new Nav(() => index);
-    expect(nav.openLens('coupling')).toBe(false);
+    expect(nav.openLens('bus-factor')).toBe(false);
     expect(nav.lens).toBe('overview');
     expect(nav.view).toBe('overview');
     nav.destroy();
