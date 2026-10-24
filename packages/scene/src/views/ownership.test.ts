@@ -17,7 +17,7 @@ const findings = (report: GitrelicReport) =>
 describe('ownershipView', () => {
   it('is the Ownership lens, drawn as the map', () => {
     expect(ownershipView.id).toBe('bus-factor');
-    expect(ownershipView.layouts.map((l) => l.id)).toEqual(['map']);
+    expect(ownershipView.layouts.map((l) => l.id)).toEqual(['map', 'mosaic']);
     expect(ownershipView.layouts[0].needsCommits).toBe(false);
   });
 });

@@ -7,7 +7,7 @@
 // "owner" of both. The report keeps them; only the map skips them.
 
 import { ids, type EntityId } from '../ids';
-import { reportNow } from '../inspect/personFacts';
+import { reportNow } from '../report/now';
 import type {
   GitrelicReport,
   PackageOwnership,
@@ -50,7 +50,7 @@ export interface OwnershipMap {
   drawn: MapPackage[];
   /** Packages past `MAP_PACKAGES`, in the table but not on the map. */
   hidden: number;
-  /** Everyone with a share in a drawn package, by email. */
+  /** Everyone with a share in any of `packages` (drawn or not), by email. */
   people: ReadonlyMap<string, MapPerson>;
   truckFactor: TruckFactor;
   /** Rated packages left off: the root and dot-folders. */
@@ -135,6 +135,16 @@ export function ownershipMapOf(report: GitrelicReport): OwnershipMap {
   let m = cache.get(report);
   if (!m) cache.set(report, (m = ownershipMap(report)));
   return m;
+}
+
+/**
+ * The packages nobody else would know if `email` left: they're its only
+ * knower (10%+ of the commits and 3+ of them). "What if X left".
+ */
+export function strandedBy(map: OwnershipMap, email: string): MapPackage[] {
+  return map.packages.filter(
+    (p) => p.knowers.length === 1 && p.knowers[0] === email,
+  );
 }
 
 /** A person's surname, for a cell's second line ("Savona 88%"). */

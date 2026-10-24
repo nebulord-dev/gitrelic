@@ -120,34 +120,51 @@ function chordAt(cell: readonly Point[], y: number): number {
   return xs.length >= 2 ? Math.max(...xs) - Math.min(...xs) : 0;
 }
 
-function emptyMap(message: string, viewport: Viewport): Scene {
-  const cx = viewport.width / 2;
-  const cy = viewport.height / 2;
-  const guides: Guide[] = [
-    {
-      id: 'empty',
-      kind: 'text',
-      x: cx,
-      y: cy,
-      text: message,
-      paint: '--muted',
-      alpha: 1,
-    },
-  ];
+/**
+ * A line of text on the stage: a card mark with no size, which the label
+ * layer draws as a plain centered label (text guides aren't drawn).
+ */
+export function noteMark(
+  id: string,
+  label: string,
+  x: number,
+  y: number,
+  sub?: string,
+): Mark {
   return {
-    marks: [],
+    id,
+    shape: 'card',
+    paint: '--muted',
+    x,
+    y,
+    ...zero,
+    w: 0,
+    h: 0,
+    alpha: 1,
+    label,
+    ...(sub && { labelSub: sub }),
+    labelAnchor: 'center',
+    labelPriority: 1000,
+  };
+}
+
+/** The stage with only a message on it. */
+export function emptyStage(message: string, viewport: Viewport): Scene {
+  const { width: w, height: h } = viewport;
+  return {
+    marks: [noteMark('ownership-empty', message, w / 2, h / 2)],
     links: [],
-    guides,
-    bounds: { x: cx - 240, y: cy - 40, w: 480, h: 80 },
+    guides: [],
+    bounds: { x: 0, y: 0, w, h },
   };
 }
 
 export function organicMapScene(input: ViewInput, viewport: Viewport): Scene {
   const map = ownershipMapOf(input.report);
   if (map.noData)
-    return emptyMap('Rerun gitrelic to see who owns what.', viewport);
+    return emptyStage('Rerun gitrelic to see who owns what.', viewport);
   if (map.packages.length === 0)
-    return emptyMap(
+    return emptyStage(
       'No package has 10 or more commits in this window.',
       viewport,
     );

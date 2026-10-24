@@ -3,9 +3,10 @@ import { describe, expect, it } from 'vitest';
 import {
   manyPackagesReport,
   ownershipReport,
+  strandingReport,
 } from '../../test/ownershipReport';
 import { normalizeReport } from '../report/normalizeReport';
-import { MAP_PACKAGES, ownershipMapOf, surname } from './map';
+import { MAP_PACKAGES, ownershipMapOf, strandedBy, surname } from './map';
 
 describe('ownershipMapOf', () => {
   const m = ownershipMapOf(ownershipReport());
@@ -62,6 +63,17 @@ describe('ownershipMapOf', () => {
   it('is memoized per report', () => {
     const r = ownershipReport();
     expect(ownershipMapOf(r)).toBe(ownershipMapOf(r));
+  });
+});
+
+describe('strandedBy', () => {
+  it('lists the packages only that person knows', () => {
+    const m = ownershipMapOf(strandingReport());
+    expect(strandedBy(m, 'ann@example.com').map((p) => p.dir)).toEqual([
+      'packages/server',
+    ]);
+    // shared has five people who know it: losing any one strands nothing.
+    expect(strandedBy(m, 'cy@example.com')).toEqual([]);
   });
 });
 

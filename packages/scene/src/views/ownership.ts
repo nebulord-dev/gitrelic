@@ -1,10 +1,11 @@
 // Ownership & Knowledge › Ownership: who owns what, per package
 // (docs/atlas-views.md › Ownership). The Organic map is the primary form, the
-// Mosaic its alternate (a later PR); Knowledge Silos and Ghost Files merged
+// Mosaic (with "what if X left") its alternate; Knowledge Silos and Ghost Files merged
 // in. The truck factor heads the lens card; the table lists every package.
 
 import { ids } from '../ids';
 import { shortPackage } from '../layouts/boundaries';
+import { mosaicScene } from '../layouts/mosaic';
 import { organicMapScene } from '../layouts/organicMap';
 import {
   ownershipMapOf,
@@ -181,9 +182,19 @@ export function ownershipTable(input: ViewInput): LensTable {
   };
 }
 
+export const mosaicLayout: Layout = {
+  id: 'mosaic',
+  label: 'Mosaic',
+  caption:
+    'Each column is a package, as wide as its commits, split by each person’s share. Select a person to see which packages nobody else would know if they left.',
+  focusKinds: ['person'],
+  needsCommits: false,
+  build: mosaicScene,
+};
+
 export const ownershipView: AnalyzerView = {
   id: 'bus-factor',
-  layouts: [organicMapLayout],
+  layouts: [organicMapLayout, mosaicLayout],
   findings: ownershipFindings,
   table: ownershipTable,
 };

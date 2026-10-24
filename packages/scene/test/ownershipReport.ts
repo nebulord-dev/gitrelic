@@ -99,3 +99,19 @@ export function manyPackagesReport(n: number): GitrelicReport {
     },
   };
 }
+
+/** The same report where server rests on ann alone (cy drops under 3 commits). */
+export function strandingReport(): GitrelicReport {
+  const base = ownershipReport();
+  return {
+    ...base,
+    ownership: {
+      ...base.ownership,
+      packages: base.ownership.packages.map((p) =>
+        p.package === 'packages/server'
+          ? pkg('packages/server', { ann: 48, cy: 2 })
+          : p,
+      ),
+    },
+  };
+}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import reportJson from '../../test/fixtures/report.small.json';
+import { strandingReport } from '../../test/ownershipReport';
 import { personFacts, reportNow } from './personFacts';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -18,6 +19,26 @@ describe('personFacts', () => {
     // How regularly: Alice committed on weekends in half her active weeks.
     expect(rows['Off-hours']).toBe('weekends in 5 of 10 weeks · 0 late nights');
     expect(p?.rows.find((r) => r.label === 'Off-hours')?.tier).toBe('warning');
+  });
+
+  it('says what they top, and what nobody else would know if they left', () => {
+    const rows = (email: string) =>
+      Object.fromEntries(
+        (personFacts(email, strandingReport())?.rows ?? []).map((r) => [
+          r.label,
+          r,
+        ]),
+      );
+    const ann = rows('ann@example.com');
+    expect(ann['Tops packages'].value).toBe('1');
+    expect(ann['If they left']).toMatchObject({
+      value: '1 package with nobody else',
+      tier: 'warning',
+      lens: 'bus-factor',
+    });
+    expect(rows('cy@example.com')['If they left'].value).toBe(
+      'every package has someone else',
+    );
   });
 
   it('adds their AI share and who they are credited with most', () => {

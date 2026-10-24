@@ -353,14 +353,19 @@ export {
 export {
   OWNER_SLOTS,
   onMap,
+  MAP_PACKAGES,
   ownershipMapOf,
+  strandedBy,
   surname,
   type MapPackage,
   type MapPerson,
   type OwnershipMap,
 } from './ownership/map';
+export { mosaicScene } from './layouts/mosaic';
 export {
+  emptyStage,
   MAP_SEED,
+  noteMark,
   organicMapScene,
   ownerPaint,
   ownershipTip,
@@ -375,6 +380,7 @@ export {
   type Point,
 } from './layouts/voronoiTreemap';
 export {
+  mosaicLayout,
   organicMapLayout,
   ownershipFindings,
   ownershipTable,
