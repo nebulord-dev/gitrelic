@@ -117,4 +117,13 @@ describe('boundariesScene', () => {
     expect(ys[0].x).toBeGreaterThan(600);
     expect(ys[0].y).toBeLessThan(ys[1].y);
   });
+
+  it('says an older report has no package data, rather than one package', () => {
+    const old = couplingReport();
+    old.coupling.packageCommits = [];
+    old.coupling.packages = [];
+    const card = mark(build(null, old), 'boundaries-empty')!;
+    expect(card.label).toBe('This report has no package data');
+    expect(card.labelSub).toMatch(/run it again/);
+  });
 });

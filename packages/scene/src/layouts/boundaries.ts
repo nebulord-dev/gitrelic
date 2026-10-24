@@ -185,13 +185,18 @@ function ringScene(
       ...zero,
       alpha: 1,
       label:
-        ring.packages.length < 2
-          ? 'One package: no change crosses a boundary'
-          : 'No two packages changed together 3 or more times',
+        ring.packages.length === 0
+          ? 'This report has no package data'
+          : ring.packages.length === 1
+            ? 'One package: no change crosses a boundary'
+            : 'No two packages changed together 3 or more times',
       labelSub:
-        ring.leftOut > 0
-          ? `${plural(ring.leftOut, 'link')} to root-level files or dot-folders left off`
-          : undefined,
+        ring.packages.length === 0
+          ? // Reports before the Coupling lens were backfilled empty.
+            'It was made by an older gitrelic: run it again to see the packages'
+          : ring.leftOut > 0
+            ? `${plural(ring.leftOut, 'link')} to root-level files or dot-folders left off`
+            : undefined,
       labelAnchor: 'center',
       labelPriority: 1000,
     });
