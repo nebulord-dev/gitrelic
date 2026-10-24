@@ -26,6 +26,7 @@ Ownership reads the commits in the analysis window (`--since`, 12 months by defa
 - **Packages** come from the repository's own workspace files (pnpm, npm, lerna, Cargo, `go.work`, Nx), else `packages/*`, `apps/*`, `libs/*` and `services/*`, else the top-level folder. The map leaves out the repository root and top-level dot-folders (`.github`): release commits and CI config would make whoever cuts releases their "owner".
 - **A commit counts once per package**, however many of its files it touches. Deleted and renamed files count too: that work happened in the package.
 - **A package needs 10 or more human commits** to be rated. Fewer, and one person owns it by default.
+- **The map shows the 60 busiest packages.** Past that the cells are too small to read; the rest are still in the findings and the table.
 - **Bots never count** (dependabot, renovate, semantic-release, GitHub Actions). AI agents' own commits do.
 - **Fixtures and generated files are left out**, unless you pass `--include-fixtures`.
 - **Identities are merged** before counting (`.mailmap`, case variants, GitHub noreply addresses): see [Contributors](/analyzers/contributors).

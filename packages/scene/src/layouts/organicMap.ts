@@ -97,7 +97,7 @@ function mapCells(
   let unit = unitCells.get(map);
   if (!unit) {
     unit = voronoiTreemap(
-      map.packages.map((p) => p.commits),
+      map.drawn.map((p) => p.commits),
       UNIT_CLIP,
       { seed: MAP_SEED },
     );
@@ -156,14 +156,14 @@ export function organicMapScene(input: ViewInput, viewport: Viewport): Scene {
   const cx = viewport.width / 2;
   const cy = viewport.height / 2;
   const cells = mapCells(map, cx, cy, R);
-  const names = ringNames(map.packages.map((p) => p.dir));
+  const names = ringNames(map.drawn.map((p) => p.dir));
   const focus: EntityId | null = input.focus ?? null;
   const focusEmail = focus?.startsWith('person:')
     ? focus.slice('person:'.length)
     : null;
 
   const marks: Mark[] = [];
-  map.packages.forEach((p, i) => {
+  map.drawn.forEach((p, i) => {
     const raw = cells[i];
     if (!raw || raw.length < 3) return;
     const cell = insetPolygon(raw, GAP);

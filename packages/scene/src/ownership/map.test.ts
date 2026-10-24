@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { ownershipReport } from '../../test/ownershipReport';
+import {
+  manyPackagesReport,
+  ownershipReport,
+} from '../../test/ownershipReport';
 import { normalizeReport } from '../report/normalizeReport';
-import { ownershipMapOf, surname } from './map';
+import { MAP_PACKAGES, ownershipMapOf, surname } from './map';
 
 describe('ownershipMapOf', () => {
   const m = ownershipMapOf(ownershipReport());
@@ -45,6 +48,15 @@ describe('ownershipMapOf', () => {
     expect(old.noData).toBe(true);
     expect(old.packages).toEqual([]);
     expect(m.noData).toBe(false);
+  });
+
+  it(`draws the busiest ${MAP_PACKAGES} and keeps the rest for the table`, () => {
+    const big = ownershipMapOf(manyPackagesReport(70));
+    expect(big.packages).toHaveLength(73);
+    expect(big.drawn).toHaveLength(MAP_PACKAGES);
+    expect(big.drawn).toEqual(big.packages.slice(0, MAP_PACKAGES));
+    expect(big.hidden).toBe(13);
+    expect(m.hidden).toBe(0);
   });
 
   it('is memoized per report', () => {

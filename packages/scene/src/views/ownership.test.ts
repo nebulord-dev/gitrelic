@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { ownershipReport } from '../../test/ownershipReport';
+import {
+  manyPackagesReport,
+  ownershipReport,
+} from '../../test/ownershipReport';
 import { normalizeReport } from '../report/normalizeReport';
 import { ownershipFindings, ownershipTable, ownershipView } from './ownership';
 import type { Finding } from '../model';
@@ -48,6 +51,16 @@ describe('ownershipFindings', () => {
     expect(text(byId.get('left-out')!)).toBe(
       '3 packages with under 10 commits and the root and dot-folders (2) left off the map.',
     );
+  });
+
+  it('says when the map shows only the busiest packages, and the table lists all', () => {
+    const report = manyPackagesReport(70);
+    const hidden = findings(report).find((f) => f.id === 'hidden')!;
+    expect(text(hidden)).toBe(
+      'The map shows the busiest 60 of 73 packages; the other 13 are in the table.',
+    );
+    expect(ownershipTable({ report, commits: null }).rows).toHaveLength(73);
+    expect(byId.has('hidden')).toBe(false);
   });
 
   it('says plainly when one person owns everything', () => {

@@ -112,6 +112,15 @@ export function ownershipFindings(input: ViewInput): Finding[] {
       ],
     });
 
+  if (map.hidden > 0)
+    findings.push({
+      id: 'hidden',
+      tone: 'neutral',
+      segments: [
+        `The map shows the busiest ${n(map.drawn.length)} of ${n(map.packages.length)} packages; the other ${n(map.hidden)} are in the table.`,
+      ],
+    });
+
   const left = map.belowFloor + map.leftOut;
   if (left > 0)
     findings.push({

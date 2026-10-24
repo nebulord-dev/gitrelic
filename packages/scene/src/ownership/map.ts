@@ -14,6 +14,12 @@ import type {
   TruckFactor,
 } from '@gitrelic/core';
 
+/**
+ * Most packages on the map, the busiest by commits. Past this the cells are
+ * too small to label and the treemap grows slow (about 0.5 s at 300); the
+ * rest stay in the findings and the table.
+ */
+export const MAP_PACKAGES = 60;
 /** People with their own color (`--owner-0..5`); everyone else is grey. */
 export const OWNER_SLOTS = 6;
 /** No commit in this many days before the analyzed commit (core's `QUIET_DAYS`). */
@@ -38,8 +44,12 @@ export interface MapPackage extends PackageOwnership {
 }
 
 export interface OwnershipMap {
-  /** Most commits first. */
+  /** Every rated package but the root and dot-folders, most commits first. */
   packages: MapPackage[];
+  /** The ones on the map: the first `MAP_PACKAGES` of `packages`. */
+  drawn: MapPackage[];
+  /** Packages past `MAP_PACKAGES`, in the table but not on the map. */
+  hidden: number;
   /** Everyone with a share in a drawn package, by email. */
   people: ReadonlyMap<string, MapPerson>;
   truckFactor: TruckFactor;
@@ -62,10 +72,12 @@ function ownershipMap(report: GitrelicReport): OwnershipMap {
     .filter((p) => onMap(p.package))
     .map((p) => ({ ...p, dir: p.package, id: ids.dir(p.package) }));
 
+  const drawn = packages.slice(0, MAP_PACKAGES);
+
   // Color goes to whoever tops the most drawn packages, then has the most
   // commits in them, so a person keeps one color across both forms.
   const tops = new Map<string, { packages: number; commits: number }>();
-  for (const p of packages) {
+  for (const p of drawn) {
     const t = tops.get(p.shares[0].email) ?? { packages: 0, commits: 0 };
     t.packages++;
     t.commits += p.shares[0].commits;
@@ -101,11 +113,15 @@ function ownershipMap(report: GitrelicReport): OwnershipMap {
 
   return {
     packages,
+    drawn,
+    hidden: packages.length - drawn.length,
     people,
     truckFactor: own.truckFactor,
     leftOut: own.packages.length - packages.length,
     belowFloor: own.belowFloor,
-    solo: packages.length > 0 && tops.size === 1,
+    solo:
+      packages.length > 0 &&
+      new Set(packages.map((p) => p.shares[0].email)).size === 1,
     noData:
       own.packages.length === 0 &&
       own.belowFloor === 0 &&

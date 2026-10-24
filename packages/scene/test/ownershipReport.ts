@@ -82,3 +82,20 @@ export function ownershipReport(): GitrelicReport {
     },
   };
 }
+
+/** The same report with `n` extra one-person packages, busiest first. */
+export function manyPackagesReport(n: number): GitrelicReport {
+  const base = ownershipReport();
+  const extra = Array.from({ length: n }, (_, i) =>
+    pkg(`packages/p${String(i).padStart(3, '0')}`, { ann: 40 - (i % 30) }),
+  );
+  return {
+    ...base,
+    ownership: {
+      ...base.ownership,
+      packages: [...base.ownership.packages, ...extra].sort(
+        (a, b) => b.commits - a.commits,
+      ),
+    },
+  };
+}

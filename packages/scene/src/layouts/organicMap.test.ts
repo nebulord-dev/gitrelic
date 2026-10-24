@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { ownershipReport } from '../../test/ownershipReport';
+import {
+  manyPackagesReport,
+  ownershipReport,
+} from '../../test/ownershipReport';
 import { checkScene } from '../model';
 import { normalizeReport } from '../report/normalizeReport';
 import { organicMapScene, strength } from './organicMap';
@@ -109,6 +112,15 @@ describe('organicMapScene', () => {
       for (const k of ['x', 'y', 'w', 'h'] as const)
         expect(m[k]).toBeCloseTo(f[k], 6);
     });
+  });
+
+  it('draws at most the busiest 60 packages', () => {
+    const s = organicMapScene(
+      { report: manyPackagesReport(70), commits: null },
+      viewport,
+    );
+    expect(s.marks.filter((m) => m.id.startsWith('dir:'))).toHaveLength(60);
+    expect(checkScene(s)).toEqual([]);
   });
 
   it('says what to do with a report from before the lens', () => {
