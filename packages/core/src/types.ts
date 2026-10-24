@@ -10,6 +10,8 @@ export interface GitrelicReport {
   meta: RepoMeta;
   churn: ChurnReport;
   busFactors: BusFactorReport;
+  /** Who owns what per package, and the truck factor. */
+  ownership: OwnershipReport;
   ageMap: AgeMapReport;
   contributors: ContributorReport;
   cursedFiles: CursedFilesReport;
@@ -461,6 +463,51 @@ export type HotspotCategory = 'critical' | 'warning' | 'moderate' | 'low';
 export interface HotspotReport {
   files: HotspotEntry[];
   topHotspots: HotspotEntry[];
+  summary: string;
+}
+
+// ─── Ownership ───────────────────────────────────────────────────────────────
+
+export interface PackageShare {
+  email: string;
+  /** Human commits touching the package, one per commit. */
+  commits: number;
+}
+
+export interface TruckFactor {
+  /** People who'd have to leave before more than half the files have no author left. */
+  value: number;
+  /** Those people, in the order they were removed. */
+  people: string[];
+  /** Files it counted: those with `TRUCK_MIN_FILE_COMMITS`+ human commits. */
+  files: number;
+}
+
+export interface PackageOwnership {
+  package: string;
+  /** Human commits touching the package, one per commit. */
+  commits: number;
+  /** Most commits first. */
+  shares: PackageShare[];
+  /** The top contributor's share, 0–100. */
+  topShare: number;
+  /** The top contributor at `OWNER_SHARE`+; `null` when the package is shared. */
+  owner: string | null;
+  /** The top contributor has `ONE_PERSON_SHARE`+. */
+  onePerson: boolean;
+  /** The top contributor made no commit in the `QUIET_DAYS` before the analyzed commit. */
+  topQuiet: boolean;
+  /** People with `KNOWER_SHARE`+ of its commits and `KNOWER_COMMITS`+ of them, most first. */
+  knowers: string[];
+  truckFactor: TruckFactor;
+}
+
+export interface OwnershipReport {
+  /** Packages with `MIN_PACKAGE_COMMITS`+ human commits, most first. */
+  packages: PackageOwnership[];
+  /** Packages with fewer. */
+  belowFloor: number;
+  truckFactor: TruckFactor;
   summary: string;
 }
 

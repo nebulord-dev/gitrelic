@@ -68,6 +68,17 @@ export function normalizeReport(raw: Partial<GitrelicReport>): GitrelicReport {
       excluded: raw.busFactors?.excluded ?? { fixture: 0, generated: 0 },
       summary: raw.busFactors?.summary ?? 'Not available',
     },
+    // Reports before RELIC-357 have no ownership section: no package is rated.
+    ownership: {
+      packages: raw.ownership?.packages ?? [],
+      belowFloor: raw.ownership?.belowFloor ?? 0,
+      truckFactor: raw.ownership?.truckFactor ?? {
+        value: 0,
+        people: [],
+        files: 0,
+      },
+      summary: raw.ownership?.summary ?? 'Not available',
+    },
     ageMap: {
       files: raw.ageMap?.files ?? [],
       medianAgeDays: raw.ageMap?.medianAgeDays ?? 0,
