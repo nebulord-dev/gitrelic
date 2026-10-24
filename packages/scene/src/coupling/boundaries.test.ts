@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import { couplingReport } from '../../test/couplingReport';
 import reportJson from '../../test/fixtures/report.small.json';
-import { blastSummaryOf, boundariesOf, rippleOf } from './boundaries';
+import {
+  blastSummaryOf,
+  boundariesOf,
+  mostSharedPartner,
+  rippleOf,
+} from './boundaries';
 import type { GitrelicReport } from '@gitrelic/core';
 
 describe('boundariesOf', () => {
@@ -78,5 +83,34 @@ describe('blastSummaryOf', () => {
     const s = blastSummaryOf(reportJson as unknown as GitrelicReport);
     expect(s.rated).toBe(0);
     expect(s.widest).toEqual([]);
+  });
+});
+
+describe('mostSharedPartner', () => {
+  it('ranks by shared commits, not by strength', () => {
+    const r = couplingReport();
+    // A rare partner at 100% (3 of its 3 commits) against a steady one (12).
+    const rare = {
+      fileA: 'packages/server/src/api.ts',
+      fileB: 'packages/server/src/rare.ts',
+      coCommits: 3,
+      totalCommitsA: 16,
+      totalCommitsB: 3,
+      couplingStrength: 100,
+    };
+    r.coupling.fileProfiles[0] = {
+      ...r.coupling.fileProfiles[0],
+      partners: [rare, ...r.coupling.fileProfiles[0].partners],
+      topPartner: 'packages/server/src/rare.ts',
+    };
+    expect(mostSharedPartner(r, 'packages/server/src/api.ts')).toBe(
+      'packages/client/src/api.ts',
+    );
+  });
+});
+
+describe('blast bins', () => {
+  it('end at 19: a commit changes at most 20 files', () => {
+    expect(blastSummaryOf(couplingReport()).bins).toHaveLength(20);
   });
 });

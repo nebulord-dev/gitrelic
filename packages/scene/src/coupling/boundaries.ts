@@ -47,6 +47,11 @@ export interface Boundaries {
   leftOut: number;
   /** Packages past `RING_PACKAGES`. */
   hidden: number;
+  /**
+   * The report has no package data at all: made before the Coupling lens
+   * (backfilled empty), so rerunning gitrelic fills it.
+   */
+  noData: boolean;
 }
 
 function boundaries(report: GitrelicReport): Boundaries {
@@ -77,6 +82,7 @@ function boundaries(report: GitrelicReport): Boundaries {
       (l) => !onRing(l.packageA) || !onRing(l.packageB),
     ).length,
     hidden: all.length - drawn.length,
+    noData: report.coupling.packageCommits.length === 0,
   };
 }
 
@@ -117,11 +123,57 @@ export interface Ripple {
   blast?: FileBlast;
 }
 
-/** What changes with a file, and how far its changes usually reach. */
+interface FileIndex {
+  profiles: Map<string, GitrelicReport['coupling']['fileProfiles'][number]>;
+  blast: Map<string, GitrelicReport['blastRadius']['files'][number]>;
+  ripples: Map<string, Ripple | null>;
+}
+const fileCache = new WeakMap<GitrelicReport, FileIndex>();
+function fileIndexOf(report: GitrelicReport): FileIndex {
+  let idx = fileCache.get(report);
+  if (!idx) {
+    idx = {
+      profiles: new Map(report.coupling.fileProfiles.map((f) => [f.file, f])),
+      blast: new Map(report.blastRadius.files.map((f) => [f.file, f])),
+      ripples: new Map(),
+    };
+    fileCache.set(report, idx);
+  }
+  return idx;
+}
+
+/**
+ * The file a file changes with most (most shared commits): what the ripple
+ * puts first and nearest, and the table names. Core's `topPartner` ranks by
+ * strength, which a rare partner can top.
+ */
+export function mostSharedPartner(
+  report: GitrelicReport,
+  file: string,
+): string | undefined {
+  return rippleOf(report, file)?.partners[0]?.file;
+}
+
+/**
+ * What changes with a file, and how far its changes usually reach. Built
+ * once per report and file: a selection asks for it from several places.
+ */
 export function rippleOf(report: GitrelicReport, file: string): Ripple | null {
+  const idx = fileIndexOf(report);
+  if (idx.ripples.has(file)) return idx.ripples.get(file)!;
+  const ripple = buildRipple(report, idx, file);
+  idx.ripples.set(file, ripple);
+  return ripple;
+}
+
+function buildRipple(
+  report: GitrelicReport,
+  idx: FileIndex,
+  file: string,
+): Ripple | null {
   const pkgOf = packagesOf(report);
-  const profile = report.coupling.fileProfiles.find((f) => f.file === file);
-  const b = report.blastRadius.files.find((f) => f.file === file);
+  const profile = idx.profiles.get(file);
+  const b = idx.blast.get(file);
   if (!profile && !b) return null;
   const pairs = profile?.partners ?? [];
   const commits =
@@ -170,7 +222,10 @@ export interface BlastSummary {
   /** Files without one. */
   unrated: number;
   minCommits: number;
-  /** Rated files by median: index 0–19, and 20 for 20 or more. */
+  /**
+   * Rated files by median, index 0–19: a commit changes at most 20 files
+   * (core skips sweeping ones), so a median is at most 19.
+   */
   bins: number[];
   /** The widest five: median, then commits. */
   widest: { file: string; median: number; commits: number }[];
@@ -189,8 +244,8 @@ export function blastSummaryOf(report: GitrelicReport): BlastSummary {
       commits: f.totalCommits,
     }))
     .sort((a, b) => b.median - a.median || b.commits - a.commits);
-  const bins = new Array<number>(21).fill(0);
-  for (const f of rated) bins[Math.min(20, f.median)]++;
+  const bins = new Array<number>(20).fill(0);
+  for (const f of rated) bins[Math.min(19, f.median)]++;
   const summary: BlastSummary = {
     rated: rated.length,
     wide: rated.filter((f) => f.median >= BLAST_WIDE).length,

@@ -82,8 +82,9 @@ describe('boundariesScene', () => {
 
   it('says so when a file changes alone', () => {
     const s = build('file:packages/client/src/api.ts');
-    expect(mark(s, 'ripple-alone')?.label).toMatch(
-      /no file shares 3 or more commits with it/,
+    // Not "no file shares a commit": core may have dropped a pair under 30%.
+    expect(mark(s, 'ripple-alone')?.label).toBe(
+      'No file changes with api.ts strongly enough to draw',
     );
   });
 
@@ -125,5 +126,42 @@ describe('boundariesScene', () => {
     const card = mark(build(null, old), 'boundaries-empty')!;
     expect(card.label).toBe('This report has no package data');
     expect(card.labelSub).toMatch(/run it again/);
+  });
+
+  it('tells a fresh report with nothing to ring from an older one', () => {
+    const r = couplingReport();
+    r.coupling.packageCommits = [
+      { package: '', commits: 9 },
+      { package: '.github', commits: 4 },
+    ];
+    r.coupling.packages = [];
+    expect(mark(build(null, r), 'boundaries-empty')!.label).toBe(
+      'No package to draw: every change is to root-level files or dot-folders',
+    );
+  });
+
+  it('says how many quieter packages it leaves off the ring', () => {
+    const r = couplingReport();
+    r.coupling.packageCommits = Array.from({ length: 23 }, (_, i) => ({
+      package: `packages/p${String(i).padStart(2, '0')}`,
+      commits: 100 - i,
+    }));
+    const s = build(null, r);
+    expect(mark(s, 'boundaries-more')!.label).toBe(
+      '3 quieter packages not drawn: the ring holds the 20 with the most commits',
+    );
+    expect(checkScene(s)).toEqual([]);
+  });
+
+  it('never gives two packages the same name', () => {
+    const r = couplingReport();
+    r.coupling.packageCommits = [
+      { package: 'docs', commits: 5 },
+      { package: 'packages/docs', commits: 4 },
+    ];
+    r.coupling.packages = [];
+    const s = build(null, r);
+    expect(mark(s, 'dir:docs')!.label).toBe('docs');
+    expect(mark(s, 'dir:packages/docs')!.label).toBe('packages/docs');
   });
 });

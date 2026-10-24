@@ -186,7 +186,8 @@ describe('fix rate on a real history', () => {
       );
       chmodSync(path.join(bin, 'git'), 0o755);
       vi.stubEnv('PATH', `${bin}${path.delimiter}${process.env.PATH}`);
-      setGitQuickTimeoutForTests(200);
+      // Far under the fake's 5 s sleep, far over a real git call.
+      setGitQuickTimeoutForTests(1000);
       try {
         const r = await analyzeFixRate(
           repo,

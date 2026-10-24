@@ -41,10 +41,24 @@ export const shortPackage = (dir: string) => dir.replace(/^packages\//, '');
  */
 export function ringNames(dirs: readonly string[]): Map<string, string> {
   const last = (d: string) => d.slice(d.lastIndexOf('/') + 1);
-  const counts = new Map<string, number>();
-  for (const d of dirs) counts.set(last(d), (counts.get(last(d)) ?? 0) + 1);
+  const tally = (name: (d: string) => string) => {
+    const counts = new Map<string, number>();
+    for (const d of dirs) counts.set(name(d), (counts.get(name(d)) ?? 0) + 1);
+    return counts;
+  };
+  const byLast = tally(last);
+  const byShort = tally(shortPackage);
+  // Last folder; else without `packages/`; else the whole path (`docs` and
+  // `packages/docs` would otherwise both read "docs").
   return new Map(
-    dirs.map((d) => [d, counts.get(last(d))! > 1 ? shortPackage(d) : last(d)]),
+    dirs.map((d) => [
+      d,
+      byLast.get(last(d))! === 1
+        ? last(d)
+        : byShort.get(shortPackage(d))! === 1
+          ? shortPackage(d)
+          : d,
+    ]),
   );
 }
 
@@ -73,8 +87,10 @@ export function boundariesScene(input: ViewInput, viewport: Viewport): Scene {
   // families. Spaced evenly by height, not angle: down the right half, then
   // back up the left. Even angles bunch packages at the top and bottom.
   const names = ringNames(ring.packages.map((p) => p.dir));
-  const seated = [...ring.packages].sort((a, b) =>
-    names.get(a.dir)! < names.get(b.dir)! ? -1 : 1,
+  const seated = [...ring.packages].sort(
+    (a, b) =>
+      names.get(a.dir)!.localeCompare(names.get(b.dir)!) ||
+      a.dir.localeCompare(b.dir),
   );
   const right = Math.ceil(seated.length / 2);
   const leftCount = seated.length - right;
@@ -170,7 +186,9 @@ function ringScene(
               (p) =>
                 `${baseName(p.fileA)} ↔ ${baseName(p.fileB)} · ${n(p.coCommits)}`,
             )
-          : ['no single pair of files changed together 3 or more times']),
+          : [
+              'no single pair of files changes together strongly enough to list (3 shared commits, 30% of the quieter file’s)',
+            ]),
       ],
     };
   });
@@ -184,21 +202,34 @@ function ringScene(
       y: cy,
       ...zero,
       alpha: 1,
-      label:
-        ring.packages.length === 0
-          ? 'This report has no package data'
+      label: ring.noData
+        ? 'This report has no package data'
+        : ring.packages.length === 0
+          ? 'No package to draw: every change is to root-level files or dot-folders'
           : ring.packages.length === 1
             ? 'One package: no change crosses a boundary'
             : 'No two packages changed together 3 or more times',
-      labelSub:
-        ring.packages.length === 0
-          ? // Reports before the Coupling lens were backfilled empty.
-            'It was made by an older gitrelic: run it again to see the packages'
-          : ring.leftOut > 0
-            ? `${plural(ring.leftOut, 'link')} to root-level files or dot-folders left off`
-            : undefined,
+      labelSub: ring.noData
+        ? 'It was made by an older gitrelic: run it again to see the packages'
+        : ring.leftOut > 0
+          ? `${plural(ring.leftOut, 'link')} to root-level files or dot-folders left off`
+          : undefined,
       labelAnchor: 'center',
       labelPriority: 1000,
+    });
+  // The ring holds the busiest packages; say how many quieter ones it skips.
+  if (ring.hidden > 0)
+    marks.push({
+      id: 'boundaries-more',
+      shape: 'card',
+      paint: '--muted',
+      x: cx,
+      y: bounds.y + bounds.h - 16,
+      ...zero,
+      alpha: 1,
+      label: `${plural(ring.hidden, 'quieter package')} not drawn: the ring holds the ${n(ring.packages.length)} with the most commits`,
+      labelAnchor: 'center',
+      labelPriority: 900,
     });
 
   return { marks, links, guides: [], hoverLinks: true, bounds };
@@ -261,7 +292,9 @@ function rippleScene(
       y: cy + 60,
       ...zero,
       alpha: 1,
-      label: `${baseName(ripple.file)} changes alone: no file shares 3 or more commits with it`,
+      label: `No file changes with ${baseName(ripple.file)} strongly enough to draw`,
+      labelSub:
+        'a partner needs 3 shared commits, and 30% of the quieter file’s',
       labelAnchor: 'center',
       labelPriority: 900,
     });

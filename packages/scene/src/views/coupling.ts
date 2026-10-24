@@ -6,6 +6,7 @@ import {
   BLAST_WIDE,
   blastSummaryOf,
   boundariesOf,
+  mostSharedPartner,
   onRing,
 } from '../coupling/boundaries';
 import { ids } from '../ids';
@@ -129,9 +130,6 @@ const tierOf = (median: number): 0 | 1 | 2 | 3 =>
 export function couplingTable(input: ViewInput): LensTable {
   const { report } = input;
   const pkgOf = packagesOf(report);
-  const partnerOf = new Map(
-    report.coupling.fileProfiles.map((f) => [f.file, f.topPartner]),
-  );
   return {
     columns: [
       { id: 'file', label: 'File' },
@@ -143,7 +141,8 @@ export function couplingTable(input: ViewInput): LensTable {
     rows: report.blastRadius.files
       .filter((f) => f.medianCoChanged !== undefined)
       .map((f) => {
-        const partner = partnerOf.get(f.file);
+        // Most shared commits, as the ripple ranks partners.
+        const partner = mostSharedPartner(report, f.file);
         return {
           id: ids.file(f.file),
           tier: tierOf(f.medianCoChanged ?? 0),

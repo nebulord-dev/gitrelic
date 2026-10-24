@@ -31,7 +31,6 @@ export interface FileFacet {
   hot: boolean;
 }
 
-/** Blast radius's warning bar, as the file inspector colours it. */
 /** Rewrite ratio's "high rewrite" bar (core's HIGH_REWRITE_THRESHOLD). */
 export const REWRITE_HOT = 70;
 /** A partner sharing at least this share of the rarer file's commits. */
