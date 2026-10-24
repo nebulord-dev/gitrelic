@@ -5,6 +5,10 @@ description: Files where the dominant author has gone silent — concrete knowle
 
 # Ghost Files
 
+::: info In Atlas, Ghost Files is part of Ownership
+Atlas shows the same risk per package in the [Ownership](./bus-factor) lens: a dashed outline marks a package whose top contributor has made no commit in 90 days, and that's the lens's badge. Classic still shows Ghost Files at `/classic/#preset=ghost-files`; the rest of this page describes that view.
+:::
+
 Ghost Files surfaces the **materialized knowledge-loss risk** in your repo: files where one author wrote essentially the whole thing AND that author has gone silent. Unlike Bus Factor (which models *theoretical* collapse risk regardless of activity), Ghost Files only flags risk that has *already* happened — you just haven't paid the bill yet.
 
 The story it tells: *"knowledge has left even though work continues."*

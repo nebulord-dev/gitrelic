@@ -350,6 +350,36 @@ export {
   couplingTable,
   couplingView,
 } from './views/coupling';
+export {
+  OWNER_SLOTS,
+  onMap,
+  ownershipMapOf,
+  surname,
+  type MapPackage,
+  type MapPerson,
+  type OwnershipMap,
+} from './ownership/map';
+export {
+  MAP_SEED,
+  organicMapScene,
+  ownerPaint,
+  ownershipTip,
+  strength,
+} from './layouts/organicMap';
+export {
+  circlePolygon,
+  insetPolygon,
+  polygonArea,
+  polygonCentroid,
+  voronoiTreemap,
+  type Point,
+} from './layouts/voronoiTreemap';
+export {
+  organicMapLayout,
+  ownershipFindings,
+  ownershipTable,
+  ownershipView,
+} from './views/ownership';
 export { warmColdScene } from './layouts/warmCold';
 export {
   AGE_TESTS_PANEL,

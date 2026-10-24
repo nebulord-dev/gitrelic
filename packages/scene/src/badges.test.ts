@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { fixRateReport, rated } from '../test/fixRateReport';
 import reportJson from '../test/fixtures/report.small.json';
+import { ownershipReport } from '../test/ownershipReport';
 import { computeOutlierBadges, outlierGrades, RULES } from './badges';
 import { CATALOG } from './catalog';
 import type { GitrelicReport } from '@gitrelic/core';
@@ -19,6 +20,27 @@ function report(patch: Record<string, unknown>): GitrelicReport {
 
 const items = <T>(n: number, make: (i: number) => T): T[] =>
   Array.from({ length: n }, (_, i) => make(i));
+
+/** The ownership fixture with exactly these packages' top contributors quiet. */
+const quietOwners = (dirs: string[]) => {
+  const own = ownershipReport().ownership;
+  return {
+    ...own,
+    packages: own.packages.map((p) => ({
+      ...p,
+      topQuiet: dirs.includes(p.package),
+    })),
+  };
+};
+
+/** `n` critical hotspots among 100 rated files. */
+const criticalHotspots = (n: number) =>
+  report({
+    hotspots: {
+      ...base.hotspots,
+      files: items(100, (i) => ({ category: i < n ? 'critical' : 'low' })),
+    },
+  });
 
 const fires = (r: GitrelicReport, preset: string) =>
   computeOutlierBadges(r).get(preset)?.count ?? null;
@@ -100,46 +122,11 @@ describe('computeOutlierBadges', () => {
       1,
     ],
     [
+      // One package whose top contributor went quiet fires it.
       'bus-factor',
-      {
-        busFactors: {
-          ...base.busFactors,
-          files: items(8, () => ({})),
-          criticalFiles: items(1, () => ({})),
-        },
-      },
-      {
-        busFactors: {
-          ...base.busFactors,
-          files: items(8, () => ({})),
-          criticalFiles: items(2, () => ({})),
-        },
-      },
-      2,
-    ],
-    [
-      'knowledge-silos',
-      {
-        knowledgeConcentration: {
-          ...base.knowledgeConcentration,
-          singleAuthorFiles: 59,
-          totalFiles: 100,
-        },
-      },
-      {
-        knowledgeConcentration: {
-          ...base.knowledgeConcentration,
-          singleAuthorFiles: 60,
-          totalFiles: 100,
-        },
-      },
-      60,
-    ],
-    [
-      'ghost-files',
-      { ghostFiles: { ...base.ghostFiles, totalGhostFiles: 4 } },
-      { ghostFiles: { ...base.ghostFiles, totalGhostFiles: 5 } },
-      5,
+      { ownership: quietOwners([]) },
+      { ownership: quietOwners(['packages/server']) },
+      1,
     ],
     [
       'parallel-dev',
@@ -196,9 +183,7 @@ describe('computeOutlierBadges', () => {
       'commit-timing',
       'cursed-files',
       'fix-rate',
-      'ghost-files',
       'hotspots',
-      'knowledge-silos',
       'parallel-dev',
       'test-coverage',
     ]);
@@ -213,19 +198,22 @@ describe('computeOutlierBadges', () => {
     expect(
       fires(
         report({
-          meta: { ...base.meta, totalFiles: 0 },
-          ghostFiles: { ...base.ghostFiles, totalGhostFiles: 3 },
+          testCoverage: {
+            ...base.testCoverage,
+            directories: [],
+            uncoveredDirectories: items(3, (i) => `d${i}`),
+          },
         }),
-        'ghost-files',
+        'test-coverage',
       ),
     ).toBeNull();
   });
 
   it('explains each badge in words', () => {
-    const badge = computeOutlierBadges(
-      report({ ghostFiles: { ...base.ghostFiles, totalGhostFiles: 25 } }),
-    ).get('ghost-files');
-    expect(badge?.reason).toMatch(/^25%/);
+    const badge = computeOutlierBadges(criticalHotspots(25)).get('hotspots');
+    expect(badge?.reason).toBe(
+      '25 critical hotspots (25% of tracked files that changed)',
+    );
   });
 
   it('never badges Stale Files: its count measures the window, not decay', () => {
@@ -241,9 +229,7 @@ describe('computeOutlierBadges', () => {
 });
 
 describe('outlierGrades', () => {
-  const ghosts = (n: number) =>
-    report({ ghostFiles: { ...base.ghostFiles, totalGhostFiles: n } });
-  // Ghost Files badges at 5% of 100 files.
+  // Hotspots badges at 5% of rated files, with at least 3.
 
   it.each([
     [0, 0],
@@ -253,7 +239,9 @@ describe('outlierGrades', () => {
     [9, 2],
     [10, 3],
   ])('a share rule: %i of 100 grades %i', (n, grade) => {
-    expect(outlierGrades(ghosts(n)).get('ghost-files')?.grade).toBe(grade);
+    expect(outlierGrades(criticalHotspots(n)).get('hotspots')?.grade).toBe(
+      grade,
+    );
   });
 
   it('an absolute rule grades by count against its minimum', () => {
@@ -273,9 +261,9 @@ describe('outlierGrades', () => {
 
   it('agrees with the badges: grade 2 and up is exactly a badge', () => {
     for (const n of [0, 3, 5, 12]) {
-      const r = ghosts(n);
-      const graded = (outlierGrades(r).get('ghost-files')?.grade ?? 0) >= 2;
-      expect(computeOutlierBadges(r).has('ghost-files')).toBe(graded);
+      const r = criticalHotspots(n);
+      const graded = (outlierGrades(r).get('hotspots')?.grade ?? 0) >= 2;
+      expect(computeOutlierBadges(r).has('hotspots')).toBe(graded);
     }
   });
 });

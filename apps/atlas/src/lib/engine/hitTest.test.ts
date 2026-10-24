@@ -60,6 +60,33 @@ describe('HitTester', () => {
     expect(hit(s, 136, 0, 4)).toBeNull();
   });
 
+  it('hits a polygon by its shape, not its box, and without slop', () => {
+    // Two triangles splitting a 100 × 100 box along its diagonal.
+    const s = storeOf(
+      mark('dir:a', {
+        shape: 'poly',
+        x: 50,
+        y: 50,
+        w: 100,
+        h: 100,
+        pts: [-0.5, -0.5, 0.5, -0.5, -0.5, 0.5],
+      }),
+      mark('dir:b', {
+        shape: 'poly',
+        x: 50,
+        y: 50,
+        w: 100,
+        h: 100,
+        pts: [0.5, -0.5, 0.5, 0.5, -0.5, 0.5],
+      }),
+    );
+    expect(hit(s, 20, 20)).toBe('dir:a');
+    expect(hit(s, 80, 80)).toBe('dir:b');
+    // Just over the diagonal into a's half: tolerance doesn't hand it to b.
+    expect(hit(s, 48, 50, 6)).toBe('dir:a');
+    expect(hit(s, 150, 50)).toBeNull();
+  });
+
   it('hits arcs by radius band and angle (clockwise from 12)', () => {
     // A quarter ring from 12 to 3 o'clock, radii 100..120.
     const s = storeOf(

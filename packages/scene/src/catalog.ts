@@ -10,7 +10,7 @@
 export const PRESET_GROUPS = [
   { id: 'overview', label: 'Overview' },
   { id: 'code-health', label: 'Code Health' },
-  { id: 'ownership-risk', label: 'Ownership & Risk' },
+  { id: 'ownership-risk', label: 'Ownership & Knowledge' },
   { id: 'team-activity', label: 'Team & Activity' },
   { id: 'structure', label: 'Structure' },
 ] as const;
@@ -92,12 +92,12 @@ export const CATALOG: readonly CatalogEntry[] = [
   },
   {
     id: 'bus-factor',
-    label: 'Bus Factor',
+    label: 'Ownership',
     group: 'ownership-risk',
     explain:
-      'Files where one author wrote 80%+ of the commits: single points of failure.',
+      'Who owns each package, how much of it rests on one person, and how many people the code depends on.',
     docsPath: 'analyzers/bus-factor',
-    atlas: false,
+    atlas: true,
   },
   {
     id: 'coupling',
@@ -107,23 +107,6 @@ export const CATALOG: readonly CatalogEntry[] = [
       'Which packages change together, what changes with a file, and how far a change to it usually reaches.',
     docsPath: 'analyzers/coupling',
     atlas: true,
-  },
-  {
-    id: 'knowledge-silos',
-    label: 'Knowledge Silos',
-    group: 'ownership-risk',
-    explain:
-      'The share of files with a single dominant author: how fragile the team is.',
-    atlas: false,
-  },
-  {
-    id: 'ghost-files',
-    label: 'Ghost Files',
-    group: 'ownership-risk',
-    explain:
-      'Files owned by people who are no longer active: knowledge that may be gone.',
-    docsPath: 'analyzers/ghost-files',
-    atlas: false,
   },
   {
     id: 'contributors',

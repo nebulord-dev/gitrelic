@@ -5,6 +5,7 @@
 
 import { BOW, CURVE_SEGMENTS } from './linkGeometry';
 import { SHAPE_CODES, type MarkStore } from './markStore';
+import { insidePoly } from './polyShape';
 import type { EntityId, LiveLink } from '@gitrelic/scene';
 
 const TAU = Math.PI * 2;
@@ -290,11 +291,18 @@ function contains(
         return false;
       // Angles run clockwise from 12 o'clock, like the layouts'. Tolerance
       // widens the band radially only: the gaps between clock cells stay
-      // gaps, so slop never picks the neighbouring hour.
+      // gaps, so slop never picks the neighboring hour.
       const angle = Math.atan2(dx, -dy);
       const span = store.a1[i] - store.a0[i];
       const into = (((angle - store.a0[i]) % TAU) + TAU) % TAU;
       return span >= TAU || into <= span;
+    }
+    case SHAPE_CODES.poly: {
+      // No slop: cells tile edge to edge, so slop would pick the neighbor.
+      const pts = store.marks[i].pts;
+      const w = store.w[i];
+      const h = store.h[i];
+      return !!pts && w > 0 && h > 0 && insidePoly(pts, dx / w, dy / h);
     }
     default:
       return (

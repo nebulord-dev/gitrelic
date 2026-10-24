@@ -63,8 +63,10 @@ describe('overview fan', () => {
 
   it('opens the loudest view by default, or the one named by focus', () => {
     const readings = lensReadings(report);
-    // The fixture's loudest view (loudestView: its top grade, ties to rail order).
-    const loudest = 'ownership-risk';
+    // The fixture's loudest view (loudestView: its top grade, ties to rail
+    // order). Not Ownership: it no longer badges single-author files, which a
+    // 10-file repo is full of.
+    const loudest = 'code-health';
     expect(loudestView(readings)).toBe(loudest);
     const ofView = (v: string) =>
       readings.filter((r) => r.group === v).map((r) => ids.analyzer(r.preset));

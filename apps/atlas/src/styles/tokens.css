@@ -45,6 +45,13 @@
   --risk-1: #958f74;
   --risk-2: #bba46f;
   --risk-3: #e2b86b;
+  /* Owners: one person each, in the Ownership lens. Checked for color-blind separation and contrast on this --bg. */
+  --owner-0: #00ab95;
+  --owner-1: #ce7a3b;
+  --owner-2: #9283dc;
+  --owner-3: #ab9017;
+  --owner-4: #4d97de;
+  --owner-5: #d16e8f;
 }
 
 :root[data-theme='glow-violet'] {
@@ -89,6 +96,13 @@
   --risk-1: #7e5f9c;
   --risk-2: #a77bc0;
   --risk-3: #d98fc4;
+  /* Owners: one person each, in the Ownership lens. Checked for color-blind separation and contrast on this --bg. */
+  --owner-0: #00ab95;
+  --owner-1: #ce7a3b;
+  --owner-2: #9283dc;
+  --owner-3: #ab9017;
+  --owner-4: #4d97de;
+  --owner-5: #d16e8f;
 }
 
 :root[data-theme='glow-ember'] {
@@ -133,6 +147,13 @@
   --risk-1: #8c5a48;
   --risk-2: #c26a44;
   --risk-3: #e8794a;
+  /* Owners: one person each, in the Ownership lens. Checked for color-blind separation and contrast on this --bg. */
+  --owner-0: #00ab95;
+  --owner-1: #ce7a3b;
+  --owner-2: #9283dc;
+  --owner-3: #ab9017;
+  --owner-4: #4d97de;
+  --owner-5: #d16e8f;
 }
 
 :root[data-theme='glow-moss'] {
@@ -177,6 +198,13 @@
   --risk-1: #5e8a6a;
   --risk-2: #7fbf88;
   --risk-3: #a8e6a0;
+  /* Owners: one person each, in the Ownership lens. Checked for color-blind separation and contrast on this --bg. */
+  --owner-0: #00ab95;
+  --owner-1: #ce7a3b;
+  --owner-2: #9283dc;
+  --owner-3: #ab9017;
+  --owner-4: #4d97de;
+  --owner-5: #d16e8f;
 }
 
 :root[data-theme='glow-dawn'] {
@@ -221,6 +249,13 @@
   --risk-1: #b5a57a;
   --risk-2: #a8863e;
   --risk-3: #b08330;
+  /* Owners: one person each, in the Ownership lens. Checked for color-blind separation and contrast on this --bg. */
+  --owner-0: #008c77;
+  --owner-1: #ad5c15;
+  --owner-2: #7565bb;
+  --owner-3: #8d7200;
+  --owner-4: #2d78bd;
+  --owner-5: #af4f71;
 }
 
 :root[data-theme='flat-paper-orange'] {
@@ -258,6 +293,13 @@
   --risk-1: #d9a58f;
   --risk-2: #e07a55;
   --risk-3: #d4502a;
+  /* Owners: one person each, in the Ownership lens. Checked for color-blind separation and contrast on this --bg. */
+  --owner-0: #008c77;
+  --owner-1: #ad5c15;
+  --owner-2: #7565bb;
+  --owner-3: #8d7200;
+  --owner-4: #2d78bd;
+  --owner-5: #af4f71;
 }
 
 :root[data-theme='flat-paper-midnight'] {
@@ -295,6 +337,13 @@
   --risk-1: #8fb8c0;
   --risk-2: #4aa597;
   --risk-3: #17786c;
+  /* Owners: one person each, in the Ownership lens. Checked for color-blind separation and contrast on this --bg. */
+  --owner-0: #008c77;
+  --owner-1: #ad5c15;
+  --owner-2: #7565bb;
+  --owner-3: #8d7200;
+  --owner-4: #2d78bd;
+  --owner-5: #af4f71;
 }
 
 :root[data-theme='flat'] {
@@ -332,4 +381,11 @@
   --risk-1: #4f6b7a;
   --risk-2: #2f9e8f;
   --risk-3: #3fc1b0;
+  /* Owners: one person each, in the Ownership lens. Checked for color-blind separation and contrast on this --bg. */
+  --owner-0: #00ab95;
+  --owner-1: #ce7a3b;
+  --owner-2: #9283dc;
+  --owner-3: #ab9017;
+  --owner-4: #4d97de;
+  --owner-5: #d16e8f;
 }

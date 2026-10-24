@@ -14,7 +14,7 @@ describe('Rail', () => {
     expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual([
       'Overview',
       'Code Health',
-      'Ownership & Risk',
+      'Ownership & Knowledge',
       'Team & Activity',
       'Structure',
     ]);
@@ -27,13 +27,19 @@ describe('Rail', () => {
   it('flags a view when any of its lenses has a badge', () => {
     const badges = new Map<string, Badge>([
       [
-        'ghost-files',
-        { preset: 'ghost-files', count: 12, reason: '30% of files…' },
+        'bus-factor',
+        {
+          preset: 'bus-factor',
+          count: 2,
+          reason: '2 packages whose top contributor went quiet',
+        },
       ],
     ]);
     render(Rail, { badges, view: 'overview' });
     expect(
-      screen.getByRole('button', { name: 'Ownership & Risk (has outliers)' }),
+      screen.getByRole('button', {
+        name: 'Ownership & Knowledge (has outliers)',
+      }),
     ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Structure' })).toBeTruthy();
   });

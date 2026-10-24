@@ -34,16 +34,17 @@ export const SHAPE_CODES: Record<MarkShape, number> = {
   bar: 3,
   card: 4,
   outline: 5,
+  poly: 6,
 };
 
 const INITIAL_CAPACITY = 256;
 
 /**
- * The renderer's layers, back to front: arcs are one Graphics under the
- * particle layer that holds every other shape.
+ * The renderer's layers, back to front: arcs and polygons are one Graphics
+ * under the particle layer that holds every other shape.
  */
 export function drawLayer(shape: number): number {
-  return shape === SHAPE_CODES.arc ? 0 : 1;
+  return shape === SHAPE_CODES.arc || shape === SHAPE_CODES.poly ? 0 : 1;
 }
 
 export class MarkStore {

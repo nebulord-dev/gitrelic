@@ -1,7 +1,7 @@
 // The WebGL renderer. Never rebuilds per-mark display objects per frame:
 // marks are particles in one ParticleContainer (one texture atlas, so one
-// draw call), links are one mesh with per-vertex colour, and arcs and
-// guides are a Graphics each, re-tessellated only on frames marked dirty
+// draw call), links are one mesh with per-vertex color, and arcs (with
+// polygons), outlines (with dashed polygon edges) and guides are a Graphics each, re-tessellated only on frames marked dirty
 // (guides also on zoom, to stay hairlines). Particles and arcs are painted in
 // the store's drawOrder, the same order the hit test picks by.
 // Cards and text are DOM overlays, not drawn here.
@@ -24,6 +24,7 @@ import {
 import { arcBand, circleDashes } from './arcBand';
 import { LinkBuffers, tessellateLinks } from './linkGeometry';
 import { SHAPE_CODES, type MarkStore } from './markStore';
+import { polyDashes, polyWorld } from './polyShape';
 import { HALO, SPRITE, SPRITE_FRAMES, type SpriteFrame } from './spriteAtlas';
 import { canvasResolution, type ScreenSize } from './viewport';
 import type { StageFrame, StageRenderer } from './stageRenderer';
@@ -33,6 +34,8 @@ const HALO_SPREAD = 3;
 const HALO_ALPHA = 0.35;
 /** An outline mark's stroke, screen px. */
 const OUTLINE_PX = 2;
+/** A dashed polygon edge's dashes (and gaps), screen px. */
+const POLY_DASH_PX = 5;
 
 const LINK_VERTEX = /* glsl */ `
 in vec2 aPosition;
@@ -240,21 +243,42 @@ export class PixiStage implements StageRenderer {
   private drawOutlines(store: MarkStore, scale: number): void {
     const g = this.outlines.clear();
     for (const i of store.drawOrder()) {
-      if (store.shape[i] !== SHAPE_CODES.outline || store.r[i] <= 0) continue;
+      const shape = store.shape[i];
       const alpha = store.alpha[i] * store.opacity[i];
       if (alpha <= 0) continue;
-      g.circle(store.x[i], store.y[i], store.r[i]).stroke({
-        width: OUTLINE_PX / scale,
-        alignment: 1,
-        color: rgbNumber(store.red[i], store.green[i], store.blue[i]),
-        alpha,
-      });
+      const color = rgbNumber(store.red[i], store.green[i], store.blue[i]);
+      if (shape === SHAPE_CODES.outline && store.r[i] > 0) {
+        g.circle(store.x[i], store.y[i], store.r[i]).stroke({
+          width: OUTLINE_PX / scale,
+          alignment: 1,
+          color,
+          alpha,
+        });
+      } else if (
+        shape === SHAPE_CODES.poly &&
+        store.marks[i].edge === 'dashed'
+      ) {
+        const pts = store.marks[i].pts;
+        if (!pts || store.w[i] <= 0) continue;
+        // Dashes a constant length on screen, like the dashed guide circles.
+        const segs = polyDashes(
+          polyWorld(pts, store.x[i], store.y[i], store.w[i], store.h[i]),
+          POLY_DASH_PX / scale,
+        );
+        for (let k = 0; k < segs.length; k += 4)
+          g.moveTo(segs[k], segs[k + 1]).lineTo(segs[k + 2], segs[k + 3]);
+        g.stroke({ width: OUTLINE_PX / scale, color, alpha });
+      }
     }
   }
 
   private drawArcs(store: MarkStore): void {
     const g = this.arcs.clear();
     for (const i of store.drawOrder()) {
+      if (store.shape[i] === SHAPE_CODES.poly) {
+        this.fillPoly(g, store, i);
+        continue;
+      }
       if (store.shape[i] !== SHAPE_CODES.arc || store.h[i] <= 0) continue;
       const alpha = store.alpha[i] * store.opacity[i];
       if (alpha <= 0) continue;
@@ -272,6 +296,26 @@ export class PixiStage implements StageRenderer {
         alpha,
       });
     }
+  }
+
+  /** A filled polygon, unless it's a dashed edge (drawn with the outlines). */
+  private fillPoly(g: Graphics, store: MarkStore, i: number): void {
+    const mark = store.marks[i];
+    if (
+      mark.edge === 'dashed' ||
+      !mark.pts ||
+      store.w[i] <= 0 ||
+      store.h[i] <= 0
+    )
+      return;
+    const alpha = store.alpha[i] * store.opacity[i];
+    if (alpha <= 0) return;
+    g.poly(
+      polyWorld(mark.pts, store.x[i], store.y[i], store.w[i], store.h[i]),
+    ).fill({
+      color: rgbNumber(store.red[i], store.green[i], store.blue[i]),
+      alpha,
+    });
   }
 
   private drawGuides(frame: StageFrame): void {
@@ -350,7 +394,7 @@ function rgbOf(c: Rgba): number {
 /**
  * Draws the mark sprites into one canvas — filled dot, ring, a white square
  * for bars, and a soft halo — so every particle shares one texture source,
- * which ParticleContainer requires. White, so tint sets the colour.
+ * which ParticleContainer requires. White, so tint sets the color.
  */
 function makeSprites(): Sprites {
   const { dot, ring, square, halo, width, height } = SPRITE_FRAMES;

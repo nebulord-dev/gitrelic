@@ -14,7 +14,7 @@ describe('buildEntityIndex', () => {
     const kinds = new Map<string, number>();
     for (const e of index.entries)
       kinds.set(e.kind, (kinds.get(e.kind) ?? 0) + 1);
-    expect(kinds.get('analyzer')).toBe(18);
+    expect(kinds.get('analyzer')).toBe(16);
     expect(kinds.get('view')).toBe(4);
     expect(kinds.get('person')).toBe(3);
     expect(kinds.get('dir')).toBe(3); // docs, src, src/__tests__
@@ -24,7 +24,7 @@ describe('buildEntityIndex', () => {
   it('indexes the four views the fan draws, not the Overview itself', () => {
     expect(index.get(ids.view('ownership-risk'))).toMatchObject({
       kind: 'view',
-      label: 'Ownership & Risk',
+      label: 'Ownership & Knowledge',
       detail: 'View',
     });
     expect(index.get(ids.view('overview'))).toBeUndefined();
@@ -42,7 +42,7 @@ describe('buildEntityIndex', () => {
     });
     expect(index.get(ids.person('alice@example.com'))?.label).toBe('Alice');
     expect(index.get(ids.analyzer('bus-factor'))?.detail).toBe(
-      'Ownership & Risk',
+      'Ownership & Knowledge',
     );
     expect(index.get(ids.file('<script>alert(1)</script>'))).toBeUndefined();
     expect(index.get('file:../../etc/passwd')).toBeUndefined();

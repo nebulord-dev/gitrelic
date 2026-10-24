@@ -20,13 +20,19 @@ describe('LensBar', () => {
     expect(screen.queryAllByRole('link')).toHaveLength(0);
   });
 
-  it('links a lens without an Atlas view to classic', () => {
+  it('opens Ownership and Coupling in Atlas, with no classic links left', () => {
     render(LensBar, { view: 'ownership-risk', badges: new Map() });
+    expect(screen.getByRole('button', { name: /^Ownership/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Coupling/ })).toBeTruthy();
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
+  });
+
+  it('links a lens without an Atlas view to classic', () => {
+    render(LensBar, { view: 'structure', badges: new Map() });
     const links = screen.getAllByRole('link');
     expect(links).toHaveLength(3);
-    expect(links[0].textContent).toMatch(/^Bus Factor/);
-    expect(links[0].getAttribute('href')).toBe('/classic/#preset=bus-factor');
+    expect(links[0].textContent).toMatch(/^Languages/);
+    expect(links[0].getAttribute('href')).toBe('/classic/#preset=languages');
     expect(links[0].textContent).toContain('opens the classic dashboard');
   });
 
