@@ -39,6 +39,7 @@ import type {
   GitrelicReport,
   HotspotClusterReport,
   HotspotReport,
+  OwnershipReport,
   KnowledgeConcentrationReport,
   LocReport,
   ParallelDevReport,
@@ -133,6 +134,10 @@ describe('fixture regression', () => {
 
   it('bus factor report is stable', () => {
     expect(scrubHashes<BusFactorReport>(report.busFactors)).toMatchSnapshot();
+  });
+
+  it('ownership report is stable', () => {
+    expect(scrubHashes<OwnershipReport>(report.ownership)).toMatchSnapshot();
   });
 
   it('age map report is stable', () => {

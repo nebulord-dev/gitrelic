@@ -112,4 +112,8 @@ export type {
   RenameTrackingReport,
   FileRenameChain,
   FileRename,
+  OwnershipReport,
+  PackageOwnership,
+  PackageShare,
+  TruckFactor,
 } from './types.js';

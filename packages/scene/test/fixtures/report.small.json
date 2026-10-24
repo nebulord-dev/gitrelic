@@ -303,6 +303,36 @@
     "excluded": { "fixture": 0, "generated": 0 },
     "summary": "9 files are owned by a single author — src/api.ts is most at risk"
   },
+  "ownership": {
+    "packages": [
+      {
+        "package": "src",
+        "commits": 19,
+        "shares": [
+          { "email": "alice@example.com", "commits": 13 },
+          { "email": "bob@example.com", "commits": 3 },
+          { "email": "charlie@example.com", "commits": 3 }
+        ],
+        "topShare": 68,
+        "owner": "alice@example.com",
+        "onePerson": false,
+        "topQuiet": false,
+        "knowers": [
+          "alice@example.com",
+          "bob@example.com",
+          "charlie@example.com"
+        ],
+        "truckFactor": {
+          "value": 1,
+          "people": ["alice@example.com"],
+          "files": 7
+        }
+      }
+    ],
+    "belowFloor": 2,
+    "truckFactor": { "value": 1, "people": ["alice@example.com"], "files": 7 },
+    "summary": "Truck factor 1; every package's top contributor is still active"
+  },
   "ageMap": {
     "files": [
       {

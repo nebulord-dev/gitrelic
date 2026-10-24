@@ -2479,6 +2479,56 @@ exports[`fixture regression > meta shape is stable 1`] = `
 }
 `;
 
+exports[`fixture regression > ownership report is stable 1`] = `
+{
+  "belowFloor": 2,
+  "packages": [
+    {
+      "commits": 19,
+      "knowers": [
+        "alice@example.com",
+        "bob@example.com",
+        "charlie@example.com",
+      ],
+      "onePerson": false,
+      "owner": "alice@example.com",
+      "package": "src",
+      "shares": [
+        {
+          "commits": 13,
+          "email": "alice@example.com",
+        },
+        {
+          "commits": 3,
+          "email": "bob@example.com",
+        },
+        {
+          "commits": 3,
+          "email": "charlie@example.com",
+        },
+      ],
+      "topQuiet": false,
+      "topShare": 68,
+      "truckFactor": {
+        "files": 7,
+        "people": [
+          "alice@example.com",
+        ],
+        "value": 1,
+      },
+    },
+  ],
+  "summary": "Truck factor 1; every package's top contributor is still active",
+  "truckFactor": {
+    "files": 7,
+    "people": [
+      "alice@example.com",
+    ],
+    "value": 1,
+  },
+}
+`;
+
 exports[`fixture regression > parallel dev report is stable 1`] = `
 {
   "byMonth": [],
@@ -2762,6 +2812,7 @@ exports[`fixture regression > top-level report keys are stable 1`] = `
   "knowledgeConcentration",
   "loc",
   "meta",
+  "ownership",
   "parallelDev",
   "renameTracking",
   "repoName",

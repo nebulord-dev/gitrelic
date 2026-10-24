@@ -77,6 +77,16 @@ describe('normalizeReport', () => {
     expect(result.ageMap.dormantPackages).toEqual([]);
   });
 
+  it('backfills an empty ownership section for reports before RELIC-357', () => {
+    const result = normalizeReport({});
+    expect(result.ownership).toEqual({
+      packages: [],
+      belowFloor: 0,
+      truckFactor: { value: 0, people: [], files: 0 },
+      summary: 'Not available',
+    });
+  });
+
   it('backfills coupling’s packages and families and blast radius’s floor for older reports', () => {
     const result = normalizeReport({
       coupling: {

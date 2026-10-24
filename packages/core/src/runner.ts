@@ -19,6 +19,7 @@ import { analyzeHotspotClustering } from './analyzers/hotspot-clustering.js';
 import { analyzeHotspots } from './analyzers/hotspot.js';
 import { analyzeKnowledgeConcentration } from './analyzers/knowledge-concentration.js';
 import { analyzeLoc } from './analyzers/loc.js';
+import { analyzeOwnership } from './analyzers/ownership.js';
 import { analyzeParallelDev } from './analyzers/parallel-dev.js';
 import { analyzeRenameTracking } from './analyzers/rename-tracking.js';
 import { analyzeRewriteRatio } from './analyzers/rewrite-ratio.js';
@@ -52,6 +53,7 @@ import type {
   ComplexityTrendReport,
   ContributorReport,
   CouplingReport,
+  OwnershipReport,
   CursedFilesReport,
   DeadCodeReport,
   FixRateReport,
@@ -226,6 +228,13 @@ const EMPTY_HOTSPOTS: HotspotReport = {
   topHotspots: [],
   summary: 'unavailable',
 };
+const EMPTY_OWNERSHIP: OwnershipReport = {
+  packages: [],
+  belowFloor: 0,
+  truckFactor: { value: 0, people: [], files: 0 },
+  summary: 'Not available',
+};
+
 const EMPTY_COUPLING: CouplingReport = {
   pairs: [],
   fileProfiles: [],
@@ -561,6 +570,19 @@ export async function runGitrelic(
   );
 
   onProgress?.('Mapping file coupling...');
+  const ownership = safeRun(
+    'ownership',
+    () =>
+      analyzeOwnership(commits, ownershipFiles, pkgOf, asOf, (f) => {
+        // Deleted files aren't in `excludedFiles`, so classify by path.
+        const cls = classifyFile(f);
+        return (
+          options.includeFixtures || (cls !== 'fixture' && cls !== 'generated')
+        );
+      }),
+    EMPTY_OWNERSHIP,
+  );
+
   const coupling = safeRun(
     'coupling',
     // The ownership set: a snapshot update changing with code isn't coupling.
@@ -704,6 +726,7 @@ export async function runGitrelic(
     },
     churn,
     busFactors,
+    ownership,
     ageMap,
     contributors,
     cursedFiles,

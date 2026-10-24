@@ -170,11 +170,11 @@ Fix rate, test co-change, truck factor and cross-owner coupling are new core wor
 |---|---|
 | Overview | Repo map (forms: Dashboard, Fan; Briefing planned) |
 | Code Health | Hotspots · Churn · Risk · Age · Fix rate (Complexity growth retired as a lens, 2026-10-23; Blast Radius waits for Coupling's checkpoint) |
-| Ownership & Risk *(name revisited when Risk moves; see below)* | Ownership · Coupling |
+| Ownership & Knowledge *(was Ownership & Risk; renamed 2026-10-24)* | Ownership · *Handoffs* · *Experts* · Coupling |
 | Team & Activity | Contributors · Parallel Dev · Commit Timing · AI & Co-authors · *Release cadence* |
 | Structure | Languages · Tests · *Repo health (git-sizer, RELIC-297)* |
 
-That is 14 confirmed lenses plus three in italics still to be decided. Once Risk moves to Code Health, the Ownership & Risk view holds no Risk lens; its name is settled in the catalog PR that moves it.
+That is 14 confirmed lenses plus five in italics still to be built or decided. Risk moved to Code Health, so the old Ownership & Risk view held no Risk lens; it is Ownership & Knowledge from 2026-10-24 (the label only: the group id stays `ownership-risk`, so URLs and classic's registry keep working).
 
 The catalog changes as each view's lenses ship, not all at once, so classic stays reachable for everything until its Atlas replacement exists.
 
@@ -597,8 +597,45 @@ With real ages (each file's last change in all of history, counted back from the
 - **Navigation**: Stale Files is `ATLAS_MERGES['dead-code'] = 'age-map'`; the lens is renamed *Age* (`ATLAS_RENAMES`) and sits after Risk. The badge rule counts dormant packages, firing at one. The Overview reads "N dormant" (else "N% cold") and fans dormant packages, then orphaned files.
 - **React (default window):** 14% of source lines cold (67,791 of 483,535), 979 cold files with a median of 23 lines, `dom-event-testing-library` dormant (badge), 152 orphaned files (8,036 lines, most in `scripts/` and `react-devtools-shared/`), 330 woken, longest `ReactNativeFeatureFlags.js` after 8.4 years, 4,172 fixture and generated files left out. **gitrelic:** nothing a year old; every finding says so.
 
+### Ownership & Knowledge › Ownership (checkpoint 2026-10-24, RELIC-382)
 
-### Ownership & Risk › Coupling (checkpoint 2026-10-23, RELIC-350)
+**Input:** `apps/docs/analyzers/bus-factor.md` and `ghost-files.md`, classic's Bus Factor, Knowledge Silos ("Ownership" bubbles, the maintainer's favorite) and Ghost Files tabs, the lens inventory's plan (Silos and Ghost Files merge in, truck factor as the headline). Canvas: https://claude.ai/artifact/24g1b48KXyfG1bM6PEdwnu (A Organic map, B Mosaic with "what if X left", C Bubbles), React's last 12 months beside gitrelic's.
+
+**Holds:** Ownership (`bus-factor`), with Knowledge Silos (`knowledge-silos`) and Ghost Files (`ghost-files`) merged in. One lens. The view also gains Handoffs (RELIC-263) and Experts (RELIC-383), each with its own checkpoint.
+
+**The question:** who owns what? Answered per package, where the numbers are big enough to mean something.
+
+**What React showed.**
+
+- **Per-file bus factor is mostly noise.** 809 files rated critical (one author), 746 of them changed exactly once. Only 75 source files have 5+ commits, 12 of those with one author at 80%+. Silos is the same calculation drawn differently; Ghost Files' 100 files are all bus-factor critical.
+- **Per package it reads like an org chart.** 24 packages with 10+ human commits (42 under). `snap` rests on Savona (88%), `react-devtools-facade` on Lesiutin (100%); the top contributor of `react-reconciler` (20%) and `react` (25%) is Markbåge, quiet 90+ days; 9 of 24 are shared with nobody above 30%.
+- **Bots owned files.** `semantic-release-bot` was the top author of gitrelic's `CHANGELOG.md` (94%) and `apps/cli/package.json` (78%); fixed in core first (RELIC-381, #171).
+- **Truck factor** (Avelino et al. 2016, over the window's files): React 2 counting all 1,771 files (Savona, Silbermann), 3 counting the 735 with 2+ commits; gitrelic 1. The method settles in RELIC-357.
+
+**Rules.**
+
+- A package appears with **10+ human commits** in the window; the root and dot-folders are left out (as on Coupling's ring). A commit counts once per package.
+- **Top contributor** = most commits. It is the **owner** at 30% or more; below that the package is **shared**.
+- **Rests on one person** = the top contributor has 75% or more.
+- **Knows it** = 10%+ of the package's commits and 3 or more of them (what "what if X left" counts).
+- **Quiet** = no commit in the 90 days before the analyzed commit.
+- Bots never count (RELIC-381). File-level bus factor stays as it is for Risk, which reads it; its sample floor is a question for Risk's re-look.
+
+**Primary form — Organic map.** A Voronoi treemap in a circle: one cell per package, area by commits, color by top contributor, color strength by their share (pale at 30% and under, full at 75%+), a dashed outline when the top contributor is quiet. Labels (package name, then surname and share) only where they fit across the cell. The layout is seeded, so it stays put between visits. *Why:* it reads as territory, which is the question, and same-colored neighbors read as one person's region; no other lens looks like it.
+
+**Alternate form — Mosaic.** One column per package, width by commits, split by each person's share (people past the six colors stack as one grey block), the same quiet outline. It hosts **"what if X left"**: pick a person and their share hatches out, and packages left with nobody who knows them get a mark below the column and a count above the chart. *Why:* the full split ("88% one person" vs "five people, none above 25%"), and losing a person is a question the map can't answer.
+
+**Dropped:** C, bubbles. Familiar, but circles waste space, and Hotspots' By package and Coupling's ring are already circles.
+
+- **Color:** six owner colors plus grey for everyone else, assigned by how many packages a person tops, then commits, so a person keeps their color across both forms. Atlas has no categorical tokens, so `--owner-0..5` are added to every theme. Glow and Glow Dawn's sets passed the palette checks (lightness band, chroma, color-blind separation, contrast) on the canvas; the other themes are checked when they're added.
+- **Tooltip:** package path, commits and people, the top four shares (quiet people marked), and its flags (rests on one person, shared, top contributor quiet).
+- **Inspector (lens mode):** the truck factor as the headline, with the people behind it in order and how many files it counted; then the three highlights (top contributor quiet, rests on one person, shared) and the color legend.
+- **Inspector (selection):** a package's shares and its own truck factor; a person's packages and what leaving would strand.
+- **Table:** every package shown: commits, top contributor and share, people who know it, flags.
+- **Badge:** packages whose top contributor went quiet, firing at one (React: 2). Like Age's dormant packages it is rare and has an obvious action (find who takes over). Single-person packages are a highlight, not the badge, because a solo repo would always fire.
+- **Small repo:** on gitrelic every package is one color (one person), so the lens says "one person owns everything" in lens mode instead of leaving the map to say it.
+
+### Ownership & Knowledge › Coupling (checkpoint 2026-10-23, RELIC-350)
 
 **Input:** `apps/docs/analyzers/blast-radius.md` (how many files a change to this one drags along), coupling's analyzer (no docs page yet), classic's Blast Radius histogram and Coupling tab, the lens inventory's plan (Blast Radius merges in as node size). Canvas: https://claude.ai/artifact/JYujzwRCj486Hz5VJ4dSrN (A Boundaries, B Families, C A file's ripple, D Blast radius in the inspector), React's last 12 months beside gitrelic's.
 
@@ -686,3 +723,5 @@ With real ages (each file's last change in all of history, counted back from the
 - **2026-10-23 — Coupling is Boundaries, a ring of packages, with a file's ripple on selection and Blast Radius in the inspector** (RELIC-350). Blast Radius merges in; families are a finding. *Why:* on React, Blast Radius's top 100 were all files changed three times or fewer, so it becomes a median over 8+ commits with its spread; cross-package coupling is what no other lens shows; a ripple answers "what will I touch" for one file without a second picture.
 - **2026-10-23 — Packages come from the repository's own workspace files** (RELIC-378). Core reads `pnpm-workspace.yaml`, `package.json` `workspaces` (nested ones too), `lerna.json`, `Cargo.toml`, `go.work` and Nx projects from the analyzed commit and writes the roots into `report.workspace`; core and scene map a file to the longest root, else `packages/*`, `apps/*`, `libs/*`, `services/*` by convention, else its top-level folder. Top-level dot-folders are never dormant. *Why:* the one rule (`packages/<name>`, else the top folder) folded gitrelic's `apps/web`, `apps/atlas` and `apps/cli` into one package and React's nested `compiler/` workspace into one 94k-line blob, and Coupling's ring is made of packages. On React: 62 roots (npm and Cargo); gitrelic: 6 (pnpm); Angular: 36 (pnpm and Cargo).
 - **2026-10-23 — Coupling's ring leaves out the root and dot-folders, and seats packages in name order** (RELIC-350). *Why:* release commits and CI config made the root and `.github` the strongest links on gitrelic, Angular and vue-core; name order puts a family of packages side by side, so its chords are short and a long chord is coupling across families. Blast radius is a median over 8+ commits wherever it appears (the lens, the file card, Hotspots' facet).
+- **2026-10-24 — Ownership & Risk becomes Ownership & Knowledge: Ownership, Handoffs, Experts and Coupling** (maintainer). Knowledge Silos and Ghost Files merge into Ownership as lenses (the analyzers stay); Handoffs (RELIC-263) and Experts (RELIC-383) are new. The label changes, the group id doesn't. *Why:* the Risk lens lives in Code Health, so the old name pointed nowhere; and Silos and Ghost Files repeated bus factor's per-file noise. On React, who to ask (knowledge that fades with time) differs from the top committer in 23 of 51 packages since 2021, and ownership changed hands 120 times, which no other lens shows.
+- **2026-10-24 — Ownership is a map of packages, with the Mosaic as its one alternate** (RELIC-382). Color is the top contributor, strength their share; the Mosaic shows every share and "what if X left". *Why:* per-file bus factor rated 809 React files critical, 746 of them changed once; per package the same data reads like an org chart. The organic map looks like nothing else in Atlas; bubbles would have been a third circle picture.
