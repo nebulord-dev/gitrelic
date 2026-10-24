@@ -66,6 +66,14 @@ describe('voronoiTreemap', () => {
     expect(voronoiTreemap([], CLIP, { seed: 1 })).toEqual([]);
   });
 
+  it('keeps every tiny cell beside one huge weight', () => {
+    // The weight cap matters most here: the big site must not swallow a neighbor.
+    const lopsided = [100_000, ...Array<number>(40).fill(10)];
+    const cells = voronoiTreemap(lopsided, CLIP, { seed: 11 });
+    for (const c of cells) expect(polygonArea(c)).toBeGreaterThan(0);
+    expect(polygonArea(cells[0]) / clipArea).toBeGreaterThan(0.98);
+  });
+
   it('handles equal weights', () => {
     const cells = voronoiTreemap([1, 1, 1, 1], CLIP, { seed: 2 });
     for (const c of cells)

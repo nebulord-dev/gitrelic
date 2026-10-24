@@ -1,10 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ownershipReport } from '../../test/ownershipReport';
 import { checkScene } from '../model';
 import { normalizeReport } from '../report/normalizeReport';
 import { organicMapScene, strength } from './organicMap';
+import { voronoiTreemap } from './voronoiTreemap';
 import type { Mark } from '../model';
+
+// The real treemap, counted, to check the layout computes it once per report.
+vi.mock('./voronoiTreemap', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./voronoiTreemap')>();
+  return { ...actual, voronoiTreemap: vi.fn(actual.voronoiTreemap) };
+});
 
 const viewport = { width: 1200, height: 800 };
 const build = (focus: string | null = null) =>
@@ -83,6 +90,25 @@ describe('organicMapScene', () => {
 
   it('keeps its shape between builds', () => {
     expect(build().marks).toEqual(scene.marks);
+  });
+
+  it('computes the treemap once per report, then scales it to the viewport', () => {
+    const report = ownershipReport();
+    const at = (focus: string | null, vp: typeof viewport) =>
+      organicMapScene({ report, commits: null, focus }, vp);
+    vi.mocked(voronoiTreemap).mockClear();
+    at(null, { width: 600, height: 400 });
+    at('person:ann@example.com', viewport);
+    const scaled = at(null, viewport);
+    expect(voronoiTreemap).toHaveBeenCalledTimes(1);
+    // The scaled cells match a fresh report's, computed at this size.
+    const fresh = build();
+    expect(scaled.marks.map((m) => m.id)).toEqual(fresh.marks.map((m) => m.id));
+    scaled.marks.forEach((m, i) => {
+      const f = fresh.marks[i];
+      for (const k of ['x', 'y', 'w', 'h'] as const)
+        expect(m[k]).toBeCloseTo(f[k], 6);
+    });
   });
 
   it('says what to do with a report from before the lens', () => {

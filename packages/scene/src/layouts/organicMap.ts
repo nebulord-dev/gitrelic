@@ -77,6 +77,37 @@ export function ownershipTip(map: OwnershipMap, p: MapPackage): string[] {
   return lines;
 }
 
+/** The map's cells in a unit circle at the origin, once per report. */
+const UNIT_CLIP = circlePolygon(0, 0, 1, 96);
+const unitCells = new WeakMap<OwnershipMap, Point[][]>();
+
+/**
+ * The cells for a circle of radius `r` at (`cx`, `cy`). The treemap depends
+ * only on the weights and the clip, and scales with it, so it's computed once
+ * in a unit circle and scaled: a resize or a person's click (which rebuilds
+ * the scene) doesn't rerun its iterations, which are slow for hundreds of
+ * packages.
+ */
+function mapCells(
+  map: OwnershipMap,
+  cx: number,
+  cy: number,
+  r: number,
+): Point[][] {
+  let unit = unitCells.get(map);
+  if (!unit) {
+    unit = voronoiTreemap(
+      map.packages.map((p) => p.commits),
+      UNIT_CLIP,
+      { seed: MAP_SEED },
+    );
+    unitCells.set(map, unit);
+  }
+  return unit.map((cell) =>
+    cell.map(([x, y]) => [cx + r * x, cy + r * y] as const),
+  );
+}
+
 /** Width of the cell across `y`, the room a label has there. */
 function chordAt(cell: readonly Point[], y: number): number {
   const xs: number[] = [];
@@ -124,12 +155,7 @@ export function organicMapScene(input: ViewInput, viewport: Viewport): Scene {
   const R = Math.max(120, Math.min(viewport.width, viewport.height) / 2 - 40);
   const cx = viewport.width / 2;
   const cy = viewport.height / 2;
-  const clip = circlePolygon(cx, cy, R, 96);
-  const cells = voronoiTreemap(
-    map.packages.map((p) => p.commits),
-    clip,
-    { seed: MAP_SEED },
-  );
+  const cells = mapCells(map, cx, cy, R);
   const names = ringNames(map.packages.map((p) => p.dir));
   const focus: EntityId | null = input.focus ?? null;
   const focusEmail = focus?.startsWith('person:')
