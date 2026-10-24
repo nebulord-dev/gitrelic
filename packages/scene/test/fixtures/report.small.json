@@ -1906,6 +1906,7 @@
   },
   "identities": [],
   "fileClasses": { "src/__tests__/api.test.ts": "test" },
+  "workspace": { "sources": [], "roots": [] },
   "commits": [
     {
       "hash": "ba9d2f604340954344bfe462b3471ffba25472fb",

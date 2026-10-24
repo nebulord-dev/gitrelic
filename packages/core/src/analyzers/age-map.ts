@@ -1,5 +1,5 @@
 import { classifyAuthor } from '../utils/authorClassification.js';
-import { packageOf } from './commit-timing.js';
+import { packageOf, type PackageOf } from './commit-timing.js';
 import { MAX_FIX_FILES } from './fix-rate.js';
 import type {
   AgeMapReport,
@@ -50,6 +50,8 @@ export interface AgeMapOptions {
   canonical?: Map<string, string>;
   /** The report's non-source files: tests don't keep a package awake. */
   fileClasses?: GitrelicReport['fileClasses'];
+  /** The workspace's packages (`packageResolver`). */
+  packageOf?: PackageOf;
 }
 
 interface Change {
@@ -169,7 +171,11 @@ export function analyzeAgeMap(
     medianAgeDays,
     thresholds,
     source: options.older === null ? 'window' : 'history',
-    dormantPackages: dormantPackages(files, options.fileClasses ?? {}),
+    dormantPackages: dormantPackages(
+      files,
+      options.fileClasses ?? {},
+      options.packageOf ?? packageOf,
+    ),
     summary,
   };
 }
@@ -189,12 +195,15 @@ function wokeAfter(list: Change[], activeSince: number): number | undefined {
 function dormantPackages(
   files: FileAge[],
   fileClasses: GitrelicReport['fileClasses'],
+  pkgOf: PackageOf,
 ): DormantPackage[] {
   const byPackage = new Map<string, { sourceFiles: number; newest: number }>();
   for (const f of files) {
     if (fileClasses[f.file]) continue; // tests, fixtures, generated
-    const pkg = packageOf(f.file);
-    if (pkg === '') continue; // the root is the repo, never a package to archive
+    const pkg = pkgOf(f.file);
+    // The root is the repo, and a dot-folder (.github, .vscode) is config:
+    // neither is a package to archive.
+    if (pkg === '' || pkg.startsWith('.')) continue;
     const acc = byPackage.get(pkg) ?? { sourceFiles: 0, newest: Infinity };
     acc.sourceFiles++;
     acc.newest = Math.min(acc.newest, f.ageInDays);

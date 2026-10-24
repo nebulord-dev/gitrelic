@@ -10,7 +10,6 @@
 // their person; a selected person's dots take the accent and the rest fade.
 
 import { distinctNames } from '../format/distinctNames';
-import { packageOf } from '../hotspots/points';
 import { entityKind, ids, type EntityId } from '../ids';
 import { STATUS_TEXT } from './flow';
 import type { PersonStatus } from '../contributors/flow';
@@ -135,7 +134,7 @@ export function collisionsScene(
     const y = top + rowH * (k + 0.5);
     const name = rowName(row);
     const lit = focusRow === row;
-    const where = packageOf(row.file) || '(root)';
+    const where = row.package || '(root)';
     // A family's tooltip names its files, one per line (paths shortened
     // only as far as they stay distinct), past TIP_FILES as "and N more".
     const names = distinctNames(row.members);

@@ -8,7 +8,6 @@ import {
   LARGE_FILE,
   SMALL_FILE,
   hotspotScale,
-  packageOf,
   type HotspotPoint,
 } from '../hotspots/points';
 import { ids } from '../ids';
@@ -119,7 +118,7 @@ export function hotspotFindings(input: ViewInput): Finding[] {
   // files at 25+, set against the biggest package when that one runs cool.
   const byPkg = new Map<string, { files: number; warm: number }>();
   for (const p of points) {
-    const pkg = packageOf(p.file);
+    const pkg = p.package;
     const entry = byPkg.get(pkg) ?? { files: 0, warm: 0 };
     entry.files++;
     if (p.tier >= 1) entry.warm++;
@@ -176,7 +175,7 @@ export function hotspotTable(input: ViewInput): LensTable {
         score: p.score,
         commits: p.commits,
         lines: p.lines,
-        package: packageOf(p.file) || '(root)',
+        package: p.package || '(root)',
       },
     })),
     tierNames: HOTSPOT_TIER_NAMES,

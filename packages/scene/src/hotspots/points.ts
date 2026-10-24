@@ -7,6 +7,7 @@
 // rounding, score = commits × log₂(lines) / k, and the files scoring S lie on
 // commits = S × k / log₂(lines) — the equal-score curves the field draws.
 
+import { packagesOf } from '../report/packages';
 import type { GitrelicReport } from '@gitrelic/core';
 
 /** Tier floors, as core categorises: moderate, warning, critical. */
@@ -19,6 +20,8 @@ export const SMALL_FILE = 300;
 
 export interface HotspotPoint {
   file: string;
+  /** Its package (`packagesOf`); '' for the repository root. */
+  package: string;
   commits: number;
   lines: number;
   score: number;
@@ -44,12 +47,14 @@ export function hotspotPoints(report: GitrelicReport): HotspotPoint[] {
   const commits = new Map(
     report.churn.files.map((f) => [f.file, f.commitCount]),
   );
+  const pkgOf = packagesOf(report);
   const points: HotspotPoint[] = [];
   for (const h of report.hotspots.files) {
     const c = commits.get(h.file);
     if (!c) continue;
     points.push({
       file: h.file,
+      package: pkgOf(h.file),
       commits: c,
       lines: h.loc,
       score: h.hotspotScore,
@@ -85,18 +90,6 @@ export function commitsForScore(
   k: number,
 ): number {
   return (score * k) / Math.log2(lines);
-}
-
-/**
- * The package a file belongs to: `packages/<name>` inside a `packages/`
- * monorepo folder, else its top-level directory; '' for files at the root.
- */
-export function packageOf(path: string): string {
-  const parts = path.split('/');
-  if (parts.length === 1) return '';
-  if (parts[0] === 'packages' && parts.length > 2)
-    return `packages/${parts[1]}`;
-  return parts[0];
 }
 
 export const HOTSPOT_TIER_NAMES = [

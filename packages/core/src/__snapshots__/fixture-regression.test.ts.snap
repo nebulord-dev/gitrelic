@@ -2769,5 +2769,6 @@ exports[`fixture regression > top-level report keys are stable 1`] = `
   "rewriteRatio",
   "testCoverage",
   "timestamp",
+  "workspace",
 ]
 `;

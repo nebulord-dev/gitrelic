@@ -3,7 +3,7 @@ import {
   classifyAuthor,
   isAiEmail,
 } from '../utils/authorClassification.js';
-import { packageOf } from './commit-timing.js';
+import { packageOf, type PackageOf } from './commit-timing.js';
 import { MAX_FIX_FILES } from './fix-rate.js';
 import type {
   AdoptionTier,
@@ -56,6 +56,7 @@ interface AuthorAccum {
 export function analyzeCoAuthors(
   commits: RawCommit[],
   trackedFiles?: readonly string[],
+  pkgOf: PackageOf = packageOf,
 ): CoAuthorReport {
   const tracked = trackedFiles ? new Set(trackedFiles) : null;
   const pairMap = new Map<string, PairAccum>();
@@ -127,7 +128,7 @@ export function analyzeCoAuthors(
       sweepingLeftOut++;
     } else {
       const touched = new Set(
-        commit.files.filter((f) => !tracked || tracked.has(f)).map(packageOf),
+        commit.files.filter((f) => !tracked || tracked.has(f)).map(pkgOf),
       );
       for (const pkg of touched) {
         const row = packages.get(pkg) ?? {

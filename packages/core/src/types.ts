@@ -39,6 +39,8 @@ export interface GitrelicReport {
    * analysis unless `includeFixtures` is set.
    */
   fileClasses: Record<string, Exclude<FileClass, 'source'>>;
+  /** The repository's packages, from its workspace files or by convention. */
+  workspace: Workspace;
   commits: RawCommit[];
 }
 
@@ -71,6 +73,30 @@ export interface CommitIndex {
   hash: string[];
   /** 0 no AI, 1 AI-assisted (an AI co-author), 2 authored by an AI agent. */
   ai: number[];
+}
+
+// ─── Workspace ────────────────────────────────────────────────────────────────
+
+export type WorkspaceSource =
+  | 'npm'
+  | 'pnpm'
+  | 'lerna'
+  | 'cargo'
+  | 'go'
+  | 'nx'
+  | 'convention';
+
+/**
+ * The repository's packages (utils/workspace.ts): the folders its workspace
+ * files declare, or `packages/*`, `apps/*`, `libs/*` and `services/*` by
+ * convention. A file belongs to the longest root containing it, else its
+ * top-level folder, else the root.
+ */
+export interface Workspace {
+  /** Which workspace files declared the roots, sorted; empty with no packages. */
+  sources: WorkspaceSource[];
+  /** Package folders, sorted. */
+  roots: string[];
 }
 
 // ─── Author identities ────────────────────────────────────────────────────────

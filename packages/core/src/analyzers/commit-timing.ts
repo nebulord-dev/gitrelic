@@ -1,4 +1,5 @@
 import { classifyAuthor } from '../utils/authorClassification.js';
+import { packageResolver } from '../utils/workspace.js';
 import { binomialUpperTail, CHANCE_TAIL, MAX_FIX_FILES } from './fix-rate.js';
 import type {
   AuthorStressProfile,
@@ -14,18 +15,12 @@ import type { RawCommit } from '../utils/git.js';
 export const MIN_PACKAGE_COMMITS = 10;
 
 /**
- * The package a file belongs to: `packages/<name>` inside a `packages/`
- * monorepo folder, else its top-level directory; '' for files at the root.
- * Scene's `packageOf` (hotspots/points.ts) is the same rule, which Atlas
- * groups by everywhere: keep the two in step.
+ * The package a file belongs to. The runner passes the workspace's
+ * (`packageResolver` over `report.workspace.roots`); without one, packages
+ * are by convention (`packages/<name>`, `apps/<name>`…).
  */
-export function packageOf(path: string): string {
-  const parts = path.split('/');
-  if (parts.length === 1) return '';
-  if (parts[0] === 'packages' && parts.length > 2)
-    return `packages/${parts[1]}`;
-  return parts[0];
-}
+export const packageOf = packageResolver([]);
+export type PackageOf = (path: string) => string;
 
 /** The most off-hours commits chance explains out of `n` at `rate`. */
 export function chanceAllows(n: number, rate: number): number {
@@ -50,6 +45,7 @@ export function chanceAllows(n: number, rate: number): number {
 export function offHoursByPackage(
   commits: RawCommit[],
   trackedSet: ReadonlySet<string>,
+  pkgOf: PackageOf = packageOf,
 ): CommitTimingOffHours {
   let total = 0;
   let off = 0;
@@ -64,7 +60,7 @@ export function offHoursByPackage(
     total++;
     if (isOff) off++;
     const packages = new Set(
-      c.files.filter((f) => trackedSet.has(f)).map(packageOf),
+      c.files.filter((f) => trackedSet.has(f)).map(pkgOf),
     );
     for (const p of packages) {
       const acc = byPackage.get(p) ?? { commits: 0, offHours: 0 };
@@ -172,6 +168,7 @@ const MIN_AUTHOR_COMMITS = 5;
 export function analyzeCommitTiming(
   commits: RawCommit[],
   trackedFiles: string[],
+  pkgOf: PackageOf = packageOf,
 ): CommitTimingReport {
   if (commits.length === 0) {
     return {
@@ -456,6 +453,6 @@ export function analyzeCommitTiming(
     tierMix,
     byMonth,
     authorStress,
-    offHours: offHoursByPackage(commits, trackedSet),
+    offHours: offHoursByPackage(commits, trackedSet, pkgOf),
   };
 }

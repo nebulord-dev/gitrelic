@@ -8,8 +8,8 @@
 // analyzer (`analyzers/contributors.ts`), which counts back from the analyzed
 // commit: keep the two formulas in step.
 
-import { packageOf } from '../hotspots/points';
 import { reportNow } from '../inspect/personFacts';
+import { packagesOf } from '../report/packages';
 import { timeBins } from '../time/bins';
 import { contributorFlowOf, type FlowPerson } from './flow';
 import type { CommitLike } from '../commits/commitLike';
@@ -63,6 +63,7 @@ export function contributorLanes(
   commits: readonly CommitLike[],
 ): Lanes {
   const flow = contributorFlowOf(report, commits);
+  const pkgOf = packagesOf(report);
   const { unit, binStarts, binOf } = timeBins(commits);
   const rowOf = new Map(flow.people.map((p, i) => [p.email, i]));
   const othersRow = flow.people.length;
@@ -81,7 +82,7 @@ export function contributorLanes(
     bins[r][b]++;
     let byPkg = touched[r].get(b);
     if (!byPkg) touched[r].set(b, (byPkg = new Map()));
-    for (const d of new Set(c.files.map(packageOf)))
+    for (const d of new Set(c.files.map(pkgOf)))
       byPkg.set(d, (byPkg.get(d) ?? 0) + 1);
   }
   const topOf = (r: number, b: number): string | null => {

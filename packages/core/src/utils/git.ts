@@ -584,6 +584,57 @@ export class BlobLineCounter {
 }
 
 /**
+ * The text of a few small blobs, by object id, in one `git cat-file --batch`:
+ * the workspace manifests (`utils/workspace.ts`). Not for source files: the
+ * whole output is buffered.
+ */
+export async function readTextBlobs(
+  repoPath: string,
+  oids: string[],
+): Promise<Map<string, string>> {
+  // A handful of small files: a quick read, like the other lookups.
+  const timeoutMs = quickTimeoutMs;
+  const unique = [...new Set(oids)];
+  if (unique.length === 0) return new Map();
+  const args = ['cat-file', '--batch'];
+  try {
+    const { stdout } = await execa('git', [...GIT_CONFIG, ...args], {
+      cwd: repoPath,
+      input: unique.join('\n') + '\n',
+      encoding: 'buffer',
+      timeout: timeoutMs,
+      env: GIT_ENV,
+    });
+    return parseBatchBlobs(Buffer.from(stdout));
+  } catch (err) {
+    throw timeoutOr(err, args, { repoPath, timeoutMs });
+  }
+}
+
+/**
+ * `cat-file --batch` output (`<oid> <type> <size>\n<bytes>\n` per object,
+ * `<oid> missing\n` for none) as text by object id. Sizes are bytes, so the
+ * slicing is on the buffer, not the decoded string.
+ */
+export function parseBatchBlobs(raw: Buffer): Map<string, string> {
+  const blobs = new Map<string, string>();
+  let pos = 0;
+  while (pos < raw.length) {
+    const nl = raw.indexOf(0x0a, pos);
+    if (nl < 0) break;
+    const [oid, type, size] = raw.subarray(pos, nl).toString('utf8').split(' ');
+    if (type === 'missing' || size === undefined) {
+      pos = nl + 1;
+      continue;
+    }
+    const end = nl + 1 + Number(size);
+    blobs.set(oid, raw.subarray(nl + 1, end).toString('utf8'));
+    pos = end + 1;
+  }
+  return blobs;
+}
+
+/**
  * Counts lines for each object id by streaming one `git cat-file --batch`
  * process — no working-copy reads, one subprocess for the whole tree.
  */

@@ -29,12 +29,18 @@ import {
   getAllCommits,
   getFileTouches,
   getTreeBlobs,
+  readTextBlobs,
   resolveCommit,
   getBranches,
   getCurrentBranch,
   detectPrimaryLanguage,
 } from './utils/git.js';
 import { canonicalEmailMap, mergeIdentities } from './utils/identity.js';
+import {
+  manifestPaths,
+  packageResolver,
+  workspaceFrom,
+} from './utils/workspace.js';
 import type {
   AgeMapReport,
   BlastRadiusReport,
@@ -61,8 +67,9 @@ import type {
   RewriteRatioReport,
   RunGitrelicOptions,
   TestCoverageProxyReport,
+  Workspace,
 } from './types.js';
-import type { FileTouch } from './utils/git.js';
+import type { FileTouch, TreeBlob } from './utils/git.js';
 
 // Wraps a single analyzer call so that one failure doesn't abort the entire
 // run. Logs to stderr with the analyzer name and returns the provided fallback,
@@ -90,6 +97,39 @@ async function safeRunAsync<T>(
       `[gitrelic] analyzer "${name}" failed: ${(err as Error).message ?? String(err)}\n`,
     );
     return fallback;
+  }
+}
+
+/**
+ * The workspace the analyzed commit declares. If its manifests can't be read,
+ * packages fall back to convention (`packages/*`, `apps/*`…), with a note on
+ * stderr, rather than failing the run.
+ */
+async function readWorkspace(
+  repoPath: string,
+  treeBlobs: TreeBlob[],
+): Promise<Workspace> {
+  const paths = treeBlobs.map((b) => b.path);
+  try {
+    const wanted = new Set(manifestPaths(paths));
+    const manifests = treeBlobs.filter(
+      (b) => wanted.has(b.path) && !b.isSymlink,
+    );
+    const text = await readTextBlobs(
+      repoPath,
+      manifests.map((b) => b.oid),
+    );
+    const byPath = new Map<string, string>();
+    for (const b of manifests) {
+      const t = text.get(b.oid);
+      if (t !== undefined) byPath.set(b.path, t);
+    }
+    return workspaceFrom(paths, byPath);
+  } catch (err) {
+    process.stderr.write(
+      `[gitrelic] workspace files unreadable, packages by convention: ${(err as Error).message ?? String(err)}\n`,
+    );
+    return workspaceFrom(paths, new Map());
   }
 }
 
@@ -341,6 +381,13 @@ export async function runGitrelic(
   const treeBlobs = await getTreeBlobs(repoPath, ref, timeoutMs);
   const trackedFiles = treeBlobs.map((b) => b.path);
 
+  // Packages come from the workspace files the repo declares; every analyzer
+  // that groups by package reads them through one resolver, and Atlas reads
+  // the same roots from the report.
+  onProgress?.('Reading the workspace...');
+  const workspace = await readWorkspace(repoPath, treeBlobs);
+  const pkgOf = packageResolver(workspace.roots);
+
   // Fixtures and generated code would inflate ownership metrics (nobody
   // "owns" a snapshot), so bus factor — and everything built on it — sees
   // only the rest unless the caller opts back in.
@@ -447,6 +494,7 @@ export async function runGitrelic(
         older,
         canonical,
         fileClasses,
+        packageOf: pkgOf,
       });
     },
     EMPTY_AGE_MAP,
@@ -516,7 +564,7 @@ export async function runGitrelic(
   const coupling = safeRun(
     'coupling',
     // The ownership set: a snapshot update changing with code isn't coupling.
-    () => analyzeCoupling(commits, ownershipFiles),
+    () => analyzeCoupling(commits, ownershipFiles, pkgOf),
     EMPTY_COUPLING,
   );
 
@@ -572,7 +620,7 @@ export async function runGitrelic(
   onProgress?.('Analyzing co-authorship...');
   const coAuthors = safeRun(
     'coAuthors',
-    () => analyzeCoAuthors(commits, trackedFiles),
+    () => analyzeCoAuthors(commits, trackedFiles, pkgOf),
     EMPTY_CO_AUTHORS,
   );
 
@@ -601,7 +649,7 @@ export async function runGitrelic(
   onProgress?.('Analyzing commit timing...');
   const commitTiming = safeRun(
     'commitTiming',
-    () => analyzeCommitTiming(commits, trackedFiles),
+    () => analyzeCommitTiming(commits, trackedFiles, pkgOf),
     EMPTY_COMMIT_TIMING,
   );
 
@@ -679,6 +727,7 @@ export async function runGitrelic(
     renameTracking,
     identities,
     fileClasses,
+    workspace,
     commits,
   };
 }

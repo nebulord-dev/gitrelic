@@ -8,8 +8,8 @@
 // only files the analyzed commit still has.
 
 import { classifyAuthor } from '../authors/authorClassification';
-import { packageOf } from '../hotspots/points';
 import { REPO_ID, ids, type EntityId } from '../ids';
+import { packagesOf } from '../report/packages';
 import { SWEEPING_COMMIT_FILES } from '../timing/punchCard';
 import type { CommitLike } from '../commits/commitLike';
 import type { CoAuthorPackage, GitrelicReport } from '@gitrelic/core';
@@ -81,6 +81,7 @@ export function aiPackagesFrom(
   match: (c: CommitLike) => boolean,
 ): AiPackages {
   const tracked = new Set(report.loc.files.map((f) => f.file));
+  const pkgOf = packagesOf(report);
   const byPackage = new Map<string, CoAuthorPackage>();
   let total = 0;
   let ai = 0;
@@ -90,9 +91,7 @@ export function aiPackagesFrom(
     if ((c.ai ?? 0) > 0) ai++;
     if (c.files.length > SWEEPING_COMMIT_FILES) continue;
     const touched = new Set(
-      c.files
-        .filter((f) => tracked.size === 0 || tracked.has(f))
-        .map(packageOf),
+      c.files.filter((f) => tracked.size === 0 || tracked.has(f)).map(pkgOf),
     );
     for (const pkg of touched) {
       const p = byPackage.get(pkg) ?? {

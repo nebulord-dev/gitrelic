@@ -3,7 +3,7 @@
 // centre, so where heat concentrates reads at a glance — a small package full
 // of hot files against a big one with none.
 //
-// Packages are the directories `packageOf` names; files at the root gather in
+// Packages are the workspace's (`HotspotPoint.package`, from `packagesOf`); files at the root gather in
 // the repo's own circle. The biggest packages are drawn, plus any smaller
 // one with several hot files; the rest are summed up in a note below, and
 // their files stay in the table. Circles stand in columns, biggest first,
@@ -13,7 +13,7 @@
 // fits it). A selected package is outlined.
 
 import { distinctNames } from '../format/distinctNames';
-import { hotspotTip, packageOf, type HotspotPoint } from '../hotspots/points';
+import { hotspotTip, type HotspotPoint } from '../hotspots/points';
 import { ids, REPO_ID, type EntityId } from '../ids';
 import type { Guide, Mark, Scene, Viewport } from '../model';
 
@@ -79,7 +79,7 @@ export function packagesScene(
   const byPkg = new Map<string, HotspotPoint[]>();
   // Points arrive hottest first, so each package's list is too.
   for (const p of allPoints) {
-    const pkg = packageOf(p.file);
+    const pkg = p.package;
     const list = byPkg.get(pkg);
     if (list) list.push(p);
     else byPkg.set(pkg, [p]);
