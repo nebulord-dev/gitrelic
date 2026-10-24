@@ -1,4 +1,8 @@
-import { buildEntityIndex, type FixPoint } from '@gitrelic/scene';
+import {
+  buildEntityIndex,
+  normalizeReport,
+  type FixPoint,
+} from '@gitrelic/scene';
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { createRawSnippet, flushSync } from 'svelte';
 import { describe, expect, it, vi } from 'vitest';
@@ -7,6 +11,7 @@ import { ageReport } from '../../../../../packages/scene/test/ageReport';
 import { couplingReport } from '../../../../../packages/scene/test/couplingReport';
 import { fixRateReport } from '../../../../../packages/scene/test/fixRateReport';
 import reportJson from '../../../../../packages/scene/test/fixtures/report.small.json';
+import { ownershipReport } from '../../../../../packages/scene/test/ownershipReport';
 import { parallelReport } from '../../../../../packages/scene/test/parallelReport';
 import { fixesReport } from '../../../../../packages/scene/test/riskFixesReport';
 import ActivityCard from './ActivityCard.svelte';
@@ -21,6 +26,7 @@ import CouplingCard from './CouplingCard.svelte';
 import FindingCard from './FindingCard.svelte';
 import FixRateCard from './FixRateCard.svelte';
 import HotspotsCard from './HotspotsCard.svelte';
+import OwnershipCard from './OwnershipCard.svelte';
 import ParallelDevCard from './ParallelDevCard.svelte';
 import RiskCard from './RiskCard.svelte';
 import WhatToDoCard from './WhatToDoCard.svelte';
@@ -678,6 +684,48 @@ describe('CouplingCard', () => {
     expect(
       screen.queryByRole('heading', { name: 'Widest changes' }),
     ).toBeNull();
+  });
+});
+
+describe('OwnershipCard', () => {
+  it('leads with the truck factor and the people behind it, each selectable', async () => {
+    const onselect = vi.fn();
+    render(OwnershipCard, { report: ownershipReport(), index, onselect });
+    expect(screen.getByText('2')).toBeTruthy();
+    expect(
+      screen.getByText(/people would have to leave before half the files/),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/over the 40 files with two or more commits/),
+    ).toBeTruthy();
+    await fireEvent.click(
+      screen.getAllByRole('button', { name: 'Bob Ray' })[0],
+    );
+    expect(onselect).toHaveBeenCalledWith('person:bob@example.com');
+  });
+
+  it('keys each colored person, marks the quiet ones, and opens the table', async () => {
+    const ontable = vi.fn();
+    render(OwnershipCard, { report: ownershipReport(), index, ontable });
+    const key = screen.getByRole('heading', { name: 'Colors' }).parentElement!;
+    expect(
+      [...key.querySelectorAll('li')].map((li) => li.textContent?.trim()),
+    ).toEqual(['Ann Lee', 'Bob Ray (quiet)', 'Cy Dee', '2 others']);
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'All 3 packages in the table (T) ▸' }),
+    );
+    expect(ontable).toHaveBeenCalled();
+  });
+
+  it('asks for a rerun on a report from before the lens', () => {
+    render(OwnershipCard, {
+      report: normalizeReport({}),
+      index,
+    });
+    expect(
+      screen.getByText(/rerun gitrelic to see who owns what/),
+    ).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Colors' })).toBeNull();
   });
 });
 

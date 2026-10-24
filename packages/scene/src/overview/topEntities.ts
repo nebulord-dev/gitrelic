@@ -7,6 +7,7 @@ import { sinceText } from '../age/strata';
 import { blastSummaryOf, boundariesOf } from '../coupling/boundaries';
 import { fixRateOf } from '../fixRate/points';
 import { ids, type EntityId } from '../ids';
+import { ownershipMapOf, surname } from '../ownership/map';
 import type { EntityIndex } from '../entities';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -17,13 +18,6 @@ export interface FannedEntity {
 }
 
 const n = (x: number) => x.toLocaleString();
-
-/**
- * A file is a silo when one author wrote more than this share. Mirrors core's
- * SINGLE_AUTHOR_THRESHOLD (analyzers/knowledge-concentration.ts), which the
- * browser can't import; keep the two equal.
- */
-const SILO_PERCENT = 80;
 
 const base = (path: string) => path.slice(path.lastIndexOf('/') + 1);
 /** A directory's last two segments: enough to tell `react-server/src/` apart. */
@@ -69,14 +63,23 @@ const SOURCES: Record<string, (r: GitrelicReport) => Candidate[]> = {
     fixRateOf(r)
       .points.filter((p) => p.fixedAfter > 0)
       .map((p) => file(p.file, `${n(p.fixedAfter)} of ${n(p.changes)} fixed`)),
-  'bus-factor': (r) =>
-    byDesc(r.busFactors.criticalFiles, (f) => f.dominantAuthorPercent).map(
-      (f) =>
-        file(
-          f.file,
-          `${f.dominantAuthor.split('@')[0]} ${f.dominantAuthorPercent}%`,
-        ),
-    ),
+  // Packages whose top contributor went quiet, then those resting on one
+  // person, then the busiest.
+  'bus-factor': (r) => {
+    const map = ownershipMapOf(r);
+    const rank = (p: (typeof map.packages)[number]) =>
+      (p.topQuiet ? 2 : 0) + (p.onePerson ? 1 : 0);
+    return [...map.packages]
+      .sort((a, b) => rank(b) - rank(a) || b.commits - a.commits)
+      .map((p) => {
+        const top = map.people.get(p.shares[0].email);
+        return {
+          id: p.id,
+          label: shortDir(p.dir),
+          value: `${surname(top?.name ?? '')} ${p.topShare}%${p.topQuiet ? ' · quiet' : ''}`,
+        };
+      });
+  },
   // The packages on the strongest links, then the widest-changing files.
   coupling: (r) => {
     const seen = new Set<string>();
@@ -101,23 +104,6 @@ const SOURCES: Record<string, (r: GitrelicReport) => Candidate[]> = {
       ),
     ];
   },
-  'knowledge-silos': (r) =>
-    byDesc(
-      r.busFactors.files.filter((f) => f.dominantAuthorPercent > SILO_PERCENT),
-      (f) => f.dominantAuthorPercent,
-    ).map((f) =>
-      file(
-        f.file,
-        `${f.dominantAuthor.split('@')[0]} ${f.dominantAuthorPercent}%`,
-      ),
-    ),
-  'ghost-files': (r) =>
-    r.ghostFiles.files.map((f) =>
-      file(
-        f.file,
-        `${f.dominantAuthor.split('@')[0]}, gone ${n(f.authorInactiveDays)} days`,
-      ),
-    ),
   contributors: (r) =>
     byDesc(r.contributors.contributors, (c) => c.commitCount).map((c) => ({
       id: ids.person(c.email),

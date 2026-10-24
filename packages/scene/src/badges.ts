@@ -11,9 +11,12 @@
 //
 // Age badges dormant packages, not old files: React has 979 source files
 // unchanged for a year, which says the codebase is mature, and one package
-// nobody has touched in three years, which asks for a decision.
+// nobody has touched in three years, which asks for a decision. Ownership
+// badges packages whose top contributor went quiet, not single-author files
+// (809 on React, 746 of them changed once).
 
 import { fixRateOf } from './fixRate/points';
+import { ownershipMapOf } from './ownership/map';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export interface Badge {
@@ -91,33 +94,20 @@ export const RULES: readonly Rule[] = [
   },
   {
     preset: 'bus-factor',
-    measure: (r) => ({
-      count: r.busFactors.criticalFiles.length,
-      of: r.busFactors.files.length,
-    }),
-    share: 0.25,
+    // Packages whose top contributor went quiet: rare, and the action is
+    // obvious (find who takes it over). One-person packages are the lens's
+    // highlight instead, since a solo repo would always fire.
+    measure: (r) => {
+      const map = ownershipMapOf(r);
+      return {
+        count: map.packages.filter((p) => p.topQuiet).length,
+        of: map.packages.length,
+      };
+    },
+    share: 0,
     min: 1,
-    reason: (c, of) => `${pct(c, of)} of files rest on one author`,
-  },
-  {
-    preset: 'knowledge-silos',
-    measure: (r) => ({
-      count: r.knowledgeConcentration.singleAuthorFiles,
-      of: r.knowledgeConcentration.totalFiles,
-    }),
-    share: 0.6,
-    min: 1,
-    reason: (c, of) => `${pct(c, of)} of files have a single dominant author`,
-  },
-  {
-    preset: 'ghost-files',
-    measure: (r) => ({
-      count: r.ghostFiles.totalGhostFiles,
-      of: r.meta.totalFiles,
-    }),
-    share: 0.05,
-    min: 1,
-    reason: (c, of) => `${pct(c, of)} of files are owned by inactive people`,
+    reason: (c) =>
+      `${c} package${c === 1 ? '' : 's'} whose top contributor went quiet`,
   },
   {
     preset: 'parallel-dev',

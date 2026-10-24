@@ -27,7 +27,8 @@ describe('Inspector', () => {
 
   it('explains the open lens, with its docs', () => {
     render(Inspector, { ...base, view: 'ownership-risk', lens: 'bus-factor' });
-    expect(screen.getByText('Bus Factor')).toBeTruthy();
+    // The explain card's title, and the lens card's eyebrow.
+    expect(screen.getAllByText('Ownership').length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: /Docs/ })).toBeTruthy();
   });
 
@@ -64,9 +65,11 @@ describe('Inspector', () => {
     expect(screen.getByText('api.ts')).toBeTruthy();
     expect(screen.getByText('src/')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Flagged by' })).toBeTruthy();
-    // A row whose lens has no Atlas view opens classic; Age has one now.
-    const bus = screen.getByRole('link', { name: /^Bus Factor/ });
-    expect(bus.getAttribute('href')).toBe('/classic/#preset=bus-factor');
+    // A row whose lens has no Atlas view opens classic; Age and Ownership
+    // have one now.
+    const lang = screen.getByRole('link', { name: /^Language/ });
+    expect(lang.getAttribute('href')).toBe('/classic/#preset=languages');
+    expect(screen.getByRole('button', { name: /^Bus Factor/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Last changed/ })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'People' })).toBeTruthy();
     await fireEvent.click(screen.getByRole('button', { name: /Alice/ }));
@@ -134,16 +137,16 @@ describe('Inspector', () => {
   });
 
   it('explains an analyzer and links to classic and its docs', () => {
-    render(Inspector, { ...base, selection: ids.analyzer('ghost-files') });
-    expect(screen.getByText('Ghost Files')).toBeTruthy();
+    render(Inspector, { ...base, selection: ids.analyzer('renames') });
+    expect(screen.getByText('Renames')).toBeTruthy();
     expect(
       screen
         .getByRole('link', { name: /Open in classic/ })
         .getAttribute('href'),
-    ).toBe('/classic/#preset=ghost-files');
+    ).toBe('/classic/#preset=renames');
     const docs = screen.getByRole('link', { name: /Docs/ });
     expect(docs.getAttribute('href')).toBe(
-      'https://nebulord-dev.github.io/gitrelic/analyzers/ghost-files',
+      'https://nebulord-dev.github.io/gitrelic/analyzers/renames',
     );
     expect(docs.getAttribute('rel')).toBe('noopener noreferrer');
   });
@@ -274,7 +277,13 @@ describe('Inspector', () => {
     // The fixture is a 10-file repo; force one loud lens so the list exists.
     const loud = {
       ...report,
-      ghostFiles: { ...report.ghostFiles, totalGhostFiles: 3 },
+      ownership: {
+        ...report.ownership,
+        packages: report.ownership.packages.map((p) => ({
+          ...p,
+          topQuiet: true,
+        })),
+      },
     } as GitrelicReport;
     const onselect = vi.fn();
     render(Inspector, { ...base, report: loud, lens: 'overview', onselect });
@@ -285,8 +294,8 @@ describe('Inspector', () => {
     expect(
       screen.getByText(/Click a lens to see what it points at\./),
     ).toBeTruthy();
-    await fireEvent.click(screen.getByRole('button', { name: /Ghost Files/ }));
-    expect(onselect).toHaveBeenCalledWith('analyzer:ghost-files');
+    await fireEvent.click(screen.getByRole('button', { name: /Ownership/ }));
+    expect(onselect).toHaveBeenCalledWith('analyzer:bus-factor');
   });
 
   it('previews a selected lens: its reading, what it points at, and how to open it', async () => {
@@ -354,12 +363,12 @@ describe('Inspector', () => {
   });
 
   it('links a selected lens without an Atlas view to classic', () => {
-    render(Inspector, { ...base, selection: ids.analyzer('bus-factor') });
+    render(Inspector, { ...base, selection: ids.analyzer('renames') });
     expect(
       screen
-        .getByRole('link', { name: /Open Bus Factor in classic/ })
+        .getByRole('link', { name: /Open Renames in classic/ })
         .getAttribute('href'),
-    ).toBe('/classic/#preset=bus-factor');
+    ).toBe('/classic/#preset=renames');
   });
 
   it('describes a selected view: its headline, its lenses loudest first, and a way in', async () => {

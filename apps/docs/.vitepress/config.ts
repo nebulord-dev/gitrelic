@@ -48,7 +48,7 @@ export default withMermaid(
             { text: 'Overview', link: '/analyzers/' },
             { text: 'Age', link: '/analyzers/age-map' },
             { text: 'Blast Radius', link: '/analyzers/blast-radius' },
-            { text: 'Bus Factor', link: '/analyzers/bus-factor' },
+            { text: 'Ownership', link: '/analyzers/bus-factor' },
             { text: 'Churn', link: '/analyzers/churn' },
             { text: 'Co-Authors / AI', link: '/analyzers/co-authors' },
             { text: 'Commit Timing', link: '/analyzers/commit-timing' },

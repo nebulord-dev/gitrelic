@@ -45,5 +45,12 @@ export const THEME_TOKENS = [
   '--risk-1',
   '--risk-2',
   '--risk-3',
+  // Owners (the Ownership lens): six people, everyone else is --ghost
+  '--owner-0',
+  '--owner-1',
+  '--owner-2',
+  '--owner-3',
+  '--owner-4',
+  '--owner-5',
 ] as const;
 export type ThemeToken = (typeof THEME_TOKENS)[number];

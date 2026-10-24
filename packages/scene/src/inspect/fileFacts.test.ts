@@ -94,7 +94,7 @@ describe('fileFacts', () => {
         label: 'Owner Inactive',
         value: 'bo (210 days)',
         tier: 'warning',
-        lens: 'ghost-files',
+        lens: 'bus-factor',
       },
       {
         label: 'Blast Radius',

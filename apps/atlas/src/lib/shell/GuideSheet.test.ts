@@ -15,13 +15,13 @@ describe('GuideSheet', () => {
     expect(screen.getByText("You're here")).toBeTruthy();
     // Every analyzer is listed by view, each with its classic link.
     expect(
-      screen.getByRole('region', { name: 'Ownership & Risk' }),
+      screen.getByRole('region', { name: 'Ownership & Knowledge' }),
     ).toBeTruthy();
-    // Repo map, Hotspots, Churn, Risk, Age, Fix rate, Coupling, Contributors,
-    // Parallel Dev, Commit Timing and AI & Co-authors have Atlas views (Open);
-    // the rest link classic.
-    expect(screen.getAllByRole('link', { name: 'Classic ↗' }).length).toBe(7);
-    expect(screen.getAllByRole('button', { name: 'Open' })).toHaveLength(11);
+    // Repo map, Hotspots, Churn, Risk, Age, Fix rate, Ownership, Coupling,
+    // Contributors, Parallel Dev, Commit Timing and AI & Co-authors have Atlas
+    // views (Open); the rest link classic.
+    expect(screen.getAllByRole('link', { name: 'Classic ↗' }).length).toBe(4);
+    expect(screen.getAllByRole('button', { name: 'Open' })).toHaveLength(12);
   });
 
   it('filters by label or explanation, and says when nothing matches', async () => {
@@ -29,9 +29,9 @@ describe('GuideSheet', () => {
     await tick();
     const search = screen.getByRole('searchbox');
     await fireEvent.input(search, {
-      target: { value: 'single points of failure' },
+      target: { value: 'lines of code' },
     });
-    expect(screen.getByText('Bus Factor')).toBeTruthy();
+    expect(screen.getByText('Languages')).toBeTruthy();
     expect(screen.queryByText('Churn')).toBeNull();
     await fireEvent.input(search, { target: { value: 'zzzz' } });
     expect(screen.getByText('Nothing matches.')).toBeTruthy();

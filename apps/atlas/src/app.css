@@ -23,6 +23,12 @@
   --color-risk-1: var(--risk-1);
   --color-risk-2: var(--risk-2);
   --color-risk-3: var(--risk-3);
+  --color-owner-0: var(--owner-0);
+  --color-owner-1: var(--owner-1);
+  --color-owner-2: var(--owner-2);
+  --color-owner-3: var(--owner-3);
+  --color-owner-4: var(--owner-4);
+  --color-owner-5: var(--owner-5);
   --color-control-border: var(--control-border);
   --color-panel-border: var(--panel-border);
   --radius-chip: var(--chip-radius);
@@ -134,6 +140,20 @@ body {
    below): the fan's open view. */
 .atlas-label--hot .atlas-label__sub {
   color: var(--accent);
+}
+
+/* --on-cell: a label drawn over a filled cell (Ownership's map), whose
+   color varies: full-strength text, a halo of the background behind it. */
+.atlas-label--on-cell {
+  color: var(--text);
+  text-shadow:
+    0 0 3px var(--bg),
+    0 0 1px var(--bg);
+}
+
+.atlas-label--on-cell .atlas-label__sub {
+  color: var(--text);
+  opacity: 0.85;
 }
 
 /* --repo: the Overview's centre. A kicker, the repo's name, its size. */

@@ -12,6 +12,7 @@ const ATLAS_RENAMES: Record<string, string> = {
   'cursed-files': 'Risk',
   'co-authors': 'AI & Co-authors',
   'age-map': 'Age',
+  'bus-factor': 'Ownership',
 };
 
 // A classic preset folded into an Atlas lens leaves the catalog: Atlas has
@@ -22,6 +23,8 @@ const ATLAS_MERGES: Record<string, string> = {
   'dead-code': 'age-map',
   'rewrite-ratio': 'churn',
   'blast-radius': 'coupling',
+  'knowledge-silos': 'bus-factor',
+  'ghost-files': 'bus-factor',
 };
 
 // Classic presets Atlas retired outright: no lens, nothing absorbs them, and

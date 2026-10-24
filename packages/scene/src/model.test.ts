@@ -81,6 +81,21 @@ describe('checkScene', () => {
       'mark analyzer:x falls outside the scene bounds',
     );
     const arc: Mark = dot('cell:0:0', 50, 50, { shape: 'arc', r: 40, h: 5 });
+    const poly: Mark = dot('dir:a', 50, 50, {
+      shape: 'poly',
+      r: 0,
+      w: 40,
+      h: 40,
+      pts: [-0.5, -0.5, 0.5, -0.5, 0, 0.5],
+    });
+    expect(checkScene(scene({ marks: [poly] }))).toEqual([]);
+    expect(checkScene(scene({ marks: [{ ...poly, w: 120 }] }))).toHaveLength(1);
+    expect(
+      checkScene(scene({ marks: [{ ...poly, pts: [0, 0, 1, 1] }] })),
+    ).toEqual(['mark dir:a: a poly needs 3+ x,y pairs']);
+    expect(
+      checkScene(scene({ marks: [{ ...poly, pts: [0, 0, 0.9, 0, 0, 0.4] }] })),
+    ).toEqual(['mark dir:a: pts must be finite, within −0.5..0.5']);
     expect(checkScene(scene({ marks: [arc] }))).toEqual([]);
     expect(checkScene(scene({ marks: [{ ...arc, h: 20 }] }))).toHaveLength(1);
   });

@@ -77,6 +77,16 @@ describe('MarkStore', () => {
     expect(ids()).toEqual(['plain2', 'top', 'plain']);
   });
 
+  it('draws polygons under the particle layer, like arcs', () => {
+    const s = new MarkStore();
+    s.upsert(mark('dot'), geom(0), grey);
+    s.upsert({ ...mark('cell'), shape: 'poly', z: 3 }, geom(0), grey);
+    expect([...s.drawOrder()].map((i) => s.marks[i].id)).toEqual([
+      'cell',
+      'dot',
+    ]);
+  });
+
   it('grows past its initial capacity without losing data', () => {
     const s = new MarkStore();
     const start = s.capacity;

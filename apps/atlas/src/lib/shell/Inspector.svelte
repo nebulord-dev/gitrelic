@@ -26,6 +26,7 @@
   import FixRateCard from '../inspector/FixRateCard.svelte';
   import HotspotsCard from '../inspector/HotspotsCard.svelte';
   import LensPreviewCard from '../inspector/LensPreviewCard.svelte';
+  import OwnershipCard from '../inspector/OwnershipCard.svelte';
   import ParallelDevCard from '../inspector/ParallelDevCard.svelte';
   import PersonCard from '../inspector/PersonCard.svelte';
   import RepoMapCard from '../inspector/RepoMapCard.svelte';
@@ -297,6 +298,9 @@
   {:else if lens === 'fix-rate' && lensEntry}
     <ExplainCard entry={lensEntry} />
     <FixRateCard {report} {index} {onselect} {ontable} />
+  {:else if lens === 'bus-factor' && lensEntry}
+    <ExplainCard entry={lensEntry} />
+    <OwnershipCard {report} {index} {onselect} {ontable} />
   {:else if lens === 'coupling' && lensEntry}
     <ExplainCard entry={lensEntry} />
     <CouplingCard {report} {index} {onselect} {ontable} />

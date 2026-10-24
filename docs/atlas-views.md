@@ -635,6 +635,17 @@ With real ages (each file's last change in all of history, counted back from the
 - **Badge:** packages whose top contributor went quiet, firing at one (React: 2). Like Age's dormant packages it is rare and has an obvious action (find who takes over). Single-person packages are a highlight, not the badge, because a solo repo would always fire.
 - **Small repo:** on gitrelic every package is one color (one person), so the lens says "one person owns everything" in lens mode instead of leaving the map to say it.
 
+**As built (organic map, RELIC-382).**
+
+- **A new mark shape, `poly`.** A Voronoi cell's vertices are static, normalized to its box (`Mark.pts`, −0.5 to 0.5), and only `x, y, w, h` animate, so the tween engine is unchanged and a cell grows from its parent and shrinks into it like a bar. Filled cells are drawn with the arcs' Graphics, dashed edges with the outlines' (redrawn on zoom, so dashes stay 5 px). The hit test checks the polygon exactly, with no slop: cells tile edge to edge. `checkScene` reads a poly's real points, since its box (centered on the centroid so the label lands inside) can over-cover.
+- **The treemap is scene's own** (`layouts/voronoiTreemap.ts`, about 150 lines, seeded): scene takes no runtime dependencies. Cells are inset 1.5 units for the gaps. It's computed once per report in a unit circle and scaled to the viewport, so a resize or a person's click doesn't rerun it.
+- **At most 60 packages on the map** (`MAP_PACKAGES`, the busiest), from review: the treemap takes about 0.5 s at 300 packages and 2.7 s at 600, and cells that small can't hold a label. The findings, badge, table and Overview still cover every package; a finding says how many the map leaves out. React (24) and Angular (36) are under it.
+- **Color strength is a mix toward `--ghost`, not transparency**: the label layer hides labels under 0.5 alpha, and a shared package must keep its name. Labels use a new `atlas-label--on-cell` class (full text color with a halo of the background), and are dropped where the name wouldn't fit across the cell.
+- **The quiet outline is its own mark** (`quiet:<dir>`, selecting its package), drawn over the cell.
+- **Selecting a person** dims the packages they don't top (`focusKinds: ['person']`).
+- **Overview:** the lens's reading is "N owners quiet", else "N truck factor"; its fan-out lists quiet-owner packages, then one-person packages, then the busiest. The sample repo's loudest view is now Code Health: the old rule badged single-author files, which a 10-file repo is full of.
+- **React (default window):** 24 packages, truck factor 3 (Savona, Silbermann, Markbåge) over 615 files; quiet top contributors in `react-reconciler`, `react` and `eslint-plugin-react-hooks` (badge: 3); `snap` and `react-devtools-facade` rest on one person; 9 shared. **gitrelic:** 7 packages, all one color, truck factor 1.
+
 ### Ownership & Knowledge › Coupling (checkpoint 2026-10-23, RELIC-350)
 
 **Input:** `apps/docs/analyzers/blast-radius.md` (how many files a change to this one drags along), coupling's analyzer (no docs page yet), classic's Blast Radius histogram and Coupling tab, the lens inventory's plan (Blast Radius merges in as node size). Canvas: https://claude.ai/artifact/JYujzwRCj486Hz5VJ4dSrN (A Boundaries, B Families, C A file's ripple, D Blast radius in the inspector), React's last 12 months beside gitrelic's.

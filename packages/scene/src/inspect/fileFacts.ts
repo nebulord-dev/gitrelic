@@ -89,7 +89,8 @@ export function fileFacts(file: string, report: GitrelicReport): FileFact[] {
       label: 'Owner Inactive',
       value: `${ghost.dominantAuthor.split('@')[0]} (${ghost.authorInactiveDays} days)`,
       tier: 'warning',
-      lens: 'ghost-files',
+      // Ghost Files merged into Ownership.
+      lens: 'bus-factor',
     });
   }
 

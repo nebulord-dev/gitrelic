@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import { ageReport } from '../../test/ageReport';
 import reportJson from '../../test/fixtures/report.small.json';
+import { ownershipReport } from '../../test/ownershipReport';
 import { CATALOG } from '../catalog';
-import { buildEntityIndex } from '../entities';
+import { buildEntityIndex, type EntityIndex } from '../entities';
 import { lensTopEntities } from './topEntities';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -159,23 +160,15 @@ describe('lensTopEntities', () => {
     expect(labels).toEqual(['src/api.ts', '__tests__/api.ts']);
   });
 
-  it('counts silos strictly over 80%, as core does', () => {
-    const silos = (pct: number) =>
-      lensTopEntities(
-        'knowledge-silos',
-        {
-          ...report,
-          busFactors: {
-            ...report.busFactors,
-            files: [
-              { ...report.busFactors.files[0], dominantAuthorPercent: pct },
-            ],
-          },
-        } as GitrelicReport,
-        index,
-      ).length;
-    expect(silos(80)).toBe(0);
-    expect(silos(81)).toBe(1);
+  it('fans quiet owners first, then one-person packages, then the busiest', () => {
+    // The synthetic packages aren't in the sample repo's index; resolve any id.
+    const anyIndex = { get: () => ({}) } as unknown as EntityIndex;
+    const fanned = lensTopEntities('bus-factor', ownershipReport(), anyIndex);
+    expect(fanned.map((e) => [e.id, e.value])).toEqual([
+      ['dir:packages/client', 'Ray 47% · quiet'],
+      ['dir:packages/server', 'Lee 88%'],
+      ['dir:packages/shared', 'Dee 21%'],
+    ]);
   });
 
   it('tells two people with the same display name apart by email', () => {

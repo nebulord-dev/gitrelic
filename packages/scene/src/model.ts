@@ -25,6 +25,12 @@ export const COLOR_ROLES = [
   '--risk-1',
   '--risk-2',
   '--risk-3',
+  '--owner-0',
+  '--owner-1',
+  '--owner-2',
+  '--owner-3',
+  '--owner-4',
+  '--owner-5',
 ] as const satisfies readonly ThemeToken[];
 export type ColorRole = (typeof COLOR_ROLES)[number];
 
@@ -39,8 +45,17 @@ export type Paint =
 /**
  * `ring`'s stroke scales with its radius (a small marker ring); `outline` is
  * the same circle with a thin stroke, for a large one (the Overview's repo).
+ * `poly` is a convex polygon (`Mark.pts`) stretched over its `w × h` box: a
+ * Voronoi cell.
  */
-export type MarkShape = 'dot' | 'ring' | 'outline' | 'arc' | 'bar' | 'card';
+export type MarkShape =
+  | 'dot'
+  | 'ring'
+  | 'outline'
+  | 'arc'
+  | 'bar'
+  | 'card'
+  | 'poly';
 
 /**
  * Every animatable number a mark has. One flat record for all shapes, so the
@@ -49,6 +64,7 @@ export type MarkShape = 'dot' | 'ring' | 'outline' | 'arc' | 'bar' | 'card';
  *
  * - dot, ring: centre `x,y`, radius `r`
  * - bar, card: centre `x,y`, size `w × h`
+ * - poly: centre `x,y`, box `w × h`, which its `pts` are drawn into
  * - arc: circle centre `x,y`, inner radius `r`, thickness `h`, angles
  *   `a0 → a1` in radians, clockwise from 12 o'clock
  *
@@ -100,6 +116,14 @@ export interface Mark extends MarkGeom {
    * Ignored under reduced motion.
    */
   slot?: string;
+  /**
+   * A `poly`'s vertices as flat x,y pairs in its box, each from −0.5 to 0.5
+   * (the box's centre is 0,0), in order around the polygon. They don't
+   * animate: the box does, so a cell grows, moves and shrinks like a bar.
+   */
+  pts?: readonly number[];
+  /** A `poly` drawn as its dashed outline only, no fill (a quiet owner's cell). */
+  edge?: 'dashed';
   label?: string;
   /**
    * A quieter second line under the label (a package's file count under its
@@ -114,7 +138,7 @@ export interface Mark extends MarkGeom {
   labelLead?: string;
   /**
    * A class for the label's element, naming a role the dashboard's CSS styles
-   * (the ring's flagged lenses), never a colour. A single class token: it's
+   * (the ring's flagged lenses), never a color. A single class token: it's
    * added with `classList.add`, which throws on whitespace.
    */
   labelClass?: string;
@@ -308,7 +332,7 @@ export interface TableColumn {
 /** A detail-table row is an entity: hovering lights its mark, a click selects it. */
 export interface TableRow {
   id: EntityId;
-  /** Risk tier, 0 (low) to 3, for the tier toggles and the row's colour. */
+  /** Risk tier, 0 (low) to 3, for the tier toggles and the row's color. */
   tier: 0 | 1 | 2 | 3;
   /** Lower-cased text the filter matches (the full path, a name…). */
   search: string;
@@ -379,12 +403,21 @@ export function checkScene(scene: Scene, slack = 0.5): string[] {
     }
     if (m.alpha < 0 || m.alpha > 1)
       problems.push(`mark ${m.id}: alpha ${m.alpha} outside 0..1`);
-    const [hw, hh] = extent(m);
+    if (m.shape === 'poly') {
+      const pts = m.pts ?? [];
+      if (pts.length < 6 || pts.length % 2 !== 0)
+        problems.push(`mark ${m.id}: a poly needs 3+ x,y pairs`);
+      else if (
+        !pts.every((v) => Number.isFinite(v) && Math.abs(v) <= 0.5 + 1e-6)
+      )
+        problems.push(`mark ${m.id}: pts must be finite, within −0.5..0.5`);
+    }
+    const [x0, x1, y0, y1] = extent(m);
     if (
-      m.x - hw < bx - slack ||
-      m.x + hw > bx + bw + slack ||
-      m.y - hh < by - slack ||
-      m.y + hh > by + bh + slack
+      m.x + x0 < bx - slack ||
+      m.x + x1 > bx + bw + slack ||
+      m.y + y0 < by - slack ||
+      m.y + y1 > by + bh + slack
     ) {
       problems.push(`mark ${m.id} falls outside the scene bounds`);
     }
@@ -417,17 +450,33 @@ export function checkScene(scene: Scene, slack = 0.5): string[] {
   return problems;
 }
 
-/** Half-width and half-height of the box a mark covers around its centre. */
-function extent(m: Mark): [number, number] {
+/**
+ * The box a mark covers, as offsets from its centre: left, right, top,
+ * bottom. A poly's is its points', which its `w × h` box can over-cover (the
+ * box is centred on the cell's centroid, not its middle).
+ */
+function extent(m: Mark): [number, number, number, number] {
   switch (m.shape) {
     case 'dot':
     case 'ring':
     case 'outline':
-      return [m.r, m.r];
+      return [-m.r, m.r, -m.r, m.r];
     case 'arc':
-      return [m.r + m.h, m.r + m.h];
+      return [-(m.r + m.h), m.r + m.h, -(m.r + m.h), m.r + m.h];
     case 'bar':
     case 'card':
-      return [m.w / 2, m.h / 2];
+      return [-m.w / 2, m.w / 2, -m.h / 2, m.h / 2];
+    case 'poly': {
+      const pts = m.pts ?? [];
+      const xs = pts.filter((_, k) => k % 2 === 0).map((u) => u * m.w);
+      const ys = pts.filter((_, k) => k % 2 === 1).map((v) => v * m.h);
+      if (xs.length === 0) return [-m.w / 2, m.w / 2, -m.h / 2, m.h / 2];
+      return [
+        Math.min(...xs),
+        Math.max(...xs),
+        Math.min(...ys),
+        Math.max(...ys),
+      ];
+    }
   }
 }

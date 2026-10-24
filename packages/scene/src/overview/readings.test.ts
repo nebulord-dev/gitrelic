@@ -77,7 +77,7 @@ describe('lensReadings', () => {
     );
     expect(byId.get('churn')?.value).toBe('—');
     expect(byId.get('languages')?.value).toBe('—');
-    expect(byId.get('knowledge-silos')?.value).toBe('—');
+    expect(byId.get('bus-factor')?.value).toBe('—');
   });
 });
 

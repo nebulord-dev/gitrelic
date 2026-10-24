@@ -7,6 +7,7 @@ import { outlierGrades, type OutlierGrade } from '../badges';
 import { CATALOG, type CatalogEntry, type PresetGroup } from '../catalog';
 import { boundariesOf } from '../coupling/boundaries';
 import { fixRateOf } from '../fixRate/points';
+import { ownershipMapOf } from '../ownership/map';
 import type { GitrelicReport } from '@gitrelic/core';
 
 export interface LensReading {
@@ -44,13 +45,15 @@ const VALUE: Record<string, (r: GitrelicReport) => string> = {
       ? `${n(points.filter((p) => p.aboveChance).length)} above chance`
       : '—';
   },
-  'bus-factor': (r) => `${n(r.busFactors.criticalFiles.length)} single-owner`,
+  'bus-factor': (r) => {
+    const map = ownershipMapOf(r);
+    if (map.packages.length === 0) return '—';
+    const quiet = map.packages.filter((p) => p.topQuiet).length;
+    return quiet > 0
+      ? `${n(quiet)} owner${quiet === 1 ? '' : 's'} quiet`
+      : `${n(map.truckFactor.value)} truck factor`;
+  },
   coupling: (r) => `${n(boundariesOf(r).links.length)} package links`,
-  'knowledge-silos': (r) =>
-    r.knowledgeConcentration.totalFiles > 0
-      ? `${pct(r.knowledgeConcentration.concentrationIndex)} one author`
-      : '—',
-  'ghost-files': (r) => `${n(r.ghostFiles.totalGhostFiles)} files`,
   contributors: (r) =>
     `${n(r.contributors.ghostContributors.length)} ghosts of ${n(r.contributors.contributors.length)}`,
   'parallel-dev': (r) => `${n(r.parallelDev.totalParallelFiles)} files`,

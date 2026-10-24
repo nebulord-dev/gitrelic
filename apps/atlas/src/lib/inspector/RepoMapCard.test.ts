@@ -6,7 +6,7 @@ import reportJson from '../../../../../packages/scene/test/fixtures/report.small
 import RepoMapCard from './RepoMapCard.svelte';
 import type { GitrelicReport } from '@gitrelic/core';
 
-// Code Health has two grade-2 lenses (summed: 4); Ownership & Risk has one
+// Code Health has two grade-2 lenses (summed: 4); Ownership & Knowledge has one
 // grade-3 lens (summed: 3). The loudest view is the one with the top grade.
 vi.mock('@gitrelic/scene', async (importOriginal) => {
   const real = await importOriginal<typeof import('@gitrelic/scene')>();

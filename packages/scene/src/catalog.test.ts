@@ -15,11 +15,12 @@ describe('catalog', () => {
   // Classic's 23 presets, less those merged into an Atlas lens (ATLAS_MERGES
   // in apps/web's catalogParity.test.ts: Risk into cursed-files, Shame into
   // fix-rate, Stale Files into age-map, Rewrite Ratio into churn, Blast
-  // Radius into coupling), less those retired (ATLAS_RETIRED: Complexity
+  // Radius into coupling, Knowledge Silos and Ghost Files into bus-factor,
+  // the Ownership lens), less those retired (ATLAS_RETIRED: Complexity
   // Trend), plus Atlas's own (ATLAS_ONLY: fix-rate).
-  it('lists 18 presets with unique ids, each in a known group', () => {
-    expect(CATALOG).toHaveLength(18);
-    expect(new Set(CATALOG.map((e) => e.id)).size).toBe(18);
+  it('lists 16 presets with unique ids, each in a known group', () => {
+    expect(CATALOG).toHaveLength(16);
+    expect(new Set(CATALOG.map((e) => e.id)).size).toBe(16);
     const groups = new Set<string>(PRESET_GROUPS.map((g) => g.id));
     for (const entry of CATALOG) expect(groups.has(entry.group)).toBe(true);
   });
@@ -39,8 +40,8 @@ describe('catalog', () => {
     expect(churn && docsUrl(churn)).toBe(
       'https://nebulord-dev.github.io/gitrelic/analyzers/churn',
     );
-    const silos = catalogEntry('knowledge-silos');
-    expect(silos && docsUrl(silos)).toBeNull();
+    // An entry without a docs page links nowhere.
+    expect(churn && docsUrl({ ...churn, docsPath: undefined })).toBeNull();
     expect(classicUrl('dead-code')).toBe('/classic/#preset=dead-code');
     expect(catalogEntry('nope')).toBeUndefined();
   });
