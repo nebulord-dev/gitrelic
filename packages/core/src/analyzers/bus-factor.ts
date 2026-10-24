@@ -1,3 +1,4 @@
+import { classifyAuthor } from '../utils/authorClassification.js';
 import type {
   BusFactorReport,
   FileBusFactor,
@@ -20,6 +21,10 @@ export function analyzeBusFactor(
   const trackedSet = new Set(trackedFiles);
 
   for (const commit of commits) {
+    // A bot (release, dependency bumps) is nobody you could ask about the
+    // file, so it never owns one. `classifyAuthor`, not `isBotEmail`: an AI
+    // agent's own commits still count.
+    if (classifyAuthor(commit.authorEmail) === 'bot') continue;
     for (const file of commit.files) {
       if (!trackedSet.has(file)) continue;
       if (!fileAuthors.has(file)) fileAuthors.set(file, new Map());
