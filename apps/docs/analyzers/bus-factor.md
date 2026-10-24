@@ -17,6 +17,8 @@ In Atlas, ownership is measured **per package**, where the numbers are large eno
 - **The lens card** (right side) leads with the truck factor and the people behind it, then the findings: packages whose top contributor went quiet, packages that rest on one person, how many are shared, and what was left off the map.
 - **Hover** a cell for its path, its commits, its top four contributors with their shares, and its flags.
 - **Select a person** to dim the packages they don't top.
+- **The Mosaic** (the corner toggle) shows every share, not just the top one: one column per package, as wide as its commits, split from the bottom by each person's share (people past the six colors stack as one grey block on top).
+- **What if someone left?** In the Mosaic, select a person (click their segment, their name in the color key, or search). Their share fades out, each package nobody else knows gets a strip in the accent color under its column, and a line above the chart counts them. Their person card says the same: how many packages they top, and how many would have nobody else.
 - **The table** (`T`) lists every package: commits, top contributor and share, how many people know it, its own truck factor, and its flags.
 
 ## How it's measured

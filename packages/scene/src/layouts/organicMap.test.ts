@@ -128,10 +128,13 @@ describe('organicMapScene', () => {
       { report: normalizeReport({}), commits: null },
       viewport,
     );
-    expect(s.marks).toEqual([]);
-    expect(s.guides[0]).toMatchObject({
-      kind: 'text',
-      text: 'Rerun gitrelic to see who owns what.',
+    // A sizeless card: the label layer draws it as plain text.
+    expect(s.marks).toHaveLength(1);
+    expect(s.marks[0]).toMatchObject({
+      shape: 'card',
+      w: 0,
+      label: 'Rerun gitrelic to see who owns what.',
+      labelAnchor: 'center',
     });
   });
 });

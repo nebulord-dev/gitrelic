@@ -142,6 +142,12 @@ body {
   color: var(--accent);
 }
 
+/* --accent: a line of stage text that is the finding (the Mosaic's "if X
+   left, N packages would have nobody"). */
+.atlas-label--accent {
+  color: var(--accent);
+}
+
 /* --on-cell: a label drawn over a filled cell (Ownership's map), whose
    color varies: full-strength text, a halo of the background behind it. */
 .atlas-label--on-cell {

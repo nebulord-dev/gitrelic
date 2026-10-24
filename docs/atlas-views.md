@@ -644,6 +644,14 @@ With real ages (each file's last change in all of history, counted back from the
 - **The quiet outline is its own mark** (`quiet:<dir>`, selecting its package), drawn over the cell.
 - **Selecting a person** dims the packages they don't top (`focusKinds: ['person']`).
 - **Overview:** the lens's reading is "N owners quiet", else "N truck factor"; its fan-out lists quiet-owner packages, then one-person packages, then the busiest. The sample repo's loudest view is now Code Health: the old rule badged single-author files, which a 10-file repo is full of.
+- **Stage text is a sizeless card mark** (`noteMark`), as other lenses do: the model's text guides aren't drawn by the renderer, so the map's "Rerun gitrelic" message never showed. Fixed with the Mosaic.
+
+**As built (Mosaic, RELIC-382).**
+
+- **Columns** for the map's packages, widths by commits (each at least 2 units), split bottom up: the six colored people in share order, then everyone else as one grey block. Segments are bars (`share:<dir>:<email>`) that select their person; the package is a plinth under the column (its `dir:` mark, named below it). The quiet outline is a dashed `poly` rectangle.
+- **"What if X left" is selecting a person** (`focusKinds: ['person']`): their segments fade to 0.15, the rest to 0.7, and each package where they're the only knower gets an accent strip (`strand:<dir>`). A line above the chart counts them, in the accent (`atlas-label--accent`) when it's more than zero. No new controls.
+- **Person card:** *Tops packages* and *If they left* ("N packages with nobody else", a warning when N > 0), from `strandedBy`.
+- **React:** five people would each leave one package with nobody else who knows it: Markbåge `react`, Savona `snap`, Silbermann `react-noop-renderer`, Lesiutin `react-devtools-facade`, Liebau `react-server-dom-unbundled`. Silbermann knows 13 packages, and 12 of them have someone else.
 - **React (default window):** 24 packages, truck factor 3 (Savona, Silbermann, Markbåge) over 615 files; quiet top contributors in `react-reconciler`, `react` and `eslint-plugin-react-hooks` (badge: 3); `snap` and `react-devtools-facade` rest on one person; 9 shared. **gitrelic:** 7 packages, all one color, truck factor 1.
 
 ### Ownership & Knowledge › Coupling (checkpoint 2026-10-23, RELIC-350)

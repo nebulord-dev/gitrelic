@@ -3,6 +3,8 @@
 // not colours, like fileFacts.
 
 import { formatRelative } from '../format/relativeTime';
+import { ownershipMapOf, strandedBy } from '../ownership/map';
+import { reportNow } from '../report/now';
 import type { FactTier, FileFact } from './fileFacts';
 import type { GitrelicReport } from '@gitrelic/core';
 
@@ -22,22 +24,8 @@ const fmt = (n: number) => n.toLocaleString();
 /** Off-hours share at or above which the stress row is flagged. */
 export const STRESS_WARNING = 40;
 
-/**
- * "Now" for a report's relative dates: its last commit, not the wall clock,
- * since a saved report can be months old. Older reports backfill
- * `meta.lastCommit` as '', so fall back to the newest contributor commit;
- * NaN when there's nothing to go on, and the ages read "—".
- */
-export function reportNow(report: GitrelicReport): number {
-  const last = Date.parse(report.meta.lastCommit);
-  if (Number.isFinite(last)) return last;
-  let newest = Number.NaN;
-  for (const c of report.contributors.contributors) {
-    const t = Date.parse(c.lastCommit);
-    if (Number.isFinite(t) && !(t <= newest)) newest = t;
-  }
-  return newest;
-}
+// Re-exported: lanes, the Contributors view and older callers import it here.
+export { reportNow } from '../report/now';
 
 export function personFacts(
   email: string,
@@ -65,6 +53,24 @@ export function personFacts(
       tier: c.isGhost ? 'critical' : undefined,
     },
   ];
+  // Ownership: what they top, and what nobody else would know if they left.
+  const own = ownershipMapOf(report);
+  if (own.packages.length > 0) {
+    const tops = own.packages.filter((p) => p.shares[0].email === email).length;
+    const stranded = strandedBy(own, email).length;
+    rows.push(
+      { label: 'Tops packages', value: fmt(tops), lens: 'bus-factor' },
+      {
+        label: 'If they left',
+        value:
+          stranded === 0
+            ? 'every package has someone else'
+            : `${fmt(stranded)} package${stranded === 1 ? '' : 's'} with nobody else`,
+        tier: stranded > 0 ? 'warning' : undefined,
+        lens: 'bus-factor',
+      },
+    );
+  }
   const stress = report.commitTiming.authorStress.find(
     (a) => a.email.toLowerCase() === email.toLowerCase(),
   );
